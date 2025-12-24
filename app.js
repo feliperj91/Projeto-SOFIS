@@ -101,7 +101,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Assuming current array order is "creation order".
         // We will create a sorted copy for rendering only.
         const sortedClients = [...clientsToRender].sort((a, b) => {
-            if (a.isFavorite === b.isFavorite) return 0;
+            if (a.isFavorite === b.isFavorite) {
+                return a.name.localeCompare(b.name);
+            }
             return a.isFavorite ? -1 : 1;
         });
 

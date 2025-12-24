@@ -406,40 +406,32 @@ button {
     margin-top: 4px;
 }
 
+
 .client-contact-list {
     margin-top: 8px;
     display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.contact-item {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.contact-item i {
-    font-size: 0.75rem;
-    opacity: 0.7;
-}
-
-.contact-label {
-    font-weight: 600;
-    color: var(--accent);
-    margin-right: 4px;
+    flex-direction: row;
+    /* Change to row to put items side-by-side */
+    flex-wrap: wrap;
+    /* Allow wrapping */
+    gap: 12px;
+    /* Add gap between items */
 }
 
 .contact-group-display {
-    margin-bottom: 12px;
     padding: 10px;
     background: rgba(0, 0, 0, 0.1);
     border-radius: 8px;
     border-left: 3px solid var(--accent);
+    flex: 1 1 300px;
+    /* Grow, Shrink, Basis at 300px */
+    max-width: 400px;
+    /* Optional: don't let them get too wide */
+    min-width: 250px;
+    /* Minimum width before wrapping/shrinking */
 }
 
+/* Remove margin-bottom as we use gap now, but keep for fallback */
 .contact-group-display:last-child {
     margin-bottom: 0;
 }
