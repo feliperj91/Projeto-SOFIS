@@ -439,12 +439,11 @@ button {
     background: rgba(0, 0, 0, 0.1);
     border-radius: 8px;
     border-left: 3px solid var(--accent);
-    flex: 1 1 300px;
-    /* Grow, Shrink, Basis at 300px */
+    flex: 1 1 220px;
+    /* Reduced from 300px to 220px */
     max-width: 400px;
-    /* Optional: don't let them get too wide */
-    min-width: 250px;
-    /* Minimum width before wrapping/shrinking */
+    min-width: 200px;
+    /* Reduced from 250px to 200px */
 }
 
 /* Remove margin-bottom as we use gap now, but keep for fallback */
