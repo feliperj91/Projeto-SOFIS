@@ -205,11 +205,100 @@ button {
     outline: none;
 }
 
-/* Grid */
-.client-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
+/* List Layout (formerly Grid) */
+.client-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Client Row (replaces Card) */
+.client-row {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    /* Or smaller radius like 6px if desired */
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+
+.client-row.expanded {
+    border-color: var(--accent);
+}
+
+.client-row-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    background: var(--card-bg);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.client-row-header:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* Divider vertical line */
+.divider-vertical {
+    width: 1px;
+    height: 24px;
+    background-color: var(--border);
+    margin: 0 5px;
+}
+
+.client-name-row {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.chevron-icon {
+    color: var(--accent);
+    /* Orange */
+    transition: transform 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.client-row.expanded .chevron-icon {
+    transform: rotate(180deg);
+}
+
+.client-row-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, padding 0.3s ease;
+    /* Slide effect */
+    background: rgba(0, 0, 0, 0.2);
+    /* Darker background for expanded area */
+    border-top: 1px solid var(--border);
+}
+
+.client-row.expanded .client-row-body {
+    max-height: 1000px;
+    /* Arbitrary large height */
+    padding: 20px;
+    border-color: var(--accent);
+    /* Optional: distinct border when open */
+}
+
+/* Adjust action buttons in row */
+.row-actions {
+    display: flex;
+    gap: 8px;
 }
 
 /* Cards */

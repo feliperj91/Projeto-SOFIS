@@ -116,8 +116,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         sortedClients.forEach(client => {
-            const card = document.createElement('div');
-            card.className = `client-card ${client.isFavorite ? 'favorite' : ''}`;
+            const row = document.createElement('div');
+            row.className = `client-row ${client.isFavorite ? 'favorite' : ''}`;
+            row.id = `client-row-${client.id}`;
 
             // Format contacts
             const contactsHTML = client.contacts && client.contacts.length > 0
@@ -138,55 +139,67 @@ document.addEventListener('DOMContentLoaded', () => {
                         `).join('')
                         : '';
 
-
-
                     return `
                         <div class="contact-group-display">
                             <div class="contact-header-display">
-                                <div class="contact-name-display clickable" onclick="editContact('${client.id}', ${index})" title="Ver/Editar Contato">
+                                <div class="contact-name-display clickable" onclick="editContact('${client.id}', ${index}); event.stopPropagation();" title="Ver/Editar Contato">
                                     ${escapeHtml(contact.name || 'Sem nome')}
                                 </div>
-                                <button class="btn-icon-small" onclick="editContact('${client.id}', ${index})" title="Editar Contato">
+                                <button class="btn-icon-small" onclick="editContact('${client.id}', ${index}); event.stopPropagation();" title="Editar Contato">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
                             </div>
                             ${phonesHTML}
                             ${emailsHTML}
-
                         </div>
                     `;
                 }).join('')
                 : '<div class="contact-item">Nenhum contato cadastrado</div>';
 
-            card.innerHTML = `
-                <div class="client-header">
-                    <div>
-                        <div class="client-header-top">
-                            <div class="client-name clickable" onclick="openClientNotes('${client.id}')" title="Ver Observações">${escapeHtml(client.name)}</div>
-                             <button class="btn-icon btn-star ${client.isFavorite ? 'favorite-active' : ''}" onclick="toggleFavorite('${client.id}')" title="${client.isFavorite ? 'Remover Favorito' : 'Favoritar'}">
-                                <i class="fa-${client.isFavorite ? 'solid' : 'regular'} fa-star"></i>
-                            </button>
-                        </div>
-                        <div class="client-contact-list">
-                            ${contactsHTML}
-                        </div>
+            const serverBtnClass = (client.servers && client.servers.length > 0) ? 'btn-icon' : 'btn-icon'; // Can style differently if has servers
+
+            row.innerHTML = `
+                <div class="client-row-header" onclick="toggleClientRow('${client.id}')">
+                    <div class="header-left">
+                        <button class="btn-icon btn-star ${client.isFavorite ? 'favorite-active' : ''}" onclick="toggleFavorite('${client.id}'); event.stopPropagation();" title="${client.isFavorite ? 'Remover Favorito' : 'Favoritar'}">
+                            <i class="fa-${client.isFavorite ? 'solid' : 'regular'} fa-star"></i>
+                        </button>
+                        <div class="client-name-row clickable" onclick="openClientNotes('${client.id}'); event.stopPropagation();" title="Ver Observações">${escapeHtml(client.name)}</div>
                     </div>
-                    <div class="card-actions">
-                        <button class="btn-icon" onclick="addNewContact('${client.id}')" title="Adicionar Contato">
-                            <i class="fa-solid fa-user-plus"></i>
-                        </button>
-                        <button class="btn-icon" onclick="openServerData('${client.id}')" title="Dados de Acesso ao SQL">
-                            <i class="fa-solid fa-database"></i>
-                        </button>
-                        <button class="btn-icon btn-danger" onclick="deleteClient('${client.id}')" title="Excluir">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
+                    
+                    <div class="header-right">
+                         <i class="fa-solid fa-chevron-down chevron-icon" id="chevron-${client.id}"></i>
+                         <div class="divider-vertical"></div>
+                         <div class="row-actions">
+                             <button class="btn-icon" onclick="addNewContact('${client.id}'); event.stopPropagation();" title="Adicionar Contato">
+                                <i class="fa-solid fa-user-plus"></i>
+                            </button>
+                            <button class="${serverBtnClass}" onclick="openServerData('${client.id}'); event.stopPropagation();" title="Dados de Acesso ao SQL">
+                                <i class="fa-solid fa-database"></i>
+                            </button>
+                            <button class="btn-icon btn-danger" onclick="deleteClient('${client.id}'); event.stopPropagation();" title="Excluir">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                         </div>
+                    </div>
+                </div>
+                <div class="client-row-body" id="body-${client.id}">
+                    <div class="client-contact-list">
+                        ${contactsHTML}
                     </div>
                 </div>
             `;
-            clientList.appendChild(card);
+            clientList.appendChild(row);
         });
     }
+
+    // New Function for Toggling
+    function toggleClientRow(id) {
+        const row = document.getElementById(`client-row-${id}`);
+        // Toggle expanded class
+        row.classList.toggle('expanded');
+    }
+    window.toggleClientRow = toggleClientRow;
 
     function handleFormSubmit(e) {
         e.preventDefault();
