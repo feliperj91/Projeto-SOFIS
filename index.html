@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Clientes - SOFIS</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="server-styles.css">
+    <link rel="stylesheet" href="credential-styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <header>
+            <div class="logo-container">
+                <img src="logo.png" alt="Sofis Logo" class="logo-img">
+            </div>
+            <button id="addClientBtn" class="btn-primary">
+                <i class="fa-solid fa-plus"></i> Novo Cliente
+            </button>
+        </header>
+
+        <main>
+            <div id="search-bar">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="searchInput" placeholder="Buscar clientes, telefones ou e-mails...">
+                <button id="clearSearch" class="btn-clear hidden" title="Limpar pesquisa" tabindex="-1">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div id="clientList" class="client-grid">
+                <!-- Clients will be rendered here -->
+            </div>
+        </main>
+
+        <!-- Modal Form -->
+        <div id="modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="modalTitle">Novo Cliente</h2>
+                    <button id="closeModal" class="btn-icon"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <form id="clientForm">
+                    <input type="hidden" id="clientId">
+
+                    <div class="form-group">
+                        <label for="clientName"><span>Nome do Cliente<span class="required">*</span></span></label>
+                        <input type="text" id="clientName" required placeholder="Ex: Empresa X">
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <button type="button" id="addContactBtn" class="btn-add-field" tabindex="-1">
+                                <i class="fa-solid fa-plus"></i> Adicionar Contato
+                            </button>
+                        </label>
+                        <div id="contactList">
+                            <div class="contact-group">
+                                <div class="contact-group-header">
+                                    <input type="text" class="contact-name-input"
+                                        placeholder="Nome do contato (ex: João Silva, Comercial)">
+                                    <button type="button" class="btn-remove-contact" onclick="removeContact(this)"
+                                        title="Remover Contato" tabindex="-1">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </div>
+
+                                <div class="contact-details">
+                                    <div class="contact-section">
+                                        <label class="section-label">
+                                            <i class="fa-solid fa-phone"></i> Telefones
+                                            <button type="button" class="btn-add-phone" onclick="addPhone(this)"
+                                                title="Adicionar Telefone" tabindex="-1">
+                                                <i class="fa-solid fa-plus"></i>
+                                            </button>
+                                        </label>
+                                        <div class="phone-list">
+                                            <div class="contact-field">
+                                                <input type="text" class="phone-input" placeholder="(11) 99999-9999"
+                                                    maxlength="15">
+                                                <button type="button" class="btn-remove-field-small"
+                                                    onclick="removeContactField(this)" title="Remover" tabindex="-1">
+                                                    <i class="fa-solid fa-xmark"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="contact-section">
+                                        <label class="section-label">
+                                            <i class="fa-solid fa-envelope"></i> E-mails
+                                            <button type="button" class="btn-add-email" onclick="addEmail(this)"
+                                                title="Adicionar E-mail" tabindex="-1">
+                                                <i class="fa-solid fa-plus"></i>
+                                            </button>
+                                        </label>
+                                        <div class="email-list">
+                                            <div class="contact-field">
+                                                <input type="email" class="email-input"
+                                                    placeholder="contato@empresa.com">
+                                                <button type="button" class="btn-remove-field-small"
+                                                    onclick="removeContactField(this)" title="Remover" tabindex="-1">
+                                                    <i class="fa-solid fa-xmark"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="button" id="cancelBtn" class="btn-secondary">Cancelar</button>
+                        <button type="submit" class="btn-primary">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Server Data Modal -->
+        <div id="serverModal" class="modal hidden">
+            <div class="modal-content modal-content-large">
+                <div class="modal-header">
+                    <div class="modal-header-left">
+                        <h2>Dados do Servidor</h2>
+                    </div>
+                    <button id="closeServerModal" type="button" class="btn-icon"><i
+                            class="fa-solid fa-xmark"></i></button>
+                </div>
+
+                <!-- Form for adding new server records -->
+                <form id="serverForm">
+                    <input type="hidden" id="serverClientId">
+                    <input type="hidden" id="editingServerIndex">
+
+                    <div class="server-form-grid">
+                        <div class="form-group">
+                            <label for="environmentSelect">
+                                <span><i class="fa-solid fa-server"></i> Ambiente<span class="required">*</span></span>
+                            </label>
+                            <select id="environmentSelect" required>
+                                <option value="">Selecione...</option>
+                                <option value="homologacao">Homologação</option>
+                                <option value="producao">Produção</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="sqlServerInput"><span>SQL Server<span class="required">*</span></span></label>
+                            <input type="text" id="sqlServerInput" required
+                                placeholder="Ex: servidor.database.windows.net">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <span><i class="fa-solid fa-key"></i> Autenticação</span>
+                            <button type="button" id="addCredentialBtn" class="btn-add-field" tabindex="-1">
+                                <i class="fa-solid fa-plus"></i> Adicionar
+                            </button>
+                        </label>
+                        <div id="credentialList">
+                            <!-- Credential items will be added here -->
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="serverNotesInput">Observações</label>
+                        <textarea id="serverNotesInput" rows="3"
+                            placeholder="Detalhes adicionais, procedimentos de acesso, etc..."></textarea>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="button" id="cancelServerFormBtn" class="btn-secondary">Limpar</button>
+                        <button type="submit" class="btn-primary">
+                            <i class="fa-solid fa-plus"></i> Incluir
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Saved servers grid -->
+                <div class="servers-section">
+                    <h3><i class="fa-solid fa-database"></i> Servidores Cadastrados</h3>
+                    <div id="serversList" class="servers-grid">
+                        <!-- Server records will be displayed here -->
+                    </div>
+                </div>
+
+                <div class="modal-actions"
+                    style="margin-top: 20px; border-top: 1px solid var(--border); padding-top: 20px;">
+                    <button type="button" id="closeServerModalBtn" class="btn-primary">Fechar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Client Notes Modal -->
+        <div id="notesModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="notesModalTitle">Observações - Cliente</h2>
+                    <button id="closeNotesModal" type="button" class="btn-icon"><i
+                            class="fa-solid fa-xmark"></i></button>
+                </div>
+                <form id="notesForm">
+                    <input type="hidden" id="notesClientId">
+                    <div class="form-group">
+                        <label for="clientNoteInput">Observações do Cliente</label>
+                        <textarea id="clientNoteInput" rows="10"
+                            placeholder="Digite as observações gerais do cliente..."></textarea>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" id="cancelNotesBtn" class="btn-secondary">Cancelar</button>
+                        <button type="submit" class="btn-primary">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast hidden">Notificação</div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
