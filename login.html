@@ -33,6 +33,7 @@
         .login-logo {
             width: 200px;
             margin-bottom: 0;
+            margin-top: -40px;
         }
 
         .login-title {
@@ -45,8 +46,8 @@
         .login-subtitle {
             color: var(--text-secondary);
             font-size: 0.85rem;
-            margin-bottom: 15px;
-            margin-top: -10px;
+            margin-bottom: 75px;
+            margin-top: -25px;
             font-weight: 300;
             line-height: 1.4;
         }
@@ -64,9 +65,13 @@
             font-size: 1rem;
         }
 
-        .toast-error {
-            background-color: var(--danger);
-            color: white;
+        .corner-logo {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 80px;
+            opacity: 0.9;
+            z-index: 10;
         }
     </style>
 </head>
@@ -74,7 +79,7 @@
 <body>
     <div class="login-container">
         <img src="logo.png" alt="Sofis Logo" class="login-logo">
-        <p class="login-subtitle">Gerenciamento de senhas e conexões de clientes</p>
+        <p class="login-subtitle">Gerenciamento de Senhas e Contatos de Clientes</p>
         <h1 class="login-title">Acesso ao Sistema</h1>
 
         <form id="loginForm" class="login-form">
@@ -100,6 +105,9 @@
             <button type="submit" class="btn-primary login-btn">Entrar</button>
         </form>
     </div>
+
+    <!-- Bottom Right Logo -->
+    <img src="logo_corner.png" alt="Logo Canto" class="corner-logo">
 
     <div id="toast" class="toast hidden"></div>
 
