@@ -173,6 +173,9 @@ document.addEventListener('DOMContentLoaded', () => {
                          <i class="fa-solid fa-chevron-down chevron-icon" id="chevron-${client.id}"></i>
                          <div class="divider-vertical"></div>
                          <div class="row-actions">
+                             <button class="btn-icon" onclick="editClient('${client.id}'); event.stopPropagation();" title="Editar Cliente">
+                                 <i class="fa-solid fa-pen"></i>
+                             </button>
                              <button class="btn-icon" onclick="addNewContact('${client.id}'); event.stopPropagation();" title="Adicionar Contato">
                                 <i class="fa-solid fa-user-plus"></i>
                             </button>
