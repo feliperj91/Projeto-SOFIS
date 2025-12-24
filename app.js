@@ -728,6 +728,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
+    window.togglePassword = (btn) => {
+        const row = btn.closest('.credential-row');
+        const valueSpan = row.querySelector('.credential-value');
+        const icon = btn.querySelector('i');
+        const isMasked = valueSpan.textContent === '••••••';
+
+        if (isMasked) {
+            valueSpan.textContent = valueSpan.dataset.raw;
+            icon.className = 'fa-solid fa-eye-slash';
+            btn.title = 'Ocultar Senha';
+        } else {
+            valueSpan.textContent = '••••••';
+            icon.className = 'fa-solid fa-eye';
+            btn.title = 'Visualizar Senha';
+        }
+    };
+
     // --- Server Data Functions ---
 
     window.openServerData = (clientId) => {
@@ -804,7 +821,10 @@ document.addEventListener('DOMContentLoaded', () => {
                                 </div>
                                 <div class="credential-row">
                                     <span class="credential-label">Senha:</span>
-                                    <span class="credential-value">${escapeHtml(cred.password)}</span>
+                                    <span class="credential-value" data-raw="${escapeHtml(cred.password)}">••••••</span>
+                                    <button class="btn-copy-small" onclick="togglePassword(this)" title="Visualizar Senha" style="margin-right: 4px;">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </button>
                                     <button class="btn-copy-small" onclick="copyToClipboard(this.dataset.value)" data-value="${escapeHtml(cred.password)}" title="Copiar Senha">
                                         <i class="fa-regular fa-copy"></i>
                                     </button>
