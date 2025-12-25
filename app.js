@@ -41,10 +41,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
-            // Supabase logout if needed, or just redirect
-            // For now, since we reverted to a version that seemingly uses localStorage in code comments but might verify session, 
-            // we will just redirect to be safe.
-            window.location.href = 'login.html';
+            if (confirm('Deseja realmente sair do sistema?')) {
+                window.location.href = 'login.html';
+            }
         });
     }
 
