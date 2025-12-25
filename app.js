@@ -1336,12 +1336,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     ${vpn.notes ? `
                         <div class="server-notes">
-                            <div class="server-notes-title">Observações</div>
+                            <div class="server-notes-title"><i class="fa-solid fa-comment-dots" style="margin-right: 6px;"></i> Observações</div>
                             <div class="server-notes-content">${escapeHtml(vpn.notes)}</div>
                         </div>` : ''}
                 </div>
             `;
         }).join('');
+
     }
 
     function handleVpnSubmit(e) {
@@ -1436,7 +1437,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!client) return;
 
         notesClientIdInput.value = clientId;
-        notesModalTitle.textContent = `Observações - ${client.name}`;
+        notesModalTitle.textContent = `Observações - ${client.name} `;
         clientNoteInput.value = client.notes || '';
 
         notesModal.classList.remove('hidden');
@@ -1641,7 +1642,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                     <i class="fa-regular fa-copy"></i>
                                 </button>
                             </div>
-                        </div>` : ''}
+                        </div>` : ''
+                }
                     ${url.bootstrap ? `
                         <div class="server-info">
                             <div class="server-info-label">
@@ -1653,7 +1655,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                     <i class="fa-regular fa-copy"></i>
                                 </button>
                             </div>
-                        </div>` : ''}
+                        </div>` : ''
+                }
                     ${url.execUpdate ? `
                         <div class="server-info">
                             <div class="server-info-label">
@@ -1665,15 +1668,17 @@ document.addEventListener('DOMContentLoaded', () => {
                                     <i class="fa-regular fa-copy"></i>
                                 </button>
                             </div>
-                        </div>` : ''}
+                        </div>` : ''
+                }
                     ${url.notes ? `
                         <div class="server-notes">
                             <div class="server-notes-title">
                                 <i class="fa-solid fa-comment-dots" style="margin-right: 6px;"></i> Observações
                             </div>
                             <div class="server-notes-content">${escapeHtml(url.notes)}</div>
-                        </div>` : ''}
-                </div>
+                        </div>` : ''
+                }
+                </div >
             `;
         }).join('');
     }
