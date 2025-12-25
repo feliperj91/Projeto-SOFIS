@@ -647,14 +647,14 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="contact-details">
                 <div class="contact-section">
                     <label class="section-label section-label-left">
-                        <span><i class="fa-solid fa-user"></i> Nome do Contato<span class="required">*</span></span>
+                        <span><i class="fa-solid fa-user"></i> Nome do Contato <span class="required">*</span></span>
                     </label>
                     <input type="text" class="contact-name-input" placeholder="Ex: João Silva, Comercial" value="${escapeHtml(name)}">
                 </div>
 
                 <div class="contact-section">
                     <label class="section-label section-label-left">
-                        <span><i class="fa-solid fa-phone"></i> Telefones<span class="required">*</span></span>
+                        <span><i class="fa-solid fa-phone"></i> Telefones <span class="required">*</span></span>
                         <button type="button" class="btn-add-phone" onclick="addPhone(this)" title="Adicionar Telefone" tabindex="-1">
                             <i class="fa-solid fa-plus"></i>
                         </button>
@@ -1566,10 +1566,11 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        listContainer.innerHTML = filteredUrls.map((url, index) => {
-            const originalIndex = client.urls.indexOf(url);
-            const environmentClass = url.environment === 'homologacao' ? 'homologacao' : 'producao';
-            const environmentLabel = url.environment === 'homologacao' ? 'Homologação' : 'Produção';
+        listContainer.innerHTML = filteredUrls.map(item => {
+            const url = item.data;
+            const originalIndex = item.index;
+            const environmentClass = url.environment === 'producao' ? 'producao' : 'homologacao';
+            const environmentLabel = url.environment === 'producao' ? 'Produção' : 'Homologação';
 
             return `
                 <div class="server-card">

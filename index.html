@@ -54,7 +54,7 @@
                     <input type="hidden" id="clientId">
 
                     <div class="form-group">
-                        <label for="clientName"><span>Nome do Cliente<span class="required">*</span></span></label>
+                        <label for="clientName"><span>Nome do Cliente <span class="required">*</span></span></label>
                         <input type="text" id="clientName" required placeholder="Ex: Empresa X">
                     </div>
 
@@ -168,7 +168,8 @@
 
                 <!-- Saved servers grid -->
                 <div class="servers-section" style="border-top: none; margin-top: 0; padding-top: 0;">
-                    <h3><i class="fa-solid fa-database"></i> Dados de Acesso Cadastrados</h3>
+                    <h3><i class="fa-solid fa-database" style="color: var(--accent);"></i> Dados de Acesso Cadastrados
+                    </h3>
                     <div id="serversList" class="servers-grid">
                         <!-- Server records will be displayed here -->
                     </div>
@@ -196,7 +197,7 @@
                     <div class="server-form-grid">
                         <div class="form-group">
                             <label for="environmentSelect">
-                                <span><i class="fa-solid fa-server"></i> Ambiente<span class="required">*</span></span>
+                                <span><i class="fa-solid fa-server"></i> Ambiente <span class="required">*</span></span>
                             </label>
                             <select id="environmentSelect" required>
                                 <option value="">Selecione...</option>
@@ -207,8 +208,8 @@
 
                         <div class="form-group">
                             <label for="sqlServerInput"><span><i class="fa-solid fa-database"
-                                        style="margin-right: 5px;"></i> Instância do SQL Server<span
-                                        class="required">*</span></span></label>
+                                        style="color: var(--accent); margin-right: 5px;"></i> Instância do SQL Server
+                                    <span class="required">*</span></span></label>
                             <input type="text" id="sqlServerInput" required
                                 placeholder="Ex: servidor.database.windows.net">
                         </div>
@@ -313,12 +314,12 @@
                     <input type="hidden" id="editingVpnIndex">
 
                     <div class="form-group">
-                        <label for="vpnUserInput"><span>Usuário<span class="required">*</span></span></label>
+                        <label for="vpnUserInput"><span>Usuário <span class="required">*</span></span></label>
                         <input type="text" id="vpnUserInput" required placeholder="Digite o usuário">
                     </div>
 
                     <div class="form-group">
-                        <label for="vpnPassInput"><span>Senha<span class="required">*</span></span></label>
+                        <label for="vpnPassInput"><span>Senha <span class="required">*</span></span></label>
                         <input type="text" id="vpnPassInput" required placeholder="Digite a senha">
                     </div>
 
@@ -401,7 +402,7 @@
                 </div>
 
                 <div class="servers-section" style="border-top: none; margin-top: 0; padding-top: 0;">
-                    <h3><i class="fa-solid fa-link"></i> URLs Cadastradas</h3>
+                    <h3><i class="fa-solid fa-link" style="color: var(--accent);"></i> URLs Cadastradas</h3>
                     <div id="urlsList" class="servers-grid">
                         <!-- URL records will be displayed here -->
                     </div>
@@ -430,7 +431,7 @@
                     <div class="server-form-grid">
                         <div class="form-group">
                             <label for="urlEnvironmentSelect">
-                                <span><i class="fa-solid fa-server"></i> Ambiente<span class="required">*</span></span>
+                                <span><i class="fa-solid fa-server"></i> Ambiente <span class="required">*</span></span>
                             </label>
                             <select id="urlEnvironmentSelect" required>
                                 <option value="">Selecione...</option>
@@ -441,7 +442,7 @@
 
                         <div class="form-group">
                             <label for="urlSystemSelect">
-                                <span><i class="fa-solid fa-window-maximize"></i> Sistema<span
+                                <span><i class="fa-solid fa-window-maximize"></i> Sistema <span
                                         class="required">*</span></span>
                             </label>
                             <select id="urlSystemSelect" required>
@@ -455,7 +456,7 @@
 
                     <div class="form-group">
                         <label for="bridgeDataAccessInput">
-                            <span><i class="fa-solid fa-bridge"></i> Bridge data_access<span
+                            <span><i class="fa-solid fa-bridge"></i> Bridge data_access <span
                                     class="required">*</span></span>
                         </label>
                         <input type="text" id="bridgeDataAccessInput" required placeholder="URL">
