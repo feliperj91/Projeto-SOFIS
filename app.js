@@ -481,7 +481,7 @@ document.addEventListener('DOMContentLoaded', () => {
             renderClients(clients);
             closeModal();
             delete contactList.dataset.editingContactIndex;
-            showToast('✅ Contato atualizado com sucesso!', 'success');
+            showToast(`✅ Contato "${name}" do cliente "${client.name}" atualizado com sucesso!`, 'success');
             return;
         }
 
@@ -544,18 +544,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // If editing or adding contact to existing client, check against existing contacts
-        if (editingId) {
+        // Only do this check when adding a new contact, not when editing the entire client
+        if (editingId && mode === 'addContact') {
             const currentClient = clients.find(c => c.id === editingId);
             if (currentClient && currentClient.contacts) {
                 for (const newContact of contacts) {
-                    // When editing a single contact, skip checking against itself
-                    const existingContactIndex = editingContactIndex !== undefined ? parseInt(editingContactIndex) : -1;
-
-                    for (let i = 0; i < currentClient.contacts.length; i++) {
-                        // Skip if this is the contact being edited
-                        if (i === existingContactIndex) continue;
-
-                        const existingContact = currentClient.contacts[i];
+                    for (const existingContact of currentClient.contacts) {
                         if (existingContact.name.toLowerCase() === newContact.name.toLowerCase()) {
                             showToast(`⚠️ O nome "${newContact.name}" já está cadastrado para este cliente.`, 'error');
                             return;
@@ -618,7 +612,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (editingId && mode !== 'addContact') {
             // Normal client edit mode - update entire client
             clients = clients.map(c => c.id === editingId ? newClient : c);
-            showToast('✅ Cliente atualizado com sucesso!', 'success');
+            showToast(`✅ Cliente "${newClient.name}" atualizado com sucesso!`, 'success');
         } else if (editingId && mode === 'addContact') {
             // Append new contact to existing contacts of the client
             const clientToUpdate = clients.find(c => c.id === editingId);
@@ -626,11 +620,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!clientToUpdate.contacts) clientToUpdate.contacts = [];
                 // Preserve existing contacts and add only the new ones
                 clientToUpdate.contacts.push(...contacts);
-                showToast('✅ Contato adicionado com sucesso!', 'success');
+                const contactNames = contacts.map(c => c.name).join(', ');
+                showToast(`✅ Contato "${contactNames}" adicionado ao cliente "${clientToUpdate.name}"!`, 'success');
             }
         } else {
             clients.push(newClient);
-            showToast('✅ Cliente adicionado com sucesso!', 'success');
+            showToast(`✅ Cliente "${newClient.name}" adicionado com sucesso!`, 'success');
         }
 
         saveToLocal();
@@ -639,11 +634,12 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     function deleteClient(id) {
+        const clientToDelete = clients.find(c => c.id === id);
         if (confirm('Tem certeza que deseja excluir este cliente?')) {
             clients = clients.filter(c => c.id !== id);
             saveToLocal();
             renderClients(clients);
-            showToast('🗑️ Cliente removido com sucesso!', 'success');
+            showToast(`🗑️ Cliente "${clientToDelete.name}" removido com sucesso!`, 'success');
         }
     }
 
@@ -1260,11 +1256,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (editingServerIndex.value !== '') {
             const index = parseInt(editingServerIndex.value);
             client.servers[index] = serverRecord;
-            showToast('✅ Servidor atualizado com sucesso!', 'success');
+            showToast(`✅ Acesso SQL do cliente "${client.name}" atualizado com sucesso!`, 'success');
         } else {
             // Add new record
             client.servers.push(serverRecord);
-            showToast('✅ Servidor incluído com sucesso!', 'success');
+            showToast(`✅ Acesso SQL adicionado ao cliente "${client.name}"!`, 'success');
         }
 
         saveToLocal();
@@ -1309,7 +1305,7 @@ document.addEventListener('DOMContentLoaded', () => {
         saveToLocal();
         renderClients(clients);
         renderServersList(client);
-        showToast('🗑️ Servidor removido com sucesso!', 'success');
+        showToast(`🗑️ Acesso SQL do cliente "${client.name}" removido com sucesso!`, 'success');
     };
 
     // --- VPN Data Functions ---
@@ -1426,10 +1422,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (editingIndex !== '') {
             client.vpns[parseInt(editingIndex)] = vpnRecord;
-            showToast('✅ VPN atualizada com sucesso!', 'success');
+            showToast(`✅ VPN do cliente "${client.name}" atualizada com sucesso!`, 'success');
         } else {
             client.vpns.push(vpnRecord);
-            showToast('✅ VPN incluída com sucesso!', 'success');
+            showToast(`✅ VPN adicionada ao cliente "${client.name}"!`, 'success');
         }
 
         saveToLocal();
@@ -1477,7 +1473,7 @@ document.addEventListener('DOMContentLoaded', () => {
         saveToLocal();
         renderClients(clients);
         renderVpnList(client);
-        showToast('🗑️ VPN removida com sucesso!', 'success');
+        showToast(`🗑️ VPN do cliente "${client.name}" removida com sucesso!`, 'success');
     }
 
     // --- Client Notes Functions ---
@@ -1506,7 +1502,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         client.notes = clientNoteInput.value.trim();
         saveToLocal();
-        showToast('✅ Observações do cliente salvas!', 'success');
+        showToast(`✅ Observações do cliente "${client.name}" salvas com sucesso!`, 'success');
         closeNotesModal();
         renderClients(clients);
     }
@@ -1769,10 +1765,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (editingIndex !== '') {
             client.urls[parseInt(editingIndex)] = urlRecord;
-            showToast('✅ Sistema atualizado com sucesso!', 'success');
+            showToast(`✅ URL do cliente "${client.name}" atualizada com sucesso!`, 'success');
         } else {
             client.urls.push(urlRecord);
-            showToast('✅ Sistema incluído com sucesso!', 'success');
+            showToast(`✅ URL adicionada ao cliente "${client.name}"!`, 'success');
         }
 
         saveToLocal();
@@ -1810,7 +1806,7 @@ document.addEventListener('DOMContentLoaded', () => {
         saveToLocal();
         renderClients(clients);
         renderUrlList(client);
-        showToast('🗑️ Sistema removido com sucesso!', 'success');
+        showToast(`🗑️ URL do cliente "${client.name}" removida com sucesso!`, 'success');
     }
 
     function handleWebLaudoSave() {
@@ -1834,3 +1830,26 @@ document.addEventListener('DOMContentLoaded', () => {
     // I will assume the functions exist in the scope.
 
 });
+
+// Scroll to Top Button Functionality
+const scrollToTopBtn = document.getElementById('scrollToTopBtn');
+
+if (scrollToTopBtn) {
+    // Show/hide button based on scroll position
+    window.addEventListener('scroll', () => {
+        if (window.pageYOffset > 300) {
+            scrollToTopBtn.classList.add('visible');
+        } else {
+            scrollToTopBtn.classList.remove('visible');
+        }
+    });
+
+    // Scroll to top when clicked
+    scrollToTopBtn.addEventListener('click', () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+}
+
