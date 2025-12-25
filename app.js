@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     let editingId = null;
+    let currentClientFilter = 'all'; // 'all', 'favorites', 'regular'
 
     // DOM Elements
     const clientList = document.getElementById('clientList');
@@ -133,19 +134,19 @@ document.addEventListener('DOMContentLoaded', () => {
     form.addEventListener('submit', handleFormSubmit);
 
     searchInput.addEventListener('input', (e) => {
-        handleSearch(e);
         if (e.target.value.length > 0) {
             clearSearchBtn.classList.remove('hidden');
         } else {
             clearSearchBtn.classList.add('hidden');
         }
+        applyClientFilter();
     });
 
     if (clearSearchBtn) {
         clearSearchBtn.addEventListener('click', () => {
             searchInput.value = '';
             clearSearchBtn.classList.add('hidden');
-            renderClients(clients);
+            applyClientFilter();
             searchInput.focus();
         });
     }
@@ -264,134 +265,233 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Filter Chips Functionality
+    const filterChips = document.querySelectorAll('.filter-chip');
+    filterChips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            const filterValue = chip.dataset.filter;
+            currentClientFilter = filterValue;
+
+            // Update active state
+            filterChips.forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+
+            // Apply filter
+            applyClientFilter();
+        });
+    });
+
+    function applyClientFilter() {
+        const searchTerm = searchInput.value.toLowerCase();
+        let filteredClients = clients;
+
+        // Apply search filter first
+        if (searchTerm) {
+            filteredClients = clients.filter(client => {
+                const nameMatch = client.name.toLowerCase().includes(searchTerm);
+                const phoneMatch = client.contacts?.some(contact =>
+                    contact.phones?.some(phone => phone.includes(searchTerm))
+                );
+                const emailMatch = client.contacts?.some(contact =>
+                    contact.emails?.some(email => email.toLowerCase().includes(searchTerm))
+                );
+                return nameMatch || phoneMatch || emailMatch;
+            });
+        }
+
+        // Apply favorite filter
+        if (currentClientFilter === 'favorites') {
+            filteredClients = filteredClients.filter(c => c.isFavorite);
+        } else if (currentClientFilter === 'regular') {
+            filteredClients = filteredClients.filter(c => !c.isFavorite);
+        }
+
+        renderClients(filteredClients);
+        updateFilterCounts();
+    }
+
+    function updateFilterCounts() {
+        const allCount = clients.length;
+        const favoritesCount = clients.filter(c => c.isFavorite).length;
+        const regularCount = clients.filter(c => !c.isFavorite).length;
+
+        document.getElementById('countAll').textContent = allCount;
+        document.getElementById('countFavorites').textContent = favoritesCount;
+        document.getElementById('countRegular').textContent = regularCount;
+    }
+
     // --- Functions ---
 
     function renderClients(clientsToRender) {
         clientList.innerHTML = '';
 
-        // Sort clients: Favorites first, then by creation date (implicitly by array order)
-        // Note: To preserve original order for non-favorites, we can't just use simple sort if we care about "creation time" logic unless we have a date field.
-        // Assuming current array order is "creation order".
-        // We will create a sorted copy for rendering only.
-        const sortedClients = [...clientsToRender].sort((a, b) => {
-            if (a.isFavorite === b.isFavorite) {
-                return a.name.localeCompare(b.name);
-            }
-            return a.isFavorite ? -1 : 1;
-        });
+        // Separate favorites from regular clients
+        const favoriteClients = clientsToRender.filter(c => c.isFavorite).sort((a, b) => a.name.localeCompare(b.name));
+        const regularClients = clientsToRender.filter(c => !c.isFavorite).sort((a, b) => a.name.localeCompare(b.name));
 
-        if (sortedClients.length === 0) {
+        if (clientsToRender.length === 0) {
+            let emptyMessage = 'Nenhum cliente encontrado.';
+            let emptyIcon = 'fa-folder-open';
+
+            if (currentClientFilter === 'favorites') {
+                emptyMessage = 'Nenhum cliente favorito ainda.';
+                emptyIcon = 'fa-star';
+            } else if (currentClientFilter === 'regular') {
+                emptyMessage = 'Nenhum cliente regular encontrado.';
+                emptyIcon = 'fa-users';
+            } else if (searchInput.value) {
+                emptyMessage = 'Nenhum resultado para sua busca.';
+                emptyIcon = 'fa-magnifying-glass';
+            }
+
             clientList.innerHTML = `
                 <div style="grid-column: 1/-1; text-align: center; color: var(--text-secondary); padding: 40px;">
-                    <i class="fa-solid fa-folder-open" style="font-size: 3rem; margin-bottom: 16px; opacity: 0.5;"></i>
-                    <p>Nenhum cliente encontrado.</p>
+                    <i class="fa-solid ${emptyIcon}" style="font-size: 3rem; margin-bottom: 16px; opacity: 0.5;"></i>
+                    <p>${emptyMessage}</p>
                 </div>
             `;
             return;
         }
 
-        sortedClients.forEach(client => {
-            const row = document.createElement('div');
-            row.className = `client-row ${client.isFavorite ? 'favorite' : ''}`;
-            row.id = `client-row-${client.id}`;
-
-            // Format contacts
-            const contactsHTML = client.contacts && client.contacts.length > 0
-                ? client.contacts.map((contact, index) => {
-                    const phonesHTML = contact.phones && contact.phones.length > 0
-                        ? contact.phones.map(phone => `
-                            <div class="contact-item">
-                                <i class="fa-solid fa-phone"></i> 
-                                <span class="contact-value">${escapeHtml(phone)}</span>
-                                <button class="btn-copy-tiny" onclick="copyToClipboard('${escapeHtml(phone).replace(/'/g, "\\'")}')" title="Copiar Telefone">
-                                    <i class="fa-regular fa-copy"></i>
-                                </button>
-                            </div>
-                        `).join('')
-                        : '';
-
-                    const emailsHTML = contact.emails && contact.emails.length > 0
-                        ? contact.emails.map(email => `
-                            <div class="contact-item">
-                                <i class="fa-solid fa-envelope"></i> 
-                                <span class="contact-value">${escapeHtml(email)}</span>
-                                <button class="btn-copy-tiny" onclick="copyToClipboard('${escapeHtml(email).replace(/'/g, "\\'")}')" title="Copiar E-mail">
-                                    <i class="fa-regular fa-copy"></i>
-                                </button>
-                            </div>
-                        `).join('')
-                        : '';
-
-                    return `
-                        <div class="contact-group-display">
-                            <div class="contact-header-display">
-                                <div class="contact-name-display clickable" onclick="editContact('${client.id}', ${index}); event.stopPropagation();" title="Ver/Editar Contato">
-                                    ${escapeHtml(contact.name || 'Sem nome')}
-                                </div>
-                                <button class="btn-icon-small" onclick="editContact('${client.id}', ${index}); event.stopPropagation();" title="Editar Contato">
-                                    <i class="fa-solid fa-pen"></i>
-                                </button>
-                            </div>
-                            ${phonesHTML}
-                            ${emailsHTML}
-                        </div>
-                    `;
-                }).join('')
-                : '<div class="contact-item">Nenhum contato cadastrado</div>';
-
-            const hasServers = client.servers && client.servers.length > 0;
-            const hasVpns = client.vpns && client.vpns.length > 0;
-            const hasUrls = client.urls && client.urls.length > 0;
-            const serverBtnClass = hasServers ? 'btn-icon active-success' : 'btn-icon';
-            const vpnBtnClass = hasVpns ? 'btn-icon active-success' : 'btn-icon';
-            const urlBtnClass = hasUrls ? 'btn-icon active-success' : 'btn-icon';
-            const vpnIconClass = hasVpns ? 'vpn-icon-img vpn-icon-success' : 'vpn-icon-img';
-
-            row.innerHTML = `
-                <div class="client-row-header" onclick="toggleClientRow('${client.id}')">
-                    <div class="header-left">
-                        <button class="btn-icon btn-star ${client.isFavorite ? 'favorite-active' : ''}" onclick="toggleFavorite('${client.id}'); event.stopPropagation();" title="${client.isFavorite ? 'Remover Favorito' : 'Favoritar'}">
-                            <i class="fa-${client.isFavorite ? 'solid' : 'regular'} fa-star"></i>
-                        </button>
-                        <div class="client-name-row clickable" onclick="openClientNotes('${client.id}'); event.stopPropagation();" title="Ver Observações">
-                            ${escapeHtml(client.name)}
-                            ${client.notes ? `<i class="fa-solid fa-bell client-note-indicator" title="Possui observações importantes"></i>` : ''}
-                        </div>
-                    </div>
-                    
-                    <div class="header-right">
-                         <i class="fa-solid fa-chevron-down chevron-icon" id="chevron-${client.id}"></i>
-                         <div class="divider-vertical"></div>
-                         <div class="row-actions">
-                             <button class="btn-icon" onclick="editClient('${client.id}'); event.stopPropagation();" title="Editar Cliente">
-                                 <i class="fa-solid fa-pen"></i>
-                             </button>
-                             <button class="btn-icon" onclick="addNewContact('${client.id}'); event.stopPropagation();" title="Adicionar Contato">
-                                <i class="fa-solid fa-user-plus"></i>
-                            </button>
-                             <button class="${serverBtnClass}" onclick="openServerData('${client.id}'); event.stopPropagation();" title="Dados de Acesso ao SQL">
-                                 <i class="fa-solid fa-database"></i>
-                             </button>
-                             <button class="${vpnBtnClass}" onclick="openVpnData('${client.id}'); event.stopPropagation();" title="Dados de Acesso VPN">
-                                <img src="vpn-icon.png" class="${vpnIconClass}" alt="VPN">
-                            </button>
-                             <button class="${urlBtnClass}" onclick="event.stopPropagation(); openUrlData('${client.id}');" title="URL">
-                                <i class="fa-solid fa-link"></i>
-                            </button>
-                             <button class="btn-icon btn-danger" onclick="deleteClient('${client.id}'); event.stopPropagation();" title="Excluir">
-                                 <i class="fa-solid fa-trash"></i>
-                             </button>
-                         </div>
-                    </div>
-                </div>
-                <div class="client-row-body" id="body-${client.id}">
-                    <div class="client-contact-list">
-                        ${contactsHTML}
-                    </div>
+        // Render Favorites Section
+        if (favoriteClients.length > 0) {
+            const favoritesHeader = document.createElement('div');
+            favoritesHeader.className = 'clients-section-header favorites-header';
+            favoritesHeader.innerHTML = `
+                <div class="section-header-content">
+                    <i class="fa-solid fa-star"></i>
+                    <span class="section-title">Clientes Favoritos</span>
+                    <span class="section-count">${favoriteClients.length}</span>
                 </div>
             `;
-            clientList.appendChild(row);
-        });
+            clientList.appendChild(favoritesHeader);
+
+            favoriteClients.forEach(client => {
+                clientList.appendChild(createClientRow(client));
+            });
+        }
+
+        // Render Regular Clients Section
+        if (regularClients.length > 0) {
+            const regularHeader = document.createElement('div');
+            regularHeader.className = 'clients-section-header regular-header';
+            regularHeader.innerHTML = `
+                <div class="section-header-content">
+                    <i class="fa-solid fa-users"></i>
+                    <span class="section-title">${favoriteClients.length > 0 ? 'Outros Clientes' : 'Clientes'}</span>
+                    <span class="section-count">${regularClients.length}</span>
+                </div>
+            `;
+            clientList.appendChild(regularHeader);
+
+            regularClients.forEach(client => {
+                clientList.appendChild(createClientRow(client));
+            });
+        }
+    }
+
+    // Helper function to create a client row
+    function createClientRow(client) {
+        const row = document.createElement('div');
+        row.className = `client-row ${client.isFavorite ? 'favorite' : ''}`;
+        row.id = `client-row-${client.id}`;
+
+        // Format contacts
+        const contactsHTML = client.contacts && client.contacts.length > 0
+            ? client.contacts.map((contact, index) => {
+                const phonesHTML = contact.phones && contact.phones.length > 0
+                    ? contact.phones.map(phone => `
+                        <div class="contact-item">
+                            <i class="fa-solid fa-phone"></i> 
+                            <span class="contact-value">${escapeHtml(phone)}</span>
+                            <button class="btn-copy-tiny" onclick="copyToClipboard('${escapeHtml(phone).replace(/'/g, "\\'")}')" title="Copiar Telefone">
+                                <i class="fa-regular fa-copy"></i>
+                            </button>
+                        </div>
+                    `).join('')
+                    : '';
+
+                const emailsHTML = contact.emails && contact.emails.length > 0
+                    ? contact.emails.map(email => `
+                        <div class="contact-item">
+                            <i class="fa-solid fa-envelope"></i> 
+                            <span class="contact-value">${escapeHtml(email)}</span>
+                            <button class="btn-copy-tiny" onclick="copyToClipboard('${escapeHtml(email).replace(/'/g, "\\'")}')" title="Copiar E-mail">
+                                <i class="fa-regular fa-copy"></i>
+                            </button>
+                        </div>
+                    `).join('')
+                    : '';
+
+                return `
+                    <div class="contact-group-display">
+                        <div class="contact-header-display">
+                            <div class="contact-name-display clickable" onclick="editContact('${client.id}', ${index}); event.stopPropagation();" title="Ver/Editar Contato">
+                                ${escapeHtml(contact.name || 'Sem nome')}
+                            </div>
+                            <button class="btn-icon-small" onclick="editContact('${client.id}', ${index}); event.stopPropagation();" title="Editar Contato">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
+                        </div>
+                        ${phonesHTML}
+                        ${emailsHTML}
+                    </div>
+                `;
+            }).join('')
+            : '<div class="contact-item">Nenhum contato cadastrado</div>';
+
+        const hasServers = client.servers && client.servers.length > 0;
+        const hasVpns = client.vpns && client.vpns.length > 0;
+        const hasUrls = client.urls && client.urls.length > 0;
+        const serverBtnClass = hasServers ? 'btn-icon active-success' : 'btn-icon';
+        const vpnBtnClass = hasVpns ? 'btn-icon active-success' : 'btn-icon';
+        const urlBtnClass = hasUrls ? 'btn-icon active-success' : 'btn-icon';
+        const vpnIconClass = hasVpns ? 'vpn-icon-img vpn-icon-success' : 'vpn-icon-img';
+
+        row.innerHTML = `
+            <div class="client-row-header" onclick="toggleClientRow('${client.id}')">
+                <div class="header-left">
+                    <button class="btn-icon btn-star ${client.isFavorite ? 'favorite-active' : ''}" onclick="toggleFavorite('${client.id}'); event.stopPropagation();" title="${client.isFavorite ? 'Remover Favorito' : 'Favoritar'}">
+                        <i class="fa-${client.isFavorite ? 'solid' : 'regular'} fa-star"></i>
+                    </button>
+                    <div class="client-name-row clickable" onclick="openClientNotes('${client.id}'); event.stopPropagation();" title="Ver Observações">
+                        ${escapeHtml(client.name)}
+                        ${client.notes ? `<i class="fa-solid fa-bell client-note-indicator" title="Possui observações importantes"></i>` : ''}
+                    </div>
+                </div>
+                
+                <div class="header-right">
+                     <i class="fa-solid fa-chevron-down chevron-icon" id="chevron-${client.id}"></i>
+                     <div class="divider-vertical"></div>
+                     <div class="row-actions">
+                         <button class="btn-icon" onclick="editClient('${client.id}'); event.stopPropagation();" title="Editar Cliente">
+                             <i class="fa-solid fa-pen"></i>
+                         </button>
+                         <button class="btn-icon" onclick="addNewContact('${client.id}'); event.stopPropagation();" title="Adicionar Contato">
+                            <i class="fa-solid fa-user-plus"></i>
+                        </button>
+                         <button class="${serverBtnClass}" onclick="openServerData('${client.id}'); event.stopPropagation();" title="Dados de Acesso ao SQL">
+                             <i class="fa-solid fa-database"></i>
+                         </button>
+                         <button class="${vpnBtnClass}" onclick="openVpnData('${client.id}'); event.stopPropagation();" title="Dados de Acesso VPN">
+                            <img src="vpn-icon.png" class="${vpnIconClass}" alt="VPN">
+                        </button>
+                         <button class="${urlBtnClass}" onclick="event.stopPropagation(); openUrlData('${client.id}');" title="URL">
+                            <i class="fa-solid fa-link"></i>
+                        </button>
+                         <button class="btn-icon btn-danger" onclick="deleteClient('${client.id}'); event.stopPropagation();" title="Excluir">
+                             <i class="fa-solid fa-trash"></i>
+                         </button>
+                     </div>
+                </div>
+            </div>
+            <div class="client-row-body" id="body-${client.id}">
+                <div class="client-contact-list">
+                    ${contactsHTML}
+                </div>
+            </div>
+        `;
+        return row;
     }
 
     // New Function for Toggling
@@ -405,6 +505,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Save data to localStorage
     function saveToLocal() {
         localStorage.setItem('sofis_clients', JSON.stringify(clients));
+        updateFilterCounts(); // Update counts whenever data changes
     }
 
     function handleFormSubmit(e) {
@@ -877,16 +978,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (client) {
             client.isFavorite = !client.isFavorite;
             saveToLocal();
-            // Re-render to update order
-            // If we are searching, we should re-filter, but for simplicity re-rendering search input logic handles it if we trigger input event,
-            // or we just re-render current state if no search.
-            // A simple approach is just re-render all clients (clearing search if needed) or better yet, re-run search logic if search is active.
-
-            if (searchInput.value.trim() !== '') {
-                searchInput.dispatchEvent(new Event('input'));
-            } else {
-                renderClients(clients);
-            }
+            applyClientFilter(); // Use the unified filter system
         }
     };
 
@@ -1852,4 +1944,8 @@ if (scrollToTopBtn) {
         });
     });
 }
+
+// Initial render
+applyClientFilter();
+updateFilterCounts();
 

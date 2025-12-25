@@ -38,6 +38,25 @@
                 </button>
             </div>
 
+            <!-- Filter Chips -->
+            <div class="filter-chips-container">
+                <button class="filter-chip active" data-filter="all">
+                    <i class="fa-solid fa-list"></i>
+                    <span>Todos</span>
+                    <span class="chip-count" id="countAll">0</span>
+                </button>
+                <button class="filter-chip" data-filter="favorites">
+                    <i class="fa-solid fa-star"></i>
+                    <span>Favoritos</span>
+                    <span class="chip-count" id="countFavorites">0</span>
+                </button>
+                <button class="filter-chip" data-filter="regular">
+                    <i class="fa-solid fa-users"></i>
+                    <span>Regulares</span>
+                    <span class="chip-count" id="countRegular">0</span>
+                </button>
+            </div>
+
             <div id="clientList" class="client-list-container">
                 <!-- Clients will be rendered here -->
             </div>
