@@ -464,15 +464,72 @@ button {
 }
 
 .contact-group-display {
-    padding: 8px;
-    background: rgba(0, 0, 0, 0.1);
+    padding: 10px 12px;
+    background: rgba(0, 0, 0, 0.15);
     border-radius: 8px;
     border-left: 3px solid var(--accent);
-    flex: 0 1 180px;
-    /* Changed flex-grow to 0 to maintain consistent size across rows */
-    max-width: 180px;
-    /* Match the flex-basis for consistency */
-    min-width: 160px;
+    flex: 0 1 220px;
+    /* Do not grow, but start at 220px */
+    max-width: 280px;
+    /* Limit maximum width to avoid stretching */
+    min-width: 180px;
+    word-break: break-word;
+    /* Force long text to wrap */
+    overflow-wrap: break-word;
+}
+
+.contact-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.contact-item i {
+    flex-shrink: 0;
+    width: 14px;
+    text-align: center;
+    color: var(--accent);
+    opacity: 0.8;
+}
+
+.contact-value {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.contact-group-display:hover .contact-value {
+    white-space: normal;
+    word-break: break-all;
+}
+
+.btn-copy-tiny {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    opacity: 0;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.contact-item:hover .btn-copy-tiny {
+    opacity: 1;
+}
+
+.btn-copy-tiny:hover {
+    color: var(--accent);
+    background: rgba(255, 255, 255, 0.1);
 }
 
 /* Remove margin-bottom as we use gap now, but keep for fallback */

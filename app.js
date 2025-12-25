@@ -179,7 +179,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     const phonesHTML = contact.phones && contact.phones.length > 0
                         ? contact.phones.map(phone => `
                             <div class="contact-item">
-                                <i class="fa-solid fa-phone"></i> ${escapeHtml(phone)}
+                                <i class="fa-solid fa-phone"></i> 
+                                <span class="contact-value">${escapeHtml(phone)}</span>
+                                <button class="btn-copy-tiny" onclick="copyToClipboard('${escapeHtml(phone).replace(/'/g, "\\'")}')" title="Copiar Telefone">
+                                    <i class="fa-regular fa-copy"></i>
+                                </button>
                             </div>
                         `).join('')
                         : '';
@@ -187,7 +191,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     const emailsHTML = contact.emails && contact.emails.length > 0
                         ? contact.emails.map(email => `
                             <div class="contact-item">
-                                <i class="fa-solid fa-envelope"></i> ${escapeHtml(email)}
+                                <i class="fa-solid fa-envelope"></i> 
+                                <span class="contact-value">${escapeHtml(email)}</span>
+                                <button class="btn-copy-tiny" onclick="copyToClipboard('${escapeHtml(email).replace(/'/g, "\\'")}')" title="Copiar E-mail">
+                                    <i class="fa-regular fa-copy"></i>
+                                </button>
                             </div>
                         `).join('')
                         : '';
