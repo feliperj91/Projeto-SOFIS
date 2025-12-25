@@ -105,6 +105,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveWebLaudoBtn = document.getElementById('saveWebLaudoBtn');
     const urlEntryModalTitle = document.getElementById('urlEntryModalTitle');
     const closeUrlModalBtn = document.getElementById('closeUrlModalBtn');
+
+    // Custom Filter State
+    let currentServerFilter = 'all';
+    let currentUrlFilter = 'all';
+
+    const serverFilterBtn = document.getElementById('serverFilterBtn');
+    const serverFilterMenu = document.getElementById('serverFilterMenu');
+    const urlFilterBtn = document.getElementById('urlFilterBtn');
+    const urlFilterMenu = document.getElementById('urlFilterMenu');
+
     const webLaudoDisplay = document.getElementById('webLaudoDisplay');
     const webLaudoForm = document.getElementById('webLaudoForm');
     const webLaudoText = document.getElementById('webLaudoText');
@@ -183,6 +193,74 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (urlSystemSelect) {
         urlSystemSelect.addEventListener('change', handleUrlSystemChange);
+    }
+
+    // Custom Filters Listeners
+    if (serverFilterBtn) {
+        serverFilterBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            serverFilterMenu.classList.toggle('active');
+            urlFilterMenu.classList.remove('active');
+        });
+    }
+
+    if (urlFilterBtn) {
+        urlFilterBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            urlFilterMenu.classList.toggle('active');
+            serverFilterMenu.classList.remove('active');
+        });
+    }
+
+    // Close menus on click outside
+    document.addEventListener('click', () => {
+        if (serverFilterMenu) serverFilterMenu.classList.remove('active');
+        if (urlFilterMenu) urlFilterMenu.classList.remove('active');
+    });
+
+    // Handle Filter Item Clicks
+    if (serverFilterMenu) {
+        serverFilterMenu.querySelectorAll('.dropdown-item').forEach(item => {
+            item.addEventListener('click', () => {
+                currentServerFilter = item.dataset.value;
+
+                // Update UI state
+                serverFilterMenu.querySelectorAll('.dropdown-item').forEach(i => i.classList.remove('selected'));
+                item.classList.add('selected');
+
+                if (currentServerFilter !== 'all') {
+                    serverFilterBtn.classList.add('filter-btn-active');
+                } else {
+                    serverFilterBtn.classList.remove('filter-btn-active');
+                }
+
+                const client = clients.find(c => c.id === serverClientIdInput.value);
+                if (client) renderServersList(client);
+                serverFilterMenu.classList.remove('active');
+            });
+        });
+    }
+
+    if (urlFilterMenu) {
+        urlFilterMenu.querySelectorAll('.dropdown-item').forEach(item => {
+            item.addEventListener('click', () => {
+                currentUrlFilter = item.dataset.value;
+
+                // Update UI state
+                urlFilterMenu.querySelectorAll('.dropdown-item').forEach(i => i.classList.remove('selected'));
+                item.classList.add('selected');
+
+                if (currentUrlFilter !== 'all') {
+                    urlFilterBtn.classList.add('filter-btn-active');
+                } else {
+                    urlFilterBtn.classList.remove('filter-btn-active');
+                }
+
+                const client = clients.find(c => c.id === urlClientIdInput.value);
+                if (client) renderUrlList(client);
+                urlFilterMenu.classList.remove('active');
+            });
+        });
     }
 
     // --- Functions ---
@@ -897,9 +975,16 @@ document.addEventListener('DOMContentLoaded', () => {
             client.servers = [];
         }
 
-        // Set client name in subtitle
-        const serverModalClientName = document.getElementById('serverModalClientName');
         if (serverModalClientName) serverModalClientName.textContent = client.name;
+
+        // Reset filter state
+        currentServerFilter = 'all';
+        if (serverFilterBtn) serverFilterBtn.classList.remove('filter-btn-active');
+        if (serverFilterMenu) {
+            serverFilterMenu.querySelectorAll('.dropdown-item').forEach(i => {
+                i.classList.toggle('selected', i.dataset.value === 'all');
+            });
+        }
 
         // Clear and reset the form
         clearServerForm();
@@ -945,17 +1030,26 @@ document.addEventListener('DOMContentLoaded', () => {
         const serversList = document.getElementById('serversList');
         if (!serversList) return;
 
-        if (!client.servers || client.servers.length === 0) {
+        const filterValue = currentServerFilter;
+        let filteredServers = client.servers || [];
+
+        if (filterValue !== 'all') {
+            filteredServers = filteredServers.filter(s => s.environment === filterValue);
+        }
+
+        if (filteredServers.length === 0) {
             serversList.innerHTML = `
                 <div class="servers-grid-empty">
                     <i class="fa-solid fa-database"></i>
-                    <p>Nenhum servidor cadastrado ainda.</p>
+                    <p>${filterValue === 'all' ? 'Nenhum servidor cadastrado ainda.' : 'Nenhum servidor encontrado para este filtro.'}</p>
                 </div>
             `;
             return;
         }
 
-        serversList.innerHTML = client.servers.map((server, index) => {
+        serversList.innerHTML = filteredServers.map((server, index) => {
+            // We need the ACTUAL index for editing/deleting, not the filtered one
+            const originalIndex = client.servers.indexOf(server);
             const environmentClass = server.environment === 'homologacao' ? 'homologacao' : 'producao';
             const environmentLabel = server.environment === 'homologacao' ? 'Homologação' : 'Produção';
 
@@ -1002,10 +1096,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="server-card-header">
                         <span class="server-environment ${environmentClass}">${environmentLabel}</span>
                         <div class="server-card-actions">
-                            <button class="btn-icon" onclick="editServerRecord('${client.id}', ${index})" title="Editar">
+                            <button class="btn-icon" onclick="editServerRecord('${client.id}', ${originalIndex})" title="Editar">
                                 <i class="fa-solid fa-pen"></i>
                             </button>
-                            <button class="btn-icon btn-danger" onclick="deleteServerRecord('${client.id}', ${index})" title="Excluir">
+                            <button class="btn-icon btn-danger" onclick="deleteServerRecord('${client.id}', ${originalIndex})" title="Excluir">
                                 <i class="fa-solid fa-trash"></i>
                             </button>
                         </div>
@@ -1366,9 +1460,16 @@ document.addEventListener('DOMContentLoaded', () => {
         urlClientIdInput.value = clientId;
         if (!client.urls) client.urls = [];
 
-        // Set client name in subtitle
-        const urlModalClientName = document.getElementById('urlModalClientName');
         if (urlModalClientName) urlModalClientName.textContent = client.name;
+
+        // Reset filter state
+        currentUrlFilter = 'all';
+        if (urlFilterBtn) urlFilterBtn.classList.remove('filter-btn-active');
+        if (urlFilterMenu) {
+            urlFilterMenu.querySelectorAll('.dropdown-item').forEach(i => {
+                i.classList.toggle('selected', i.dataset.value === 'all');
+            });
+        }
 
         // Set WebLaudo
         updateWebLaudoDisplay(client);
@@ -1443,17 +1544,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const listContainer = document.getElementById('urlsList');
         if (!listContainer) return;
 
-        if (!client.urls || client.urls.length === 0) {
+        const filterValue = currentUrlFilter;
+        let filteredUrls = client.urls || [];
+
+        if (filterValue !== 'all') {
+            filteredUrls = filteredUrls.filter(u => u.environment === filterValue);
+        }
+
+        if (filteredUrls.length === 0) {
             listContainer.innerHTML = `
                 <div class="servers-grid-empty">
                     <i class="fa-solid fa-link" style="font-size: 3rem; opacity: 0.3; margin-bottom: 12px; display: block;"></i>
-                    <p>Nenhum sistema cadastrado ainda.</p>
+                    <p>${filterValue === 'all' ? 'Nenhum sistema cadastrado ainda.' : 'Nenhum sistema encontrado para este filtro.'}</p>
                 </div>
             `;
             return;
         }
 
-        listContainer.innerHTML = client.urls.map((url, index) => {
+        listContainer.innerHTML = filteredUrls.map((url, index) => {
+            const originalIndex = client.urls.indexOf(url);
             const environmentClass = url.environment === 'homologacao' ? 'homologacao' : 'producao';
             const environmentLabel = url.environment === 'homologacao' ? 'Homologação' : 'Produção';
 
@@ -1462,10 +1571,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="server-card-header">
                         <span class="server-environment ${environmentClass}">${environmentLabel}</span>
                         <div class="server-card-actions">
-                            <button class="btn-icon" onclick="editUrlRecord('${client.id}', ${index})" title="Editar">
+                            <button class="btn-icon" onclick="editUrlRecord('${client.id}', ${originalIndex})" title="Editar">
                                 <i class="fa-solid fa-pen"></i>
                             </button>
-                            <button class="btn-icon btn-danger" onclick="deleteUrlRecord('${client.id}', ${index})" title="Excluir">
+                            <button class="btn-icon btn-danger" onclick="deleteUrlRecord('${client.id}', ${originalIndex})" title="Excluir">
                                 <i class="fa-solid fa-trash"></i>
                             </button>
                         </div>

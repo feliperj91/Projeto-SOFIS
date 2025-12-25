@@ -137,11 +137,32 @@
                         <span class="modal-subtitle" id="serverModalClientName"></span>
                     </div>
                     <div style="display: flex; gap: 10px; align-items: center;">
+                        <div class="custom-dropdown" id="serverFilterDropdown">
+                            <button type="button" class="filter-icon-btn" id="serverFilterBtn"
+                                title="Filtrar por Ambiente">
+                                <i class="fa-solid fa-filter"></i>
+                            </button>
+                            <div class="dropdown-menu" id="serverFilterMenu">
+                                <div class="dropdown-item selected" data-value="all">
+                                    <span>Todos os Ambientes</span>
+                                    <i class="fa-solid fa-check check-icon"></i>
+                                </div>
+                                <div class="dropdown-item" data-value="producao">
+                                    <span>Produção</span>
+                                    <i class="fa-solid fa-check check-icon"></i>
+                                </div>
+                                <div class="dropdown-item" data-value="homologacao">
+                                    <span>Homologação</span>
+                                    <i class="fa-solid fa-check check-icon"></i>
+                                </div>
+                            </div>
+                        </div>
                         <button id="addServerEntryBtn" class="btn-primary" style="margin-right: 15px;">
                             <i class="fa-solid fa-plus"></i> Adicionar
                         </button>
-                        <button id="closeServerModal" type="button" class="btn-icon"><i
-                                class="fa-solid fa-xmark"></i></button>
+                        <button id="closeServerModal" type="button" class="btn-icon">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
                     </div>
                 </div>
 
@@ -325,6 +346,26 @@
                         <span class="modal-subtitle" id="urlModalClientName"></span>
                     </div>
                     <div style="display: flex; gap: 10px; align-items: center;">
+                        <div class="custom-dropdown" id="urlFilterDropdown">
+                            <button type="button" class="filter-icon-btn" id="urlFilterBtn"
+                                title="Filtrar por Ambiente">
+                                <i class="fa-solid fa-filter"></i>
+                            </button>
+                            <div class="dropdown-menu" id="urlFilterMenu">
+                                <div class="dropdown-item selected" data-value="all">
+                                    <span>Todos os Ambientes</span>
+                                    <i class="fa-solid fa-check check-icon"></i>
+                                </div>
+                                <div class="dropdown-item" data-value="producao">
+                                    <span>Produção</span>
+                                    <i class="fa-solid fa-check check-icon"></i>
+                                </div>
+                                <div class="dropdown-item" data-value="homologacao">
+                                    <span>Homologação</span>
+                                    <i class="fa-solid fa-check check-icon"></i>
+                                </div>
+                            </div>
+                        </div>
                         <button id="addUrlEntryBtn" class="btn-primary" style="margin-right: 15px;">
                             <i class="fa-solid fa-plus"></i> Adicionar
                         </button>
