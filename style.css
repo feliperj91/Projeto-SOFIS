@@ -1,15 +1,10 @@
 :root {
     /* Brand Colors based on Logo */
     --bg-color: #2c393f;
-    /* Adjusted Tone */
-    /* Dark Blue Grey */
-    /* Slightly Lighter Card Background */
     --card-bg: #42545D;
-    /* Slightly Lighter Card Background */
     --text-primary: #ECEFF1;
     --text-secondary: #B0BEC5;
     --accent: #FFA000;
-    /* Amber/Orange from Logo */
     --accent-hover: #FFB300;
     --danger: #EF5350;
     --success: #66BB6A;
