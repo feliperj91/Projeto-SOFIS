@@ -5,9 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerenciador de Clientes - SOFIS</title>
-    <link rel="stylesheet" href="style.css?v=1.7">
-    <link rel="stylesheet" href="server-styles.css?v=1.7">
-    <link rel="stylesheet" href="credential-styles.css?v=1.7">
+    <link rel="stylesheet" href="style.css?v=1.8">
+    <link rel="stylesheet" href="server-styles.css?v=1.8">
+    <link rel="stylesheet" href="credential-styles.css?v=1.8">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -543,14 +543,20 @@
     <!-- New Contact Modal -->
     <div id="contactModal" class="modal hidden">
         <div class="modal-content modal-content-large">
+            <input type="hidden" id="contactModalClientId">
             <div class="modal-header">
                 <div class="modal-header-left">
                     <h2>Contatos</h2>
                     <span class="modal-subtitle" id="contactModalClientName"></span>
                 </div>
-                <button id="closeContactModal" type="button" class="btn-icon">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button id="addContactModalBtn" class="btn-primary" style="margin-right: 15px;">
+                        <i class="fa-solid fa-plus"></i> Adicionar
+                    </button>
+                    <button id="closeContactModal" type="button" class="btn-icon">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
             </div>
 
             <div class="servers-section" style="border-top: none; margin-top: 0; padding-top: 0;">
@@ -573,8 +579,8 @@
 
     <div id="toast" class="toast hidden">Notificação</div>
 
-    <script src="supabase-client.js?v=1.7"></script>
-    <script src="app.js?v=1.7"></script>
+    <script src="supabase-client.js?v=1.8"></script>
+    <script src="app.js?v=1.8"></script>
 </body>
 
 </html>

@@ -708,6 +708,10 @@ button {
     transition: opacity 0.3s;
 }
 
+#modal {
+    z-index: 1100;
+}
+
 .modal.hidden {
     opacity: 0;
     pointer-events: none;

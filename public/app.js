@@ -136,6 +136,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const closeContactModalBtn = document.getElementById('closeContactModalBtn');
     const contactModalList = document.getElementById('contactModalList');
     const contactModalClientName = document.getElementById('contactModalClientName');
+    const contactModalClientId = document.getElementById('contactModalClientId');
+    const addContactModalBtn = document.getElementById('addContactModalBtn');
 
 
     function renderSkeleton() {
@@ -348,6 +350,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Contact Modal Listeners
     if (closeContactBtn) closeContactBtn.addEventListener('click', closeContactModal);
     if (closeContactModalBtn) closeContactModalBtn.addEventListener('click', closeContactModal);
+    if (addContactModalBtn) {
+        addContactModalBtn.addEventListener('click', () => {
+            const clientId = contactModalClientId.value;
+            if (clientId) {
+                addNewContact(clientId);
+            }
+        });
+    }
 
     if (urlSystemSelect) {
         urlSystemSelect.addEventListener('change', handleUrlSystemChange);
@@ -678,6 +688,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const client = clients.find(c => c.id === clientId);
         if (!client) return;
 
+        if (contactModalClientId) contactModalClientId.value = clientId;
         if (contactModalClientName) contactModalClientName.textContent = client.name;
 
         renderContactModalList(client);
@@ -732,10 +743,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             return `
                     <div class="contact-group-display" style="max-width: 100%; flex: 1 1 300px;">
                         <div class="contact-header-display">
-                            <div class="contact-name-display clickable" onclick="closeContactModal(); editContact('${client.id}', ${index});" title="Ver/Editar Contato">
+                            <div class="contact-name-display clickable" onclick="editContact('${client.id}', ${index});" title="Ver/Editar Contato">
                                 ${escapeHtml(contact.name || 'Sem nome')}
                             </div>
-                            <button class="btn-icon-small" onclick="closeContactModal(); editContact('${client.id}', ${index});" title="Editar Contato">
+                            <button class="btn-icon-small" onclick="editContact('${client.id}', ${index});" title="Editar Contato">
                                 <i class="fa-solid fa-pen"></i>
                             </button>
                         </div>
@@ -922,6 +933,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             client.contacts[currentIndex] = { name, phones, emails };
             saveToLocal();
             renderClients(clients);
+
+            // Re-render contact modal if visible for this client
+            if (!contactModal.classList.contains('hidden') && contactModalClientId.value === editingId) {
+                renderContactModalList(client);
+            }
+
             closeModal();
             delete contactList.dataset.editingContactIndex;
             showToast(`✅ Contato "${name}" do cliente "${client.name}" atualizado com sucesso!`, 'success');
@@ -1073,6 +1090,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         saveToLocal();
         renderClients(clients);
+
+        // Re-render contact modal if visible for this client
+        if (!contactModal.classList.contains('hidden') && contactModalClientId.value === editingId) {
+            const clientToRefresh = clients.find(c => c.id === editingId);
+            if (clientToRefresh) {
+                renderContactModalList(clientToRefresh);
+            }
+        }
+
         closeModal();
     };
 
