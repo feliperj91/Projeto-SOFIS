@@ -1,9 +1,4 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    // Auth Check
-    if (sessionStorage.getItem('sofis_logged_in') !== 'true') {
-        window.location.href = 'login.html';
-        return;
-    }
     // State
     let clients = [];
 
@@ -47,7 +42,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
             if (confirm('Deseja realmente sair do sistema?')) {
-                sessionStorage.removeItem('sofis_logged_in');
                 window.location.href = 'login.html';
             }
         });

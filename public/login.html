@@ -148,39 +148,15 @@
                 }
             });
 
-            loginForm.addEventListener('submit', async (e) => {
+            loginForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 const username = usernameInput.value;
                 const password = passwordInput.value;
 
-                if (!window.supabaseClient) {
-                    showToast('Erro: Banco de dados não inicializado.', 'error');
-                    return;
-                }
-
-                try {
-                    // Check if user exists with matching password
-                    const { data, error } = await window.supabaseClient
-                        .from('users')
-                        .select('*')
-                        .eq('username', username)
-                        .eq('password', password) // Important: Plain text for simplicity, as requested
-                        .single();
-
-                    if (error || !data) {
-                        showToast('Usuário ou senha inválidos.', 'error');
-                    } else {
-                        // Set login flag and store user info
-                        sessionStorage.setItem('sofis_logged_in', 'true');
-                        sessionStorage.setItem('sofis_user', JSON.stringify({
-                            username: data.username,
-                            name: data.full_name
-                        }));
-                        window.location.href = 'index.html';
-                    }
-                } catch (err) {
-                    console.error('Login error:', err);
-                    showToast('Erro ao conectar ao servidor.', 'error');
+                if (username && password) {
+                    window.location.href = 'index.html';
+                } else {
+                    showToast('Preencha os campos.', 'error');
                 }
             });
 
