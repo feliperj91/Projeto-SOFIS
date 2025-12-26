@@ -91,6 +91,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
             if (confirm('Deseja realmente sair do sistema?')) {
+                localStorage.removeItem('sofis_user');
                 window.location.href = 'login.html';
             }
         });
