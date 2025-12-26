@@ -639,25 +639,25 @@ document.addEventListener('DOMContentLoaded', async () => {
                          <button class="btn-icon" onclick="editClient('${client.id}'); event.stopPropagation();" title="Editar Cliente">
                              <i class="fa-solid fa-pen"></i>
                          </button>
-                         <button class="${contactBtnClass} btn-with-badge" onclick="addNewContact('${client.id}'); event.stopPropagation();" title="Adicionar Contato">
-                            <i class="fa-solid fa-user-plus"></i>
-                            ${hasContacts ? `<span class="btn-badge">${client.contacts.length}</span>` : ''}
-                        </button>
-                         <button class="${serverBtnClass} btn-with-badge" onclick="openServerData('${client.id}'); event.stopPropagation();" title="Dados de acesso ao SQL">
-                             <i class="fa-solid fa-database"></i>
-                             ${hasServers ? `<span class="btn-badge">${client.servers.length}</span>` : ''}
+                          <button class="btn-icon" onclick="addNewContact('${client.id}'); event.stopPropagation();" title="Adicionar Contato">
+                             <i class="fa-solid fa-user-plus"></i>
                          </button>
-                         <button class="${vpnBtnClass} btn-with-badge" onclick="openVpnData('${client.id}'); event.stopPropagation();" title="Dados de Acesso VPN">
-                            <img src="vpn-icon.png" class="${vpnIconClass}" alt="VPN">
-                            ${hasVpns ? `<span class="btn-badge">${client.vpns.length}</span>` : ''}
-                        </button>
-                         <button class="${urlBtnClass} btn-with-badge" onclick="event.stopPropagation(); openUrlData('${client.id}');" title="URL">
-                            <i class="fa-solid fa-link"></i>
-                            ${hasUrls ? `<span class="btn-badge">${urlCount}</span>` : ''}
-                        </button>
-                         <button class="${contactBtnClass}" onclick="event.stopPropagation(); openContactData('${client.id}');" title="Ver Contatos">
-                            <img src="contact-icon.png" class="contact-icon-img" alt="Contatos">
-                        </button>
+                          <button class="${serverBtnClass} btn-with-badge" onclick="openServerData('${client.id}'); event.stopPropagation();" title="Dados de acesso ao SQL">
+                              <i class="fa-solid fa-database"></i>
+                              ${hasServers ? `<span class="btn-badge">${client.servers.length}</span>` : ''}
+                          </button>
+                          <button class="${vpnBtnClass} btn-with-badge" onclick="openVpnData('${client.id}'); event.stopPropagation();" title="Dados de Acesso VPN">
+                             <img src="vpn-icon.png" class="${vpnIconClass}" alt="VPN">
+                             ${hasVpns ? `<span class="btn-badge">${client.vpns.length}</span>` : ''}
+                         </button>
+                          <button class="${urlBtnClass} btn-with-badge" onclick="event.stopPropagation(); openUrlData('${client.id}');" title="URL">
+                             <i class="fa-solid fa-link"></i>
+                             ${hasUrls ? `<span class="btn-badge">${urlCount}</span>` : ''}
+                         </button>
+                          <button class="${contactBtnClass} btn-with-badge" onclick="event.stopPropagation(); openContactData('${client.id}');" title="Ver Contatos">
+                             <img src="contact-icon.png" class="contact-icon-img ${hasContacts ? 'vpn-icon-success' : ''}" alt="Contatos">
+                             ${hasContacts ? `<span class="btn-badge">${client.contacts.length}</span>` : ''}
+                         </button>
                          <button class="btn-icon btn-danger" onclick="deleteClient('${client.id}'); event.stopPropagation();" title="Excluir">
                              <i class="fa-solid fa-trash"></i>
                          </button>
