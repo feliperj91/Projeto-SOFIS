@@ -727,9 +727,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         const searchTerm = contactModalSearch ? contactModalSearch.value.toLowerCase() : '';
+        const cleanSearchTerm = searchTerm.replace(/\D/g, '');
+
         const filteredContacts = client.contacts.filter(contact => {
             const nameMatch = (contact.name || '').toLowerCase().includes(searchTerm);
-            const phoneMatch = contact.phones && contact.phones.some(p => p.toLowerCase().includes(searchTerm));
+
+            // Flexible phone match: check matches with original formatting OR matching digits only
+            const phoneMatch = contact.phones && contact.phones.some(p => {
+                const cleanPhone = p.replace(/\D/g, '');
+                return p.toLowerCase().includes(searchTerm) || (cleanSearchTerm && cleanPhone.includes(cleanSearchTerm));
+            });
+
             const emailMatch = contact.emails && contact.emails.some(e => e.toLowerCase().includes(searchTerm));
             return nameMatch || phoneMatch || emailMatch;
         });
