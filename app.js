@@ -628,10 +628,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                              <i class="fa-solid fa-link"></i>
                              ${hasUrls ? `<span class="btn-badge">${urlCount}</span>` : ''}
                          </button>
-                         <button class="btn-icon" onclick="editClient('${client.id}'); event.stopPropagation();" title="Editar Cliente">
+                         <button class="btn-icon btn-edit-client" onclick="editClient('${client.id}'); event.stopPropagation();" title="Editar Cliente">
                              <i class="fa-solid fa-pen"></i>
                          </button>
-                         <button class="btn-icon btn-danger" onclick="deleteClient('${client.id}'); event.stopPropagation();" title="Excluir">
+                         <button class="btn-icon btn-danger btn-delete-client" onclick="deleteClient('${client.id}'); event.stopPropagation();" title="Excluir">
                              <i class="fa-solid fa-trash"></i>
                          </button>
                      </div>

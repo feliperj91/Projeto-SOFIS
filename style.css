@@ -290,6 +290,48 @@ button {
     gap: 8px;
 }
 
+.client-list-container.grid-mode .client-row {
+    position: relative;
+}
+
+.client-list-container.grid-mode .header-left {
+    padding-right: 80px;
+}
+
+.client-list-container.grid-mode .btn-edit-client,
+.client-list-container.grid-mode .btn-delete-client {
+    position: absolute;
+    top: 18px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.client-list-container.grid-mode .btn-edit-client {
+    right: 58px;
+}
+
+.client-list-container.grid-mode .btn-delete-client {
+    right: 18px;
+}
+
+.client-list-container.grid-mode .btn-edit-client:hover {
+    background: rgba(255, 160, 0, 0.1);
+    color: var(--accent);
+    border-color: rgba(255, 160, 0, 0.2);
+}
+
+.client-list-container.grid-mode .btn-delete-client:hover {
+    background: rgba(255, 82, 82, 0.1);
+    color: #ff5252;
+    border-color: rgba(255, 82, 82, 0.2);
+}
+
 /* Client Row (replaces Card) */
 .client-row {
     background: var(--card-bg);
