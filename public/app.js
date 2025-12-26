@@ -138,6 +138,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const contactModalClientName = document.getElementById('contactModalClientName');
     const contactModalClientId = document.getElementById('contactModalClientId');
     const addContactModalBtn = document.getElementById('addContactModalBtn');
+    const contactModalSearch = document.getElementById('contactModalSearch');
 
 
     function renderSkeleton() {
@@ -355,6 +356,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             const clientId = contactModalClientId.value;
             if (clientId) {
                 addNewContact(clientId);
+            }
+        });
+    }
+
+    if (contactModalSearch) {
+        contactModalSearch.addEventListener('input', () => {
+            const clientId = contactModalClientId.value;
+            const client = clients.find(c => c.id === clientId);
+            if (client) {
+                renderContactModalList(client);
             }
         });
     }
@@ -690,6 +701,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (contactModalClientId) contactModalClientId.value = clientId;
         if (contactModalClientName) contactModalClientName.textContent = client.name;
+        if (contactModalSearch) contactModalSearch.value = '';
 
         renderContactModalList(client);
         contactModal.classList.remove('hidden');
@@ -714,8 +726,28 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
+        const searchTerm = contactModalSearch ? contactModalSearch.value.toLowerCase() : '';
+        const filteredContacts = client.contacts.filter(contact => {
+            const nameMatch = (contact.name || '').toLowerCase().includes(searchTerm);
+            const phoneMatch = contact.phones && contact.phones.some(p => p.toLowerCase().includes(searchTerm));
+            const emailMatch = contact.emails && contact.emails.some(e => e.toLowerCase().includes(searchTerm));
+            return nameMatch || phoneMatch || emailMatch;
+        });
+
+        if (filteredContacts.length === 0) {
+            contactModalList.innerHTML = `
+                <div style="width: 100%; text-align: center; padding: 20px; color: var(--text-secondary);">
+                    <p>Nenhum contato encontrado para "${searchTerm}".</p>
+                </div>
+            `;
+            return;
+        }
+
         // Reuse the logic from createClientRow for generating contact cards
-        const contactsHTML = client.contacts.map((contact, index) => {
+        const contactsHTML = filteredContacts.map((contact) => {
+            // We need to find the original index for editing
+            const originalIndex = client.contacts.indexOf(contact);
+
             const phonesHTML = contact.phones && contact.phones.length > 0
                 ? contact.phones.map(phone => `
                         <div class="contact-item">
@@ -743,10 +775,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             return `
                     <div class="contact-group-display" style="max-width: 100%; flex: 1 1 300px;">
                         <div class="contact-header-display">
-                            <div class="contact-name-display clickable" onclick="editContact('${client.id}', ${index});" title="Ver/Editar Contato">
+                            <div class="contact-name-display clickable" onclick="editContact('${client.id}', ${originalIndex});" title="Ver/Editar Contato">
                                 ${escapeHtml(contact.name || 'Sem nome')}
                             </div>
-                            <button class="btn-icon-small" onclick="editContact('${client.id}', ${index});" title="Editar Contato">
+                            <button class="btn-icon-small" onclick="editContact('${client.id}', ${originalIndex});" title="Editar Contato">
                                 <i class="fa-solid fa-pen"></i>
                             </button>
                         </div>
