@@ -239,11 +239,55 @@ button {
     outline: none;
 }
 
-/* List Layout (formerly Grid) */
+/* List & Grid Layouts */
 .client-list-container {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    margin-top: 10px;
+}
+
+/* Grid Mode Styles */
+.client-list-container.grid-mode {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+.client-list-container.grid-mode .clients-section-header {
+    grid-column: 1 / -1;
+    margin-bottom: 0px;
+}
+
+.client-list-container.grid-mode .client-row {
+    height: fit-content;
+    display: flex;
+    flex-direction: column;
+}
+
+.client-list-container.grid-mode .client-row-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+    padding: 20px;
+}
+
+.client-list-container.grid-mode .header-right {
+    width: 100%;
+    justify-content: space-between;
+}
+
+.client-list-container.grid-mode .divider-vertical {
+    display: none;
+}
+
+.client-list-container.grid-mode .chevron-icon {
+    order: 2;
+}
+
+.client-list-container.grid-mode .row-actions {
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
 /* Client Row (replaces Card) */
@@ -1450,10 +1494,51 @@ button:hover .vpn-icon-img {
 /* Filter Chips */
 .filter-chips-container {
     display: flex;
+    justify-content: space-between;
+    align-items: center;
     gap: 12px;
     margin: 20px 0;
     padding: 0;
     flex-wrap: wrap;
+}
+
+.filter-buttons {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.view-toggle-container {
+    display: flex;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 4px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+}
+
+.view-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s;
+    font-size: 1.1rem;
+}
+
+.view-btn:hover {
+    color: var(--text-primary);
+}
+
+.view-btn.active {
+    background: var(--accent);
+    color: #1a1a1a;
+    box-shadow: 0 4px 10px rgba(255, 160, 0, 0.3);
 }
 
 .filter-chip {

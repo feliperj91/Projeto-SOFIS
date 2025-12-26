@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let isModalFavorite = false;
     let favoritesCollapsed = JSON.parse(localStorage.getItem('sofis_favorites_collapsed')) || false;
     let regularCollapsed = JSON.parse(localStorage.getItem('sofis_regular_collapsed')) || false;
+    let currentView = localStorage.getItem('sofis_view_mode') || 'list'; // 'list' or 'grid'
 
     // DOM Elements
     const clientList = document.getElementById('clientList');
@@ -38,6 +39,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const toast = document.getElementById('toast');
     const clearSearchBtn = document.getElementById('clearSearch');
     const logoutBtn = document.getElementById('logoutBtn');
+    const listViewBtn = document.getElementById('listViewBtn');
+    const gridViewBtn = document.getElementById('gridViewBtn');
 
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
@@ -222,6 +225,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         renderClients(clients);
         updateFilterCounts();
+        applyViewMode();
     }
 
     await initialLoad();
@@ -233,6 +237,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     form.addEventListener('submit', async (e) => {
         await handleFormSubmit(e);
     });
+
+    if (listViewBtn) {
+        listViewBtn.addEventListener('click', () => {
+            currentView = 'list';
+            localStorage.setItem('sofis_view_mode', 'list');
+            applyViewMode();
+        });
+    }
+
+    if (gridViewBtn) {
+        gridViewBtn.addEventListener('click', () => {
+            currentView = 'grid';
+            localStorage.setItem('sofis_view_mode', 'grid');
+            applyViewMode();
+        });
+    }
+
+    function applyViewMode() {
+        if (!clientList) return;
+
+        if (currentView === 'grid') {
+            clientList.classList.add('grid-mode');
+            if (gridViewBtn) gridViewBtn.classList.add('active');
+            if (listViewBtn) listViewBtn.classList.remove('active');
+        } else {
+            clientList.classList.remove('grid-mode');
+            if (listViewBtn) listViewBtn.classList.add('active');
+            if (gridViewBtn) gridViewBtn.classList.remove('active');
+        }
+    }
 
     if (modalToggleFavorite) {
         modalToggleFavorite.addEventListener('click', () => {

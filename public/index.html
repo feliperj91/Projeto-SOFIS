@@ -39,23 +39,34 @@
                 </button>
             </div>
 
-            <!-- Filter Chips -->
+            <!-- Filter Chips & View Toggle -->
             <div class="filter-chips-container">
-                <button class="filter-chip active" data-filter="all">
-                    <i class="fa-solid fa-list"></i>
-                    <span>Todos</span>
-                    <span class="chip-count" id="countAll">0</span>
-                </button>
-                <button class="filter-chip" data-filter="favorites">
-                    <i class="fa-solid fa-star"></i>
-                    <span>Favoritos</span>
-                    <span class="chip-count" id="countFavorites">0</span>
-                </button>
-                <button class="filter-chip" data-filter="regular">
-                    <i class="fa-solid fa-users"></i>
-                    <span>Regulares</span>
-                    <span class="chip-count" id="countRegular">0</span>
-                </button>
+                <div class="filter-buttons">
+                    <button class="filter-chip active" data-filter="all">
+                        <i class="fa-solid fa-list"></i>
+                        <span>Todos</span>
+                        <span class="chip-count" id="countAll">0</span>
+                    </button>
+                    <button class="filter-chip" data-filter="favorites">
+                        <i class="fa-solid fa-star"></i>
+                        <span>Favoritos</span>
+                        <span class="chip-count" id="countFavorites">0</span>
+                    </button>
+                    <button class="filter-chip" data-filter="regular">
+                        <i class="fa-solid fa-users"></i>
+                        <span>Regulares</span>
+                        <span class="chip-count" id="countRegular">0</span>
+                    </button>
+                </div>
+
+                <div class="view-toggle-container">
+                    <button id="listViewBtn" class="view-btn active" title="Visualização em Lista">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <button id="gridViewBtn" class="view-btn" title="Visualização em Grade">
+                        <i class="fa-solid fa-table-cells-large"></i>
+                    </button>
+                </div>
             </div>
 
             <div id="clientList" class="client-list-container">
