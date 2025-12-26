@@ -208,6 +208,7 @@
                     toast.style.backgroundColor = 'var(--danger)';
                 } else {
                     toast.classList.add('toast-success');
+                    toast.style.backgroundColor = ''; // Reset inline style
                 }
 
                 toast.classList.remove('hidden');
