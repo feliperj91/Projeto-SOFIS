@@ -60,10 +60,21 @@ ALTER TABLE servers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE vpns ENABLE ROW LEVEL SECURITY;
 ALTER TABLE urls ENABLE ROW LEVEL SECURITY;
 
--- Create policies (Simplistic - allow all for now, assuming private/dev)
--- In a real app, you would tie this to auth.uid()
-CREATE POLICY "Allow all access" ON clients FOR ALL USING (true);
-CREATE POLICY "Allow all access" ON contacts FOR ALL USING (true);
-CREATE POLICY "Allow all access" ON servers FOR ALL USING (true);
-CREATE POLICY "Allow all access" ON vpns FOR ALL USING (true);
-CREATE POLICY "Allow all access" ON urls FOR ALL USING (true);
+-- Drop existing policies to avoid duplicates
+DO $$ 
+BEGIN
+    DROP POLICY IF EXISTS "Enable all access for anon" ON clients;
+    DROP POLICY IF EXISTS "Enable all access for anon" ON contacts;
+    DROP POLICY IF EXISTS "Enable all access for anon" ON servers;
+    DROP POLICY IF EXISTS "Enable all access for anon" ON vpns;
+    DROP POLICY IF EXISTS "Enable all access for anon" ON urls;
+EXCEPTION
+    WHEN undefined_object THEN null;
+END $$;
+
+-- Create robust policies for anonymous access
+CREATE POLICY "Enable all access for anon" ON clients FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Enable all access for anon" ON contacts FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Enable all access for anon" ON servers FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Enable all access for anon" ON vpns FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Enable all access for anon" ON urls FOR ALL USING (true) WITH CHECK (true);

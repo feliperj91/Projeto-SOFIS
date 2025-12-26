@@ -1,6 +1,6 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     // State
-    let clients = JSON.parse(localStorage.getItem('sofis_clients')) || [];
+    let clients = [];
 
     // Remove duplicates based on ID
     const uniqueClients = [];
@@ -130,13 +130,83 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // Initial Render
-    renderClients(clients);
+    async function initialLoad() {
+        if (window.supabaseClient) {
+            try {
+                // Fetch all data
+                const { data: dbClients } = await window.supabaseClient.from('clients').select('*');
+                const { data: dbContacts } = await window.supabaseClient.from('contacts').select('*');
+                const { data: dbServers } = await window.supabaseClient.from('servers').select('*');
+                const { data: dbVpns } = await window.supabaseClient.from('vpns').select('*');
+                const { data: dbUrls } = await window.supabaseClient.from('urls').select('*');
+
+                if (dbClients) {
+                    clients = dbClients.map(c => ({
+                        id: c.id,
+                        name: c.name,
+                        isFavorite: c.is_favorite,
+                        notes: c.notes,
+                        webLaudo: c.web_laudo,
+                        contacts: (dbContacts || []).filter(con => con.client_id === c.id).map(con => ({
+                            name: con.name,
+                            phones: con.phones,
+                            emails: con.emails
+                        })),
+                        servers: (dbServers || []).filter(s => s.client_id === c.id).map(s => ({
+                            environment: s.environment,
+                            sqlServer: s.sql_server,
+                            notes: s.notes,
+                            credentials: s.credentials
+                        })),
+                        vpns: (dbVpns || []).filter(v => v.client_id === c.id).map(v => ({
+                            user: v.username,
+                            password: v.password,
+                            notes: v.notes
+                        })),
+                        urls: (dbUrls || []).filter(u => u.client_id === c.id).map(u => ({
+                            environment: u.environment,
+                            system: u.system,
+                            bridgeDataAccess: u.bridge_data_access,
+                            bootstrap: u.bootstrap,
+                            execUpdate: u.exec_update,
+                            notes: u.notes
+                        }))
+                    }));
+                } else {
+                    clients = JSON.parse(localStorage.getItem('sofis_clients')) || [];
+                }
+            } catch (err) {
+                console.error('Erro ao carregar do Supabase:', err);
+                clients = JSON.parse(localStorage.getItem('sofis_clients')) || [];
+            }
+        } else {
+            clients = JSON.parse(localStorage.getItem('sofis_clients')) || [];
+        }
+
+        // Clean duplicates
+        const uniqueClients = [];
+        const seenIds = new Set();
+        clients.forEach(client => {
+            if (!seenIds.has(client.id)) {
+                seenIds.add(client.id);
+                uniqueClients.push(client);
+            }
+        });
+        clients = uniqueClients;
+
+        renderClients(clients);
+        updateFilterCounts();
+    }
+
+    await initialLoad();
 
     // Event Listeners
     addBtn.addEventListener('click', openAddModal);
     cancelBtn.addEventListener('click', closeModal);
     closeBtn.addEventListener('click', closeModal);
-    form.addEventListener('submit', handleFormSubmit);
+    form.addEventListener('submit', async (e) => {
+        await handleFormSubmit(e);
+    });
 
     if (modalToggleFavorite) {
         modalToggleFavorite.addEventListener('click', () => {
@@ -536,13 +606,100 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     window.toggleClientRow = toggleClientRow;
 
-    // Save data to localStorage
-    function saveToLocal() {
+    // Save data to localStorage and Supabase
+    async function saveToLocal() {
         localStorage.setItem('sofis_clients', JSON.stringify(clients));
-        updateFilterCounts(); // Update counts whenever data changes
+        updateFilterCounts();
+
+        // Persist to Supabase if available
+        if (window.supabaseClient) {
+            for (const client of clients) {
+                await syncClientToSupabase(client);
+            }
+        }
     }
 
-    function handleFormSubmit(e) {
+    async function syncClientToSupabase(client) {
+        if (!window.supabaseClient) return;
+
+        const clientData = {
+            name: client.name,
+            is_favorite: !!client.isFavorite,
+            notes: client.notes || '',
+            web_laudo: client.webLaudo || ''
+        };
+
+        try {
+            let clientId = client.id;
+            const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(clientId);
+
+            let result;
+            if (isUUID) {
+                result = await window.supabaseClient.from('clients').upsert({ id: clientId, ...clientData }).select().single();
+            } else {
+                // New client or old localStorage ID
+                result = await window.supabaseClient.from('clients').insert(clientData).select().single();
+                if (result.data) {
+                    // Update local ID to the new UUID
+                    client.id = result.data.id;
+                    clientId = result.data.id;
+                    localStorage.setItem('sofis_clients', JSON.stringify(clients));
+                }
+            }
+
+            if (result.error) throw result.error;
+
+            // Sync related tables - Delete and Re-insert for simplicity
+            await window.supabaseClient.from('contacts').delete().eq('client_id', clientId);
+            if (client.contacts?.length > 0) {
+                await window.supabaseClient.from('contacts').insert(client.contacts.map(c => ({
+                    client_id: clientId,
+                    name: c.name,
+                    phones: c.phones || [],
+                    emails: c.emails || []
+                })));
+            }
+
+            await window.supabaseClient.from('servers').delete().eq('client_id', clientId);
+            if (client.servers?.length > 0) {
+                await window.supabaseClient.from('servers').insert(client.servers.map(s => ({
+                    client_id: clientId,
+                    environment: s.environment,
+                    sql_server: s.sqlServer,
+                    notes: s.notes || '',
+                    credentials: s.credentials || []
+                })));
+            }
+
+            await window.supabaseClient.from('vpns').delete().eq('client_id', clientId);
+            if (client.vpns?.length > 0) {
+                await window.supabaseClient.from('vpns').insert(client.vpns.map(v => ({
+                    client_id: clientId,
+                    username: v.user,
+                    password: v.password,
+                    notes: v.notes || ''
+                })));
+            }
+
+            await window.supabaseClient.from('urls').delete().eq('client_id', clientId);
+            if (client.urls?.length > 0) {
+                await window.supabaseClient.from('urls').insert(client.urls.map(u => ({
+                    client_id: clientId,
+                    environment: u.environment,
+                    system: u.system,
+                    bridge_data_access: u.bridgeDataAccess,
+                    bootstrap: u.bootstrap || '',
+                    exec_update: u.execUpdate || '',
+                    notes: u.notes || ''
+                })));
+            }
+        } catch (err) {
+            console.error('Erro ao sincronizar com Supabase:', err);
+            showToast('❌ Erro ao salvar no banco de dados. Verifique a conexão.', 'error');
+        }
+    }
+
+    async function handleFormSubmit(e) {
         e.preventDefault();
         const mode = form.dataset.mode;
         const editingContactIndex = contactList.dataset.editingContactIndex;
@@ -768,13 +925,26 @@ document.addEventListener('DOMContentLoaded', () => {
         closeModal();
     };
 
-    function deleteClient(id) {
+    async function deleteClient(id) {
         const client = clients.find(c => c.id === id);
         if (!client) return;
 
         if (confirm(`⚠️ EXCLUIR CLIENTE ⚠️\n\nTem certeza que deseja excluir "${client.name}"?`)) {
             clients = clients.filter(c => c.id !== id);
-            saveToLocal();
+
+            // Delete from Supabase
+            if (window.supabaseClient) {
+                const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+                if (isUUID) {
+                    try {
+                        await window.supabaseClient.from('clients').delete().eq('id', id);
+                    } catch (err) {
+                        console.error('Erro ao deletar do Supabase:', err);
+                    }
+                }
+            }
+
+            await saveToLocal();
             applyClientFilter();
             showToast(`🗑️ Cliente "${client.name}" removido com sucesso!`, 'success');
         }
@@ -805,11 +975,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         modalTitle.textContent = 'Editar Cliente';
         openModal();
-    }
-
-    function saveToLocal() {
-        localStorage.setItem('sofis_clients', JSON.stringify(clients));
-        updateFilterCounts();
     }
 
     function handleSearch(e) {
@@ -1364,7 +1529,7 @@ document.addEventListener('DOMContentLoaded', () => {
         credentialList.appendChild(div);
     }
 
-    function handleServerSubmit(e) {
+    async function handleServerSubmit(e) {
         e.preventDefault();
         const id = serverClientIdInput.value;
         const client = clients.find(c => c.id === id);
@@ -1546,7 +1711,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     }
 
-    function handleVpnSubmit(e) {
+    async function handleVpnSubmit(e) {
         e.preventDefault();
         const id = vpnClientIdInput.value;
         const client = clients.find(c => c.id === id);
@@ -1875,7 +2040,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }).join('');
     }
 
-    function handleUrlSubmit(e) {
+    async function handleUrlSubmit(e) {
         e.preventDefault();
         const id = urlClientIdInput.value;
         const client = clients.find(c => c.id === id);
