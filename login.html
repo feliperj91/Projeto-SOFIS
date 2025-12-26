@@ -153,9 +153,8 @@
                 const password = passwordInput.value;
 
                 if (username && password) {
-                    // Fake login success
-                    // In a real app, this would validate against a backend
-                    // For now, redirect to the main app
+                    // Set login flag
+                    sessionStorage.setItem('sofis_logged_in', 'true');
                     window.location.href = 'index.html';
                 } else {
                     showToast('Preencha todos os campos.', 'error');
