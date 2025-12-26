@@ -373,8 +373,8 @@ button {
 
 
 .client-name-row {
-    font-size: 1.3rem;
-    /* Increased from 1.1rem */
+    font-size: 1.1rem;
+    /* Decreased to match old section title */
     font-weight: 600;
     color: var(--text-primary);
     transition: color 0.2s;
@@ -1410,7 +1410,7 @@ button:hover .vpn-icon-img {
 }
 
 .section-title {
-    font-size: 1.1rem;
+    font-size: 1.3rem;
     font-weight: 600;
     color: var(--text-primary);
     letter-spacing: 0.5px;
