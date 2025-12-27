@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentView = localStorage.getItem('sofis_view_mode') || 'list'; // 'list' or 'grid'
 
     // --- Audit Log Helper ---
-    async function registerAuditLog(opType, action, details = '') {
+    async function registerAuditLog(opType, action, details = '', oldVal = null, newVal = null) {
         const user = JSON.parse(localStorage.getItem('sofis_user') || '{}');
         const username = user.username || 'Sistema';
 
@@ -37,7 +37,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     username: username,
                     operation_type: opType,
                     action: action,
-                    details: details
+                    details: details,
+                    old_value: oldVal,
+                    new_value: newVal
                 }]);
             } catch (err) {
                 console.error('Erro ao registrar log:', err);
@@ -1058,7 +1060,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
 
-        const client = editingId ? clients.find(c => c.id === editingId) : null;
+        const clientBefore = editingId ? JSON.parse(JSON.stringify(clients.find(c => c.id === editingId) || {})) : null;
 
         const newClient = {
             id: editingId || Date.now().toString(),
@@ -1067,17 +1069,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             isFavorite: isModalFavorite
         };
 
-
+        // ... updates to clients array ...
         if (editingId && mode !== 'addContact') {
-            // Normal client edit mode - update entire client
             clients = clients.map(c => c.id === editingId ? newClient : c);
             showToast(`✅ Cliente "${newClient.name}" atualizado com sucesso!`, 'success');
         } else if (editingId && mode === 'addContact') {
-            // Append new contact to existing contacts of the client
             const clientToUpdate = clients.find(c => c.id === editingId);
             if (clientToUpdate) {
                 if (!clientToUpdate.contacts) clientToUpdate.contacts = [];
-                // Preserve existing contacts and add only the new ones
                 clientToUpdate.contacts.push(...contacts);
                 const contactNames = contacts.map(c => c.name).join(', ');
                 showToast(`✅ Contato "${contactNames}" adicionado ao cliente "${clientToUpdate.name}"!`, 'success');
@@ -1090,7 +1089,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         saveToLocal();
         renderClients(clients);
 
-        // Re-render contact modal if visible for this client
         if (!contactModal.classList.contains('hidden') && contactModalClientId.value === editingId) {
             const clientToRefresh = clients.find(c => c.id === editingId);
             if (clientToRefresh) {
@@ -1101,7 +1099,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         closeModal();
         const opType = editingId ? 'EDIÇÃO' : 'CRIAÇÃO';
         const actionLabel = editingId ? (mode === 'addContact' ? 'Adição de Contato' : 'Edição de Cliente') : 'Novo Cliente';
-        await registerAuditLog(opType, actionLabel, `Cliente: ${newClient.name}`);
+        const clientAfter = JSON.parse(JSON.stringify(clients.find(c => c.id === newClient.id) || newClient));
+        await registerAuditLog(opType, actionLabel, `Cliente: ${newClient.name}`, clientBefore, clientAfter);
     };
 
     async function deleteClient(id) {
@@ -1126,7 +1125,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             await saveToLocal();
             applyClientFilter();
             showToast(`🗑️ Cliente "${client.name}" removido com sucesso!`, 'success');
-            await registerAuditLog('EXCLUSÃO', 'Exclusão de Cliente', `Cliente: ${client.name}`);
+            await registerAuditLog('EXCLUSÃO', 'Exclusão de Cliente', `Cliente: ${client.name}`, client, null);
         }
     }
     window.deleteClient = deleteClient;
@@ -1458,7 +1457,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         closeModal();
                         delete contactList.dataset.editingContactIndex;
                         showToast('✅ Contato excluído com sucesso!', 'success');
-                        await registerAuditLog('EXCLUSÃO', 'Exclusão de Contato', `Cliente: ${client.name}, Contato: ${contact.name}`);
+                        await registerAuditLog('EXCLUSÃO', 'Exclusão de Contato', `Cliente: ${client.name}, Contato: ${contact.name}`, contact, null);
                         return;
                     }
                 }
@@ -1746,6 +1745,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
+        const editingIndex = document.getElementById('editingServerIndex').value;
+        const serverBefore = (editingIndex !== '') ? JSON.parse(JSON.stringify(client.servers[parseInt(editingIndex)])) : null;
+
         const serverRecord = {
             environment: environmentSelect.value,
             sqlServer: sqlServerInput.value.trim(),
@@ -1753,13 +1755,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             notes: serverNotesInput ? serverNotesInput.value.trim() : ''
         };
 
-        // Check if editing existing record
-        if (editingServerIndex.value !== '') {
-            const index = parseInt(editingServerIndex.value);
+        if (editingIndex !== '') {
+            const index = parseInt(editingIndex);
             client.servers[index] = serverRecord;
             showToast(`✅ Acesso SQL do cliente "${client.name}" atualizado com sucesso!`, 'success');
         } else {
-            // Add new record
             client.servers.push(serverRecord);
             showToast(`✅ Acesso SQL adicionado ao cliente "${client.name}"!`, 'success');
         }
@@ -1768,9 +1768,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderClients(clients);
         renderServersList(client);
         closeServerEntryModal();
-        const opType = editingServerIndex.value !== '' ? 'EDIÇÃO' : 'CRIAÇÃO';
-        const actionLabel = editingServerIndex.value !== '' ? 'Edição de Acesso SQL' : 'Adição de Acesso SQL';
-        await registerAuditLog(opType, actionLabel, `Cliente: ${client.name}, Ambiente: ${serverRecord.environment}`);
+        const opType = (editingIndex !== '') ? 'EDIÇÃO' : 'CRIAÇÃO';
+        const actionLabel = (editingIndex !== '') ? 'Edição de Acesso SQL' : 'Adição de Acesso SQL';
+        await registerAuditLog(opType, actionLabel, `Cliente: ${client.name}, Ambiente: ${serverRecord.environment}`, serverBefore, serverRecord);
     }
 
     window.editServerRecord = (clientId, index) => {
@@ -1805,12 +1805,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         const client = clients.find(c => c.id === clientId);
         if (!client || !client.servers) return;
 
+        const deletedServer = JSON.parse(JSON.stringify(client.servers[index]));
         client.servers.splice(index, 1);
         saveToLocal();
         renderClients(clients);
         renderServersList(client);
         showToast(`🗑️ Acesso SQL do cliente "${client.name}" removido com sucesso!`, 'success');
-        await registerAuditLog('EXCLUSÃO', 'Exclusão de Acesso SQL', `Cliente: ${client.name}`);
+        await registerAuditLog('EXCLUSÃO', 'Exclusão de Acesso SQL', `Cliente: ${client.name}`, deletedServer, null);
     };
 
     // --- VPN Data Functions ---
@@ -1919,6 +1920,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
+        const vpnBefore = (editingIndex !== '') ? JSON.parse(JSON.stringify(client.vpns[parseInt(editingIndex)])) : null;
+
         const vpnRecord = {
             user: vpnUser,
             password: vpnPass,
@@ -1939,7 +1942,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         closeVpnEntryModal();
         const opType = editingIndex !== '' ? 'EDIÇÃO' : 'CRIAÇÃO';
         const actionLabel = editingIndex !== '' ? 'Edição de Acesso VPN' : 'Adição de Acesso VPN';
-        await registerAuditLog(opType, actionLabel, `Cliente: ${client.name}`);
+        await registerAuditLog(opType, actionLabel, `Cliente: ${client.name}`, vpnBefore, vpnRecord);
     }
 
     function openVpnData(clientId) {
@@ -1977,12 +1980,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         const client = clients.find(c => c.id === clientId);
         if (!client || !client.vpns) return;
 
+        const deletedVpn = JSON.parse(JSON.stringify(client.vpns[index]));
         client.vpns.splice(index, 1);
         saveToLocal();
         renderClients(clients);
         renderVpnList(client);
         showToast(`🗑️ VPN do cliente "${client.name}" removida com sucesso!`, 'success');
-        await registerAuditLog('EXCLUSÃO', 'Exclusão de Acesso VPN', `Cliente: ${client.name}`);
+        await registerAuditLog('EXCLUSÃO', 'Exclusão de Acesso VPN', `Cliente: ${client.name}`, deletedVpn, null);
     }
 
     // --- Client Notes Functions ---
@@ -2009,10 +2013,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (!client) return;
 
+        const notesBefore = client.notes || '';
         client.notes = clientNoteInput.value.trim();
         saveToLocal();
         showToast(`✅ Observações do cliente "${client.name}" salvas com sucesso!`, 'success');
-        await registerAuditLog('EDIÇÃO', 'Atualização de Observações', `Cliente: ${client.name}`);
+        await registerAuditLog('EDIÇÃO', 'Atualização de Observações', `Cliente: ${client.name}`, notesBefore, client.notes);
         closeNotesModal();
         renderClients(clients);
     }
@@ -2086,12 +2091,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         const client = clients.find(c => c.id === id);
         if (!client) return;
 
+        const oldWebLaudo = client.webLaudo || '';
         client.webLaudo = '';
         saveToLocal();
         updateWebLaudoDisplay(client);
         applyClientFilter();
         showToast('🗑️ WebLaudo removido com sucesso!', 'success');
-        await registerAuditLog('EXCLUSÃO', 'Exclusão de WebLaudo', `Cliente: ${client.name}`);
+        await registerAuditLog('EXCLUSÃO', 'Exclusão de WebLaudo', `Cliente: ${client.name}`, oldWebLaudo, null);
     }
 
     function handleUrlSystemChange() {
@@ -2240,6 +2246,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!client.urls) client.urls = [];
 
         const editingIndex = document.getElementById('editingUrlIndex').value;
+        const urlBefore = (editingIndex !== '') ? JSON.parse(JSON.stringify(client.urls[parseInt(editingIndex)])) : null;
+
         if (!urlEnvironmentSelect.value) {
             showToast('⚠️ O ambiente é obrigatório.', 'error');
             urlEnvironmentSelect.focus();
@@ -2279,7 +2287,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         closeUrlEntryModal();
         const opType = editingIndex !== '' ? 'EDIÇÃO' : 'CRIAÇÃO';
         const actionLabel = editingIndex !== '' ? 'Edição de URL de Sistema' : 'Adição de URL de Sistema';
-        await registerAuditLog(opType, actionLabel, `Cliente: ${client.name}, Sistema: ${urlRecord.system}`);
+        await registerAuditLog(opType, actionLabel, `Cliente: ${client.name}, Sistema: ${urlRecord.system}`, urlBefore, urlRecord);
     }
 
     window.editUrlRecord = (clientId, index) => {
@@ -2307,12 +2315,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         const client = clients.find(c => c.id === clientId);
         if (!client || !client.urls) return;
 
+        const deletedUrl = JSON.parse(JSON.stringify(client.urls[index]));
         client.urls.splice(index, 1);
         saveToLocal();
         renderClients(clients);
         renderUrlList(client);
         showToast(`🗑️ URL do cliente "${client.name}" removida com sucesso!`, 'success');
-        await registerAuditLog('EXCLUSÃO', 'Exclusão de URL de Sistema', `Cliente: ${client.name}`);
+        await registerAuditLog('EXCLUSÃO', 'Exclusão de URL de Sistema', `Cliente: ${client.name}`, deletedUrl, null);
     }
 
     async function handleWebLaudoSave() {
@@ -2320,12 +2329,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         const client = clients.find(c => c.id === id);
         if (!client) return;
 
+        const webLaudoBefore = client.webLaudo || '';
         client.webLaudo = webLaudoInput.value.trim();
         saveToLocal();
         updateWebLaudoDisplay(client);
         applyClientFilter();
         showToast('✅ WebLaudo salvo com sucesso!', 'success');
-        await registerAuditLog('EDIÇÃO', 'Atualização de WebLaudo', `Cliente: ${client.name}`);
+        await registerAuditLog('EDIÇÃO', 'Atualização de WebLaudo', `Cliente: ${client.name}`, webLaudoBefore, client.webLaudo);
     }
     window.handleWebLaudoSave = handleWebLaudoSave;
     window.closeUrlModal = closeUrlModal;
