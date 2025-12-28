@@ -214,6 +214,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     clients = dbClients.map(c => ({
                         id: c.id,
                         name: c.name,
+                        updatedAt: c.updated_at,
                         isFavorite: c.is_favorite,
                         notes: c.notes,
                         webLaudo: c.web_laudo,
@@ -638,6 +639,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div class="client-name-row clickable" onclick="openClientNotes('${client.id}'); event.stopPropagation();" title="Ver Observações">
                         ${escapeHtml(client.name)}
                         ${client.notes ? `<i class="fa-solid fa-bell client-note-indicator" title="Possui observações importantes"></i>` : ''}
+                        ${client.updatedAt ? `
+                            <div class="client-updated-info" style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 2px; font-weight: normal; display: flex; align-items: center; gap: 4px;">
+                                <i class="fa-solid fa-clock-rotate-left" style="font-size: 0.65rem;"></i>
+                                Atualizado: ${new Date(client.updatedAt).toLocaleDateString('pt-BR')} ${new Date(client.updatedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                            </div>
+                        ` : ''}
                     </div>
                 </div>
                 
