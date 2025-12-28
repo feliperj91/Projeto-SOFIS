@@ -2546,7 +2546,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     ${escapeHtml(log.action)}
                 </div>
                 <div class="activity-details">
-                    ${escapeHtml(log.details)}
+                    ${escapeHtml(log.details.replace(/Cliente:\s*[^,]+(,\s*)?/, ''))}
                 </div>
             `;
             historyList.appendChild(item);
