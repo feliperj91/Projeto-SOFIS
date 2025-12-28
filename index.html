@@ -27,6 +27,9 @@
                 <p class="app-subtitle">Gerenciamento de Contatos e Conexões de Clientes</p>
             </div>
             <div class="header-controls">
+                <button id="toggleActivityBtn" class="btn-secondary" title="Atividades Recentes">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                </button>
                 <button id="logoutBtn" class="btn-secondary" style="color: var(--danger); border-color: var(--danger);">
                     <i class="fa-solid fa-right-from-bracket"></i> Sair
                 </button>
@@ -585,6 +588,23 @@
             </div>
         </div>
     </div>
+
+    <!-- Recent Activity Sidebar -->
+    <div id="activitySidebar" class="activity-sidebar hidden">
+        <div class="activity-header">
+            <h3><i class="fa-solid fa-clock-rotate-left"></i> Atividades Recentes</h3>
+            <button id="closeActivityBtn" class="btn-icon"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div id="activityList" class="activity-list">
+            <!-- Activities will be rendered here -->
+            <div class="activity-skeleton">
+                <div class="skeleton-item pulse"></div>
+                <div class="skeleton-item pulse"></div>
+                <div class="skeleton-item pulse"></div>
+            </div>
+        </div>
+    </div>
+    <div id="activityOverlay" class="activity-overlay hidden"></div>
 
     <!-- Scroll to Top Button -->
     <button id="scrollToTopBtn" class="scroll-to-top" title="Voltar ao topo">
