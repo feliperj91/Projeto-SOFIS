@@ -851,6 +851,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (result.error) throw result.error;
 
+            // Update local updatedAt with the value from Supabase
+            if (result.data && result.data.updated_at) {
+                client.updatedAt = result.data.updated_at;
+            }
+
             // Sync related tables - Delete and Re-insert for simplicity
             await window.supabaseClient.from('contacts').delete().eq('client_id', clientId);
             if (client.contacts?.length > 0) {
