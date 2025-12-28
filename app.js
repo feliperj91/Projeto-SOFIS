@@ -1841,7 +1841,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderClients(clients);
         renderServersList(client);
         showToast(`🗑️ Acesso SQL do cliente "${client.name}" removido com sucesso!`, 'success');
-        await registerAuditLog('EXCLUSÃO', 'Exclusão de Acesso SQL', `Cliente: ${client.name}`, deletedServer, null);
+        await registerAuditLog('EXCLUSÃO', 'Exclusão de Acesso SQL', `Cliente: ${client.name}, Ambiente: ${deletedServer.environment}`, deletedServer, null);
     };
 
     // --- VPN Data Functions ---
@@ -2317,7 +2317,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         closeUrlEntryModal();
         const opType = editingIndex !== '' ? 'EDIÇÃO' : 'CRIAÇÃO';
         const actionLabel = editingIndex !== '' ? 'Edição de URL de Sistema' : 'Adição de URL de Sistema';
-        await registerAuditLog(opType, actionLabel, `Cliente: ${client.name}, Sistema: ${urlRecord.system}`, urlBefore, urlRecord);
+        await registerAuditLog(opType, actionLabel, `Cliente: ${client.name}, Sistema: ${urlRecord.system}, Ambiente: ${urlRecord.environment}`, urlBefore, urlRecord);
     }
 
     window.editUrlRecord = (clientId, index) => {
@@ -2351,7 +2351,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderClients(clients);
         renderUrlList(client);
         showToast(`🗑️ URL do cliente "${client.name}" removida com sucesso!`, 'success');
-        await registerAuditLog('EXCLUSÃO', 'Exclusão de URL de Sistema', `Cliente: ${client.name}`, deletedUrl, null);
+        await registerAuditLog('EXCLUSÃO', 'Exclusão de URL de Sistema', `Cliente: ${client.name}, Sistema: ${deletedUrl.system}, Ambiente: ${deletedUrl.environment}`, deletedUrl, null);
     }
 
     async function handleWebLaudoSave() {
