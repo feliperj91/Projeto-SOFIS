@@ -2524,50 +2524,34 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        logs.forEach((log, index) => {
+        logs.forEach((log) => {
             const date = new Date(log.created_at);
             const dateStr = date.toLocaleDateString('pt-BR');
             const timeStr = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
-            const opType = (log.operation_type || 'UPDATE').toLowerCase();
-            const opIcon = opType === 'criação' ? 'fa-plus' : (opType === 'exclusão' ? 'fa-trash' : 'fa-pen');
-
-            // Calculate diff if possible
-            let diffHtml = '';
-            if (log.operation_type === 'EDIÇÃO' && log.old_value && log.new_value) {
-                const changes = [];
-                if (log.old_value.name !== log.new_value.name) changes.push(`Nome: ${log.old_value.name} → ${log.new_value.name}`);
-                if (log.old_value.isFavorite !== log.new_value.isFavorite) changes.push(`Favorito: ${log.old_value.isFavorite ? 'Sim' : 'Não'} → ${log.new_value.isFavorite ? 'Sim' : 'Não'}`);
-                // Add more detailed diff logic if needed
-                if (changes.length > 0) {
-                    diffHtml = `<div class="history-diff">${changes.join('<br>')}</div>`;
-                } else {
-                    diffHtml = `<div class="history-diff">Detalhes atualizados</div>`;
-                }
-            } else if (log.operation_type === 'CRIAÇÃO') {
-                diffHtml = `<div class="history-diff">Cliente criado no sistema.</div>`;
-            }
+            const opTypeRaw = (log.operation_type || 'UPDATE').toLowerCase();
+            const opClass = `op-${opTypeRaw}`;
+            const opLabel = (log.operation_type || 'AÇÃO').toUpperCase();
 
             const item = document.createElement('div');
-            item.className = `history-item op-${opType}`;
+            item.className = 'activity-item';
+
             item.innerHTML = `
-                <div class="history-icon-wrapper">
-                    <div class="history-icon">
-                        <i class="fa-solid ${opIcon}"></i>
-                    </div>
-                    ${index !== logs.length - 1 ? '<div class="history-line"></div>' : ''}
+                <div class="activity-item-header">
+                    <span class="activity-user"><i class="fa-solid fa-user"></i> ${escapeHtml(log.username || 'Sistema')}</span>
+                    <span class="activity-time">${dateStr} às ${timeStr}</span>
                 </div>
-                <div class="history-content">
-                    <div class="history-meta">
-                        <span><i class="fa-solid fa-user" style="font-size: 0.7em;"></i> ${escapeHtml(log.username || 'Sistema')}</span>
-                        <span>${dateStr} ${timeStr}</span>
-                    </div>
-                    <div class="history-title">${escapeHtml(log.action)}</div>
-                    ${diffHtml || `<div class="history-diff">${escapeHtml(log.details)}</div>`}
+                <div class="activity-action">
+                    <span class="activity-op-badge ${opClass}">${opLabel}</span>
+                    ${escapeHtml(log.action)}
+                </div>
+                <div class="activity-details">
+                    ${escapeHtml(log.details)}
                 </div>
             `;
             historyList.appendChild(item);
         });
+
     }
 
     if (closeHistoryModalBtn) {
