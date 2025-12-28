@@ -41,6 +41,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     old_value: oldVal,
                     new_value: newVal
                 }]);
+                // Refresh activity feed if sidebar is open or after an action
+                await fetchRecentActivities();
             } catch (err) {
                 console.error('Erro ao registrar log:', err);
             }
@@ -162,6 +164,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const addContactModalBtn = document.getElementById('addContactModalBtn');
     const contactModalSearch = document.getElementById('contactModalSearch');
 
+    // Activity Sidebar Elements
+    const activitySidebar = document.getElementById('activitySidebar');
+    const activityList = document.getElementById('activityList');
+    const toggleActivityBtn = document.getElementById('toggleActivityBtn');
+    const closeActivityBtn = document.getElementById('closeActivityBtn');
+    const activityOverlay = document.getElementById('activityOverlay');
 
     function renderSkeleton() {
         if (!clientList) return;
@@ -259,6 +267,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderClients(clients);
         updateFilterCounts();
         applyViewMode();
+        fetchRecentActivities();
     }
 
     await initialLoad();
@@ -2381,5 +2390,71 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
     }
+
+    // --- Activity Feed Functions ---
+    async function fetchRecentActivities() {
+        if (!window.supabaseClient || !activityList) return;
+
+        try {
+            const { data, error } = await window.supabaseClient
+                .from('audit_logs')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(10);
+
+            if (error) throw error;
+            renderActivityFeed(data);
+        } catch (err) {
+            console.error('Erro ao buscar atividades:', err);
+        }
+    }
+
+    function renderActivityFeed(activities) {
+        if (!activityList) return;
+        activityList.innerHTML = '';
+
+        if (!activities || activities.length === 0) {
+            activityList.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 20px;">Nenhuma atividade recente.</div>';
+            return;
+        }
+
+        activities.forEach(activity => {
+            const date = new Date(activity.created_at);
+            const timeStr = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            const dateStr = date.toLocaleDateString('pt-BR');
+
+            const item = document.createElement('div');
+            item.className = 'activity-item';
+
+            const opClass = `op-${(activity.operation_type || 'update').toLowerCase()}`;
+            const opLabel = activity.operation_type || 'Ação';
+
+            item.innerHTML = `
+                <div class="activity-item-header">
+                    <span class="activity-user"><i class="fa-solid fa-user"></i> ${escapeHtml(activity.username)}</span>
+                    <span class="activity-time">${dateStr} às ${timeStr}</span>
+                </div>
+                <div class="activity-action">
+                    <span class="activity-op-badge ${opClass}">${opLabel}</span>
+                    ${escapeHtml(activity.action)}
+                </div>
+                ${activity.details ? `<div class="activity-details">${escapeHtml(activity.details)}</div>` : ''}
+            `;
+            activityList.appendChild(item);
+        });
+    }
+
+    function toggleActivitySidebar() {
+        activitySidebar.classList.toggle('hidden');
+        activityOverlay.classList.toggle('hidden');
+        if (!activitySidebar.classList.contains('hidden')) {
+            fetchRecentActivities();
+        }
+    }
+
+    if (toggleActivityBtn) toggleActivityBtn.addEventListener('click', toggleActivitySidebar);
+    if (closeActivityBtn) closeActivityBtn.addEventListener('click', toggleActivitySidebar);
+    if (activityOverlay) activityOverlay.addEventListener('click', toggleActivitySidebar);
+
 });
 
