@@ -1094,6 +1094,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
 
         // ... updates to clients array ...
+        // ... updates to clients array ...
+        let addedContactNames = '';
         if (editingId && mode !== 'addContact') {
             newClient.updatedAt = new Date().toISOString();
             clients = clients.map(c => c.id === editingId ? newClient : c);
@@ -1105,6 +1107,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 clientToUpdate.contacts.push(...contacts);
                 clientToUpdate.updatedAt = new Date().toISOString();
                 const contactNames = contacts.map(c => c.name).join(', ');
+                addedContactNames = contactNames;
                 showToast(`✅ Contato "${contactNames}" adicionado ao cliente "${clientToUpdate.name}"!`, 'success');
             }
         } else {
@@ -1127,7 +1130,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         const opType = editingId ? 'EDIÇÃO' : 'CRIAÇÃO';
         const actionLabel = editingId ? (mode === 'addContact' ? 'Adição de Contato' : 'Edição de Cliente') : 'Novo Cliente';
         const clientAfter = JSON.parse(JSON.stringify(clients.find(c => c.id === newClient.id) || newClient));
-        await registerAuditLog(opType, actionLabel, `Cliente: ${newClient.name}`, clientBefore, clientAfter);
+
+        let details = `Cliente: ${newClient.name}`;
+        if (addedContactNames) details += `, Contato: ${addedContactNames}`;
+
+        await registerAuditLog(opType, actionLabel, details, clientBefore, clientAfter);
     };
 
     async function deleteClient(id) {
