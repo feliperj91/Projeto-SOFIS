@@ -552,6 +552,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     function renderClients(clientsToRender) {
         if (!clientList) return;
 
+        // Remove skeleton loaders if they exist
+        clientList.querySelectorAll('.skeleton-row').forEach(skeleton => skeleton.remove());
+
         // Separate favorites from regular clients (normalized)
         const favoriteClients = clientsToRender.filter(c => !!c.isFavorite).sort((a, b) => (a.name || "").localeCompare(b.name || ""));
         const regularClients = clientsToRender.filter(c => !c.isFavorite).sort((a, b) => (a.name || "").localeCompare(b.name || ""));
