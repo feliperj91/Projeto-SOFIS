@@ -551,11 +551,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function renderClients(clientsToRender) {
         if (!clientList) return;
-        clientList.innerHTML = '';
 
         // Separate favorites from regular clients (normalized)
         const favoriteClients = clientsToRender.filter(c => !!c.isFavorite).sort((a, b) => (a.name || "").localeCompare(b.name || ""));
         const regularClients = clientsToRender.filter(c => !c.isFavorite).sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+
+        // Get existing client rows
+        const existingRows = {};
+        clientList.querySelectorAll('.client-row').forEach(row => {
+            const id = row.id.replace('client-row-', '');
+            existingRows[id] = row;
+        });
 
         if (clientsToRender.length === 0) {
             let emptyMessage = 'Nenhum cliente encontrado.';
@@ -572,20 +578,51 @@ document.addEventListener('DOMContentLoaded', async () => {
                 emptyIcon = 'fa-magnifying-glass';
             }
 
-            clientList.innerHTML = `
-                <div style="grid-column: 1/-1; text-align: center; color: var(--text-secondary); padding: 40px;">
-                    <i class="fa-solid ${emptyIcon}" style="font-size: 3rem; margin-bottom: 16px; opacity: 0.5;"></i>
-                    <p>${emptyMessage}</p>
-                </div>
+            // Hide all existing rows
+            Object.values(existingRows).forEach(row => row.style.display = 'none');
+
+            // Show or create empty state
+            let emptyState = clientList.querySelector('.empty-state');
+            if (!emptyState) {
+                emptyState = document.createElement('div');
+                emptyState.className = 'empty-state';
+                emptyState.style.cssText = 'grid-column: 1/-1; text-align: center; color: var(--text-secondary); padding: 40px;';
+                clientList.appendChild(emptyState);
+            }
+            emptyState.innerHTML = `
+                <i class="fa-solid ${emptyIcon}" style="font-size: 3rem; margin-bottom: 16px; opacity: 0.5;"></i>
+                <p>${emptyMessage}</p>
             `;
+            emptyState.style.display = 'block';
+
+            // Hide section headers
+            clientList.querySelectorAll('.clients-section-header').forEach(h => h.style.display = 'none');
             return;
         }
 
+        // Hide empty state if exists
+        const emptyState = clientList.querySelector('.empty-state');
+        if (emptyState) emptyState.style.display = 'none';
+
+        // Track which clients should be visible
+        const visibleClientIds = new Set(clientsToRender.map(c => c.id));
+
+        // Hide clients that shouldn't be visible
+        Object.entries(existingRows).forEach(([id, row]) => {
+            if (!visibleClientIds.has(id)) {
+                row.style.display = 'none';
+            }
+        });
+
         // Render Favorites Section
+        let favoritesHeader = clientList.querySelector('.favorites-header');
         if (favoriteClients.length > 0) {
-            const favoritesHeader = document.createElement('div');
-            favoritesHeader.className = `clients-section-header favorites-header ${favoritesCollapsed ? 'section-collapsed' : ''}`;
-            favoritesHeader.onclick = toggleFavoritesSection;
+            if (!favoritesHeader) {
+                favoritesHeader = document.createElement('div');
+                favoritesHeader.className = `clients-section-header favorites-header ${favoritesCollapsed ? 'section-collapsed' : ''}`;
+                favoritesHeader.onclick = toggleFavoritesSection;
+                clientList.appendChild(favoritesHeader);
+            }
             favoritesHeader.innerHTML = `
                 <div class="section-header-content">
                     <i class="fa-solid fa-chevron-down section-chevron"></i>
@@ -594,20 +631,45 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <span class="section-count">${favoriteClients.length}</span>
                 </div>
             `;
-            clientList.appendChild(favoritesHeader);
+            favoritesHeader.className = `clients-section-header favorites-header ${favoritesCollapsed ? 'section-collapsed' : ''}`;
+            favoritesHeader.style.display = 'flex';
 
             if (!favoritesCollapsed) {
                 favoriteClients.forEach(client => {
-                    clientList.appendChild(createClientRow(client));
+                    let row = existingRows[client.id];
+                    if (!row) {
+                        row = createClientRow(client);
+                        clientList.appendChild(row);
+                        existingRows[client.id] = row;
+                    } else {
+                        // Update existing row content
+                        updateClientRow(row, client);
+                    }
+                    row.style.display = 'block';
+                    // Move after favorites header
+                    favoritesHeader.after(row);
+                });
+            } else {
+                // Hide favorite clients when collapsed
+                favoriteClients.forEach(client => {
+                    if (existingRows[client.id]) {
+                        existingRows[client.id].style.display = 'none';
+                    }
                 });
             }
+        } else if (favoritesHeader) {
+            favoritesHeader.style.display = 'none';
         }
 
         // Render Regular Clients Section
+        let regularHeader = clientList.querySelector('.regular-header');
         if (regularClients.length > 0) {
-            const regularHeader = document.createElement('div');
-            regularHeader.className = `clients-section-header regular-header ${regularCollapsed ? 'section-collapsed' : ''}`;
-            regularHeader.onclick = toggleRegularSection;
+            if (!regularHeader) {
+                regularHeader = document.createElement('div');
+                regularHeader.className = `clients-section-header regular-header ${regularCollapsed ? 'section-collapsed' : ''}`;
+                regularHeader.onclick = toggleRegularSection;
+                clientList.appendChild(regularHeader);
+            }
             regularHeader.innerHTML = `
                 <div class="section-header-content">
                     <i class="fa-solid fa-chevron-down section-chevron"></i>
@@ -616,14 +678,148 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <span class="section-count">${regularClients.length}</span>
                 </div>
             `;
-            clientList.appendChild(regularHeader);
+            regularHeader.className = `clients-section-header regular-header ${regularCollapsed ? 'section-collapsed' : ''}`;
+            regularHeader.style.display = 'flex';
 
             if (!regularCollapsed) {
                 regularClients.forEach(client => {
-                    clientList.appendChild(createClientRow(client));
+                    let row = existingRows[client.id];
+                    if (!row) {
+                        row = createClientRow(client);
+                        clientList.appendChild(row);
+                        existingRows[client.id] = row;
+                    } else {
+                        // Update existing row content
+                        updateClientRow(row, client);
+                    }
+                    row.style.display = 'block';
+                    // Move after regular header
+                    regularHeader.after(row);
+                });
+            } else {
+                // Hide regular clients when collapsed
+                regularClients.forEach(client => {
+                    if (existingRows[client.id]) {
+                        existingRows[client.id].style.display = 'none';
+                    }
                 });
             }
+        } else if (regularHeader) {
+            regularHeader.style.display = 'none';
         }
+    }
+
+    // New function to update existing row without recreating
+    function updateClientRow(row, client) {
+        const hasServers = client.servers && client.servers.length > 0;
+        const hasVpns = client.vpns && client.vpns.length > 0;
+        const urlCount = (client.urls ? client.urls.length : 0) + (client.webLaudo && client.webLaudo.trim() !== '' ? 1 : 0);
+        const hasUrls = urlCount > 0;
+        const hasContacts = client.contacts && client.contacts.length > 0;
+
+        // Update favorite status
+        row.className = `client-row ${client.isFavorite ? 'favorite' : ''}`;
+
+        // Update favorite button
+        const starBtn = row.querySelector('.btn-star');
+        if (starBtn) {
+            starBtn.className = `btn-icon btn-star ${client.isFavorite ? 'favorite-active' : ''}`;
+            starBtn.title = client.isFavorite ? 'Remover Favorito' : 'Favoritar';
+            const starIcon = starBtn.querySelector('i');
+            if (starIcon) {
+                starIcon.className = `fa-${client.isFavorite ? 'solid' : 'regular'} fa-star`;
+            }
+        }
+
+        // Update client name and note indicator
+        const nameContainer = row.querySelector('.client-name-row');
+        if (nameContainer) {
+            nameContainer.innerHTML = `
+                ${escapeHtml(client.name)}
+                ${client.notes ? `<i class="fa-solid fa-bell client-note-indicator" title="Possui observações importantes"></i>` : ''}
+            `;
+        }
+
+        // Update timestamp
+        const updatedInfo = row.querySelector('.client-updated-info');
+        if (updatedInfo && client.updatedAt) {
+            const dateStr = new Date(client.updatedAt).toLocaleDateString('pt-BR');
+            const timeStr = new Date(client.updatedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            updatedInfo.querySelector('.hover-underline').textContent = `Atualizado: ${dateStr} ${timeStr}`;
+        }
+
+        // Update badges
+        const updateBadge = (selector, hasData, count) => {
+            const btn = row.querySelector(selector);
+            if (btn) {
+                btn.className = hasData ? 'btn-icon active-success btn-with-badge' : 'btn-icon btn-with-badge';
+                const badge = btn.querySelector('.btn-badge');
+                if (hasData && count > 0) {
+                    if (!badge) {
+                        const newBadge = document.createElement('span');
+                        newBadge.className = 'btn-badge';
+                        newBadge.textContent = count;
+                        btn.appendChild(newBadge);
+                    } else {
+                        badge.textContent = count;
+                    }
+                } else if (badge) {
+                    badge.remove();
+                }
+            }
+        };
+
+        // Update contact badge and icon
+        const contactBtn = row.querySelector('.btn-with-badge:has(.contact-icon-img)');
+        if (contactBtn) {
+            contactBtn.className = hasContacts ? 'btn-icon active-success btn-with-badge' : 'btn-icon btn-with-badge';
+            const contactIcon = contactBtn.querySelector('.contact-icon-img');
+            if (contactIcon) {
+                contactIcon.className = hasContacts ? 'contact-icon-img vpn-icon-success' : 'contact-icon-img';
+            }
+            const badge = contactBtn.querySelector('.btn-badge');
+            if (hasContacts) {
+                if (!badge) {
+                    const newBadge = document.createElement('span');
+                    newBadge.className = 'btn-badge';
+                    newBadge.textContent = client.contacts.length;
+                    contactBtn.appendChild(newBadge);
+                } else {
+                    badge.textContent = client.contacts.length;
+                }
+            } else if (badge) {
+                badge.remove();
+            }
+        }
+
+        // Update server badge
+        updateBadge('.btn-with-badge:has(.fa-database)', hasServers, client.servers?.length || 0);
+
+        // Update VPN badge and icon
+        const vpnBtn = row.querySelector('.btn-with-badge:has(.vpn-icon-img)');
+        if (vpnBtn) {
+            vpnBtn.className = hasVpns ? 'btn-icon active-success btn-with-badge' : 'btn-icon btn-with-badge';
+            const vpnIcon = vpnBtn.querySelector('.vpn-icon-img');
+            if (vpnIcon) {
+                vpnIcon.className = hasVpns ? 'vpn-icon-img vpn-icon-success' : 'vpn-icon-img';
+            }
+            const badge = vpnBtn.querySelector('.btn-badge');
+            if (hasVpns) {
+                if (!badge) {
+                    const newBadge = document.createElement('span');
+                    newBadge.className = 'btn-badge';
+                    newBadge.textContent = client.vpns.length;
+                    vpnBtn.appendChild(newBadge);
+                } else {
+                    badge.textContent = client.vpns.length;
+                }
+            } else if (badge) {
+                badge.remove();
+            }
+        }
+
+        // Update URL badge
+        updateBadge('.btn-with-badge:has(.fa-link)', hasUrls, urlCount);
     }
 
     // Helper function to create a client row
