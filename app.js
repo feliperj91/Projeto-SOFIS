@@ -800,14 +800,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Save data to localStorage and Supabase
-    async function saveToLocal() {
+    async function saveToLocal(specificClientId = null) {
         localStorage.setItem('sofis_clients', JSON.stringify(clients));
         updateFilterCounts();
 
         // Persist to Supabase if available
         if (window.supabaseClient) {
-            for (const client of clients) {
-                await syncClientToSupabase(client);
+            if (specificClientId) {
+                // Only sync the specific client that was modified
+                const client = clients.find(c => c.id === specificClientId);
+                if (client) {
+                    await syncClientToSupabase(client);
+                }
+            } else {
+                // Sync all clients (used for initial load or bulk operations)
+                for (const client of clients) {
+                    await syncClientToSupabase(client);
+                }
             }
         }
     }
@@ -1123,7 +1132,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             showToast(`✅ Cliente "${newClient.name}" adicionado com sucesso!`, 'success');
         }
 
-        saveToLocal();
+        await saveToLocal(newClient.id);
         renderClients(clients);
 
         if (!contactModal.classList.contains('hidden') && contactModalClientId.value === editingId) {
@@ -1833,7 +1842,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Instant UI update
         client.updatedAt = new Date().toISOString();
 
-        saveToLocal();
+        await saveToLocal(client.id);
         renderClients(clients);
         renderServersList(client);
         closeServerEntryModal();
@@ -1876,7 +1885,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const deletedServer = JSON.parse(JSON.stringify(client.servers[index]));
         client.servers.splice(index, 1);
-        saveToLocal();
+        await saveToLocal(client.id);
         renderClients(clients);
         renderServersList(client);
         showToast(`🗑️ Acesso SQL do cliente "${client.name}" removido com sucesso!`, 'success');
@@ -2005,7 +2014,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             showToast(`✅ VPN adicionada ao cliente "${client.name}"!`, 'success');
         }
 
-        saveToLocal();
+        await saveToLocal(client.id);
         renderClients(clients);
         renderVpnList(client);
         closeVpnEntryModal();
@@ -2051,7 +2060,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const deletedVpn = JSON.parse(JSON.stringify(client.vpns[index]));
         client.vpns.splice(index, 1);
-        saveToLocal();
+        await saveToLocal(client.id);
         renderClients(clients);
         renderVpnList(client);
         showToast(`🗑️ VPN do cliente "${client.name}" removida com sucesso!`, 'success');
@@ -2084,7 +2093,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const notesBefore = client.notes || '';
         client.notes = clientNoteInput.value.trim();
-        saveToLocal();
+        await saveToLocal(client.id);
         showToast(`✅ Observações do cliente "${client.name}" salvas com sucesso!`, 'success');
         await registerAuditLog('EDIÇÃO', 'Atualização de Observações', `Cliente: ${client.name}`, notesBefore, client.notes);
         closeNotesModal();
@@ -2162,7 +2171,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const oldWebLaudo = client.webLaudo || '';
         client.webLaudo = '';
-        saveToLocal();
+        await saveToLocal(client.id);
         updateWebLaudoDisplay(client);
         applyClientFilter();
         showToast('🗑️ WebLaudo removido com sucesso!', 'success');
@@ -2350,7 +2359,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             showToast(`✅ URL adicionada ao cliente "${client.name}"!`, 'success');
         }
 
-        saveToLocal();
+        await saveToLocal(client.id);
         renderClients(clients);
         renderUrlList(client);
         closeUrlEntryModal();
@@ -2386,7 +2395,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const deletedUrl = JSON.parse(JSON.stringify(client.urls[index]));
         client.urls.splice(index, 1);
-        saveToLocal();
+        await saveToLocal(client.id);
         renderClients(clients);
         renderUrlList(client);
         showToast(`🗑️ URL do cliente "${client.name}" removida com sucesso!`, 'success');
@@ -2400,7 +2409,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const webLaudoBefore = client.webLaudo || '';
         client.webLaudo = webLaudoInput.value.trim();
-        saveToLocal();
+        await saveToLocal(client.id);
         updateWebLaudoDisplay(client);
         applyClientFilter();
         showToast('✅ WebLaudo salvo com sucesso!', 'success');
