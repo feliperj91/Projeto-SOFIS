@@ -1917,7 +1917,7 @@ button:hover .vpn-icon-img {
 
 .activity-list::-webkit-scrollbar-thumb,
 .history-list::-webkit-scrollbar-thumb {
-    background: var(--border);
+    background: var(--accent);
     border-radius: 3px;
 }
 
