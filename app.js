@@ -2502,7 +2502,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 .from('audit_logs')
                 .select('*')
                 .ilike('details', `%${searchTerm}%`)
-                .order('created_at', { ascending: false });
+                .order('created_at', { ascending: false })
+                .limit(10);
 
             if (error) throw error;
 
