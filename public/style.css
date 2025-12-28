@@ -1923,3 +1923,92 @@ button:hover .vpn-icon-img {
         width: 100%;
     }
 }
+
+/* History Modal Styles */
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 10px 0;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.history-item {
+    display: flex;
+    gap: 12px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.history-item:last-child {
+    border-bottom: none;
+}
+
+.history-icon-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 32px;
+}
+
+.history-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.8rem;
+    background: var(--surface-hover);
+}
+
+.history-line {
+    width: 2px;
+    background: var(--border);
+    flex: 1;
+    margin-top: 4px;
+}
+
+.history-content {
+    flex: 1;
+}
+
+.history-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.history-title {
+    font-weight: 500;
+    margin-bottom: 4px;
+    color: var(--text);
+}
+
+.history-diff {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    /* background: var(--surface-hover); */
+    /* padding: 8px; */
+    border-radius: 6px;
+    margin-top: 8px;
+    white-space: pre-wrap;
+}
+
+/* Operation Colors */
+.op-criação .history-icon {
+    background: var(--success);
+}
+
+.op-edição .history-icon {
+    background: var(--warning);
+    color: #1e293b;
+}
+
+.op-exclusão .history-icon {
+    background: var(--danger);
+}

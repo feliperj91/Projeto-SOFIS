@@ -171,6 +171,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const closeActivityBtn = document.getElementById('closeActivityBtn');
     const activityOverlay = document.getElementById('activityOverlay');
 
+    // History Modal Elements
+    const historyModal = document.getElementById('historyModal');
+    const historyList = document.getElementById('historyList');
+    const closeHistoryModalBtn = document.getElementById('closeHistoryModal');
+    const historyModalTitle = document.getElementById('historyModalTitle');
+
     function renderSkeleton() {
         if (!clientList) return;
         clientList.innerHTML = '';
@@ -640,9 +646,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                         ${escapeHtml(client.name)}
                         ${client.notes ? `<i class="fa-solid fa-bell client-note-indicator" title="Possui observações importantes"></i>` : ''}
                         ${client.updatedAt ? `
-                            <div class="client-updated-info" style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 2px; font-weight: normal; display: flex; align-items: center; gap: 4px;">
+                            <div class="client-updated-info clickable" onclick="openClientHistory('${client.id}'); event.stopPropagation();" title="Ver Histórico de Alterações" style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 2px; font-weight: normal; display: flex; align-items: center; gap: 4px; cursor: pointer;">
                                 <i class="fa-solid fa-clock-rotate-left" style="font-size: 0.65rem;"></i>
-                                Atualizado: ${new Date(client.updatedAt).toLocaleDateString('pt-BR')} ${new Date(client.updatedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                <span class="hover-underline">Atualizado: ${new Date(client.updatedAt).toLocaleDateString('pt-BR')} ${new Date(client.updatedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
                             </div>
                         ` : ''}
                     </div>
@@ -2462,6 +2468,115 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (toggleActivityBtn) toggleActivityBtn.addEventListener('click', toggleActivitySidebar);
     if (closeActivityBtn) closeActivityBtn.addEventListener('click', toggleActivitySidebar);
     if (activityOverlay) activityOverlay.addEventListener('click', toggleActivitySidebar);
+
+    // --- History Modal Functions ---
+    window.openClientHistory = async (clientId) => {
+        const client = clients.find(c => c.id === clientId);
+        if (!client) return;
+
+        if (historyModal) {
+            historyModalTitle.textContent = `Histórico: ${client.name}`;
+            historyList.innerHTML = '<div style="text-align:center; padding: 20px;"><i class="fa-solid fa-circle-notch fa-spin"></i> Carregando...</div>';
+            historyModal.classList.remove('hidden');
+        }
+
+        if (!window.supabaseClient) {
+            if (historyList) historyList.innerHTML = '<div style="padding: 20px; text-align: center;">Histórico indisponível offline.</div>';
+            return;
+        }
+
+        try {
+            // Fetch logs where new_value->id == clientId OR old_value->id == clientId
+            // Supabase postgREST doesn't support sophisticated OR on JSON columns easily in one go for direct mapped columns without filters
+            // But we can filter by details if we trust the text, OR fetch mostly by checking JSON containment if possible.
+            // A reliable way for "Audit List" is to verify the ID.
+
+            // NOTE: 'details' field usually contains "Cliente: Name". 
+            // Better to rely on the JSON B columns if operation was CRUD.
+
+            const { data, error } = await window.supabaseClient
+                .from('audit_logs')
+                .select('*')
+                .or(`new_value->>id.eq.${clientId},old_value->>id.eq.${clientId}`)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            renderClientHistory(data);
+
+        } catch (err) {
+            console.error('Error fetching history:', err);
+            if (historyList) historyList.innerHTML = '<div style="color:var(--danger); padding: 20px; text-align: center;">Erro ao carregar histórico.</div>';
+        }
+    };
+
+    function renderClientHistory(logs) {
+        if (!historyList) return;
+        historyList.innerHTML = '';
+
+        if (!logs || logs.length === 0) {
+            historyList.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 20px;">Nenhuma alteração registrada.</div>';
+            return;
+        }
+
+        logs.forEach((log, index) => {
+            const date = new Date(log.created_at);
+            const dateStr = date.toLocaleDateString('pt-BR');
+            const timeStr = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+            const opType = (log.operation_type || 'UPDATE').toLowerCase();
+            const opIcon = opType === 'criação' ? 'fa-plus' : (opType === 'exclusão' ? 'fa-trash' : 'fa-pen');
+
+            // Calculate diff if possible
+            let diffHtml = '';
+            if (log.operation_type === 'EDIÇÃO' && log.old_value && log.new_value) {
+                const changes = [];
+                if (log.old_value.name !== log.new_value.name) changes.push(`Nome: ${log.old_value.name} → ${log.new_value.name}`);
+                if (log.old_value.isFavorite !== log.new_value.isFavorite) changes.push(`Favorito: ${log.old_value.isFavorite ? 'Sim' : 'Não'} → ${log.new_value.isFavorite ? 'Sim' : 'Não'}`);
+                // Add more detailed diff logic if needed
+                if (changes.length > 0) {
+                    diffHtml = `<div class="history-diff">${changes.join('<br>')}</div>`;
+                } else {
+                    diffHtml = `<div class="history-diff">Detalhes atualizados</div>`;
+                }
+            } else if (log.operation_type === 'CRIAÇÃO') {
+                diffHtml = `<div class="history-diff">Cliente criado no sistema.</div>`;
+            }
+
+            const item = document.createElement('div');
+            item.className = `history-item op-${opType}`;
+            item.innerHTML = `
+                <div class="history-icon-wrapper">
+                    <div class="history-icon">
+                        <i class="fa-solid ${opIcon}"></i>
+                    </div>
+                    ${index !== logs.length - 1 ? '<div class="history-line"></div>' : ''}
+                </div>
+                <div class="history-content">
+                    <div class="history-meta">
+                        <span><i class="fa-solid fa-user" style="font-size: 0.7em;"></i> ${escapeHtml(log.username || 'Sistema')}</span>
+                        <span>${dateStr} ${timeStr}</span>
+                    </div>
+                    <div class="history-title">${escapeHtml(log.action)}</div>
+                    ${diffHtml || `<div class="history-diff">${escapeHtml(log.details)}</div>`}
+                </div>
+            `;
+            historyList.appendChild(item);
+        });
+    }
+
+    if (closeHistoryModalBtn) {
+        closeHistoryModalBtn.addEventListener('click', () => {
+            if (historyModal) historyModal.classList.add('hidden');
+        });
+    }
+
+    // Close on outside click
+    window.addEventListener('click', (e) => {
+        if (e.target === historyModal) {
+            historyModal.classList.add('hidden');
+        }
+    });
 
 });
 
