@@ -1093,6 +1093,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // ... updates to clients array ...
         if (editingId && mode !== 'addContact') {
+            newClient.updatedAt = new Date().toISOString();
             clients = clients.map(c => c.id === editingId ? newClient : c);
             showToast(`✅ Cliente "${newClient.name}" atualizado com sucesso!`, 'success');
         } else if (editingId && mode === 'addContact') {
@@ -1100,10 +1101,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (clientToUpdate) {
                 if (!clientToUpdate.contacts) clientToUpdate.contacts = [];
                 clientToUpdate.contacts.push(...contacts);
+                clientToUpdate.updatedAt = new Date().toISOString();
                 const contactNames = contacts.map(c => c.name).join(', ');
                 showToast(`✅ Contato "${contactNames}" adicionado ao cliente "${clientToUpdate.name}"!`, 'success');
             }
         } else {
+            newClient.updatedAt = new Date().toISOString();
             clients.push(newClient);
             showToast(`✅ Cliente "${newClient.name}" adicionado com sucesso!`, 'success');
         }
@@ -1785,6 +1788,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             client.servers.push(serverRecord);
             showToast(`✅ Acesso SQL adicionado ao cliente "${client.name}"!`, 'success');
         }
+
+        // Instant UI update
+        client.updatedAt = new Date().toISOString();
 
         saveToLocal();
         renderClients(clients);
@@ -2486,18 +2492,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         try {
-            // Fetch logs where new_value->id == clientId OR old_value->id == clientId
-            // Supabase postgREST doesn't support sophisticated OR on JSON columns easily in one go for direct mapped columns without filters
-            // But we can filter by details if we trust the text, OR fetch mostly by checking JSON containment if possible.
-            // A reliable way for "Audit List" is to verify the ID.
-
-            // NOTE: 'details' field usually contains "Cliente: Name". 
-            // Better to rely on the JSON B columns if operation was CRUD.
+            // FILTER BY TEXT MATCH on 'details' column because jsonb IDs are inconsistent across operation types
+            // "Cliente: CLIENT_NAME" is the standard format used in registerAuditLog
+            const searchTerm = `Cliente: ${client.name}`;
 
             const { data, error } = await window.supabaseClient
                 .from('audit_logs')
                 .select('*')
-                .or(`new_value->>id.eq.${clientId},old_value->>id.eq.${clientId}`)
+                .ilike('details', `%${searchTerm}%`)
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
