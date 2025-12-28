@@ -2012,3 +2012,13 @@ button:hover .vpn-icon-img {
 .op-exclusão .history-icon {
     background: var(--danger);
 }
+
+/* Independent Underline for Updated Date */
+.client-updated-info {
+    text-decoration: none !important;
+}
+
+.hover-underline:hover {
+    text-decoration: underline;
+    color: var(--accent);
+}
