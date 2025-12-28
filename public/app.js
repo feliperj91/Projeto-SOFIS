@@ -209,12 +209,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderSkeleton();
         if (window.supabaseClient) {
             try {
-                // Fetch all data
-                const { data: dbClients } = await window.supabaseClient.from('clients').select('*');
-                const { data: dbContacts } = await window.supabaseClient.from('contacts').select('*');
-                const { data: dbServers } = await window.supabaseClient.from('servers').select('*');
-                const { data: dbVpns } = await window.supabaseClient.from('vpns').select('*');
-                const { data: dbUrls } = await window.supabaseClient.from('urls').select('*');
+                // Fetch all data optimized with Joins
+                const { data: dbClients, error } = await window.supabaseClient
+                    .from('clients')
+                    .select(`
+                        *,
+                        contacts (*),
+                        servers (*),
+                        vpns (*),
+                        urls (*)
+                    `)
+                    .order('name');
+
+                if (error) throw error;
 
                 if (dbClients) {
                     clients = dbClients.map(c => ({
@@ -224,23 +231,23 @@ document.addEventListener('DOMContentLoaded', async () => {
                         isFavorite: c.is_favorite,
                         notes: c.notes,
                         webLaudo: c.web_laudo,
-                        contacts: (dbContacts || []).filter(con => con.client_id === c.id).map(con => ({
+                        contacts: (c.contacts || []).map(con => ({
                             name: con.name,
                             phones: con.phones,
                             emails: con.emails
                         })),
-                        servers: (dbServers || []).filter(s => s.client_id === c.id).map(s => ({
+                        servers: (c.servers || []).map(s => ({
                             environment: s.environment,
                             sqlServer: s.sql_server,
                             notes: s.notes,
                             credentials: s.credentials
                         })),
-                        vpns: (dbVpns || []).filter(v => v.client_id === c.id).map(v => ({
+                        vpns: (c.vpns || []).map(v => ({
                             user: v.username,
                             password: v.password,
                             notes: v.notes
                         })),
-                        urls: (dbUrls || []).filter(u => u.client_id === c.id).map(u => ({
+                        urls: (c.urls || []).map(u => ({
                             environment: u.environment,
                             system: u.system,
                             bridgeDataAccess: u.bridge_data_access,
