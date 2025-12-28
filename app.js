@@ -1134,6 +1134,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         let details = `Cliente: ${newClient.name}`;
         if (addedContactNames) details += `, Contato: ${addedContactNames}`;
 
+        // Detect edited contacts if in Edit mode (not Add Contact mode)
+        if (editingId && mode !== 'addContact' && clientBefore && clientBefore.contacts) {
+            const changedContacts = [];
+            newClient.contacts.forEach((curr, i) => {
+                const prev = clientBefore.contacts[i] || {};
+
+                const pName = prev.name || '';
+                const cName = curr.name || '';
+                const pPhones = JSON.stringify((prev.phones || []).slice().sort()); // slice before sort to immutable copy
+                const cPhones = JSON.stringify((curr.phones || []).slice().sort());
+                const pEmails = JSON.stringify((prev.emails || []).slice().sort());
+                const cEmails = JSON.stringify((curr.emails || []).slice().sort());
+
+                if (pName !== cName || pPhones !== cPhones || pEmails !== cEmails) {
+                    changedContacts.push(cName);
+                }
+            });
+
+            if (changedContacts.length > 0) {
+                // Avoid duplicating if already added via addedContactNames (unlikely overlap but safe)
+                const unique = [...new Set(changedContacts)].filter(name => !addedContactNames.includes(name));
+                if (unique.length > 0) details += `, Contato: ${unique.join(', ')}`;
+            }
+        }
+
         await registerAuditLog(opType, actionLabel, details, clientBefore, clientAfter);
     };
 
