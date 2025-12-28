@@ -1905,15 +1905,18 @@ button:hover .vpn-icon-img {
 }
 
 /* Scrollbar and Responsive changes */
-.activity-list::-webkit-scrollbar {
+.activity-list::-webkit-scrollbar,
+.history-list::-webkit-scrollbar {
     width: 6px;
 }
 
-.activity-list::-webkit-scrollbar-track {
+.activity-list::-webkit-scrollbar-track,
+.history-list::-webkit-scrollbar-track {
     background: transparent;
 }
 
-.activity-list::-webkit-scrollbar-thumb {
+.activity-list::-webkit-scrollbar-thumb,
+.history-list::-webkit-scrollbar-thumb {
     background: var(--border);
     border-radius: 3px;
 }
