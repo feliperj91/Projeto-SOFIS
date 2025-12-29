@@ -470,8 +470,12 @@
 }
 
 .version-modal-form .form-group label i {
-    color: var(--accent);
+    color: var(--text-secondary);
     width: 24px;
     text-align: center;
     margin-right: 8px;
+}
+
+.version-modal-form .form-group label .required {
+    padding-left: 4px;
 }
