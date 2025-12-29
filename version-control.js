@@ -390,7 +390,11 @@ async function handleVersionSubmit(e) {
         await loadVersionControls();
     } catch (err) {
         console.error('Erro ao salvar versão:', err);
-        showToast('Erro ao salvar versão', 'error');
+        if (window.showToast) {
+            window.showToast('Erro: ' + (err.message || 'Falha desconhecida'), 'error');
+        } else {
+            alert('Erro CRÍTICO ao salvar: ' + (err.message || err));
+        }
     }
 }
 
