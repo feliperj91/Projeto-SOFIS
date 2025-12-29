@@ -3,7 +3,7 @@
 // ===================================
 
 let versionControls = [];
-let currentVersionFilter = 'all'; // 'all', 'recent', 'warning', 'outdated'
+window.currentVersionFilter = 'all'; // 'all', 'recent', 'warning', 'outdated'
 
 // ===================================
 // LOAD VERSION CONTROLS
@@ -60,10 +60,10 @@ function renderVersionControls() {
     }
 
     // Apply time filter
-    if (currentVersionFilter !== 'all') {
+    if (window.currentVersionFilter !== 'all') {
         filteredVersions = filteredVersions.filter(v => {
             const status = getVersionStatus(v.updated_at);
-            return status === currentVersionFilter;
+            return status === window.currentVersionFilter;
         });
     }
 
@@ -95,7 +95,7 @@ function createVersionCard(version) {
     const card = document.createElement('div');
     const status = getVersionStatus(version.updated_at);
     const timeInfo = getTimeInfo(version.updated_at);
-    
+
     card.className = `version-card status-${status}`;
     card.innerHTML = `
         <div class="version-card-header">
@@ -173,7 +173,7 @@ function getTimeInfo(updatedAt) {
     if (diffDays === 1) return '1 dia';
     if (diffDays < 30) return `${diffDays} dias`;
     if (diffMonths === 1) return '1 mês';
-    
+
     const remainingDays = diffDays - (diffMonths * 30);
     if (remainingDays === 0) return `${diffMonths} meses`;
     if (remainingDays === 1) return `${diffMonths} meses e 1 dia`;
@@ -197,7 +197,7 @@ function openVersionModal(versionId = null) {
     const modal = document.getElementById('versionModal');
     const modalTitle = document.getElementById('versionModalTitle');
     const form = document.getElementById('versionForm');
-    
+
     if (!modal || !form) return;
 
     // Reset form
@@ -259,7 +259,7 @@ async function handleVersionSubmit(e) {
         if (versionId) {
             // Update existing version
             const oldVersion = versionControls.find(v => v.id === versionId);
-            
+
             const { error } = await window.supabaseClient
                 .from('version_controls')
                 .update(versionData)
@@ -361,10 +361,10 @@ async function openVersionHistory(versionId) {
     const modal = document.getElementById('versionHistoryModal');
     const historyList = document.getElementById('versionHistoryList');
     const version = versionControls.find(v => v.id === versionId);
-    
+
     if (!modal || !historyList || !version) return;
 
-    document.getElementById('versionHistoryTitle').textContent = 
+    document.getElementById('versionHistoryTitle').textContent =
         `Histórico - ${version.clients?.name} (${version.system})`;
 
     try {

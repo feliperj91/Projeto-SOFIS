@@ -93,6 +93,44 @@
             </div>
         </main>
 
+        <!-- Versions Tab Content -->
+        <main id="versionsTab" class="tab-content">
+            <div id="version-search-bar" style="display: flex; gap: 10px; align-items: center;">
+                <div style="position: relative; flex: 1;">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" id="versionSearchInput" placeholder="Buscar por cliente, sistema ou versão...">
+                </div>
+                <button id="addVersionBtn" class="btn-primary" onclick="window.editVersion()">
+                    <i class="fa-solid fa-plus"></i> Nova Versão
+                </button>
+            </div>
+
+            <div class="filter-chips-container">
+                <div class="filter-buttons">
+                    <button class="filter-chip active" data-version-filter="all">
+                        <i class="fa-solid fa-layer-group"></i>
+                        <span>Todas</span>
+                    </button>
+                    <button class="filter-chip filter-chip-success" data-version-filter="recent">
+                        <i class="fa-solid fa-check"></i>
+                        <span>Atualizadas</span>
+                    </button>
+                    <button class="filter-chip filter-chip-warning" data-version-filter="warning">
+                        <i class="fa-solid fa-clock"></i>
+                        <span>Atenção</span>
+                    </button>
+                    <button class="filter-chip filter-chip-danger" data-version-filter="outdated">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <span>Defasadas</span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="versionList" class="version-grid">
+                <!-- Version cards will be rendered here -->
+            </div>
+        </main>
+
         <!-- Modal Form -->
         <div id="modal" class="modal hidden">
             <div class="modal-content">
@@ -636,8 +674,86 @@
 
     <div id="toast" class="toast hidden">Notificação</div>
 
+    <!-- Version Control Modals -->
+    <div id="versionModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="versionModalTitle">Nova Versão</h2>
+                <button type="button" class="btn-icon" onclick="closeVersionModal()">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <form id="versionForm" onsubmit="handleVersionSubmit(event)">
+                <input type="hidden" id="versionId">
+                <div class="version-modal-form">
+                    <div class="form-group">
+                        <label for="versionClientSelect">Cliente <span class="required">*</span></label>
+                        <select id="versionClientSelect" required>
+                            <option value="">Selecione um cliente...</option>
+                        </select>
+                    </div>
+                    <div class="version-form-row">
+                        <div class="form-group">
+                            <label for="versionEnvironmentSelect">Ambiente <span class="required">*</span></label>
+                            <select id="versionEnvironmentSelect" required>
+                                <option value="producao">Produção</option>
+                                <option value="homologacao">Homologação</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="versionSystemSelect">Sistema <span class="required">*</span></label>
+                            <select id="versionSystemSelect" required>
+                                <option value="CellVida">CellVida</option>
+                                <option value="Hemote Plus">Hemote Plus</option>
+                                <option value="Hemote Web">Hemote Web</option>
+                                <option value="Monetário">Monetário</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="versionNumberInput">Versão <span class="required">*</span></label>
+                        <input type="text" id="versionNumberInput" required placeholder="Ex: 2.15.3">
+                    </div>
+                    <div class="form-group-checkbox">
+                        <label class="checkbox-container">
+                            <input type="checkbox" id="versionAlertCheck">
+                            <span class="checkmark"></span>
+                            Possui Alerta/Ponto de Atenção?
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label for="versionNotesInput">Observações</label>
+                        <textarea id="versionNotesInput" rows="3" placeholder="Detalhes da atualização..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeVersionModal()">Cancelar</button>
+                    <button type="submit" class="btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="versionHistoryModal" class="modal hidden">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 id="versionHistoryTitle">Histórico de Versões</h2>
+                <button type="button" class="btn-icon" onclick="document.getElementById('versionHistoryModal').classList.add('hidden')">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div id="versionHistoryList" class="version-history-list">
+                <!-- History entries will be injected here -->
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-primary" onclick="document.getElementById('versionHistoryModal').classList.add('hidden')">Fechar</button>
+            </div>
+        </div>
+    </div>
+
     <script src="supabase-client.js?v=2.4"></script>
     <script src="app.js?v=2.4"></script>
+    <script src="version-control.js?v=1.0"></script>
 </body>
 
 </html>
