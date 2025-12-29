@@ -206,7 +206,7 @@ function createClientGroupCard(clientGroup) {
                         <i class="fa-solid fa-server"></i> Produção
                     </button>
                     <button class="card-env-pill" onclick="window.filterCardByEnv(this, 'homologacao')">
-                        <i class="fa-solid fa-flask"></i> Homologação
+                        <i class="fa-solid fa-vial"></i> Homologação
                     </button>
                 </div>
             </div>
