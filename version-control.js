@@ -202,6 +202,7 @@ window.prefillClientVersion = function (id, name) {
         if (select && input) {
             select.value = id;
             input.value = name;
+            input.disabled = true; // Also fixed when adding specifically to a client
         }
     }, 100);
 };
@@ -291,6 +292,7 @@ function openVersionModal(versionId = null) {
             // Set client (Hidden ID and Visible Name)
             document.getElementById('versionClientSelect').value = version.client_id;
             document.getElementById('versionClientInput').value = version.clients?.name || '';
+            document.getElementById('versionClientInput').disabled = true;
 
             document.getElementById('versionEnvironmentSelect').value = version.environment;
             document.getElementById('versionSystemSelect').value = version.system;
@@ -303,6 +305,7 @@ function openVersionModal(versionId = null) {
     } else {
         // Add mode
         modalTitle.textContent = 'Nova Versão';
+        document.getElementById('versionClientInput').disabled = false;
         document.getElementById('versionNotesInput').disabled = true;
     }
 
