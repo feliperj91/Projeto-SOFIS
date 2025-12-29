@@ -2025,3 +2025,22 @@ button:hover .vpn-icon-img {
     text-decoration: underline;
     color: var(--accent);
 }
+
+/* User Display in Header */
+.user-display {
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.user-display i {
+    color: var(--accent);
+    font-size: 1.1rem;
+}
