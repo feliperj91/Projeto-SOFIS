@@ -199,9 +199,22 @@ function createClientGroupCard(clientGroup) {
                 <button class="btn-secondary btn-sm" onclick="window.prefillClientVersion('${clientGroup.id}', '${escapeHtml(clientGroup.name)}')" title="Adicionar Sistema">
                     <i class="fa-solid fa-plus"></i> <span class="desktop-only">Sistema</span>
                 </button>
-                <button class="btn-secondary btn-sm card-env-toggle" onclick="window.cycleCardEnv(this)" data-current-env="all" title="Alternar Ambiente">
-                    <i class="fa-solid fa-filter"></i>
-                </button>
+                <div class="card-filter-dropdown">
+                    <button class="btn-secondary btn-sm card-env-toggle" onclick="event.stopPropagation(); window.toggleCardFilterMenu(this)" data-current-env="all" title="Filtrar Ambiente">
+                        <i class="fa-solid fa-filter"></i>
+                    </button>
+                    <div class="card-filter-menu hidden">
+                        <div class="filter-menu-item active" onclick="window.applyCardEnvFilter(this, 'all')">
+                            <i class="fa-solid fa-layer-group"></i> <span>Todos</span>
+                        </div>
+                        <div class="filter-menu-item" onclick="window.applyCardEnvFilter(this, 'producao')">
+                            <i class="fa-solid fa-server"></i> <span>Produção</span>
+                        </div>
+                        <div class="filter-menu-item" onclick="window.applyCardEnvFilter(this, 'homologacao')">
+                            <i class="fa-solid fa-vial"></i> <span>Homologação</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="client-group-body">
@@ -726,23 +739,36 @@ function setupVersionControlFilters() {
     // Environment chips (REMOVED - now per card)
 }
 
-window.cycleCardEnv = function (button) {
-    const card = button.closest('.client-version-group-card');
+window.toggleCardFilterMenu = function (button) {
+    // Close other open menus
+    document.querySelectorAll('.card-filter-menu').forEach(menu => {
+        if (menu !== button.nextElementSibling) {
+            menu.classList.add('hidden');
+        }
+    });
+
+    const menu = button.nextElementSibling;
+    menu.classList.toggle('hidden');
+};
+
+window.applyCardEnvFilter = function (item, env) {
+    const dropdown = item.closest('.card-filter-dropdown');
+    const menu = dropdown.querySelector('.card-filter-menu');
+    const button = dropdown.querySelector('.card-env-toggle');
+    const card = dropdown.closest('.client-version-group-card');
     const rows = card.querySelectorAll('.version-item-row');
+    const items = menu.querySelectorAll('.filter-menu-item');
+
+    // Update active item in menu
+    items.forEach(i => i.classList.remove('active'));
+    item.classList.add('active');
+
+    // Update button icon/state
     const icon = button.querySelector('i');
-
-    const envs = ['all', 'producao', 'homologacao'];
-    let current = button.dataset.currentEnv || 'all';
-    let nextIndex = (envs.indexOf(current) + 1) % envs.length;
-    let nextEnv = envs[nextIndex];
-
-    button.dataset.currentEnv = nextEnv;
-
-    // Update UI
-    if (nextEnv === 'all') {
+    if (env === 'all') {
         icon.className = 'fa-solid fa-filter';
         button.classList.remove('active');
-    } else if (nextEnv === 'producao') {
+    } else if (env === 'producao') {
         icon.className = 'fa-solid fa-server';
         button.classList.add('active');
     } else {
@@ -752,13 +778,25 @@ window.cycleCardEnv = function (button) {
 
     // Filter rows
     rows.forEach(row => {
-        if (nextEnv === 'all' || row.dataset.environment === nextEnv) {
+        if (env === 'all' || row.dataset.environment === env) {
             row.style.display = 'flex';
         } else {
             row.style.display = 'none';
         }
     });
+
+    // Close menu
+    menu.classList.add('hidden');
 };
+
+// Global click listener to close filter menus
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.card-filter-dropdown')) {
+        document.querySelectorAll('.card-filter-menu').forEach(menu => {
+            menu.classList.add('hidden');
+        });
+    }
+});
 
 // Make functions globally available
 window.editVersion = openVersionModal;
