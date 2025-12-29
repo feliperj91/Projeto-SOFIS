@@ -2911,31 +2911,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Version Search listener
-    const versionSearchInput = document.getElementById('versionSearchInput');
-    if (versionSearchInput) {
-        versionSearchInput.addEventListener('input', () => {
-            if (window.renderVersionControls) window.renderVersionControls();
-        });
-    }
-
-    // Version Filter listeners
-    const versionFilterChips = document.querySelectorAll('[data-version-filter]');
-    versionFilterChips.forEach(chip => {
-        chip.addEventListener('click', () => {
-            const filterValue = chip.dataset.versionFilter;
-
-            // This global variable is used in version-control.js
-            window.currentVersionFilter = filterValue;
-
-            // Update active state
-            versionFilterChips.forEach(c => c.classList.remove('active'));
-            chip.classList.add('active');
-
-            // Re-render
-            if (window.renderVersionControls) window.renderVersionControls();
-        });
-    });
+    // Version control filters are handled by window.setupVersionControlFilters() below
 
     // Version Alert Toggle listener
     const versionAlertCheck = document.getElementById('versionAlertCheck');
@@ -2952,5 +2928,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Re-expose populate function if needed
     window.populateVersionClientSelect = populateVersionClientSelect;
+
+    // Initialize Version Control Filters
+    if (window.setupVersionControlFilters) {
+        window.setupVersionControlFilters();
+    }
 });
 

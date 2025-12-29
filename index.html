@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerenciador de Clientes - SOFIS</title>
-    <link rel="stylesheet" href="style.css?v=3.6">
+    <link rel="stylesheet" href="style.css?v=3.7">
     <link rel="stylesheet" href="server-styles.css?v=2.4">
     <link rel="stylesheet" href="credential-styles.css?v=2.4">
     <link rel="stylesheet" href="version-control-styles.css?v=1.8">
@@ -123,6 +123,23 @@
                     <button class="version-legend-item" data-version-filter="outdated">
                         <span class="legend-color" style="background-color: var(--danger);"></span>
                         <span>Mais de 3 meses</span>
+                    </button>
+                </div>
+
+                <div class="filter-divider"
+                    style="width: 1px; height: 24px; background: var(--border); margin: 0 10px; opacity: 0.5;"></div>
+
+                <div class="filter-buttons version-env-filters">
+                    <button class="filter-chip active" data-env-filter="all">
+                        <span>Todos</span>
+                    </button>
+                    <button class="filter-chip" data-env-filter="producao">
+                        <i class="fa-solid fa-server" style="color: var(--success);"></i>
+                        <span>Produção</span>
+                    </button>
+                    <button class="filter-chip" data-env-filter="homologacao">
+                        <i class="fa-solid fa-flask" style="color: var(--accent);"></i>
+                        <span>Homologação</span>
                     </button>
                 </div>
             </div>
@@ -815,8 +832,8 @@
     </div>
 
     <script src="supabase-client.js?v=2.4"></script>
-    <script src="app.js?v=1.5"></script>
-    <script src="version-control.js?v=2.8"></script>
+    <script src="app.js?v=1.6"></script>
+    <script src="version-control.js?v=2.9"></script>
 </body>
 
 </html>

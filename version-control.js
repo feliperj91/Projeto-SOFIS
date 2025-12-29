@@ -4,6 +4,7 @@
 
 let versionControls = [];
 window.currentVersionFilter = 'all'; // 'all', 'recent', 'warning', 'outdated'
+window.currentEnvFilter = 'all';    // 'all', 'producao', 'homologacao'
 let currentHistoryClientId = null;
 
 // ===================================
@@ -66,6 +67,11 @@ function renderVersionControls() {
             const status = getVersionStatus(v.updated_at);
             return status === window.currentVersionFilter;
         });
+    }
+
+    // Filter by Environment
+    if (window.currentEnvFilter !== 'all') {
+        filteredVersions = filteredVersions.filter(v => v.environment === window.currentEnvFilter);
     }
 
     // Clear list
@@ -697,6 +703,40 @@ window.filterHistoryBySystem = function () {
     });
 }
 
+// ===================================
+// SETUP VERSION CONTROL FILTERS
+// ===================================
+
+function setupVersionControlFilters() {
+    // Search input
+    const searchInput = document.getElementById('versionSearchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', () => {
+            renderVersionControls();
+        });
+    }
+
+    // Version Age/Status chips
+    document.querySelectorAll('[data-version-filter]').forEach(button => {
+        button.addEventListener('click', () => {
+            document.querySelectorAll('[data-version-filter]').forEach(b => b.classList.remove('active'));
+            button.classList.add('active');
+            window.currentVersionFilter = button.dataset.versionFilter;
+            renderVersionControls();
+        });
+    });
+
+    // Environment chips
+    document.querySelectorAll('[data-env-filter]').forEach(button => {
+        button.addEventListener('click', () => {
+            document.querySelectorAll('[data-env-filter]').forEach(b => b.classList.remove('active'));
+            button.classList.add('active');
+            window.currentEnvFilter = button.dataset.envFilter;
+            renderVersionControls();
+        });
+    });
+}
+
 // Make functions globally available
 window.editVersion = openVersionModal;
 window.deleteVersion = deleteVersion;
@@ -704,6 +744,7 @@ window.openVersionHistory = openVersionHistory;
 window.openVersionNotes = openVersionNotes;
 window.openClientVersionsHistory = openClientVersionsHistory;
 window.loadVersionControls = loadVersionControls;
+window.setupVersionControlFilters = setupVersionControlFilters;
 window.handleVersionSubmit = handleVersionSubmit;
 window.submitVersionForm = function () {
     const form = document.getElementById('versionForm');
