@@ -156,6 +156,7 @@ function createClientGroupCard(clientGroup) {
                     <div class="version-number-display" style="color: ${statusColor}">
                         ${escapeHtml(version.version)}
                         ${version.has_alert ? '<i class="fa-solid fa-triangle-exclamation" title="Atenção necessária" style="font-size: 0.8em; margin-left: 5px;"></i>' : ''}
+                        ${version.notes ? `<i class="fa-solid fa-bell" title="${escapeHtml(version.notes)}" style="font-size: 0.8em; margin-left: 5px; color: var(--text-secondary);"></i>` : ''}
                     </div>
                 </div>
                 
@@ -286,10 +287,12 @@ function openVersionModal(versionId = null) {
             document.getElementById('versionNumberInput').value = version.version;
             document.getElementById('versionAlertCheck').checked = version.has_alert;
             document.getElementById('versionNotesInput').value = version.notes || '';
+            document.getElementById('versionNotesInput').disabled = !version.has_alert;
         }
     } else {
         // Add mode
         modalTitle.textContent = 'Nova Versão';
+        document.getElementById('versionNotesInput').disabled = true;
     }
 
     modal.classList.remove('hidden');

@@ -2937,6 +2937,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
+    // Version Alert Toggle listener
+    const versionAlertCheck = document.getElementById('versionAlertCheck');
+    const versionNotesInput = document.getElementById('versionNotesInput');
+    if (versionAlertCheck && versionNotesInput) {
+        versionAlertCheck.addEventListener('change', () => {
+            versionNotesInput.disabled = !versionAlertCheck.checked;
+            if (!versionAlertCheck.checked) {
+                // Optional: clear notes if alert is unchecked
+                // versionNotesInput.value = '';
+            }
+        });
+    }
+
     // Re-expose populate function if needed
     window.populateVersionClientSelect = populateVersionClientSelect;
 });
