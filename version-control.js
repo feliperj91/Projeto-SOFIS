@@ -124,20 +124,17 @@ function createClientGroupCard(clientGroup) {
     if (hasOutdated) overallStatusColor = 'var(--danger)';
     else if (hasWarning) overallStatusColor = 'var(--accent)';
 
-    // Limit to last 3 of each environment
-    const prodVersions = clientGroup.versions
-        .filter(v => v.environment === 'producao')
-        .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
-        .slice(0, 3);
+    // To show in CARD: Only the LATEST version for each unique System+Environment
+    const latestMap = {};
+    clientGroup.versions.forEach(v => {
+        const key = `${v.system}-${v.environment}`;
+        if (!latestMap[key] || new Date(v.updated_at) > new Date(latestMap[key].updated_at)) {
+            latestMap[key] = v;
+        }
+    });
+    const cardVersions = Object.values(latestMap).sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
 
-    const homolVersions = clientGroup.versions
-        .filter(v => v.environment === 'homologacao')
-        .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
-        .slice(0, 3);
-
-    const displayVersions = [...prodVersions, ...homolVersions].sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
-
-    let versionsHtml = displayVersions.map(version => {
+    let versionsHtml = cardVersions.map(version => {
         const status = getVersionStatus(version.updated_at);
         const timeInfo = getTimeInfo(version.updated_at);
 
@@ -180,9 +177,14 @@ function createClientGroupCard(clientGroup) {
                 <div class="client-status-dot" style="background-color: ${overallStatusColor}"></div>
                 <h3>${escapeHtml(clientGroup.name)}</h3>
             </div>
-            <button class="btn-secondary btn-sm" onclick="window.prefillClientVersion('${clientGroup.id}', '${escapeHtml(clientGroup.name)}')" title="Adicionar Sistema">
-                <i class="fa-solid fa-plus"></i> <span class="desktop-only">Sistema</span>
-            </button>
+            <div style="display: flex; gap: 8px;">
+                <button class="btn-secondary btn-sm" onclick="window.openClientVersionsHistory('${clientGroup.id}')" title="Histórico de Atualizações">
+                    <i class="fa-solid fa-clock-rotate-left"></i> <span class="desktop-only">Histórico</span>
+                </button>
+                <button class="btn-secondary btn-sm" onclick="window.prefillClientVersion('${clientGroup.id}', '${escapeHtml(clientGroup.name)}')" title="Adicionar Sistema">
+                    <i class="fa-solid fa-plus"></i> <span class="desktop-only">Sistema</span>
+                </button>
+            </div>
         </div>
         <div class="client-group-body">
             ${versionsHtml}
@@ -589,11 +591,77 @@ function openVersionNotes(versionId) {
 // openClientNotes removed as per request to focus only on the bell
 
 
+// ===================================
+// OPEN CLIENT VERSIONS HISTORY
+// ===================================
+
+function openClientVersionsHistory(clientId) {
+    const clientVersions = versionControls.filter(v => v.client_id === clientId);
+    if (clientVersions.length === 0) return;
+
+    const clientName = clientVersions[0].clients?.name || 'Cliente';
+    const modal = document.getElementById('versionHistoryModal');
+    const historyList = document.getElementById('versionHistoryList');
+
+    if (!modal || !historyList) return;
+
+    document.getElementById('versionHistoryTitle').textContent = `Histórico de Atualizações - ${clientName}`;
+
+    // Get last 3 of each environment
+    const prod = clientVersions
+        .filter(v => v.environment === 'producao')
+        .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
+        .slice(0, 3);
+
+    const homol = clientVersions
+        .filter(v => v.environment === 'homologacao')
+        .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
+        .slice(0, 3);
+
+    const historyItems = [...prod, ...homol].sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+
+    historyList.innerHTML = '';
+
+    historyItems.forEach(version => {
+        const item = document.createElement('div');
+        item.className = 'version-history-item';
+        const color = getVersionStatus(version.updated_at) === 'outdated' ? 'var(--danger)' :
+            (getVersionStatus(version.updated_at) === 'warning' ? 'var(--accent)' : 'var(--success)');
+
+        item.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+                <div>
+                    <div style="font-weight: 600; color: var(--text-primary);">${escapeHtml(version.system)}</div>
+                    <div class="environment-badge-small ${version.environment}" style="margin-top: 4px;">
+                        ${version.environment === 'producao' ? 'Produção' : 'Homologação'}
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-family: 'Outfit', sans-serif; font-weight: 700; color: ${color}; font-size: 1.1rem;">
+                        ${escapeHtml(version.version)}
+                    </div>
+                </div>
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-secondary); display: grid; gap: 4px;">
+                <span>Data: ${formatDate(version.updated_at)}</span>
+                <span>Tempo: ${getTimeInfo(version.updated_at)}</span>
+                ${version.notes ? `<div style="margin-top: 8px; padding: 10px; background: rgba(0,0,0,0.2); border-left: 3px solid var(--accent); border-radius: 4px; color: var(--text-primary);">
+                    <i class="fa-solid fa-bell" style="color: var(--accent); margin-right: 5px;"></i> ${escapeHtml(version.notes)}
+                </div>` : ''}
+            </div>
+        `;
+        historyList.appendChild(item);
+    });
+
+    modal.classList.remove('hidden');
+}
+
 // Make functions globally available
 window.editVersion = openVersionModal;
 window.deleteVersion = deleteVersion;
 window.openVersionHistory = openVersionHistory;
 window.openVersionNotes = openVersionNotes;
+window.openClientVersionsHistory = openClientVersionsHistory;
 window.loadVersionControls = loadVersionControls;
 window.handleVersionSubmit = handleVersionSubmit;
 window.submitVersionForm = function () {
