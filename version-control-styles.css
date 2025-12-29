@@ -508,10 +508,11 @@
 
 .client-header-actions {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    grid-template-columns: repeat(2, 110px);
+    /* Fixed width for better control */
+    gap: 6px;
     align-items: center;
-    width: fit-content;
+    justify-content: end;
 }
 
 /* Unify Button & Pill Sizing/Aesthetics for Premium Feel */
@@ -522,20 +523,24 @@
 
 .client-header-actions .btn-sm,
 .client-header-actions .card-env-pill {
-    min-height: 36px;
-    padding: 8px 16px;
-    border-radius: 10px;
-    font-size: 0.85rem;
-    font-weight: 600;
+    min-height: 28px;
+    /* Reduced height */
+    padding: 4px 10px;
+    /* Reduced padding */
+    border-radius: 6px;
+    /* Slightly sharper radius for smaller size */
+    font-size: 0.72rem;
+    /* Reduced font size */
+    font-weight: 500;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     white-space: nowrap;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    letter-spacing: 0.3px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(255, 255, 255, 0.05);
+    gap: 6px;
+    letter-spacing: 0.1px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
     color: var(--text-secondary);
     cursor: pointer;
 }
@@ -543,10 +548,10 @@
 .client-header-actions .btn-sm:hover,
 .client-header-actions .card-env-pill:hover {
     background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.2);
-    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
     color: var(--text-primary);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .card-env-pill.active {
@@ -557,8 +562,8 @@
 }
 
 .card-env-pill i,
-.btn-sm i {
-    font-size: 0.9rem;
+.client-header-actions .btn-sm i {
+    font-size: 0.8rem;
 }
 
 /* Specific button overrides for premium feel */
