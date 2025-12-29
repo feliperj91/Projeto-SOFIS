@@ -45,11 +45,10 @@ function renderVersionControls() {
     const versionList = document.getElementById('versionList');
     if (!versionList) return;
 
-    // Apply filters
+    // Filter logic
     let filteredVersions = versionControls;
-
-    // Apply search filter
     const searchTerm = document.getElementById('versionSearchInput')?.value.toLowerCase() || '';
+
     if (searchTerm) {
         filteredVersions = filteredVersions.filter(v => {
             const clientName = v.clients?.name?.toLowerCase() || '';
@@ -59,7 +58,7 @@ function renderVersionControls() {
         });
     }
 
-    // Apply time filter
+    // Filter by Age/Status
     if (window.currentVersionFilter !== 'all') {
         filteredVersions = filteredVersions.filter(v => {
             const status = getVersionStatus(v.updated_at);
@@ -80,69 +79,128 @@ function renderVersionControls() {
         return;
     }
 
-    // Render cards
-    filteredVersions.forEach(version => {
-        const card = createVersionCard(version);
+    // Group by Client
+    const grouped = {};
+    filteredVersions.forEach(v => {
+        const clientName = v.clients?.name || 'Cliente Desconhecido';
+        const clientId = v.client_id;
+        if (!grouped[clientName]) {
+            grouped[clientName] = {
+                id: clientId,
+                name: clientName,
+                versions: [],
+                lastUpdate: null
+            };
+        }
+        grouped[clientName].versions.push(v);
+
+        // Track global last update for the client
+        if (!grouped[clientName].lastUpdate || new Date(v.updated_at) > new Date(grouped[clientName].lastUpdate)) {
+            grouped[clientName].lastUpdate = v.updated_at;
+        }
+    });
+
+    // Render Client Cards
+    Object.values(grouped).sort((a, b) => a.name.localeCompare(b.name)).forEach(client => {
+        const card = createClientGroupCard(client);
         versionList.appendChild(card);
     });
 }
 
-// ===================================
-// CREATE VERSION CARD
-// ===================================
-
-function createVersionCard(version) {
+function createClientGroupCard(clientGroup) {
     const card = document.createElement('div');
-    const status = getVersionStatus(version.updated_at);
-    const timeInfo = getTimeInfo(version.updated_at);
+    card.className = 'client-version-group-card';
 
-    card.className = `version-card status-${status}`;
+    // Calculate overall status
+    let hasOutdated = false;
+    let hasWarning = false;
+    clientGroup.versions.forEach(v => {
+        const status = getVersionStatus(v.updated_at);
+        if (status === 'outdated') hasOutdated = true;
+        if (status === 'warning') hasWarning = true;
+    });
+
+    let overallStatusColor = 'var(--success)';
+    if (hasOutdated) overallStatusColor = 'var(--danger)';
+    else if (hasWarning) overallStatusColor = 'var(--accent)';
+
+    // Sort versions inside client: Production first, then by Last Updated
+    const sortedVersions = clientGroup.versions.sort((a, b) => {
+        if (a.environment === 'producao' && b.environment !== 'producao') return -1;
+        if (a.environment !== 'producao' && b.environment === 'producao') return 1;
+        return new Date(b.updated_at) - new Date(a.updated_at);
+    });
+
+    let versionsHtml = sortedVersions.map(version => {
+        const status = getVersionStatus(version.updated_at);
+        const timeInfo = getTimeInfo(version.updated_at);
+
+        // Status indicator color
+        let statusColor = 'var(--success)';
+        if (status === 'outdated') statusColor = 'var(--danger)';
+        if (status === 'warning') statusColor = 'var(--accent)';
+
+        return `
+            <div class="version-item-row" style="border-left: 3px solid ${statusColor}">
+                <div class="version-item-main">
+                    <div class="version-system-info">
+                        <span class="version-system-name">${escapeHtml(version.system)}</span>
+                        <span class="environment-badge-small ${version.environment}">${version.environment === 'producao' ? 'PROD' : 'HOMOL'}</span>
+                    </div>
+                    <div class="version-number-display" style="color: ${statusColor}">
+                        ${escapeHtml(version.version)}
+                        ${version.has_alert ? '<i class="fa-solid fa-triangle-exclamation" title="Atenção necessária" style="font-size: 0.8em; margin-left: 5px;"></i>' : ''}
+                    </div>
+                </div>
+                
+                <div class="version-item-meta">
+                    <span class="version-date" title="${formatDate(version.updated_at)}">
+                        <i class="fa-regular fa-clock"></i> ${timeInfo}
+                    </span>
+                    <div class="version-actions">
+                         <button class="btn-icon-small" onclick="openVersionHistory('${version.id}')" title="Histórico">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                        </button>
+                        <button class="btn-icon-small" onclick="editVersion('${version.id}')" title="Editar">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+
     card.innerHTML = `
-        <div class="version-card-header">
-            <div class="version-card-title">
-                <h3 class="version-card-name">${escapeHtml(version.clients?.name || 'Cliente Desconhecido')}</h3>
-                ${version.has_alert ? '<i class="fa-solid fa-triangle-exclamation version-alert-icon"></i>' : ''}
+        <div class="client-group-header">
+            <div class="client-group-title">
+                <div class="client-status-dot" style="background-color: ${overallStatusColor}"></div>
+                <h3>${escapeHtml(clientGroup.name)}</h3>
             </div>
-            <div class="version-card-actions">
-                <button class="btn-icon" onclick="editVersion('${version.id}')" title="Editar">
-                    <i class="fa-solid fa-pen"></i>
-                </button>
-                <button class="btn-icon btn-danger" onclick="deleteVersion('${version.id}')" title="Excluir">
-                    <i class="fa-solid fa-trash"></i>
-                </button>
-            </div>
+            <button class="btn-secondary btn-sm" onclick="window.prefillClientVersion('${clientGroup.id}', '${escapeHtml(clientGroup.name)}')" title="Adicionar Sistema">
+                <i class="fa-solid fa-plus"></i> <span class="desktop-only">Sistema</span>
+            </button>
         </div>
-
-        <div class="version-card-body">
-            <span class="environment-badge ${version.environment}">${version.environment === 'homologacao' ? 'HOMOLOGAÇÃO' : 'PRODUÇÃO'}</span>
-            
-            <div class="version-info-row">
-                <span class="version-info-label">Sistema</span>
-                <span class="version-info-value version-system">${escapeHtml(version.system)}</span>
-            </div>
-
-            <div class="version-info-row">
-                <span class="version-info-label">Versão</span>
-                <span class="version-info-value">${escapeHtml(version.version)}</span>
-            </div>
-
-            <div class="version-info-row">
-                <span class="version-info-label">Atualizado em</span>
-                <span class="version-info-value">${formatDate(version.updated_at)}</span>
-            </div>
-        </div>
-
-        <div class="version-card-footer">
-            <a href="#" class="version-history-link" onclick="openVersionHistory('${version.id}'); return false;">
-                <i class="fa-solid fa-clock-rotate-left"></i>
-                Histórico de Atualização
-            </a>
-            <span class="version-time-badge ${status}">${timeInfo}</span>
+        <div class="client-group-body">
+            ${versionsHtml}
         </div>
     `;
 
     return card;
 }
+
+// Helper to prefill client when adding new system from card
+window.prefillClientVersion = function (id, name) {
+    openVersionModal();
+    // Tiny timeout to let modal open and clear
+    setTimeout(() => {
+        const select = document.getElementById('versionClientSelect');
+        const input = document.getElementById('versionClientInput');
+        if (select && input) {
+            select.value = id;
+            input.value = name;
+        }
+    }, 100);
+};
 
 // ===================================
 // GET VERSION STATUS
