@@ -514,3 +514,6 @@ window.editVersion = openVersionModal;
 window.deleteVersion = deleteVersion;
 window.openVersionHistory = openVersionHistory;
 window.loadVersionControls = loadVersionControls;
+window.handleVersionSubmit = handleVersionSubmit;
+window.closeVersionModal = closeVersionModal;
+window.closeVersionHistoryModal = closeVersionHistoryModal;
