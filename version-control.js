@@ -169,7 +169,7 @@ function createClientGroupCard(clientGroup) {
                     <div class="version-display-wrapper">
                         <div class="version-number-display clickable-text" onclick="openVersionHistory('${version.id}')" title="Ver Histórico" style="color: ${statusColor}">
                             ${escapeHtml(version.version)}
-                            ${version.notes ? `<i class="fa-solid fa-bell clickable-bell" onclick="event.stopPropagation(); openVersionNotes('${version.id}')" title="Ver Observação" style="font-size: 0.8em; margin-left: 8px; color: ${statusColor}"></i>` : ''}
+                            ${version.notes ? `<i class="fa-solid fa-bell clickable-bell" onclick="event.stopPropagation(); openVersionNotes('${version.id}')" title="Ver Observação" style="font-size: 0.8em; margin-left: 8px; color: #FFC107"></i>` : ''}
                         </div>
                         <div class="version-small-meta">
                             <span class="version-meta-label">Data da última atualização: ${formatDate(version.updated_at)}</span>
@@ -705,7 +705,7 @@ window.filterHistoryBySystem = function () {
                 <span>Data: ${formatDate(version.updated_at)}</span>
                 <span>Tempo: ${getTimeInfo(version.updated_at)}</span>
                 ${version.notes ? `<div style="margin-top: 8px; padding: 10px; background: rgba(0,0,0,0.2); border-left: 3px solid var(--accent); border-radius: 4px; color: var(--text-primary);">
-                    <i class="fa-solid fa-bell" style="color: var(--accent); margin-right: 5px;"></i> ${escapeHtml(version.notes)}
+                    <i class="fa-solid fa-bell" style="color: #FFC107; margin-right: 5px;"></i> ${escapeHtml(version.notes)}
                 </div>` : ''}
             </div>
         `;
