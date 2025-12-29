@@ -687,21 +687,28 @@
                 <input type="hidden" id="versionId">
                 <div class="version-modal-form">
                     <div class="form-group">
-                        <label for="versionClientSelect">Cliente <span class="required">*</span></label>
-                        <select id="versionClientSelect" required>
-                            <option value="">Selecione um cliente...</option>
-                        </select>
+                        <label for="versionClientInput">
+                            <i class="fa-solid fa-building"></i> Cliente<span class="required">*</span>
+                        </label>
+                        <input type="text" id="versionClientInput" list="versionClientList"
+                            placeholder="Busque o cliente..." required autocomplete="off">
+                        <datalist id="versionClientList"></datalist>
+                        <input type="hidden" id="versionClientSelect">
                     </div>
                     <div class="version-form-row">
                         <div class="form-group">
-                            <label for="versionEnvironmentSelect">Ambiente <span class="required">*</span></label>
+                            <label for="versionEnvironmentSelect">
+                                <i class="fa-solid fa-server"></i> Ambiente<span class="required">*</span>
+                            </label>
                             <select id="versionEnvironmentSelect" required>
                                 <option value="producao">Produção</option>
                                 <option value="homologacao">Homologação</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="versionSystemSelect">Sistema <span class="required">*</span></label>
+                            <label for="versionSystemSelect">
+                                <i class="fa-solid fa-desktop"></i> Sistema<span class="required">*</span>
+                            </label>
                             <select id="versionSystemSelect" required>
                                 <option value="CellVida">CellVida</option>
                                 <option value="Hemote Plus">Hemote Plus</option>
@@ -711,8 +718,10 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="versionNumberInput">Versão <span class="required">*</span></label>
-                        <input type="text" id="versionNumberInput" required placeholder="Ex: 2.15.3">
+                        <label for="versionNumberInput">
+                            <i class="fa-solid fa-code-branch"></i> Versão<span class="required">*</span>
+                        </label>
+                        <input type="text" id="versionNumberInput" required placeholder="Ex: 2025.01-01" maxlength="10">
                     </div>
                     <div class="form-group-checkbox">
                         <label class="checkbox-container">

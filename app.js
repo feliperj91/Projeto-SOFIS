@@ -2861,21 +2861,43 @@ document.addEventListener('DOMContentLoaded', async () => {
     // VERSION CONTROL INTEGRATION
     // ===================================
     function populateVersionClientSelect() {
-        const select = document.getElementById('versionClientSelect');
-        if (!select) return;
+        const datalist = document.getElementById('versionClientList');
+        const input = document.getElementById('versionClientInput');
+        const hiddenSelect = document.getElementById('versionClientSelect');
 
-        // Keep the first option
-        const firstOption = select.options[0];
-        select.innerHTML = '';
-        select.appendChild(firstOption);
+        if (!datalist || !input || !hiddenSelect) return;
+
+        datalist.innerHTML = '';
 
         // Sort and add clients
-        const sortedClients = [...clients].sort((a, b) => a.name.localeCompare(b.name));
+        const sortedClients = [...clients].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
         sortedClients.forEach(client => {
             const option = document.createElement('option');
-            option.value = client.id;
-            option.textContent = client.name;
-            select.appendChild(option);
+            option.value = client.name;
+            datalist.appendChild(option);
+        });
+
+        // Add input listener to update hidden ID
+        input.addEventListener('input', () => {
+            const val = input.value;
+            const client = clients.find(c => c.name === val);
+            if (client) {
+                hiddenSelect.value = client.id;
+            } else {
+                hiddenSelect.value = '';
+            }
+        });
+
+        // Input validation on blur
+        input.addEventListener('change', () => {
+            const val = input.value;
+            const client = clients.find(c => c.name === val);
+            if (!client && val !== '') {
+                // Optional: Clear or warn if invalid client
+                // input.setCustomValidity("Selecione um cliente da lista");
+            } else {
+                // input.setCustomValidity("");
+            }
         });
     }
 

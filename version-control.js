@@ -203,6 +203,8 @@ function openVersionModal(versionId = null) {
     // Reset form
     form.reset();
     document.getElementById('versionId').value = '';
+    document.getElementById('versionClientInput').value = '';
+    document.getElementById('versionClientSelect').value = '';
 
     if (versionId) {
         // Edit mode
@@ -210,7 +212,11 @@ function openVersionModal(versionId = null) {
         if (version) {
             modalTitle.textContent = 'Editar Versão';
             document.getElementById('versionId').value = version.id;
+
+            // Set client (Hidden ID and Visible Name)
             document.getElementById('versionClientSelect').value = version.client_id;
+            document.getElementById('versionClientInput').value = version.clients?.name || '';
+
             document.getElementById('versionEnvironmentSelect').value = version.environment;
             document.getElementById('versionSystemSelect').value = version.system;
             document.getElementById('versionNumberInput').value = version.version;
@@ -223,6 +229,27 @@ function openVersionModal(versionId = null) {
     }
 
     modal.classList.remove('hidden');
+
+    // Initialize Mask if not already done (idempotent setup)
+    setupVersionMask();
+}
+
+function setupVersionMask() {
+    const versionInput = document.getElementById('versionNumberInput');
+    if (versionInput && !versionInput.dataset.maskInitialized) {
+        versionInput.dataset.maskInitialized = 'true';
+        versionInput.addEventListener('input', function (e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 8) value = value.slice(0, 8);
+
+            if (value.length > 6) {
+                value = value.replace(/^(\d{4})(\d{2})(\d+)/, '$1.$2-$3');
+            } else if (value.length > 4) {
+                value = value.replace(/^(\d{4})(\d+)/, '$1.$2');
+            }
+            e.target.value = value;
+        });
+    }
 }
 
 function closeVersionModal() {
@@ -244,6 +271,11 @@ async function handleVersionSubmit(e) {
     const version = document.getElementById('versionNumberInput').value;
     const hasAlert = document.getElementById('versionAlertCheck').checked;
     const notes = document.getElementById('versionNotesInput').value;
+
+    if (!clientId) {
+        alert('Por favor, selecione um cliente válido da lista.');
+        return;
+    }
 
     const versionData = {
         client_id: clientId,
