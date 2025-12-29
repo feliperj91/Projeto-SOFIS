@@ -2089,3 +2089,36 @@ button:hover .vpn-icon-img {
     background-color: var(--accent);
     box-shadow: 0 -2px 8px rgba(56, 189, 248, 0.5);
 }
+
+/* Version Legend Styling */
+.version-legend-item {
+    background: transparent;
+    border: none;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.version-legend-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+}
+
+.version-legend-item.active {
+    color: var(--text-primary);
+    font-weight: 500;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    display: inline-block;
+}
