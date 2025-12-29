@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const userDisplay = document.getElementById('currentUserDisplay');
     const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}');
     if (userDisplay && currentUser.username) {
-        userDisplay.innerHTML = `<i class="fa-solid fa-circle-user"></i> ${currentUser.username}`;
+        userDisplay.innerHTML = `<i class="fa-solid fa-user"></i> ${currentUser.username}`;
     }
 
     if (logoutBtn) {
