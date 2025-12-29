@@ -193,22 +193,15 @@ function createClientGroupCard(clientGroup) {
                 <h3>${escapeHtml(clientGroup.name)}</h3>
             </div>
             <div class="client-header-actions">
-                <div class="client-card-main-buttons">
-                    <button class="btn-secondary btn-sm" onclick="window.openClientVersionsHistory('${clientGroup.id}')" title="Histórico de Atualizações">
-                        <i class="fa-solid fa-clock-rotate-left"></i> <span class="desktop-only">Histórico</span>
-                    </button>
-                    <button class="btn-secondary btn-sm" onclick="window.prefillClientVersion('${clientGroup.id}', '${escapeHtml(clientGroup.name)}')" title="Adicionar Sistema">
-                        <i class="fa-solid fa-plus"></i> <span class="desktop-only">Sistema</span>
-                    </button>
-                </div>
-                <div class="card-env-filters-header">
-                    <button class="card-env-pill" onclick="window.filterCardByEnv(this, 'producao')">
-                        <i class="fa-solid fa-server"></i> Produção
-                    </button>
-                    <button class="card-env-pill" onclick="window.filterCardByEnv(this, 'homologacao')">
-                        <i class="fa-solid fa-vial"></i> Homologação
-                    </button>
-                </div>
+                <button class="btn-secondary btn-sm" onclick="window.openClientVersionsHistory('${clientGroup.id}')" title="Histórico de Atualizações">
+                    <i class="fa-solid fa-clock-rotate-left"></i> <span class="desktop-only">Histórico</span>
+                </button>
+                <button class="btn-secondary btn-sm" onclick="window.prefillClientVersion('${clientGroup.id}', '${escapeHtml(clientGroup.name)}')" title="Adicionar Sistema">
+                    <i class="fa-solid fa-plus"></i> <span class="desktop-only">Sistema</span>
+                </button>
+                <button class="btn-secondary btn-sm card-env-toggle" onclick="window.cycleCardEnv(this)" data-current-env="all" title="Alternar Ambiente">
+                    <i class="fa-solid fa-filter"></i> <span>Todos</span>
+                </button>
             </div>
         </div>
         <div class="client-group-body">
@@ -733,27 +726,37 @@ function setupVersionControlFilters() {
     // Environment chips (REMOVED - now per card)
 }
 
-window.filterCardByEnv = function (button, env) {
+window.cycleCardEnv = function (button) {
     const card = button.closest('.client-version-group-card');
-    const buttons = card.querySelectorAll('.card-env-pill');
     const rows = card.querySelectorAll('.version-item-row');
+    const label = button.querySelector('span');
+    const icon = button.querySelector('i');
 
-    const isAlreadyActive = button.classList.contains('active');
+    const envs = ['all', 'producao', 'homologacao'];
+    let current = button.dataset.currentEnv || 'all';
+    let nextIndex = (envs.indexOf(current) + 1) % envs.length;
+    let nextEnv = envs[nextIndex];
 
-    // Reset all buttons in this card
-    buttons.forEach(btn => btn.classList.remove('active'));
+    button.dataset.currentEnv = nextEnv;
 
-    let targetEnv = env;
-    if (isAlreadyActive) {
-        // Toggle off if already active
-        targetEnv = 'all';
+    // Update UI
+    if (nextEnv === 'all') {
+        label.textContent = 'Todos';
+        icon.className = 'fa-solid fa-filter';
+        button.classList.remove('active');
+    } else if (nextEnv === 'producao') {
+        label.textContent = 'Produção';
+        icon.className = 'fa-solid fa-server';
+        button.classList.add('active');
     } else {
-        // Toggle on
+        label.textContent = 'Homol.';
+        icon.className = 'fa-solid fa-vial';
         button.classList.add('active');
     }
 
+    // Filter rows
     rows.forEach(row => {
-        if (targetEnv === 'all' || row.dataset.environment === targetEnv) {
+        if (nextEnv === 'all' || row.dataset.environment === nextEnv) {
             row.style.display = 'flex';
         } else {
             row.style.display = 'none';

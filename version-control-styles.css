@@ -507,30 +507,17 @@
 }
 
 .client-header-actions {
-    display: grid;
-    grid-template-columns: repeat(2, 110px);
-    /* Fixed width for better control */
+    display: flex;
     gap: 6px;
     align-items: center;
-    justify-content: end;
+    justify-content: flex-end;
 }
 
-/* Unify Button & Pill Sizing/Aesthetics for Premium Feel */
-.client-card-main-buttons,
-.card-env-filters-header {
-    display: contents;
-}
-
-.client-header-actions .btn-sm,
-.client-header-actions .card-env-pill {
+.client-header-actions .btn-sm {
     min-height: 28px;
-    /* Reduced height */
-    padding: 4px 10px;
-    /* Reduced padding */
+    padding: 0 12px;
     border-radius: 6px;
-    /* Slightly sharper radius for smaller size */
     font-size: 0.72rem;
-    /* Reduced font size */
     font-weight: 500;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     white-space: nowrap;
@@ -538,15 +525,14 @@
     align-items: center;
     justify-content: center;
     gap: 6px;
-    letter-spacing: 0.1px;
+    letter-spacing: 0.2px;
     border: 1px solid rgba(255, 255, 255, 0.08);
     background: rgba(255, 255, 255, 0.04);
     color: var(--text-secondary);
     cursor: pointer;
 }
 
-.client-header-actions .btn-sm:hover,
-.client-header-actions .card-env-pill:hover {
+.client-header-actions .btn-sm:hover {
     background: rgba(255, 255, 255, 0.08);
     border-color: rgba(255, 255, 255, 0.15);
     transform: translateY(-1px);
@@ -554,14 +540,13 @@
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
-.card-env-pill.active {
+.client-header-actions .btn-sm.active {
     background: var(--accent) !important;
     color: var(--bg-dark) !important;
     border-color: var(--accent) !important;
-    box-shadow: 0 0 15px rgba(255, 204, 0, 0.3) !important;
+    box-shadow: 0 0 10px rgba(255, 204, 0, 0.2) !important;
 }
 
-.card-env-pill i,
 .client-header-actions .btn-sm i {
     font-size: 0.8rem;
 }
