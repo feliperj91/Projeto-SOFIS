@@ -580,14 +580,14 @@
 }
 
 .card-env-toggle i {
-    color: #fca311 !important;
-    /* Premium Orange from image */
+    color: #FFC107 !important;
+    /* Bright Yellow */
     font-size: 0.9rem !important;
 }
 
 .card-env-toggle.active {
-    border-color: rgba(252, 163, 17, 0.3) !important;
-    background: rgba(252, 163, 17, 0.1) !important;
+    border-color: rgba(255, 193, 7, 0.3) !important;
+    background: rgba(255, 193, 7, 0.1) !important;
 }
 
 /* Card Filter Dropdown Styles */
@@ -645,8 +645,8 @@
 }
 
 .filter-menu-item.active {
-    background: rgba(252, 163, 17, 0.15);
-    color: #fca311;
+    background: rgba(255, 193, 7, 0.15);
+    color: #FFC107;
 }
 
 .filter-menu-item i {
