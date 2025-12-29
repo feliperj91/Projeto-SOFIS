@@ -348,12 +348,16 @@ function openVersionModal(versionId = null) {
             document.getElementById('versionEnvironmentSelect').value = version.environment;
             document.getElementById('versionSystemSelect').value = version.system;
             document.getElementById('versionNumberInput').value = version.version;
-            // Safely get YYYY-MM-DD
+            // Safely get YYYY-MM-DD from the stored timestamp
             let formattedDate = today;
             if (version.updated_at) {
-                const dateObj = new Date(version.updated_at);
-                if (!isNaN(dateObj.getTime())) {
-                    formattedDate = dateObj.toISOString().split('T')[0];
+                try {
+                    // Extract date part (YYYY-MM-DD) from ISO string or timestamp
+                    // Using slice(0, 10) is the most reliable way to get YYYY-MM-DD from a DB timestamp
+                    formattedDate = version.updated_at.split('T')[0];
+                } catch (e) {
+                    console.error('Erro ao formatar data para edição:', e);
+                    formattedDate = today;
                 }
             }
             document.getElementById('versionDateInput').value = formattedDate;
@@ -422,6 +426,7 @@ async function handleVersionSubmit(e) {
         return;
     }
 
+    // Construct version data
     const versionData = {
         client_id: clientId,
         environment,
@@ -429,7 +434,7 @@ async function handleVersionSubmit(e) {
         version,
         has_alert: hasAlert,
         notes,
-        updated_at: updateDate ? new Date(updateDate + 'T12:00:00').toISOString() : new Date().toISOString()
+        updated_at: updateDate ? `${updateDate}T12:00:00+00:00` : new Date().toISOString()
     };
 
     try {
