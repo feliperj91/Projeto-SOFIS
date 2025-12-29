@@ -229,24 +229,41 @@ function getTimeInfo(updatedAt) {
     const now = new Date();
     const updated = new Date(updatedAt);
 
-    // Calcula diferença total em dias
-    const diffMs = now - updated;
-    const diffDaysTotal = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    // Se a data for hoje
+    const todayStr = now.toISOString().split('T')[0];
+    const updatedStr = updated.toISOString().split('T')[0];
+    if (todayStr === updatedStr) return 'Atualizado hoje';
 
-    if (diffDaysTotal === 0) return 'Atualizado hoje';
+    let years = now.getFullYear() - updated.getFullYear();
+    let months = now.getMonth() - updated.getMonth();
+    let days = now.getDate() - updated.getDate();
 
-    const diffMonths = Math.floor(diffDaysTotal / 30);
-    const remainingDays = diffDaysTotal % 30;
+    // Ajuste de meses se o dia atual for menor que o dia da atualização
+    if (days < 0) {
+        months--;
+        // Pega o último dia do mês anterior
+        const prevMonth = new Date(now.getFullYear(), now.getMonth(), 0).getDate();
+        days += prevMonth;
+    }
+
+    // Ajuste de anos se os meses ficarem negativos
+    if (months < 0) {
+        years--;
+        months += 12;
+    }
+
+    // Converte anos em meses para o formato solicitado (meses e dias)
+    const totalMonths = (years * 12) + months;
 
     let result = '';
 
-    if (diffMonths > 0) {
-        result += `${diffMonths} ${diffMonths === 1 ? 'mês' : 'meses'}`;
-        if (remainingDays > 0) {
-            result += ` e ${remainingDays} ${remainingDays === 1 ? 'dia' : 'dias'}`;
+    if (totalMonths > 0) {
+        result += `${totalMonths} ${totalMonths === 1 ? 'mês' : 'meses'}`;
+        if (days > 0) {
+            result += ` e ${days} ${days === 1 ? 'dia' : 'dias'}`;
         }
     } else {
-        result = `${diffDaysTotal} ${diffDaysTotal === 1 ? 'dia' : 'dias'}`;
+        result = `${days} ${days === 1 ? 'dia' : 'dias'}`;
     }
 
     return result;
