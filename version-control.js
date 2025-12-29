@@ -175,7 +175,6 @@ function createClientGroupCard(clientGroup) {
     card.innerHTML = `
         <div class="client-group-header">
             <div class="client-group-title">
-                <div class="client-status-dot" style="background-color: ${overallStatusColor}"></div>
                 <h3>${escapeHtml(clientGroup.name)}</h3>
             </div>
             <div style="display: flex; gap: 8px;">
