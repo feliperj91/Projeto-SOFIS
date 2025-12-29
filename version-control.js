@@ -331,7 +331,11 @@ async function handleVersionSubmit(e) {
     const notes = document.getElementById('versionNotesInput').value;
 
     if (!clientId) {
-        alert('Por favor, selecione um cliente válido da lista.');
+        if (window.showToast) {
+            window.showToast('Cliente não identificado. Selecione um cliente da lista.', 'warning');
+        } else {
+            alert('Cliente não identificado. Por favor, selecione um cliente da lista.');
+        }
         return;
     }
 

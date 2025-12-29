@@ -2886,8 +2886,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Add input listener to update hidden ID
         input.addEventListener('input', () => {
-            const val = input.value;
-            const client = clients.find(c => c.name === val);
+            const val = input.value.trim().toLowerCase();
+            const client = clients.find(c => (c.name || '').toLowerCase() === val);
             if (client) {
                 hiddenSelect.value = client.id;
             } else {
