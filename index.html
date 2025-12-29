@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="style.css?v=3.6">
     <link rel="stylesheet" href="server-styles.css?v=2.4">
     <link rel="stylesheet" href="credential-styles.css?v=2.4">
-    <link rel="stylesheet" href="version-control-styles.css?v=1.7">
+    <link rel="stylesheet" href="version-control-styles.css?v=1.8">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -759,7 +759,21 @@
     <div id="versionHistoryModal" class="modal hidden">
         <div class="modal-content" style="max-width: 600px;">
             <div class="modal-header">
-                <h2 id="versionHistoryTitle">Histórico de Versões</h2>
+                <div style="display: flex; flex-direction: column; gap: 5px;">
+                    <h2 id="versionHistoryTitle">Histórico de Versões</h2>
+                    <div class="history-filter-container"
+                        style="display: flex; gap: 10px; align-items: center; margin-top: 10px;">
+                        <span style="font-size: 0.8rem; color: var(--text-secondary);">Filtrar Sistema:</span>
+                        <select id="historySystemFilter" class="history-select-small"
+                            onchange="window.filterHistoryBySystem()">
+                            <option value="all">Todos os Sistemas</option>
+                            <option value="Hemote Plus">Hemote Plus</option>
+                            <option value="Hemote Web">Hemote Web</option>
+                            <option value="Monetário">Monetário</option>
+                            <option value="CellVida">CellVida</option>
+                        </select>
+                    </div>
+                </div>
                 <button type="button" class="btn-icon"
                     onclick="document.getElementById('versionHistoryModal').classList.add('hidden')">
                     <i class="fa-solid fa-xmark"></i>
@@ -802,7 +816,7 @@
 
     <script src="supabase-client.js?v=2.4"></script>
     <script src="app.js?v=1.5"></script>
-    <script src="version-control.js?v=2.3"></script>
+    <script src="version-control.js?v=2.5"></script>
 </body>
 
 </html>

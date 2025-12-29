@@ -4,6 +4,7 @@
 
 let versionControls = [];
 window.currentVersionFilter = 'all'; // 'all', 'recent', 'warning', 'outdated'
+let currentHistoryClientId = null;
 
 // ===================================
 // LOAD VERSION CONTROLS
@@ -596,33 +597,60 @@ function openVersionNotes(versionId) {
 // ===================================
 
 function openClientVersionsHistory(clientId) {
-    const clientVersions = versionControls.filter(v => v.client_id === clientId);
-    if (clientVersions.length === 0) return;
+    currentHistoryClientId = clientId;
 
-    const clientName = clientVersions[0].clients?.name || 'Cliente';
+    // Find client name
+    const client = versionControls.find(v => v.client_id === clientId);
+    if (!client) return;
+
     const modal = document.getElementById('versionHistoryModal');
+    if (!modal) return;
+
+    document.getElementById('versionHistoryTitle').textContent = `Histórico de Atualizações - ${client.clients?.name || 'Cliente'}`;
+
+    // Reset filter select to 'all'
+    const filterSelect = document.getElementById('historySystemFilter');
+    if (filterSelect) filterSelect.value = 'all';
+
+    // Render initial view
+    filterHistoryBySystem();
+
+    modal.classList.remove('hidden');
+}
+
+// Function to filter the history modal content
+window.filterHistoryBySystem = function () {
+    if (!currentHistoryClientId) return;
+
+    const filterValue = document.getElementById('historySystemFilter').value;
+    const clientVersions = versionControls.filter(v => v.client_id === currentHistoryClientId);
+
     const historyList = document.getElementById('versionHistoryList');
+    if (!historyList) return;
 
-    if (!modal || !historyList) return;
+    // Apply filtering
+    let items = clientVersions;
+    if (filterValue !== 'all') {
+        items = items.filter(v => v.system === filterValue);
+    }
 
-    document.getElementById('versionHistoryTitle').textContent = `Histórico de Atualizações - ${clientName}`;
-
-    // Get last 3 of each environment
-    const prod = clientVersions
-        .filter(v => v.environment === 'producao')
-        .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
-        .slice(0, 3);
-
-    const homol = clientVersions
-        .filter(v => v.environment === 'homologacao')
-        .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
-        .slice(0, 3);
-
-    const historyItems = [...prod, ...homol].sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+    let filteredItems = [];
+    if (filterValue === 'all') {
+        const prod = items.filter(v => v.environment === 'producao').sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at)).slice(0, 3);
+        const homol = items.filter(v => v.environment === 'homologacao').sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at)).slice(0, 3);
+        filteredItems = [...prod, ...homol].sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+    } else {
+        filteredItems = items.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at)).slice(0, 3);
+    }
 
     historyList.innerHTML = '';
 
-    historyItems.forEach(version => {
+    if (filteredItems.length === 0) {
+        historyList.innerHTML = '<p style="text-align: center; color: var(--text-secondary); margin-top: 20px;">Nenhuma atualização encontrada para este filtro.</p>';
+        return;
+    }
+
+    filteredItems.forEach(version => {
         const item = document.createElement('div');
         item.className = 'version-history-item';
         const color = getVersionStatus(version.updated_at) === 'outdated' ? 'var(--danger)' :
@@ -652,8 +680,6 @@ function openClientVersionsHistory(clientId) {
         `;
         historyList.appendChild(item);
     });
-
-    modal.classList.remove('hidden');
 }
 
 // Make functions globally available
