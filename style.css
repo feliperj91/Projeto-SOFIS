@@ -1415,6 +1415,13 @@ button:hover .vpn-icon-img {
     display: inline-block;
     vertical-align: middle;
     transform-origin: top center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.client-note-indicator:hover {
+    filter: brightness(1.4) drop-shadow(0 0 5px var(--accent));
+    transform: scale(1.3);
 }
 
 @keyframes ring-bell {
