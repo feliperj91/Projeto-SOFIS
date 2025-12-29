@@ -153,9 +153,9 @@ function createClientGroupCard(clientGroup) {
                         <span class="version-system-name">${escapeHtml(version.system)}</span>
                         <span class="environment-badge-small ${version.environment}">${version.environment === 'producao' ? 'Produção' : 'Homologação'}</span>
                     </div>
-                    <div class="version-number-display" style="color: ${statusColor}">
+                    <div class="version-number-display clickable-text" onclick="openVersionHistory('${version.id}')" title="Ver Histórico" style="color: ${statusColor}">
                         ${escapeHtml(version.version)}
-                        ${version.notes ? `<i class="fa-solid fa-bell clickable-bell" onclick="openVersionNotes('${version.id}')" title="Ver Observação" style="font-size: 0.8em; margin-left: 5px;"></i>` : ''}
+                        ${version.notes ? `<i class="fa-solid fa-bell clickable-bell" onclick="event.stopPropagation(); openVersionNotes('${version.id}')" title="Ver Observação" style="font-size: 0.8em; margin-left: 5px;"></i>` : ''}
                     </div>
                 </div>
                 
@@ -164,9 +164,6 @@ function createClientGroupCard(clientGroup) {
                         <i class="fa-regular fa-clock"></i> ${timeInfo}
                     </span>
                     <div class="version-actions">
-                         <button class="btn-icon-small" onclick="openVersionHistory('${version.id}')" title="Histórico">
-                            <i class="fa-solid fa-clock-rotate-left"></i>
-                        </button>
                         <button class="btn-icon-small" onclick="editVersion('${version.id}')" title="Editar">
                             <i class="fa-solid fa-pen"></i>
                         </button>
