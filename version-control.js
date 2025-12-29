@@ -26,7 +26,8 @@ async function loadVersionControls() {
                     name
                 )
             `)
-            .order('updated_at', { ascending: false });
+            .order('updated_at', { ascending: false })
+            .order('id', { ascending: false });
 
         if (error) throw error;
 
@@ -95,14 +96,21 @@ function renderVersionControls() {
         }
         grouped[clientName].versions.push(v);
 
-        // Track global last update for the client
-        if (!grouped[clientName].lastUpdate || new Date(v.updated_at) > new Date(grouped[clientName].lastUpdate)) {
+        // Track global last update for the client (first one is the latest due to sort)
+        if (!grouped[clientName].lastUpdate) {
             grouped[clientName].lastUpdate = v.updated_at;
         }
     });
 
     // Render Client Cards
     Object.values(grouped).sort((a, b) => a.name.localeCompare(b.name)).forEach(client => {
+        // Garantir que as versões internas estejam ordenadas corretamente (Mais recente primeiro)
+        client.versions.sort((a, b) => {
+            const dateA = new Date(a.updated_at);
+            const dateB = new Date(b.updated_at);
+            return dateB - dateA || b.id - a.id;
+        });
+
         const card = createClientGroupCard(client);
         versionList.appendChild(card);
     });
@@ -126,14 +134,19 @@ function createClientGroupCard(clientGroup) {
     else if (hasWarning) overallStatusColor = 'var(--accent)';
 
     // To show in CARD: Only the LATEST version for each unique System+Environment
+    // Since grouped versions are already sorted DESC by updated_at and ID, the first one for each key is the latest
     const latestMap = {};
     clientGroup.versions.forEach(v => {
         const key = `${v.system}-${v.environment}`;
-        if (!latestMap[key] || new Date(v.updated_at) > new Date(latestMap[key].updated_at)) {
+        if (!latestMap[key]) {
             latestMap[key] = v;
         }
     });
-    const cardVersions = Object.values(latestMap).sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+    const cardVersions = Object.values(latestMap).sort((a, b) => {
+        const dateA = new Date(a.updated_at);
+        const dateB = new Date(b.updated_at);
+        return dateB - dateA || b.id - a.id;
+    });
 
     let versionsHtml = cardVersions.map(version => {
         const status = getVersionStatus(version.updated_at);
@@ -638,11 +651,11 @@ window.filterHistoryBySystem = function () {
 
     let filteredItems = [];
     if (filterValue === 'all') {
-        const prod = items.filter(v => v.environment === 'producao').sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at)).slice(0, 3);
-        const homol = items.filter(v => v.environment === 'homologacao').sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at)).slice(0, 3);
-        filteredItems = [...prod, ...homol].sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+        const prod = items.filter(v => v.environment === 'producao').sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at) || b.id - a.id).slice(0, 3);
+        const homol = items.filter(v => v.environment === 'homologacao').sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at) || b.id - a.id).slice(0, 3);
+        filteredItems = [...prod, ...homol].sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at) || b.id - a.id);
     } else {
-        filteredItems = items.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at)).slice(0, 3);
+        filteredItems = items.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at) || b.id - a.id).slice(0, 3);
     }
 
     historyList.innerHTML = '';
