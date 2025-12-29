@@ -162,8 +162,8 @@ function createClientGroupCard(clientGroup) {
                 <div class="version-item-main">
                     <div class="version-system-info">
                         <span class="version-system-name">${escapeHtml(version.system)}</span>
-                        <span class="environment-badge-small ${version.environment}" style="border-color: ${statusColor}; color: ${statusColor}; background: rgba(255,255,255,0.05);">
-                            ${version.environment === 'producao' ? 'Produção' : 'Homologação'}
+                        <span class="environment-badge-small ${version.environment}">
+                            ${version.environment === 'producao' ? 'PRODUÇÃO' : 'HOMOLOGAÇÃO'}
                         </span>
                     </div>
                     <div class="version-display-wrapper">
@@ -692,7 +692,7 @@ window.filterHistoryBySystem = function () {
                 <div>
                     <div style="font-weight: 600; color: var(--text-primary);">${escapeHtml(version.system)}</div>
                     <div class="environment-badge-small ${version.environment}" style="margin-top: 4px;">
-                        ${version.environment === 'producao' ? 'Produção' : 'Homologação'}
+                        ${version.environment === 'producao' ? 'PRODUÇÃO' : 'HOMOLOGAÇÃO'}
                     </div>
                 </div>
                 <div style="text-align: right;">
