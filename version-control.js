@@ -4,7 +4,6 @@
 
 let versionControls = [];
 window.currentVersionFilter = 'all'; // 'all', 'recent', 'warning', 'outdated'
-window.currentEnvFilter = 'all';    // 'all', 'producao', 'homologacao'
 let currentHistoryClientId = null;
 
 // ===================================
@@ -67,11 +66,6 @@ function renderVersionControls() {
             const status = getVersionStatus(v.updated_at);
             return status === window.currentVersionFilter;
         });
-    }
-
-    // Filter by Environment
-    if (window.currentEnvFilter !== 'all') {
-        filteredVersions = filteredVersions.filter(v => v.environment === window.currentEnvFilter);
     }
 
     // Clear list
@@ -164,7 +158,7 @@ function createClientGroupCard(clientGroup) {
         if (status === 'warning') statusColor = 'var(--accent)';
 
         return `
-            <div class="version-item-row status-${status}" style="border-left: 4px solid ${statusColor}">
+            <div class="version-item-row status-${status}" data-environment="${version.environment}" style="border-left: 4px solid ${statusColor}">
                 <div class="version-item-main">
                     <div class="version-system-info">
                         <span class="version-system-name">${escapeHtml(version.system)}</span>
@@ -208,6 +202,11 @@ function createClientGroupCard(clientGroup) {
             </div>
         </div>
         <div class="client-group-body">
+            <div class="card-env-filters">
+                <button class="card-env-btn active" onclick="window.filterCardByEnv(this, 'all')">Todos</button>
+                <button class="card-env-btn" onclick="window.filterCardByEnv(this, 'producao')">Produção</button>
+                <button class="card-env-btn" onclick="window.filterCardByEnv(this, 'homologacao')">Homologação</button>
+            </div>
             ${versionsHtml}
         </div>
     `;
@@ -726,16 +725,25 @@ function setupVersionControlFilters() {
         });
     });
 
-    // Environment chips
-    document.querySelectorAll('[data-env-filter]').forEach(button => {
-        button.addEventListener('click', () => {
-            document.querySelectorAll('[data-env-filter]').forEach(b => b.classList.remove('active'));
-            button.classList.add('active');
-            window.currentEnvFilter = button.dataset.envFilter;
-            renderVersionControls();
-        });
-    });
+    // Environment chips (REMOVED - now per card)
 }
+
+window.filterCardByEnv = function (button, env) {
+    const cardBody = button.closest('.client-group-body');
+    const buttons = cardBody.querySelectorAll('.card-env-btn');
+    const rows = cardBody.querySelectorAll('.version-item-row');
+
+    buttons.forEach(btn => btn.classList.remove('active'));
+    button.classList.add('active');
+
+    rows.forEach(row => {
+        if (env === 'all' || row.dataset.environment === env) {
+            row.style.display = 'flex';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+};
 
 // Make functions globally available
 window.editVersion = openVersionModal;
