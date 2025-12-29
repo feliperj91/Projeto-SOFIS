@@ -2112,8 +2112,8 @@ button:hover .vpn-icon-img {
 
 .version-legend-item.active {
     background-color: var(--accent);
-    color: #fff;
-    font-weight: 600;
+    color: #000;
+    font-weight: 700;
     box-shadow: 0 4px 12px rgba(255, 160, 0, 0.3);
 }
 
