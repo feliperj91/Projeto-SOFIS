@@ -733,13 +733,13 @@
 .version-system-name {
     font-weight: 500;
     color: #CFD8DC;
-    font-size: 1.05rem;
-    /* Slightly increased */
+    font-size: 1.15rem;
+    /* Increased */
 }
 
 .environment-badge-small {
-    font-size: 0.6rem;
-    /* Slightly decreased */
+    font-size: 0.55rem;
+    /* Decreased */
     padding: 2px 6px;
     border-radius: 4px;
     text-transform: uppercase;

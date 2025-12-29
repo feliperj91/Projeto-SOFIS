@@ -104,12 +104,8 @@ function renderVersionControls() {
 
     // Render Client Cards
     Object.values(grouped).sort((a, b) => a.name.localeCompare(b.name)).forEach(client => {
-        // Garantir que as versões internas estejam ordenadas corretamente (Mais recente primeiro)
-        client.versions.sort((a, b) => {
-            const dateA = new Date(a.updated_at);
-            const dateB = new Date(b.updated_at);
-            return dateB - dateA || b.id - a.id;
-        });
+        // Ordenar por nome de sistema (Alfabético)
+        client.versions.sort((a, b) => a.system.localeCompare(b.system));
 
         const card = createClientGroupCard(client);
         versionList.appendChild(card);
