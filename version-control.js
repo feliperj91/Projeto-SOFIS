@@ -270,6 +270,10 @@ function openVersionModal(versionId = null) {
     document.getElementById('versionClientInput').value = '';
     document.getElementById('versionClientSelect').value = '';
 
+    // Set default date to Today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('versionDateInput').value = today;
+
     if (versionId) {
         // Edit mode
         const version = versionControls.find(v => v.id === versionId);
@@ -284,6 +288,7 @@ function openVersionModal(versionId = null) {
             document.getElementById('versionEnvironmentSelect').value = version.environment;
             document.getElementById('versionSystemSelect').value = version.system;
             document.getElementById('versionNumberInput').value = version.version;
+            document.getElementById('versionDateInput').value = version.updated_at ? version.updated_at.split('T')[0] : today;
             document.getElementById('versionAlertCheck').checked = version.has_alert;
             document.getElementById('versionNotesInput').value = version.notes || '';
             document.getElementById('versionNotesInput').disabled = !version.has_alert;
@@ -335,6 +340,7 @@ async function handleVersionSubmit(e) {
     const environment = document.getElementById('versionEnvironmentSelect').value;
     const system = document.getElementById('versionSystemSelect').value;
     const version = document.getElementById('versionNumberInput').value;
+    const updateDate = document.getElementById('versionDateInput').value;
     const hasAlert = document.getElementById('versionAlertCheck').checked;
     const notes = document.getElementById('versionNotesInput').value;
 
@@ -354,7 +360,7 @@ async function handleVersionSubmit(e) {
         version,
         has_alert: hasAlert,
         notes,
-        updated_at: new Date().toISOString()
+        updated_at: updateDate ? new Date(updateDate + 'T12:00:00').toISOString() : new Date().toISOString()
     };
 
     try {
