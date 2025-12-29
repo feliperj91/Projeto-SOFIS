@@ -163,7 +163,7 @@ function createClientGroupCard(clientGroup) {
                         </span>
                     </div>
                     <div class="version-display-wrapper">
-                        <div class="version-number-display clickable-text" onclick="openVersionHistory('${version.id}')" title="Ver Histórico" style="color: ${statusColor}">
+                        <div class="version-number-display" style="color: ${statusColor}">
                             ${escapeHtml(version.version)}
                             ${version.notes ? `<i class="fa-solid fa-bell client-note-indicator clickable-bell" onclick="event.stopPropagation(); openVersionNotes('${version.id}')" title="Ver Observação" style="margin-left: 8px; cursor: pointer;"></i>` : ''}
                         </div>
