@@ -1642,6 +1642,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.showToast = showToast;
     window.editClient = editClient;
     window.deleteClient = deleteClient;
+    window.registerAuditLog = registerAuditLog;
 
     window.addNewContact = (clientId) => {
         const client = clients.find(c => c.id === clientId);
