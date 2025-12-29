@@ -282,6 +282,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateFilterCounts();
         applyViewMode();
         fetchRecentActivities();
+        populateVersionClientSelect();
     }
 
     await initialLoad();
@@ -2812,12 +2813,99 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Close on outside click
+
+    // Close on outside click for modals
     window.addEventListener('click', (e) => {
         if (e.target === historyModal) {
             historyModal.classList.add('hidden');
         }
+        if (e.target === document.getElementById('versionModal')) {
+            closeVersionModal();
+        }
+        if (e.target === document.getElementById('versionHistoryModal')) {
+            document.getElementById('versionHistoryModal').classList.add('hidden');
+        }
     });
 
+
+    // ===================================
+    // TAB NAVIGATION LOGIC
+    // ===================================
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tabId = btn.dataset.tab;
+
+            // Update buttons
+            tabBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Update content sections
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+                if (content.id === `${tabId}Tab`) {
+                    content.classList.add('active');
+                }
+            });
+
+            // Load tab specific data
+            if (tabId === 'versions' && window.loadVersionControls) {
+                window.loadVersionControls();
+            }
+        });
+    });
+
+    // ===================================
+    // VERSION CONTROL INTEGRATION
+    // ===================================
+    function populateVersionClientSelect() {
+        const select = document.getElementById('versionClientSelect');
+        if (!select) return;
+
+        // Keep the first option
+        const firstOption = select.options[0];
+        select.innerHTML = '';
+        select.appendChild(firstOption);
+
+        // Sort and add clients
+        const sortedClients = [...clients].sort((a, b) => a.name.localeCompare(b.name));
+        sortedClients.forEach(client => {
+            const option = document.createElement('option');
+            option.value = client.id;
+            option.textContent = client.name;
+            select.appendChild(option);
+        });
+    }
+
+    // Version Search listener
+    const versionSearchInput = document.getElementById('versionSearchInput');
+    if (versionSearchInput) {
+        versionSearchInput.addEventListener('input', () => {
+            if (window.renderVersionControls) window.renderVersionControls();
+        });
+    }
+
+    // Version Filter listeners
+    const versionFilterChips = document.querySelectorAll('[data-version-filter]');
+    versionFilterChips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            const filterValue = chip.dataset.versionFilter;
+
+            // This global variable is used in version-control.js
+            window.currentVersionFilter = filterValue;
+
+            // Update active state
+            versionFilterChips.forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+
+            // Re-render
+            if (window.renderVersionControls) window.renderVersionControls();
+        });
+    });
+
+    // Re-expose populate function if needed
+    window.populateVersionClientSelect = populateVersionClientSelect;
 });
 

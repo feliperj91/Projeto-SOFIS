@@ -1,0 +1,454 @@
+/* ===================================
+   TAB NAVIGATION COMPONENT
+   =================================== */
+
+.tab-navigation {
+    display: flex;
+    gap: 0;
+    margin-top: 15px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.tab-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 12px 24px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    border-bottom: 3px solid transparent;
+    white-space: nowrap;
+}
+
+.tab-btn:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+}
+
+.tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--accent);
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        transform: scaleX(0);
+    }
+    to {
+        transform: scaleX(1);
+    }
+}
+
+/* ===================================
+   TAB CONTENT SECTIONS
+   =================================== */
+
+.tab-content {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===================================
+   VERSION CONTROL GRID
+   =================================== */
+
+.version-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+/* ===================================
+   VERSION CARD
+   =================================== */
+
+.version-card {
+    background: var(--bg-darker);
+    border-radius: 12px;
+    padding: 20px;
+    border-left: 4px solid var(--border);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.version-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* Card Status Colors */
+.version-card.status-recent {
+    border-left-color: var(--success);
+}
+
+.version-card.status-warning {
+    border-left-color: var(--warning);
+}
+
+.version-card.status-outdated {
+    border-left-color: var(--danger);
+}
+
+/* ===================================
+   VERSION CARD HEADER
+   =================================== */
+
+.version-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
+.version-card-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+}
+
+.version-card-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.version-alert-icon {
+    color: var(--warning);
+    font-size: 1rem;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.version-card-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* ===================================
+   ENVIRONMENT BADGE
+   =================================== */
+
+.environment-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.environment-badge.homologacao {
+    background: rgba(241, 196, 15, 0.2);
+    color: var(--warning);
+    border: 1px solid var(--warning);
+}
+
+.environment-badge.producao {
+    background: rgba(46, 204, 113, 0.2);
+    color: var(--success);
+    border: 1px solid var(--success);
+}
+
+/* ===================================
+   VERSION CARD BODY
+   =================================== */
+
+.version-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.version-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.version-info-row:last-child {
+    border-bottom: none;
+}
+
+.version-info-label {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.version-info-value {
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-family: 'Courier New', monospace;
+}
+
+.version-system {
+    color: var(--accent);
+}
+
+/* ===================================
+   VERSION CARD FOOTER
+   =================================== */
+
+.version-card-footer {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.version-history-link {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s ease;
+}
+
+.version-history-link:hover {
+    text-decoration: underline;
+    gap: 8px;
+}
+
+.version-time-badge {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.version-time-badge.recent {
+    background: rgba(46, 204, 113, 0.2);
+    color: var(--success);
+}
+
+.version-time-badge.warning {
+    background: rgba(241, 196, 15, 0.2);
+    color: var(--warning);
+}
+
+.version-time-badge.outdated {
+    background: rgba(231, 76, 60, 0.2);
+    color: var(--danger);
+}
+
+/* ===================================
+   FILTER CHIPS - VERSION SPECIFIC
+   =================================== */
+
+.filter-chip-success {
+    border-color: var(--success);
+}
+
+.filter-chip-success.active {
+    background: var(--success);
+    color: white;
+}
+
+.filter-chip-warning {
+    border-color: var(--warning);
+}
+
+.filter-chip-warning.active {
+    background: var(--warning);
+    color: white;
+}
+
+.filter-chip-danger {
+    border-color: var(--danger);
+}
+
+.filter-chip-danger.active {
+    background: var(--danger);
+    color: white;
+}
+
+/* ===================================
+   VERSION MODAL
+   =================================== */
+
+.version-modal-form {
+    display: grid;
+    gap: 15px;
+}
+
+.version-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+/* ===================================
+   VERSION HISTORY MODAL
+   =================================== */
+
+.version-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.version-history-item {
+    background: var(--bg-darker);
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 3px solid var(--accent);
+}
+
+.version-history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.version-history-date {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.version-history-change {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 10px 0;
+    font-family: 'Courier New', monospace;
+}
+
+.version-history-old {
+    color: var(--danger);
+    text-decoration: line-through;
+}
+
+.version-history-arrow {
+    color: var(--text-secondary);
+}
+
+.version-history-new {
+    color: var(--success);
+    font-weight: 600;
+}
+
+.version-history-notes {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-style: italic;
+    margin-top: 8px;
+}
+
+/* ===================================
+   RESPONSIVE DESIGN
+   =================================== */
+
+@media (max-width: 768px) {
+    .tab-navigation {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .tab-btn {
+        width: 100%;
+        text-align: left;
+        padding: 15px 20px;
+        border-left: 3px solid transparent;
+        border-bottom: none;
+    }
+
+    .tab-btn.active {
+        border-left-color: var(--accent);
+        border-bottom-color: transparent;
+    }
+
+    .tab-btn.active::after {
+        display: none;
+    }
+
+    .version-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .version-form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .version-card-header {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .version-card-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
+
+/* ===================================
+   EMPTY STATE
+   =================================== */
+
+.version-empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-secondary);
+}
+
+.version-empty-state i {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    opacity: 0.3;
+}
+
+.version-empty-state p {
+    font-size: 1.1rem;
+    margin: 0;
+}
