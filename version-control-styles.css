@@ -507,47 +507,67 @@
 }
 
 .client-header-actions {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 10px;
+    align-items: center;
+    width: fit-content;
 }
 
-.client-card-main-buttons {
-    display: flex;
-    gap: 8px;
-}
-
+/* Unify Button & Pill Sizing/Aesthetics for Premium Feel */
+.client-card-main-buttons,
 .card-env-filters-header {
-    display: flex;
-    gap: 6px;
+    display: contents;
 }
 
-.card-env-pill {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: var(--text-secondary);
-    padding: 3px 10px;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
+.client-header-actions .btn-sm,
+.client-header-actions .card-env-pill {
+    min-height: 36px;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
     display: flex;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
+    gap: 8px;
+    letter-spacing: 0.3px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+    cursor: pointer;
 }
 
-.card-env-pill:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: var(--text-primary);
+.client-header-actions .btn-sm:hover,
+.client-header-actions .card-env-pill:hover {
+    background: rgba(255, 255, 255, 0.08);
     border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    color: var(--text-primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .card-env-pill.active {
-    background: var(--accent);
-    color: var(--bg-dark);
-    border-color: var(--accent);
+    background: var(--accent) !important;
+    color: var(--bg-dark) !important;
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 15px rgba(255, 204, 0, 0.3) !important;
+}
+
+.card-env-pill i,
+.btn-sm i {
+    font-size: 0.9rem;
+}
+
+/* Specific button overrides for premium feel */
+.client-header-actions .btn-secondary {
+    background: rgba(100, 116, 139, 0.1);
+}
+
+.client-header-actions .btn-secondary i {
+    opacity: 0.8;
 }
 
 .client-group-title {
