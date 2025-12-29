@@ -684,7 +684,7 @@
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
-            <form id="versionForm" onsubmit="handleVersionSubmit(event)">
+            <form id="versionForm">
                 <input type="hidden" id="versionId">
                 <div class="version-modal-form">
                     <div class="form-group">
@@ -718,6 +718,7 @@
                             </select>
                         </div>
                     </div>
+
                     <div class="form-group">
                         <label for="versionNumberInput">
                             <i class="fa-solid fa-code-branch"></i> Versão<span class="required">*</span>
@@ -738,7 +739,7 @@
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn-secondary" onclick="closeVersionModal()">Cancelar</button>
-                    <button type="submit" class="btn-primary">Salvar</button>
+                    <button type="button" class="btn-primary" onclick="submitVersionForm()">Salvar</button>
                 </div>
             </form>
         </div>
@@ -765,7 +766,7 @@
 
     <script src="supabase-client.js?v=2.4"></script>
     <script src="app.js?v=1.1"></script>
-    <script src="version-control.js?v=1.0"></script>
+    <script src="version-control.js?v=1.1"></script>
 </body>
 
 </html>

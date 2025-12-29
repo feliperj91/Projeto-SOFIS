@@ -320,7 +320,7 @@ function closeVersionModal() {
 // ===================================
 
 async function handleVersionSubmit(e) {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
 
     const versionId = document.getElementById('versionId').value;
     const clientId = document.getElementById('versionClientSelect').value;
@@ -519,5 +519,13 @@ window.deleteVersion = deleteVersion;
 window.openVersionHistory = openVersionHistory;
 window.loadVersionControls = loadVersionControls;
 window.handleVersionSubmit = handleVersionSubmit;
+window.submitVersionForm = function () {
+    const form = document.getElementById('versionForm');
+    if (form && !form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+    handleVersionSubmit({});
+};
 window.closeVersionModal = closeVersionModal;
 window.closeVersionHistoryModal = closeVersionHistoryModal;
