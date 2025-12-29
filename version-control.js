@@ -169,11 +169,11 @@ function createClientGroupCard(clientGroup) {
                     <div class="version-display-wrapper">
                         <div class="version-number-display clickable-text" onclick="openVersionHistory('${version.id}')" title="Ver Histórico" style="color: ${statusColor}">
                             ${escapeHtml(version.version)}
+                            ${version.notes ? `<i class="fa-solid fa-bell clickable-bell" onclick="event.stopPropagation(); openVersionNotes('${version.id}')" title="Ver Observação" style="font-size: 0.8em; margin-left: 8px; color: ${statusColor}"></i>` : ''}
                         </div>
                         <div class="version-small-meta">
-                            <span class="version-meta-label">Data: ${formatDate(version.updated_at)}</span>
-                            <span class="version-meta-label">Tempo: ${timeInfo}</span>
-                            ${version.notes ? `<span class="version-meta-label">Observação: ${escapeHtml(version.notes)}</span>` : ''}
+                            <span class="version-meta-label">Data da última atualização: ${formatDate(version.updated_at)}</span>
+                            <span class="version-meta-label">Tempo atualizado: ${timeInfo}</span>
                         </div>
                     </div>
                 </div>
