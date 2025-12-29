@@ -153,21 +153,22 @@ function createClientGroupCard(clientGroup) {
                         <span class="version-system-name">${escapeHtml(version.system)}</span>
                         <span class="environment-badge-small ${version.environment}">${version.environment === 'producao' ? 'Produção' : 'Homologação'}</span>
                     </div>
-                    <div class="version-number-display clickable-text" onclick="openVersionHistory('${version.id}')" title="Ver Histórico" style="color: ${statusColor}">
-                        ${escapeHtml(version.version)}
-                        ${version.notes ? `<i class="fa-solid fa-bell clickable-bell" onclick="event.stopPropagation(); openVersionNotes('${version.id}')" title="Ver Observação" style="font-size: 0.8em; margin-left: 5px;"></i>` : ''}
+                    <div class="version-display-wrapper">
+                        <div class="version-number-display clickable-text" onclick="openVersionHistory('${version.id}')" title="Ver Histórico" style="color: ${statusColor}">
+                            ${escapeHtml(version.version)}
+                            ${version.notes ? `<i class="fa-solid fa-bell clickable-bell" onclick="event.stopPropagation(); openVersionNotes('${version.id}')" title="Ver Observação" style="font-size: 0.8em; margin-left: 8px;"></i>` : ''}
+                        </div>
+                        <div class="version-small-meta">
+                            <span class="version-meta-label">Data da última atualização: ${formatDate(version.updated_at)}</span>
+                            <span class="version-meta-label">Tempo atualizado: ${timeInfo}</span>
+                        </div>
                     </div>
                 </div>
                 
-                <div class="version-item-meta">
-                    <span class="version-date" title="${formatDate(version.updated_at)}">
-                        <i class="fa-regular fa-clock"></i> ${timeInfo}
-                    </span>
-                    <div class="version-actions">
-                        <button class="btn-icon-small" onclick="editVersion('${version.id}')" title="Editar">
-                            <i class="fa-solid fa-pen"></i>
-                        </button>
-                    </div>
+                <div class="version-actions">
+                    <button class="btn-icon-small" onclick="editVersion('${version.id}')" title="Editar">
+                        <i class="fa-solid fa-pen"></i>
+                    </button>
                 </div>
             </div>
         `;
@@ -226,19 +227,28 @@ function getVersionStatus(updatedAt) {
 function getTimeInfo(updatedAt) {
     const now = new Date();
     const updated = new Date(updatedAt);
+
+    // Calcula diferença total em dias
     const diffMs = now - updated;
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    const diffMonths = Math.floor(diffDays / 30);
+    const diffDaysTotal = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-    if (diffDays === 0) return 'Hoje';
-    if (diffDays === 1) return '1 dia';
-    if (diffDays < 30) return `${diffDays} dias`;
-    if (diffMonths === 1) return '1 mês';
+    if (diffDaysTotal === 0) return 'Atualizado hoje';
 
-    const remainingDays = diffDays - (diffMonths * 30);
-    if (remainingDays === 0) return `${diffMonths} meses`;
-    if (remainingDays === 1) return `${diffMonths} meses e 1 dia`;
-    return `${diffMonths} meses e ${remainingDays} dias`;
+    const diffMonths = Math.floor(diffDaysTotal / 30);
+    const remainingDays = diffDaysTotal % 30;
+
+    let result = '';
+
+    if (diffMonths > 0) {
+        result += `${diffMonths} ${diffMonths === 1 ? 'mês' : 'meses'}`;
+        if (remainingDays > 0) {
+            result += ` e ${remainingDays} ${remainingDays === 1 ? 'dia' : 'dias'}`;
+        }
+    } else {
+        result = `${diffDaysTotal} ${diffDaysTotal === 1 ? 'dia' : 'dias'}`;
+    }
+
+    return result;
 }
 
 // ===================================

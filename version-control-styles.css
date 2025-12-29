@@ -552,8 +552,8 @@
 
 .version-item-main {
     display: flex;
-    align-items: center;
-    gap: 20px;
+    align-items: flex-start;
+    gap: 25px;
     flex: 1;
 }
 
@@ -593,11 +593,32 @@
 }
 
 .version-number-display {
-    font-size: 1.1rem;
+    font-size: 1.15rem;
     font-weight: 700;
-    min-width: 100px;
-    font-family: 'Outfit', monospace;
-    /* Monospace for numbers looks techy */
+    font-family: 'Outfit', sans-serif;
+    display: flex;
+    align-items: center;
+    line-height: 1;
+}
+
+.version-display-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+}
+
+.version-small-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.version-meta-label {
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    opacity: 0.8;
+    font-weight: 400;
 }
 
 .version-item-meta {
