@@ -348,7 +348,15 @@ function openVersionModal(versionId = null) {
             document.getElementById('versionEnvironmentSelect').value = version.environment;
             document.getElementById('versionSystemSelect').value = version.system;
             document.getElementById('versionNumberInput').value = version.version;
-            document.getElementById('versionDateInput').value = version.updated_at ? version.updated_at.split('T')[0] : today;
+            // Safely get YYYY-MM-DD
+            let formattedDate = today;
+            if (version.updated_at) {
+                const dateObj = new Date(version.updated_at);
+                if (!isNaN(dateObj.getTime())) {
+                    formattedDate = dateObj.toISOString().split('T')[0];
+                }
+            }
+            document.getElementById('versionDateInput').value = formattedDate;
             document.getElementById('versionAlertCheck').checked = version.has_alert;
             document.getElementById('versionNotesInput').value = version.notes || '';
             document.getElementById('versionNotesInput').disabled = !version.has_alert;
@@ -737,6 +745,20 @@ function setupVersionControlFilters() {
     });
 
     // Environment chips (REMOVED - now per card)
+
+    // Add specific listener for the alert checkbox in the version modal
+    const alertCheck = document.getElementById('versionAlertCheck');
+    const notesInput = document.getElementById('versionNotesInput');
+    if (alertCheck && notesInput) {
+        // Remove any existing listener to avoid duplicates
+        const newAlertCheck = alertCheck.cloneNode(true);
+        alertCheck.parentNode.replaceChild(newAlertCheck, alertCheck);
+
+        newAlertCheck.addEventListener('change', () => {
+            notesInput.disabled = !newAlertCheck.checked;
+            if (!newAlertCheck.checked) notesInput.value = '';
+        });
+    }
 }
 
 window.toggleCardFilterMenu = function (button) {
