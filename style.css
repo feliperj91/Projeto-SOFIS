@@ -45,7 +45,7 @@ header {
     align-items: center;
     margin-bottom: 30px;
     padding: 15px 0;
-    border-bottom: 1px solid var(--border);
+    border-bottom: none;
     gap: 20px;
 }
 
@@ -2054,7 +2054,7 @@ button:hover .vpn-icon-img {
     gap: 30px;
     margin-top: 25px;
     margin-bottom: 30px;
-    border-bottom: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     padding-bottom: 0;
     padding-left: 20px;
 }
