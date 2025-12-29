@@ -663,7 +663,8 @@
     margin: 0;
     font-size: 1.1rem;
     font-weight: 600;
-    color: var(--text-primary);
+    color: #CFD8DC;
+    /* Dimmed for premium feel */
 }
 
 .client-group-body {
@@ -731,7 +732,7 @@
 
 .version-system-name {
     font-weight: 500;
-    color: var(--text-primary);
+    color: #CFD8DC;
     font-size: 0.95rem;
 }
 
