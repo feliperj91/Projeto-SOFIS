@@ -616,14 +616,18 @@ function openVersionNotes(versionId) {
 
     if (!modal || !title || !content) return;
 
-    title.textContent = `Observações - ${version.clients?.name || 'Cliente'}`;
+    // Style the title with yellow client name
+    title.innerHTML = `Observações - <span style="color: var(--accent);">${escapeHtml(version.clients?.name || 'Cliente')}</span>`;
 
-    // Mostra qual foi a atualização com uma pequena linha divisória
+    // Improved formatting for the notes content
     content.innerHTML = `
-        <div style="font-weight: 600; color: var(--accent); margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">
-            ${escapeHtml(version.system)} - Versão ${escapeHtml(version.version)}
+        <div style="font-weight: 700; color: var(--accent); margin-bottom: 18px; border-bottom: 2px solid rgba(255,193,7,0.15); padding-bottom: 10px; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-circle-info"></i>
+            <span>${escapeHtml(version.system)} - Versão ${escapeHtml(version.version)}</span>
         </div>
-        <div style="line-height: 1.6;">${escapeHtml(version.notes || 'Nenhuma observação cadastrada.')}</div>
+        <div style="line-height: 1.8; font-size: 1.05rem; color: #e0e0e0; text-align: left;">
+            ${escapeHtml(version.notes || 'Nenhuma observação cadastrada.').replace(/\n/g, '<br>')}
+        </div>
     `;
 
     modal.classList.remove('hidden');
