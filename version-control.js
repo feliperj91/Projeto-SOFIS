@@ -150,7 +150,7 @@ function createClientGroupCard(clientGroup) {
             <div class="version-item-row" style="border-left: 3px solid ${statusColor}">
                 <div class="version-item-main">
                     <div class="version-system-info">
-                        <span class="version-system-name clickable-text" onclick="openVersionNotes('${version.id}')">${escapeHtml(version.system)}</span>
+                        <span class="version-system-name">${escapeHtml(version.system)}</span>
                         <span class="environment-badge-small ${version.environment}">${version.environment === 'producao' ? 'PROD' : 'HOMOL'}</span>
                     </div>
                     <div class="version-number-display" style="color: ${statusColor}">
@@ -181,7 +181,7 @@ function createClientGroupCard(clientGroup) {
         <div class="client-group-header">
             <div class="client-group-title">
                 <div class="client-status-dot" style="background-color: ${overallStatusColor}"></div>
-                <h3 class="clickable-text" onclick="openClientNotes('${clientGroup.id}')" title="Ver alertas do cliente">${escapeHtml(clientGroup.name)}</h3>
+                <h3>${escapeHtml(clientGroup.name)}</h3>
             </div>
             <button class="btn-secondary btn-sm" onclick="window.prefillClientVersion('${clientGroup.id}', '${escapeHtml(clientGroup.name)}')" title="Adicionar Sistema">
                 <i class="fa-solid fa-plus"></i> <span class="desktop-only">Sistema</span>
@@ -538,57 +538,22 @@ function openVersionNotes(versionId) {
     const title = document.getElementById('versionNotesTitle');
     const content = document.getElementById('versionNotesContent');
 
-    title.textContent = `Observação: ${version.system}`;
-    content.innerHTML = `
-        <div class="note-entry">
-            <div class="note-entry-header">
-                <span class="note-system">${escapeHtml(version.system)}</span>
-                <span class="note-env">${version.environment === 'producao' ? 'Produção' : 'Homologação'}</span>
-            </div>
-            <div class="note-text">${escapeHtml(version.notes || 'Nenhuma observação cadastrada.')}</div>
-        </div>
-    `;
+    if (!modal || !title || !content) return;
+
+    title.textContent = `Observações - ${version.clients?.name || 'Cliente'}`;
+    content.textContent = version.notes || 'Nenhuma observação cadastrada.';
 
     modal.classList.remove('hidden');
 }
 
-function openClientNotes(clientId) {
-    const versionsWithNotes = versionControls.filter(v => v.client_id === clientId && v.notes);
-    const clientName = versionsWithNotes.length > 0 ? versionsWithNotes[0].clients?.name : 'Cliente';
+// openClientNotes removed as per request to focus only on the bell
 
-    const modal = document.getElementById('versionNotesModal');
-    const title = document.getElementById('versionNotesTitle');
-    const content = document.getElementById('versionNotesContent');
-
-    title.textContent = `Alertas: ${clientName}`;
-
-    if (versionsWithNotes.length === 0) {
-        content.innerHTML = '<div class="note-text">Nenhum alerta ou observação ativa para este cliente.</div>';
-    } else {
-        content.innerHTML = `
-            <div class="version-notes-client-list">
-                ${versionsWithNotes.map(v => `
-                    <div class="note-entry">
-                        <div class="note-entry-header">
-                            <span class="note-system">${escapeHtml(v.system)}</span>
-                            <span class="note-env">${v.environment === 'producao' ? 'Produção' : 'Homologação'}</span>
-                        </div>
-                        <div class="note-text">${escapeHtml(v.notes)}</div>
-                    </div>
-                `).join('')}
-            </div>
-        `;
-    }
-
-    modal.classList.remove('hidden');
-}
 
 // Make functions globally available
 window.editVersion = openVersionModal;
 window.deleteVersion = deleteVersion;
 window.openVersionHistory = openVersionHistory;
 window.openVersionNotes = openVersionNotes;
-window.openClientNotes = openClientNotes;
 window.loadVersionControls = loadVersionControls;
 window.handleVersionSubmit = handleVersionSubmit;
 window.submitVersionForm = function () {
