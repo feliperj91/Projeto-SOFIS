@@ -200,7 +200,7 @@ function createClientGroupCard(clientGroup) {
                     <i class="fa-solid fa-plus"></i> <span class="desktop-only">Sistema</span>
                 </button>
                 <button class="btn-secondary btn-sm card-env-toggle" onclick="window.cycleCardEnv(this)" data-current-env="all" title="Alternar Ambiente">
-                    <i class="fa-solid fa-filter"></i> <span>Todos</span>
+                    <i class="fa-solid fa-filter"></i>
                 </button>
             </div>
         </div>
@@ -729,7 +729,6 @@ function setupVersionControlFilters() {
 window.cycleCardEnv = function (button) {
     const card = button.closest('.client-version-group-card');
     const rows = card.querySelectorAll('.version-item-row');
-    const label = button.querySelector('span');
     const icon = button.querySelector('i');
 
     const envs = ['all', 'producao', 'homologacao'];
@@ -741,15 +740,12 @@ window.cycleCardEnv = function (button) {
 
     // Update UI
     if (nextEnv === 'all') {
-        label.textContent = 'Todos';
         icon.className = 'fa-solid fa-filter';
         button.classList.remove('active');
     } else if (nextEnv === 'producao') {
-        label.textContent = 'Produção';
         icon.className = 'fa-solid fa-server';
         button.classList.add('active');
     } else {
-        label.textContent = 'Homol.';
         icon.className = 'fa-solid fa-vial';
         button.classList.add('active');
     }

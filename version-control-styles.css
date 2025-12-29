@@ -573,6 +573,23 @@
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
 }
 
+.card-env-toggle {
+    width: 28px;
+    min-width: 28px;
+    padding: 0 !important;
+}
+
+.card-env-toggle i {
+    color: #fca311 !important;
+    /* Premium Orange from image */
+    font-size: 0.9rem !important;
+}
+
+.card-env-toggle.active {
+    border-color: rgba(252, 163, 17, 0.3) !important;
+    background: rgba(252, 163, 17, 0.1) !important;
+}
+
 .client-group-title h3 {
     margin: 0;
     font-size: 1.1rem;
