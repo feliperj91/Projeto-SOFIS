@@ -124,14 +124,20 @@ function createClientGroupCard(clientGroup) {
     if (hasOutdated) overallStatusColor = 'var(--danger)';
     else if (hasWarning) overallStatusColor = 'var(--accent)';
 
-    // Sort versions inside client: Production first, then by Last Updated
-    const sortedVersions = clientGroup.versions.sort((a, b) => {
-        if (a.environment === 'producao' && b.environment !== 'producao') return -1;
-        if (a.environment !== 'producao' && b.environment === 'producao') return 1;
-        return new Date(b.updated_at) - new Date(a.updated_at);
-    });
+    // Limit to last 5 of each environment
+    const prodVersions = clientGroup.versions
+        .filter(v => v.environment === 'producao')
+        .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
+        .slice(0, 5);
 
-    let versionsHtml = sortedVersions.map(version => {
+    const homolVersions = clientGroup.versions
+        .filter(v => v.environment === 'homologacao')
+        .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
+        .slice(0, 5);
+
+    const displayVersions = [...prodVersions, ...homolVersions];
+
+    let versionsHtml = displayVersions.map(version => {
         const status = getVersionStatus(version.updated_at);
         const timeInfo = getTimeInfo(version.updated_at);
 
