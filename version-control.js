@@ -192,21 +192,26 @@ function createClientGroupCard(clientGroup) {
             <div class="client-group-title">
                 <h3>${escapeHtml(clientGroup.name)}</h3>
             </div>
-            <div style="display: flex; gap: 8px;">
-                <button class="btn-secondary btn-sm" onclick="window.openClientVersionsHistory('${clientGroup.id}')" title="Histórico de Atualizações">
-                    <i class="fa-solid fa-clock-rotate-left"></i> <span class="desktop-only">Histórico</span>
-                </button>
-                <button class="btn-secondary btn-sm" onclick="window.prefillClientVersion('${clientGroup.id}', '${escapeHtml(clientGroup.name)}')" title="Adicionar Sistema">
-                    <i class="fa-solid fa-plus"></i> <span class="desktop-only">Sistema</span>
-                </button>
+            <div class="client-header-actions">
+                <div class="client-card-main-buttons">
+                    <button class="btn-secondary btn-sm" onclick="window.openClientVersionsHistory('${clientGroup.id}')" title="Histórico de Atualizações">
+                        <i class="fa-solid fa-clock-rotate-left"></i> <span class="desktop-only">Histórico</span>
+                    </button>
+                    <button class="btn-secondary btn-sm" onclick="window.prefillClientVersion('${clientGroup.id}', '${escapeHtml(clientGroup.name)}')" title="Adicionar Sistema">
+                        <i class="fa-solid fa-plus"></i> <span class="desktop-only">Sistema</span>
+                    </button>
+                </div>
+                <div class="card-env-filters-header">
+                    <button class="card-env-pill" onclick="window.filterCardByEnv(this, 'producao')">
+                        <i class="fa-solid fa-server"></i> Produção
+                    </button>
+                    <button class="card-env-pill" onclick="window.filterCardByEnv(this, 'homologacao')">
+                        <i class="fa-solid fa-flask"></i> Homologação
+                    </button>
+                </div>
             </div>
         </div>
         <div class="client-group-body">
-            <div class="card-env-filters">
-                <button class="card-env-btn active" onclick="window.filterCardByEnv(this, 'all')">Todos</button>
-                <button class="card-env-btn" onclick="window.filterCardByEnv(this, 'producao')">Produção</button>
-                <button class="card-env-btn" onclick="window.filterCardByEnv(this, 'homologacao')">Homologação</button>
-            </div>
             ${versionsHtml}
         </div>
     `;
@@ -729,15 +734,26 @@ function setupVersionControlFilters() {
 }
 
 window.filterCardByEnv = function (button, env) {
-    const cardBody = button.closest('.client-group-body');
-    const buttons = cardBody.querySelectorAll('.card-env-btn');
-    const rows = cardBody.querySelectorAll('.version-item-row');
+    const card = button.closest('.client-version-group-card');
+    const buttons = card.querySelectorAll('.card-env-pill');
+    const rows = card.querySelectorAll('.version-item-row');
 
+    const isAlreadyActive = button.classList.contains('active');
+
+    // Reset all buttons in this card
     buttons.forEach(btn => btn.classList.remove('active'));
-    button.classList.add('active');
+
+    let targetEnv = env;
+    if (isAlreadyActive) {
+        // Toggle off if already active
+        targetEnv = 'all';
+    } else {
+        // Toggle on
+        button.classList.add('active');
+    }
 
     rows.forEach(row => {
-        if (env === 'all' || row.dataset.environment === env) {
+        if (targetEnv === 'all' || row.dataset.environment === targetEnv) {
             row.style.display = 'flex';
         } else {
             row.style.display = 'none';

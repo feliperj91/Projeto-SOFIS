@@ -506,19 +506,28 @@
     border-bottom: 1px solid var(--border);
 }
 
-.card-env-filters {
+.client-header-actions {
     display: flex;
-    gap: 8px;
-    padding: 10px 15px;
-    background: rgba(0, 0, 0, 0.15);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
 }
 
-.card-env-btn {
-    background: transparent;
+.client-card-main-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.card-env-filters-header {
+    display: flex;
+    gap: 6px;
+}
+
+.card-env-pill {
+    background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: var(--text-secondary);
-    padding: 4px 12px;
+    padding: 3px 10px;
     border-radius: 6px;
     font-size: 0.75rem;
     font-weight: 500;
@@ -529,13 +538,13 @@
     gap: 6px;
 }
 
-.card-env-btn:hover {
-    background: rgba(255, 255, 255, 0.05);
+.card-env-pill:hover {
+    background: rgba(255, 255, 255, 0.1);
     color: var(--text-primary);
     border-color: rgba(255, 255, 255, 0.2);
 }
 
-.card-env-btn.active {
+.card-env-pill.active {
     background: var(--accent);
     color: var(--bg-dark);
     border-color: var(--accent);
