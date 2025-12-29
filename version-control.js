@@ -145,16 +145,18 @@ function createClientGroupCard(clientGroup) {
         if (status === 'warning') statusColor = 'var(--accent)';
 
         return `
-            <div class="version-item-row" style="border-left: 3px solid ${statusColor}">
+            <div class="version-item-row status-${status}" style="border-left: 4px solid ${statusColor}">
                 <div class="version-item-main">
                     <div class="version-system-info">
                         <span class="version-system-name">${escapeHtml(version.system)}</span>
-                        <span class="environment-badge-small ${version.environment}">${version.environment === 'producao' ? 'Produção' : 'Homologação'}</span>
+                        <span class="environment-badge-small ${version.environment}" style="border-color: ${statusColor}; color: ${statusColor}; background: rgba(255,255,255,0.05);">
+                            ${version.environment === 'producao' ? 'Produção' : 'Homologação'}
+                        </span>
                     </div>
                     <div class="version-display-wrapper">
                         <div class="version-number-display clickable-text" onclick="openVersionHistory('${version.id}')" title="Ver Histórico" style="color: ${statusColor}">
                             ${escapeHtml(version.version)}
-                            ${version.notes ? `<i class="fa-solid fa-bell clickable-bell" onclick="event.stopPropagation(); openVersionNotes('${version.id}')" title="Ver Observação" style="font-size: 0.8em; margin-left: 8px;"></i>` : ''}
+                            ${version.notes ? `<i class="fa-solid fa-bell clickable-bell" onclick="event.stopPropagation(); openVersionNotes('${version.id}')" title="Ver Observação" style="font-size: 0.8em; margin-left: 8px; color: ${statusColor}"></i>` : ''}
                         </div>
                         <div class="version-small-meta">
                             <span class="version-meta-label">Data da última atualização: ${formatDate(version.updated_at)}</span>
@@ -216,11 +218,12 @@ window.prefillClientVersion = function (id, name) {
 function getVersionStatus(updatedAt) {
     const now = new Date();
     const updated = new Date(updatedAt);
-    const diffMonths = (now - updated) / (1000 * 60 * 60 * 24 * 30);
+    const diffMs = now - updated;
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-    if (diffMonths < 2) return 'recent';
-    if (diffMonths < 3) return 'warning';
-    return 'outdated';
+    if (diffDays <= 30) return 'recent';     // Até 30 dias: Verde
+    if (diffDays <= 90) return 'warning';    // 31 a 90 dias: Amarelo
+    return 'outdated';                      // Acima de 90 dias: Vermelho
 }
 
 // ===================================

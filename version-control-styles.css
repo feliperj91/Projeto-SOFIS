@@ -539,15 +539,40 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    transition: background 0.2s;
+    transition: all 0.3s ease;
+}
+
+.version-item-row:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateX(4px);
+}
+
+.version-item-row.status-recent {
+    background: rgba(102, 187, 106, 0.03);
+}
+
+.version-item-row.status-warning {
+    background: rgba(255, 160, 0, 0.03);
+}
+
+.version-item-row.status-outdated {
+    background: rgba(239, 83, 80, 0.03);
+}
+
+.version-item-row.status-recent:hover {
+    background: rgba(102, 187, 106, 0.08);
+}
+
+.version-item-row.status-warning:hover {
+    background: rgba(255, 160, 0, 0.08);
+}
+
+.version-item-row.status-outdated:hover {
+    background: rgba(239, 83, 80, 0.08);
 }
 
 .version-item-row:last-child {
     margin-bottom: 0;
-}
-
-.version-item-row:hover {
-    background: rgba(255, 255, 255, 0.05);
 }
 
 .version-item-main {
@@ -697,12 +722,10 @@
 .clickable-bell {
     cursor: pointer;
     transition: transform 0.2s, color 0.2s;
-    color: var(--accent);
 }
 
 .clickable-bell:hover {
     transform: scale(1.2);
-    color: var(--accent) !important;
 }
 
 .clickable-text {
