@@ -1640,6 +1640,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Expose functions to global scope for HTML onclick attributes
     window.showToast = showToast;
+    window.escapeHtml = escapeHtml;
     window.editClient = editClient;
     window.deleteClient = deleteClient;
     window.registerAuditLog = registerAuditLog;
