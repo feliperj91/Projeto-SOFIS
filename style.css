@@ -2122,4 +2122,5 @@ button:hover .vpn-icon-img {
     height: 16px;
     border-radius: 4px;
     display: inline-block;
+    border: 1px solid #000;
 }
