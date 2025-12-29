@@ -188,7 +188,8 @@ button {
     width: 100%;
 }
 
-#search-bar .search-icon {
+#search-bar .search-icon,
+#version-search-bar .search-icon {
     position: absolute;
     left: 16px;
     top: 50%;
@@ -199,7 +200,8 @@ button {
 }
 
 
-#searchInput {
+#searchInput,
+#versionSearchInput {
     width: 100%;
     background: var(--card-bg);
     backdrop-filter: blur(10px);
@@ -243,7 +245,8 @@ button {
 }
 
 
-#searchInput:focus {
+#searchInput:focus,
+#versionSearchInput:focus {
     border-color: var(--accent);
     box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
     outline: none;
