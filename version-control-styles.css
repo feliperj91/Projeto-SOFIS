@@ -676,6 +676,7 @@
 .clickable-bell {
     cursor: pointer;
     transition: transform 0.2s, color 0.2s;
+    color: var(--accent);
 }
 
 .clickable-bell:hover {

@@ -156,7 +156,7 @@ function createClientGroupCard(clientGroup) {
                     <div class="version-number-display" style="color: ${statusColor}">
                         ${escapeHtml(version.version)}
                         ${version.has_alert ? '<i class="fa-solid fa-triangle-exclamation" title="Atenção necessária" style="font-size: 0.8em; margin-left: 5px;"></i>' : ''}
-                        ${version.notes ? `<i class="fa-solid fa-bell clickable-bell" onclick="openVersionNotes('${version.id}')" title="Ver Observação" style="font-size: 0.8em; margin-left: 5px; color: var(--text-secondary);"></i>` : ''}
+                        ${version.notes ? `<i class="fa-solid fa-bell clickable-bell" onclick="openVersionNotes('${version.id}')" title="Ver Observação" style="font-size: 0.8em; margin-left: 5px;"></i>` : ''}
                     </div>
                 </div>
                 
@@ -541,7 +541,14 @@ function openVersionNotes(versionId) {
     if (!modal || !title || !content) return;
 
     title.textContent = `Observações - ${version.clients?.name || 'Cliente'}`;
-    content.textContent = version.notes || 'Nenhuma observação cadastrada.';
+
+    // Mostra qual foi a atualização com uma pequena linha divisória
+    content.innerHTML = `
+        <div style="font-weight: 600; color: var(--accent); margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">
+            ${escapeHtml(version.system)} - Versão ${escapeHtml(version.version)}
+        </div>
+        <div style="line-height: 1.6;">${escapeHtml(version.notes || 'Nenhuma observação cadastrada.')}</div>
+    `;
 
     modal.classList.remove('hidden');
 }
