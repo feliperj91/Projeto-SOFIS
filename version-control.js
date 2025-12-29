@@ -124,16 +124,16 @@ function createClientGroupCard(clientGroup) {
     if (hasOutdated) overallStatusColor = 'var(--danger)';
     else if (hasWarning) overallStatusColor = 'var(--accent)';
 
-    // Limit to last 5 of each environment
+    // Limit to last 3 of each environment
     const prodVersions = clientGroup.versions
         .filter(v => v.environment === 'producao')
         .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
-        .slice(0, 5);
+        .slice(0, 3);
 
     const homolVersions = clientGroup.versions
         .filter(v => v.environment === 'homologacao')
         .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
-        .slice(0, 5);
+        .slice(0, 3);
 
     const displayVersions = [...prodVersions, ...homolVersions].sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
 
@@ -484,7 +484,8 @@ async function openVersionHistory(versionId) {
             .from('version_history')
             .select('*')
             .eq('version_control_id', versionId)
-            .order('created_at', { ascending: false });
+            .order('created_at', { ascending: false })
+            .limit(3);
 
         if (error) throw error;
 
