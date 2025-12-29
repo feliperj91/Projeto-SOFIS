@@ -2047,3 +2047,45 @@ button:hover .vpn-icon-img {
     color: var(--accent);
     font-size: 1.1rem;
 }
+
+/* Tab Navigation Styling */
+.tab-navigations {
+    display: flex;
+    gap: 30px;
+    margin-top: 25px;
+    margin-bottom: 30px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 0;
+    padding-left: 20px;
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1rem;
+    font-weight: 500;
+    padding-bottom: 12px;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.3s ease;
+}
+
+.tab-btn:hover {
+    color: var(--text-primary);
+}
+
+.tab-btn.active {
+    color: var(--accent);
+}
+
+.tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: var(--accent);
+    box-shadow: 0 -2px 8px rgba(56, 189, 248, 0.5);
+}

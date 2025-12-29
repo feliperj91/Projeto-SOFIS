@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerenciador de Clientes - SOFIS</title>
-    <link rel="stylesheet" href="style.css?v=2.5">
+    <link rel="stylesheet" href="style.css?v=2.6">
     <link rel="stylesheet" href="server-styles.css?v=2.4">
     <link rel="stylesheet" href="credential-styles.css?v=2.4">
     <link rel="stylesheet" href="version-control-styles.css?v=1.1">
@@ -23,17 +23,9 @@
 <body>
     <div class="app-container">
         <header>
-            <div class="logo-container">
+            <div class="logo-container" style="display: flex; flex-direction: column; align-items: flex-start; gap: 0;">
                 <img src="logo.png" alt="Sofis Logo" class="logo-img">
-                <!-- Tab Navigation -->
-                <div class="tab-navigations">
-                    <button class="tab-btn active" data-tab="contacts">
-                        Gerenciamento de Contatos e Conexões de Clientes
-                    </button>
-                    <button class="tab-btn" data-tab="versions">
-                        Controle de Versões
-                    </button>
-                </div>
+                <span class="app-subtitle">Gerenciamento de Clientes</span>
             </div>
             <div class="header-controls">
                 <span id="currentUserDisplay" class="user-display"></span>
@@ -42,6 +34,16 @@
                 </button>
             </div>
         </header>
+
+        <!-- Tab Navigation -->
+        <div class="tab-navigations">
+            <button class="tab-btn active" data-tab="contacts">
+                Gerenciamento de Contatos e Conexões de Clientes
+            </button>
+            <button class="tab-btn" data-tab="versions">
+                Controle de Versões
+            </button>
+        </div>
 
         <!-- Contacts Tab Content -->
         <main id="contactsTab" class="tab-content active">
