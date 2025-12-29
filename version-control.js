@@ -135,7 +135,7 @@ function createClientGroupCard(clientGroup) {
         .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
         .slice(0, 5);
 
-    const displayVersions = [...prodVersions, ...homolVersions];
+    const displayVersions = [...prodVersions, ...homolVersions].sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
 
     let versionsHtml = displayVersions.map(version => {
         const status = getVersionStatus(version.updated_at);
@@ -151,11 +151,10 @@ function createClientGroupCard(clientGroup) {
                 <div class="version-item-main">
                     <div class="version-system-info">
                         <span class="version-system-name">${escapeHtml(version.system)}</span>
-                        <span class="environment-badge-small ${version.environment}">${version.environment === 'producao' ? 'PROD' : 'HOMOL'}</span>
+                        <span class="environment-badge-small ${version.environment}">${version.environment === 'producao' ? 'Produção' : 'Homologação'}</span>
                     </div>
                     <div class="version-number-display" style="color: ${statusColor}">
                         ${escapeHtml(version.version)}
-                        ${version.has_alert ? '<i class="fa-solid fa-triangle-exclamation" title="Atenção necessária" style="font-size: 0.8em; margin-left: 5px;"></i>' : ''}
                         ${version.notes ? `<i class="fa-solid fa-bell clickable-bell" onclick="openVersionNotes('${version.id}')" title="Ver Observação" style="font-size: 0.8em; margin-left: 5px;"></i>` : ''}
                     </div>
                 </div>
