@@ -1166,6 +1166,5 @@
 .client-group-title h3:hover {
     color: var(--accent);
     text-shadow: 0 0 10px rgba(255, 193, 7, 0.3);
-    text-decoration: underline;
     text-underline-offset: 4px;
 }
