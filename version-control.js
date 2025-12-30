@@ -182,7 +182,7 @@
                 </div>
                 <div class="client-header-actions">
                     <button class="btn-card-action" onclick="window.openClientVersionsHistory('${group.id}')" title="Ver Histórico">
-                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        <i class="fa-solid fa-gear"></i>
                     </button>
                     <button class="btn-card-action" onclick="window.prefillClientVersion('${group.id}', '${utils.escapeHtml(group.name)}')" title="Adicionar Sistema">
                         <i class="fa-solid fa-plus-circle"></i>
