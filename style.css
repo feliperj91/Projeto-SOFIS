@@ -108,7 +108,7 @@ header {
 }
 
 .app-subtitle {
-    font-size: 26px !important;
+    font-size: 22px !important;
     color: var(--text-secondary);
     font-weight: 300 !important;
     margin-left: 0;
