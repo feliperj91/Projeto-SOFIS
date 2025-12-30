@@ -1,11 +1,12 @@
--- Execute este SQL no seu editor do Supabase para ativar a gestão de usuários e permissões
+-- SQL Executado com Sucesso para ativar a gestão de usuários e permissões
 
 -- 1. Atualizar tabela de usuários com coluna de cargos
 ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'TECNICO';
 UPDATE users SET role = 'ADMINISTRADOR' WHERE username = 'admin';
 
--- 2. Criar tabela de permissões por cargo
-CREATE TABLE IF NOT EXISTS role_permissions (
+-- 2. Criar/Resetar tabela de permissões por cargo
+DROP TABLE IF EXISTS role_permissions;
+CREATE TABLE role_permissions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     role_name TEXT NOT NULL,
     module TEXT NOT NULL,
@@ -23,8 +24,7 @@ VALUES
 ('ADMINISTRADOR', 'Clientes e Contatos', true, true, true, true),
 ('ADMINISTRADOR', 'Infraestruturas', true, true, true, true),
 ('ADMINISTRADOR', 'Gestão de Usuários', true, true, true, true),
-('ADMINISTRADOR', 'Controle de Versões', true, true, true, true)
-ON CONFLICT (role_name, module) DO NOTHING;
+('ADMINISTRADOR', 'Controle de Versões', true, true, true, true);
 
 -- 4. Inserir permissões Padrão (Técnico)
 INSERT INTO role_permissions (role_name, module, can_view, can_create, can_edit, can_delete)
@@ -33,5 +33,13 @@ VALUES
 ('TECNICO', 'Clientes e Contatos', true, true, true, false),
 ('TECNICO', 'Infraestruturas', true, true, true, false),
 ('TECNICO', 'Gestão de Usuários', false, false, false, false),
-('TECNICO', 'Controle de Versões', true, true, true, false)
-ON CONFLICT (role_name, module) DO NOTHING;
+('TECNICO', 'Controle de Versões', true, true, true, false);
+
+-- 5. Inserir permissões Padrão (Analista)
+INSERT INTO role_permissions (role_name, module, can_view, can_create, can_edit, can_delete)
+VALUES 
+('ANALISTA', 'Logs e Atividades', true, true, false, false),
+('ANALISTA', 'Clientes e Contatos', true, true, true, false),
+('ANALISTA', 'Infraestruturas', true, false, false, false),
+('ANALISTA', 'Gestão de Usuários', false, false, false, false),
+('ANALISTA', 'Controle de Versões', true, true, true, false);
