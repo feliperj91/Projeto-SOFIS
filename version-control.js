@@ -480,7 +480,26 @@
 
     window.setupVersionControlFilters = () => {
         const sInput = document.getElementById('versionSearchInput');
-        if (sInput) sInput.oninput = () => renderVersionControls();
+        const clearBtn = document.getElementById('clearVersionSearch');
+
+        if (sInput) {
+            sInput.oninput = () => {
+                if (clearBtn) {
+                    if (sInput.value.length > 0) clearBtn.classList.remove('hidden');
+                    else clearBtn.classList.add('hidden');
+                }
+                renderVersionControls();
+            };
+        }
+
+        if (clearBtn && sInput) {
+            clearBtn.onclick = () => {
+                sInput.value = '';
+                clearBtn.classList.add('hidden');
+                sInput.focus();
+                renderVersionControls();
+            };
+        }
 
         document.querySelectorAll('[data-version-filter]').forEach(b => {
             b.onclick = () => {
