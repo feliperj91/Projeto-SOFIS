@@ -144,30 +144,29 @@
 
             return `
                 <div class="version-item-row status-${status}" data-environment="${v.environment}">
-                    <div class="version-item-main">
-                        <!-- Left Side: System info -->
-                        <div class="version-system-info">
+                    <!-- Top section: System and Version -->
+                    <div class="version-row-header">
+                        <div class="version-system-box">
                             <span class="version-system-name">${utils.escapeHtml(v.system)}</span>
-                            <span class="environment-badge-small ${v.environment}">${v.environment.toUpperCase()}</span>
                         </div>
-                        
-                        <!-- Right Side Data: Version number and meta -->
-                        <div class="version-display-wrapper">
-                            <div class="version-number-display">
-                                ${utils.escapeHtml(v.version)}
-                                ${v.has_alert ? `<i class="fa-solid fa-bell client-note-indicator" onclick="window.openVersionNotes('${v.id}')" title="Possui observações importantes" style="margin-left: 10px; font-size: 0.8rem;"></i>` : ''}
-                            </div>
-                            <div class="version-small-meta">
-                                <div class="version-meta-label">Data da última atualização: ${utils.formatDate(v.updated_at)}</div>
-                                <div class="version-meta-label">Tempo atualizado: ${timeInfo}</div>
-                            </div>
+                        <div class="version-right-box">
+                            <span class="version-number-display">${utils.escapeHtml(v.version)}</span>
+                            ${v.has_alert ? `<i class="fa-solid fa-bell client-note-indicator" onclick="window.openVersionNotes('${v.id}')" title="Possui observações importantes"></i>` : ''}
+                            <button class="btn-edit-version-small" onclick="window.editVersion('${v.id}')" title="Editar">
+                                <i class="fa-solid fa-pencil"></i>
+                            </button>
                         </div>
                     </div>
                     
-                    <div class="version-actions">
-                        <button class="btn-icon-small" title="Editar" onclick="window.editVersion('${v.id}')">
-                            <i class="fa-solid fa-pen"></i>
-                        </button>
+                    <!-- Bottom section: Badge and Meta -->
+                    <div class="version-row-body">
+                        <div class="version-badge-area">
+                            <span class="environment-badge-small ${v.environment}">${v.environment.toUpperCase()}</span>
+                        </div>
+                        <div class="version-meta-area">
+                            <div class="meta-line">Data: ${utils.formatDate(v.updated_at)}</div>
+                            <div class="meta-line">${timeInfo}</div>
+                        </div>
                     </div>
                 </div>
             `;
@@ -179,11 +178,11 @@
                     <h3 onclick="window.openClientInteraction('${group.id}', '${utils.escapeHtml(group.name)}')" style="cursor:pointer" title="Clique para ver opções do cliente">${utils.escapeHtml(group.name)}</h3>
                 </div>
                 <div class="client-header-actions">
-                    <button class="btn-sm btn-secondary" onclick="window.openClientVersionsHistory('${group.id}')">
-                        <i class="fa-solid fa-history"></i> Histórico
+                    <button class="btn-card-action" onclick="window.openClientVersionsHistory('${group.id}')" title="Ver Histórico">
+                        <i class="fa-solid fa-clock-rotate-left"></i> <span>Histórico</span>
                     </button>
-                    <button class="btn-sm btn-secondary" onclick="window.prefillClientVersion('${group.id}', '${utils.escapeHtml(group.name)}')">
-                        <i class="fa-solid fa-plus"></i> Sistema
+                    <button class="btn-card-action" onclick="window.prefillClientVersion('${group.id}', '${utils.escapeHtml(group.name)}')" title="Adicionar Sistema">
+                        <i class="fa-solid fa-plus-circle"></i> <span>Sistema</span>
                     </button>
                     
                     <!-- Card Level Filter -->
