@@ -705,8 +705,8 @@
 .version-left-info {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    /* Space between name and badge (pulando linha) */
+    gap: 4px;
+    justify-content: center;
 }
 
 .version-system-name {
@@ -714,6 +714,7 @@
     color: #ffffff;
     font-size: 1.1rem;
     letter-spacing: 0.3px;
+    line-height: 1.2;
 }
 
 .version-badge-container {
@@ -727,6 +728,7 @@
     gap: 6px;
     text-align: right;
     min-width: 0;
+    justify-content: center;
 }
 
 .version-header-right {
