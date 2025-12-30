@@ -158,7 +158,13 @@
                             <div class="version-right-new-layout">
                                 <!-- Text Group: Version + Metas (Aligned Left) -->
                                 <div class="version-text-group">
-                                    <span class="version-number-display" style="margin-bottom: 4px;">${utils.escapeHtml(v.version)}</span>
+                                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px;">
+                                        <span class="version-number-display">${utils.escapeHtml(v.version)}</span>
+                                        ${v.has_alert ?
+                    `<i class="fa-solid fa-bell client-note-indicator" onclick="window.openVersionNotes('${v.id}')" title="Possui observações importantes" style="color: #ffc107; cursor: pointer; font-size: 0.9rem;"></i>` :
+                    ``
+                }
+                                    </div>
                                     <div class="version-meta-area">
                                         <div class="meta-line">Data da atualização: ${utils.formatDate(v.updated_at)}</div>
                                         <div class="meta-line">${timeInfo}</div>
@@ -166,10 +172,7 @@
                                 </div>
                                 <!-- Actions Group: Icons (Aligned Right) -->
                                 <div class="version-actions-group">
-                                    ${v.has_alert ?
-                    `<i class="fa-solid fa-bell client-note-indicator" onclick="window.openVersionNotes('${v.id}')" title="Possui observações importantes"></i>` :
-                    `<span class="bell-placeholder"></span>`
-                }
+
                                     <button class="btn-edit-version-small" onclick="window.editVersion('${v.id}')" title="Editar">
                                         <i class="fa-solid fa-pencil"></i>
                                     </button>
