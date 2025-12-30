@@ -726,6 +726,7 @@
     align-items: flex-end;
     gap: 6px;
     text-align: right;
+    min-width: 0;
 }
 
 .version-header-right {
@@ -733,14 +734,27 @@
     align-items: center;
     gap: 8px;
     flex-wrap: nowrap;
+    width: 100%;
+    justify-content: flex-end;
 }
 
 .version-number-display {
     font-weight: 800;
     font-size: 1.25rem;
     font-family: 'Outfit', sans-serif;
-    line-height: 1;
+    line-height: 1.2;
     flex-shrink: 0;
+    white-space: nowrap;
+}
+
+/* Bell icon - ensure it doesn't break layout */
+.version-header-right .client-note-indicator {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Edit Button Style */
@@ -756,6 +770,7 @@
     align-items: center;
     justify-content: center;
     border-radius: 6px;
+    flex-shrink: 0;
 }
 
 .btn-edit-version-small:hover {
