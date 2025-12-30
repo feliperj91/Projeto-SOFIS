@@ -738,9 +738,8 @@
 
 .meta-line {
     font-size: 0.8rem;
-    color: #ffffff;
+    color: #ffffff !important;
     opacity: 1;
-    /* Ensure full visibility */
     font-weight: 400;
 }
 
