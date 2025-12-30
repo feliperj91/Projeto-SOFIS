@@ -108,13 +108,13 @@ header {
 }
 
 .app-subtitle {
-    font-size: 1.2rem;
+    font-size: 1.35rem;
     color: var(--text-secondary);
     font-weight: 300;
     margin-left: 0;
     /* Ensure alignment with logo */
-    margin-top: -55px;
-    /* Raised further as requested */
+    margin-top: calc(-55px - 0.5cm);
+    /* Raised an additional 0.5cm and font increased */
 }
 
 /* Buttons */
