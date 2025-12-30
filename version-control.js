@@ -196,10 +196,10 @@ function createClientGroupCard(clientGroup) {
                 <h3>${escapeHtml(clientGroup.name)}</h3>
             </div>
             <div class="client-header-actions">
-                <button class="btn-secondary btn-sm" onclick="window.openClientVersionsHistory('${clientGroup.id}')" title="Histórico de Atualizações">
+                <button class="btn-secondary" style="width: 36px; height: 36px; padding: 0; display: inline-flex; align-items: center; justify-content: center;" onclick="window.openClientVersionsHistory('${clientGroup.id}')" title="Histórico de Atualizações">
                     <i class="fa-solid fa-clipboard-list"></i>
                 </button>
-                <button class="btn-secondary btn-sm" onclick="window.prefillClientVersion('${clientGroup.id}', '${escapeHtml(clientGroup.name)}')" title="Adicionar Sistema">
+                <button class="btn-secondary" style="width: 36px; height: 36px; padding: 0; display: inline-flex; align-items: center; justify-content: center;" onclick="window.prefillClientVersion('${clientGroup.id}', '${escapeHtml(clientGroup.name)}')" title="Adicionar Sistema">
                     <i class="fa-solid fa-code-branch"></i>
                 </button>
                 <div class="card-filter-dropdown">
