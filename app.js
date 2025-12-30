@@ -66,6 +66,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     const listViewBtn = document.getElementById('listViewBtn');
     const gridViewBtn = document.getElementById('gridViewBtn');
 
+    // Toast Notification Function
+    function showToast(msg, type = 'success') {
+        if (!toast) return;
+
+        toast.textContent = msg;
+        toast.className = 'toast';
+
+        if (type === 'error' || type === 'danger') {
+            toast.classList.add('toast-error');
+        } else if (type === 'warning') {
+            toast.classList.add('toast-warning');
+        } else {
+            toast.classList.add('toast-success');
+        }
+
+        toast.classList.remove('hidden');
+        setTimeout(() => toast.classList.add('hidden'), 3000);
+    }
+    window.showToast = showToast;
+
     // Display current user
     window.updateUserDisplay = () => {
         const userDisplay = document.getElementById('currentUserDisplay');
