@@ -3018,21 +3018,34 @@ document.addEventListener('DOMContentLoaded', async () => {
             const oldName = client.name;
             client.name = newName;
 
-            // Fecha o modal imediatamente para resposta rápida
+            // 1. Atualização INSTANTÂNEA na tela atual (Contatos)
             document.getElementById('quickRenameModal').classList.add('hidden');
-
-            // Salva localmente e renderiza a lista principal
             await saveToLocal(client.id);
             renderClients(clients);
 
+            // 2. Atualização INSTANTÂNEA na outra tela (Controle de Versão)
+            if (window.versionControls) {
+                // Atualiza o nome do cliente em todos os registros de versão em memória
+                window.versionControls.forEach(vc => {
+                    if (vc.clients && (vc.clients.id === id || vc.client_id === id)) {
+                        vc.clients.name = newName;
+                    }
+                });
+
+                // Re-renderiza a tela de versões se ela estiver disponível
+                if (typeof window.renderVersionControls === 'function') {
+                    window.renderVersionControls();
+                }
+            }
+
             showToast('Nome atualizado com sucesso!', 'success');
 
-            // Sincroniza com Supabase
+            // 3. Sincronização em segundo plano com o Supabase
             if (window.supabaseClient) {
                 try {
                     await window.supabaseClient.from('clients').update({ name: newName }).eq('id', id);
 
-                    // Atualiza a tela de Controle de Versão se a função existir
+                    // Recarrega do banco para garantir total sincronia (opcional, mas bom para confirmar)
                     if (typeof window.loadVersionControls === 'function') {
                         await window.loadVersionControls();
                     }

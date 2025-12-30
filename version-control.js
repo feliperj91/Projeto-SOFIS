@@ -888,7 +888,11 @@ window.deleteVersion = deleteVersion;
 window.openVersionHistory = openVersionHistory;
 window.openVersionNotes = openVersionNotes;
 window.openClientVersionsHistory = openClientVersionsHistory;
-window.loadVersionControls = loadVersionControls;
+window.loadVersionControls = async function () {
+    await loadVersionControls();
+    window.versionControls = versionControls;
+};
+window.renderVersionControls = renderVersionControls;
 window.setupVersionControlFilters = setupVersionControlFilters;
 window.handleVersionSubmit = handleVersionSubmit;
 window.submitVersionForm = function () {
