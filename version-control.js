@@ -261,7 +261,7 @@
             }
 
             if (fields.ver.length < 10) {
-                if (window.showToast) window.showToast('⚠️ Formato de versão incompleto. Use: AAAA.MM-DD', 'warning');
+                if (window.showToast) window.showToast('⚠️ Versão do sistema incompleta!', 'warning');
                 sofis_isSaving = false;
                 return;
             }
