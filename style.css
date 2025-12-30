@@ -51,7 +51,7 @@ body {
 
 .app-container {
     width: 100%;
-    max-width: 1200px;
+    max-width: 1440px;
 }
 
 /* Header & Logo */
@@ -91,8 +91,7 @@ header {
     height: calc(120px + 1cm);
     width: auto;
     object-fit: contain;
-    margin-left: -15px;
-    /* Alinha a logo à esquerda com a margem do texto */
+    margin-left: 0;
 }
 
 .logo {
@@ -108,7 +107,7 @@ header {
 }
 
 .subtitle-wrapper {
-    margin-top: -40px !important;
+    margin-top: -30px !important;
     display: flex;
     align-items: baseline;
     gap: 15px;
