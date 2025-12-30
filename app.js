@@ -1036,6 +1036,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             web_laudo: client.webLaudo || ''
         };
 
+        // If preserving timestamp, explicitly send the old date to preventing DB auto-update
+        // (This only works if there is no BEFORE UPDATE trigger forcing NOW())
+        if (preserveTimestamp && client.updatedAt) {
+            clientData.updated_at = client.updatedAt;
+        }
+
         try {
             let clientId = client.id;
             const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(clientId);
