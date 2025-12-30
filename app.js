@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', async () => {
     // State
-    let clients = [];
+    let clients = JSON.parse(localStorage.getItem('sofis_clients') || '[]');
+    window.clients = clients;
 
     // Remove duplicates based on ID
     const uniqueClients = [];
