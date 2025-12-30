@@ -3008,23 +3008,35 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
+        if (!clients || clients.length === 0) {
+            showToast('Erro: Lista de clientes vazia. Tente recarregar a página.', 'error');
+            return;
+        }
+
         const client = clients.find(c => c.id === id);
         if (client) {
             const oldName = client.name;
             client.name = newName;
 
             await saveToLocal();
+
             if (window.supabaseClient) {
                 try {
                     await window.supabaseClient.from('clients').update({ name: newName }).eq('id', id);
                 } catch (err) {
                     console.error('Error updating name in Supabase:', err);
+                    showToast('Aviso: Erro ao salvar no servidor', 'warning');
                 }
             }
 
+            // Render updates
             renderClients(clients);
+
+            // Only call if function exists
             if (typeof window.loadAllVersions === 'function') {
                 window.loadAllVersions();
+            } else if (typeof loadAllVersions === 'function') {
+                loadAllVersions();
             }
 
             document.getElementById('quickRenameModal').classList.add('hidden');
@@ -3033,6 +3045,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (window.registerAuditLog) {
                 await window.registerAuditLog('EDIÇÃO', 'Renomeação Rápida de Cliente', `Cliente renomeado de "${oldName}" para "${newName}"`, oldName, newName);
             }
+        } else {
+            showToast(`Erro: Cliente não encontrado (ID: ${id})`, 'error');
         }
     };
 });
