@@ -740,21 +740,25 @@
 
 .version-number-display {
     font-weight: 800;
-    font-size: 1.25rem;
+    font-size: 1.2rem;
     font-family: 'Outfit', sans-serif;
-    line-height: 1.2;
+    line-height: 1;
     flex-shrink: 0;
     white-space: nowrap;
+    max-width: none;
 }
 
 /* Bell icon - ensure it doesn't break layout */
 .version-header-right .client-note-indicator {
     flex-shrink: 0;
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    font-size: 0.85rem;
+    margin: 0;
+    padding: 0;
 }
 
 /* Edit Button Style */
@@ -780,12 +784,13 @@
 }
 
 .environment-badge-small {
-    font-size: 0.6rem;
-    padding: 2px 8px;
-    border-radius: 4px;
+    font-size: 0.55rem;
+    padding: 1px 6px;
+    border-radius: 3px;
     text-transform: uppercase;
-    font-weight: 700;
-    letter-spacing: 0.8px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    display: inline-block;
 }
 
 .environment-badge-small.producao {
