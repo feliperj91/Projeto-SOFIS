@@ -97,6 +97,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (error) throw error;
             usersList = data || [];
+            console.log('📊 Usuários carregados:', usersList.length, usersList);
             renderUsers(usersList);
         } catch (err) {
             console.error('Erro ao carregar usuários:', err.message);
@@ -106,6 +107,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     function renderUsers(list) {
         if (!usersListEl) return;
         usersListEl.innerHTML = '';
+
+        console.log('🎨 Renderizando usuários:', list.length);
 
         if (list.length === 0) {
             usersListEl.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-secondary);">Nenhum usuário encontrado.</div>';
@@ -254,6 +257,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             window.showToast('Usuário salvo com sucesso!', 'success');
             window.closeUserModal();
+
+            // Wait a bit for Supabase to process the insert/update
+            await new Promise(resolve => setTimeout(resolve, 300));
+
+            // Force reload users list
             await loadUsers();
 
             // If current user edited themselves, update localStorage
