@@ -1,33 +1,16 @@
 // ===========================================
-// MODULE: VERSION CONTROL - SAFE v6.1
+// MODULE: VERSION CONTROL - FULL PRECISE v7.0
 // ===========================================
 
 (function () {
-    console.log("🚀 [SOFIS] Version Control Safe Module v6.1 Loaded");
+    console.log("🚀 [SOFIS] Version Control Premium Module v7.0 Loaded");
 
     // Internal state
     let versionControls = [];
     window.currentVersionFilter = 'all';
-    let currentHistoryClientId = null;
-
-    // Safety guards
-    let callDepth = 0;
-    let isUpdating = false;
-    let isRendering = false;
-    let isSaving = false;
-
-    function checkRecursion(name) {
-        callDepth++;
-        if (callDepth > 10) {
-            console.error(`🛑 [SOFIS] Critical recursion detected in ${name}. Aborting.`);
-            return false;
-        }
-        return true;
-    }
-
-    function resetRecursion() {
-        callDepth = 0;
-    }
+    let sofis_isUpdating = false;
+    let sofis_isRendering = false;
+    let sofis_isSaving = false;
 
     // Helper functions
     const utils = {
@@ -37,7 +20,11 @@
         },
         formatDate: (dateString) => {
             if (!dateString) return '-';
-            try { return new Date(dateString).toLocaleDateString('pt-BR'); } catch (e) { return '-'; }
+            try {
+                // Adjust for UTC/Local mismatch
+                const date = new Date(dateString);
+                return date.toLocaleDateString('pt-BR');
+            } catch (e) { return '-'; }
         },
         getStatus: (updatedAt) => {
             if (!updatedAt) return 'outdated';
@@ -45,17 +32,26 @@
             if (diffDays <= 30) return 'recent';
             if (diffDays <= 90) return 'warning';
             return 'outdated';
+        },
+        getTimeInfo: (updatedAt) => {
+            if (!updatedAt) return 'Nunca atualizado';
+            const lastUpdate = new Date(updatedAt);
+            const now = new Date();
+            const diffTime = Math.abs(now - lastUpdate);
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            if (diffDays === 0) return 'Atualizado hoje';
+            if (diffDays === 1) return 'Atualizado ontem';
+            return `Atualizado há ${diffDays} dias`;
         }
     };
 
     // Core Logic
-    async function internalLoadControls() {
-        if (isUpdating) return;
-        if (!checkRecursion('loadControls')) return;
-        isUpdating = true;
+    async function loadVersionControls() {
+        if (sofis_isUpdating) return;
+        sofis_isUpdating = true;
 
         try {
-            if (!window.supabaseClient) throw new Error("Supabase não disponível");
+            if (!window.supabaseClient) return;
 
             const { data, error } = await window.supabaseClient
                 .from('version_controls')
@@ -66,23 +62,17 @@
             versionControls = data || [];
             window.versionControls = versionControls;
 
-            // Render on next tick to be safe
-            setTimeout(() => {
-                internalRenderControls();
-            }, 0);
-
+            renderVersionControls();
         } catch (err) {
-            console.error('❌ Erro internalLoadControls:', err);
+            console.error('❌ Error loadVersionControls:', err);
         } finally {
-            isUpdating = false;
-            resetRecursion();
+            sofis_isUpdating = false;
         }
     }
 
-    function internalRenderControls() {
-        if (isRendering) return;
-        if (!checkRecursion('renderControls')) return;
-        isRendering = true;
+    function renderVersionControls() {
+        if (sofis_isRendering) return;
+        sofis_isRendering = true;
 
         try {
             const list = document.getElementById('versionList');
@@ -109,7 +99,7 @@
                 return;
             }
 
-            // Grouping
+            // Grouping by client
             const grouped = {};
             filtered.forEach(v => {
                 const name = v.clients?.name || 'Desconhecido';
@@ -117,58 +107,104 @@
                 grouped[name].versions.push(v);
             });
 
+            // Sort by client name
             Object.values(grouped).sort((a, b) => a.name.localeCompare(b.name)).forEach(group => {
-                list.appendChild(createGroupCard(group));
+                list.appendChild(createClientGroupCard(group));
             });
         } finally {
-            isRendering = false;
-            resetRecursion();
+            sofis_isRendering = false;
         }
     }
 
-    function createGroupCard(group) {
+    function createClientGroupCard(group) {
         const card = document.createElement('div');
         card.className = 'client-version-group-card';
 
-        // Status determination
-        let cardStatus = 'recent';
+        // General status of the card based on items
+        let overallStatus = 'recent';
         group.versions.forEach(v => {
             const s = utils.getStatus(v.updated_at);
-            if (s === 'outdated') cardStatus = 'outdated';
-            else if (s === 'warning' && cardStatus !== 'outdated') cardStatus = 'warning';
+            if (s === 'outdated') overallStatus = 'outdated';
+            else if (s === 'warning' && overallStatus !== 'outdated') overallStatus = 'warning';
         });
 
-        const vHtml = group.versions.map(v => `
-            <div class="version-item-row status-${utils.getStatus(v.updated_at)}" data-environment="${v.environment}">
-                <div class="version-item-main">
-                    <span class="version-system-name">${utils.escapeHtml(v.system)}</span>
-                    <span class="environment-badge-small ${v.environment}">${v.environment.toUpperCase()}</span>
-                    <div class="version-number-display">${utils.escapeHtml(v.version)}</div>
-                    <div class="version-small-meta">Data: ${utils.formatDate(v.updated_at)}</div>
+        // Building row HTML precisely as the reference image
+        const versionsHtml = group.versions.map(v => {
+            const status = utils.getStatus(v.updated_at);
+            const timeInfo = utils.getTimeInfo(v.updated_at);
+
+            return `
+                <div class="version-item-row status-${status}" data-environment="${v.environment}">
+                    <div class="version-item-main">
+                        <!-- Left Side: System info -->
+                        <div class="version-system-info">
+                            <span class="version-system-name">${utils.escapeHtml(v.system)}</span>
+                            <span class="environment-badge-small ${v.environment}">${v.environment.toUpperCase()}</span>
+                        </div>
+                        
+                        <!-- Right Side Data: Version number and meta -->
+                        <div class="version-display-wrapper">
+                            <div class="version-number-display">
+                                ${utils.escapeHtml(v.version)}
+                                ${v.has_alert ? `<i class="fa-solid fa-bell clickable-bell" style="color: #FF9800; margin-left:8px; font-size: 0.9rem;" onclick="window.openVersionNotes('${v.id}')"></i>` : ''}
+                            </div>
+                            <div class="version-small-meta">
+                                <div class="version-meta-label">Data da última atualização: ${utils.formatDate(v.updated_at)}</div>
+                                <div class="version-meta-label">Tempo atualizado: ${timeInfo}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="version-actions">
+                        <button class="btn-icon-small" title="Editar" onclick="window.editVersion('${v.id}')">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </div>
                 </div>
-                <div class="version-actions">
-                    <button class="btn-icon-small" title="Editar" onclick="window.editVersion('${v.id}')"><i class="fa-solid fa-pen"></i></button>
-                    <button class="btn-icon-small" title="Histórico" onclick="window.openClientVersionsHistory('${group.id}')"><i class="fa-solid fa-history"></i></button>
-                </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
 
         card.innerHTML = `
-            <div class="client-group-header status-${cardStatus}">
-                <h3 onclick="window.openClientInteraction('${group.id}', '${utils.escapeHtml(group.name)}')" style="cursor:pointer">${utils.escapeHtml(group.name)}</h3>
+            <div class="client-group-header status-${overallStatus}">
+                <div class="client-group-title">
+                    <h3 onclick="window.openClientInteraction('${group.id}', '${utils.escapeHtml(group.name)}')" style="cursor:pointer" title="Clique para ver opções do cliente">${utils.escapeHtml(group.name)}</h3>
+                </div>
                 <div class="client-header-actions">
-                    <button class="btn-secondary" onclick="window.prefillClientVersion('${group.id}', '${utils.escapeHtml(group.name)}')"><i class="fa-solid fa-plus"></i></button>
+                    <button class="btn-sm btn-secondary" onclick="window.openClientVersionsHistory('${group.id}')">
+                        <i class="fa-solid fa-history"></i> Histórico
+                    </button>
+                    <button class="btn-sm btn-secondary" onclick="window.prefillClientVersion('${group.id}', '${utils.escapeHtml(group.name)}')">
+                        <i class="fa-solid fa-plus"></i> Sistema
+                    </button>
+                    
+                    <!-- Card Level Filter -->
+                    <div class="card-filter-dropdown">
+                        <button class="btn-sm card-env-toggle" onclick="window.toggleCardFilterMenu(this)">
+                            <i class="fa-solid fa-filter"></i>
+                        </button>
+                        <div class="card-filter-menu hidden">
+                            <div class="filter-menu-item active" onclick="window.applyCardEnvFilter(this, 'all')">
+                                <i class="fa-solid fa-layer-group"></i> <span>Todos</span>
+                            </div>
+                            <div class="filter-menu-item" onclick="window.applyCardEnvFilter(this, 'producao')">
+                                <i class="fa-solid fa-server"></i> <span>Produção</span>
+                            </div>
+                            <div class="filter-menu-item" onclick="window.applyCardEnvFilter(this, 'homologacao')">
+                                <i class="fa-solid fa-vial"></i> <span>Homologação</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="client-group-body">${vHtml}</div>
+            <div class="client-group-body">${versionsHtml}</div>
         `;
         return card;
     }
 
-    async function internalHandleSubmit(e) {
+    async function handleVersionSubmit(e) {
         if (e && e.preventDefault) e.preventDefault();
-        if (isSaving) return;
-        isSaving = true;
+        if (sofis_isSaving) return;
+        sofis_isSaving = true;
 
         try {
             const fields = {
@@ -203,25 +239,25 @@
             } else {
                 result = await window.supabaseClient.from('version_controls').insert([payload]).select();
                 if (result.data && result.data[0]) {
-                    await logHistory(result.data[0].id, null, fields.ver, 'Inicial');
+                    await logHistory(result.data[0].id, null, fields.ver, 'Registro Inicial');
                 }
             }
 
             if (result.error) throw result.error;
 
-            if (window.showToast) window.showToast('Versão salva com sucesso!');
+            if (window.showToast) window.showToast('Concluído com sucesso!');
             window.closeVersionModal();
 
-            // Refresh
+            // Refresh with clear context
             setTimeout(() => {
-                internalLoadControls();
-            }, 500);
+                loadVersionControls();
+            }, 300);
 
         } catch (err) {
-            console.error('❌ Erro internalHandleSubmit:', err);
-            if (window.showToast) window.showToast('Erro ao salvar versão', 'error');
+            console.error('❌ handleVersionSubmit Error:', err);
+            if (window.showToast) window.showToast('Falha ao salvar dados', 'error');
         } finally {
-            isSaving = false;
+            sofis_isSaving = false;
         }
     }
 
@@ -233,81 +269,135 @@
                 previous_version: oldV,
                 new_version: newV,
                 updated_by: user,
-                notes
+                notes: notes || ''
             }]);
         } catch (e) {
-            console.warn('Erro ao registrar histórico:', e);
+            console.warn('History log failed skipped');
         }
-    }
-
-    // Modal UI Functions
-    function openModal(id = null) {
-        const modal = document.getElementById('versionModal');
-        if (!modal) return;
-
-        document.getElementById('versionForm').reset();
-        document.getElementById('versionId').value = id || '';
-        document.getElementById('versionNotesInput').disabled = true;
-
-        if (id && versionControls) {
-            const v = versionControls.find(x => x.id === id);
-            if (v) {
-                document.getElementById('versionClientSelect').value = v.client_id;
-                document.getElementById('versionClientInput').value = v.clients?.name || '';
-                document.getElementById('versionEnvironmentSelect').value = v.environment;
-                document.getElementById('versionSystemSelect').value = v.system;
-                document.getElementById('versionNumberInput').value = v.version;
-                if (v.updated_at) document.getElementById('versionDateInput').value = v.updated_at.split('T')[0];
-                document.getElementById('versionAlertCheck').checked = v.has_alert;
-                document.getElementById('versionNotesInput').value = v.notes || '';
-                document.getElementById('versionNotesInput').disabled = !v.has_alert;
-            }
-        }
-        modal.classList.remove('hidden');
     }
 
     // EXPORTS
-    window.loadVersionControls = () => internalLoadControls();
-    window.renderVersionControls = () => internalRenderControls();
-    window.handleVersionSubmit = (e) => internalHandleSubmit(e);
-    window.editVersion = (id) => openModal(id);
+    window.loadVersionControls = loadVersionControls;
+    window.renderVersionControls = renderVersionControls;
+    window.handleVersionSubmit = handleVersionSubmit;
+
+    window.editVersion = (id) => {
+        const modal = document.getElementById('versionModal');
+        if (!modal) return;
+        document.getElementById('versionForm').reset();
+        document.getElementById('versionId').value = id;
+
+        const v = versionControls.find(x => x.id === id);
+        if (v) {
+            document.getElementById('versionClientSelect').value = v.client_id;
+            document.getElementById('versionClientInput').value = v.clients?.name || '';
+            document.getElementById('versionEnvironmentSelect').value = v.environment;
+            document.getElementById('versionSystemSelect').value = v.system;
+            document.getElementById('versionNumberInput').value = v.version;
+            if (v.updated_at) document.getElementById('versionDateInput').value = v.updated_at.split('T')[0];
+            const check = document.getElementById('versionAlertCheck');
+            check.checked = !!v.has_alert;
+            const notes = document.getElementById('versionNotesInput');
+            notes.value = v.notes || '';
+            notes.disabled = !check.checked;
+        }
+        modal.classList.remove('hidden');
+    };
+
     window.closeVersionModal = () => {
         const m = document.getElementById('versionModal');
         if (m) m.classList.add('hidden');
     };
+
     window.submitVersionForm = () => {
         const f = document.getElementById('versionForm');
         if (f && f.checkValidity()) {
-            internalHandleSubmit(null);
+            setTimeout(() => handleVersionSubmit(null), 0);
         } else if (f) {
             f.reportValidity();
         }
     };
+
     window.prefillClientVersion = (id, name) => {
-        openModal();
+        const modal = document.getElementById('versionModal');
+        if (!modal) return;
+        document.getElementById('versionForm').reset();
+        document.getElementById('versionId').value = '';
         setTimeout(() => {
-            const sel = document.getElementById('versionClientSelect');
-            const inp = document.getElementById('versionClientInput');
-            if (sel) sel.value = id;
-            if (inp) inp.value = name;
-        }, 100);
+            document.getElementById('versionClientSelect').value = id;
+            document.getElementById('versionClientInput').value = name;
+            modal.classList.remove('hidden');
+        }, 50);
     };
 
-    window.setupVersionControlFilters = () => {
-        const searchInput = document.getElementById('versionSearchInput');
-        if (searchInput) {
-            searchInput.oninput = () => {
-                if (!isRendering) internalRenderControls();
-            };
+    window.openVersionNotes = (id) => {
+        const v = versionControls.find(x => x.id === id);
+        if (!v || !v.notes) return;
+
+        const modal = document.getElementById('versionNotesModal');
+        if (!modal) return;
+
+        const contentBox = document.getElementById('versionNotesBox');
+        const titleEl = document.getElementById('versionNotesTitle');
+
+        const clientName = v.clients?.name || 'Cliente';
+        titleEl.innerHTML = `Observações: <span style="color:var(--accent)">${utils.escapeHtml(clientName)}</span> <small style="opacity:0.6; font-size:0.8em">(${v.system} ${v.version})</small>`;
+        contentBox.textContent = v.notes;
+
+        modal.classList.remove('hidden');
+    };
+
+    window.closeVersionNotesModal = () => {
+        const m = document.getElementById('versionNotesModal');
+        if (m) m.classList.add('hidden');
+    };
+
+    // Filter Menu Logic
+    window.toggleCardFilterMenu = (btn) => {
+        document.querySelectorAll('.card-filter-menu').forEach(m => {
+            if (m !== btn.nextElementSibling) m.classList.add('hidden');
+        });
+        btn.nextElementSibling.classList.toggle('hidden');
+    };
+
+    window.applyCardEnvFilter = (item, env) => {
+        const card = item.closest('.client-version-group-card');
+        const rows = card.querySelectorAll('.version-item-row');
+        const items = item.parentNode.querySelectorAll('.filter-menu-item');
+
+        items.forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+
+        rows.forEach(row => {
+            if (env === 'all' || row.dataset.environment === env) {
+                row.style.display = 'flex';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        item.parentNode.classList.add('hidden');
+    };
+
+    // Global listeners
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.card-filter-dropdown')) {
+            document.querySelectorAll('.card-filter-menu').forEach(m => m.classList.add('hidden'));
         }
-        document.querySelectorAll('[data-version-filter]').forEach(btn => {
-            btn.onclick = () => {
-                document.querySelectorAll('[data-version-filter]').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                window.currentVersionFilter = btn.dataset.versionFilter;
-                internalRenderControls();
+    });
+
+    window.setupVersionControlFilters = () => {
+        const sInput = document.getElementById('versionSearchInput');
+        if (sInput) sInput.oninput = () => renderVersionControls();
+
+        document.querySelectorAll('[data-version-filter]').forEach(b => {
+            b.onclick = () => {
+                document.querySelectorAll('[data-version-filter]').forEach(x => x.classList.remove('active'));
+                b.classList.add('active');
+                window.currentVersionFilter = b.dataset.versionFilter;
+                renderVersionControls();
             };
         });
+
         const alertCheck = document.getElementById('versionAlertCheck');
         if (alertCheck) {
             alertCheck.onchange = () => {
@@ -319,31 +409,40 @@
     window.openClientVersionsHistory = async (clientId) => {
         const modal = document.getElementById('versionHistoryModal');
         if (!modal) return;
+
+        const vEntry = versionControls.find(v => v.client_id === clientId);
+        const clientName = vEntry?.clients?.name || 'Cliente';
+
+        document.getElementById('versionHistoryTitle').innerHTML = `Histórico: <span style="color:var(--accent)">${utils.escapeHtml(clientName)}</span>`;
         modal.classList.remove('hidden');
+
         const list = document.getElementById('versionHistoryList');
-        list.innerHTML = '<div style="text-align:center; padding:20px;"><i class="fa-solid fa-circle-notch fa-spin"></i> Carregando...</div>';
+        list.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-secondary)">Carregando...</div>';
+
         try {
-            const { data, error } = await window.supabaseClient.from('version_history')
+            const { data } = await window.supabaseClient.from('version_history')
                 .select('*, version_controls(system)')
                 .in('version_control_id', versionControls.filter(vc => vc.client_id === clientId).map(vc => vc.id))
                 .order('created_at', { ascending: false });
 
-            if (error) throw error;
             list.innerHTML = (data || []).map(h => `
-                <div style="margin-bottom:12px; border-bottom:1px solid var(--border); padding-bottom:8px;">
-                    <div style="color:var(--accent); font-weight:600;">${h.version_controls?.system}</div>
-                    <div style="font-size:0.9em;">Versão: ${h.previous_version || 'N/A'} <i class="fa-solid fa-arrow-right" style="font-size:0.8em; opacity:0.5;"></i> ${h.new_version}</div>
-                    <div style="font-size:0.8em; color:var(--text-secondary); margin-top:4px;">${new Date(h.created_at).toLocaleString('pt-BR')} por ${h.updated_by}</div>
+                <div style="background:rgba(0,0,0,0.2); padding:10px; border-radius:8px; margin-bottom:10px; border-left:3px solid var(--accent)">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                        <strong style="color:var(--accent)">${h.version_controls?.system}</strong>
+                        <small style="opacity:0.6">${new Date(h.created_at).toLocaleDateString('pt-BR')} ${new Date(h.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</small>
+                    </div>
+                    <div style="font-size:0.9em; margin:5px 0;">Versão: ${h.previous_version || 'N/A'} <i class="fa-solid fa-arrow-right" style="opacity:0.5; font-size:0.8em"></i> ${h.new_version}</div>
+                    <div style="font-size:0.8em; opacity:0.7; font-style:italic;">Por: ${h.updated_by}</div>
+                    ${h.notes ? `<div style="font-size:0.85em; margin-top:5px; padding-top:5px; border-top:1px solid rgba(255,255,255,0.05)">${utils.escapeHtml(h.notes)}</div>` : ''}
                 </div>
-            `).join('') || '<p style="text-align:center; opacity:0.5;">Nenhum histórico encontrado.</p>';
+            `).join('') || '<div style="text-align:center; opacity:0.5; padding:20px;">Nenhum histórico disponível</div>';
         } catch (e) {
-            list.innerHTML = '<p style="color:var(--danger);">Erro ao carregar histórico.</p>';
+            list.innerHTML = '<div style="color:var(--danger); text-align:center;">Erro ao carregar dados.</div>';
         }
     };
 
     window.closeVersionHistoryModal = () => {
-        const m = document.getElementById('versionHistoryModal');
-        if (m) m.classList.add('hidden');
+        document.getElementById('versionHistoryModal').classList.add('hidden');
     };
 
 })();
