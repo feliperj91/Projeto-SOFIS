@@ -943,25 +943,6 @@
     border-color: var(--accent);
 }
 
-/* Yellow Scrollbar Styling */
-.version-history-list::-webkit-scrollbar {
-    width: 6px;
-}
-
-.version-history-list::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 10px;
-}
-
-.version-history-list::-webkit-scrollbar-thumb {
-    background: var(--accent);
-    border-radius: 10px;
-}
-
-.version-history-list::-webkit-scrollbar-thumb:hover {
-    background: var(--accent-hover);
-}
-
 /* Global scrollbar fallback */
 /* Global Scrollbar Removal - Reverting to default */
 /* We keep scoped scrollbars for modals/lists if needed */

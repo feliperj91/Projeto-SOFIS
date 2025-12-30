@@ -380,7 +380,7 @@
         const modal = document.getElementById('versionNotesModal');
         if (!modal) return;
 
-        const contentBox = document.getElementById('versionNotesBox');
+        const contentBox = document.getElementById('versionNotesContent');
         const titleEl = document.getElementById('versionNotesTitle');
 
         const clientName = v.clients?.name || 'Cliente';

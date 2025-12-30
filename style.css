@@ -812,12 +812,12 @@ button {
 }
 
 .modal-content::-webkit-scrollbar-thumb {
-    background: var(--accent);
+    background: rgba(255, 255, 255, 0.2);
     border-radius: 4px;
 }
 
 .modal-content::-webkit-scrollbar-thumb:hover {
-    background: var(--accent-hover);
+    background: rgba(255, 255, 255, 0.3);
 }
 
 .modal.hidden .modal-content {
@@ -1965,7 +1965,7 @@ button:hover .vpn-icon-img {
 
 .activity-list::-webkit-scrollbar-thumb,
 .history-list::-webkit-scrollbar-thumb {
-    background: var(--accent);
+    background: rgba(255, 255, 255, 0.2);
     border-radius: 3px;
 }
 
