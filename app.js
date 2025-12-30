@@ -2910,8 +2910,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         datalist.innerHTML = '';
 
-        // Sort and add clients
-        const sortedClients = [...clients].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+        // Get IDs of clients that already have a Version Control entry
+        // This prevents creating duplicate cards for the same client
+        const existingClientIds = (window.versionControls || []).map(vc => vc.client_id || (vc.clients && vc.clients.id));
+
+        // Sort and add clients, EXCLUDING those who already have a card
+        const availableClients = [...clients].filter(c => !existingClientIds.includes(c.id));
+        const sortedClients = availableClients.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+
         sortedClients.forEach(client => {
             const option = document.createElement('option');
             option.value = client.name;

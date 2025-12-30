@@ -304,6 +304,11 @@
     window.handleVersionSubmit = handleVersionSubmit;
 
     window.editVersion = (id) => {
+        // Refresh client list if adding new version control to ensure we filter out existing ones
+        if (!id && window.populateVersionClientSelect) {
+            window.populateVersionClientSelect();
+        }
+
         const modal = document.getElementById('versionModal');
         if (!modal) return;
         document.getElementById('versionForm').reset();
