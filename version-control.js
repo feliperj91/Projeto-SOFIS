@@ -103,12 +103,21 @@
             const grouped = {};
             filtered.forEach(v => {
                 const name = v.clients?.name || 'Desconhecido';
-                if (!grouped[name]) grouped[name] = { id: v.client_id, name, versions: [] };
-                grouped[name].versions.push(v);
+                if (!grouped[name]) grouped[name] = { id: v.client_id, name, versionsMap: {} };
+
+                // Keep only the most recent version for each [system + environment] combination
+                const key = `${v.system}_${v.environment}`;
+                const existing = grouped[name].versionsMap[key];
+
+                if (!existing || new Date(v.updated_at) > new Date(existing.updated_at)) {
+                    grouped[name].versionsMap[key] = v;
+                }
             });
 
             // Sort by client name
             Object.values(grouped).sort((a, b) => a.name.localeCompare(b.name)).forEach(group => {
+                // Convert Map back to array for rendering
+                group.versions = Object.values(group.versionsMap);
                 list.appendChild(createClientGroupCard(group));
             });
         } finally {
@@ -146,7 +155,7 @@
                         <div class="version-display-wrapper">
                             <div class="version-number-display">
                                 ${utils.escapeHtml(v.version)}
-                                ${v.has_alert ? `<i class="fa-solid fa-bell clickable-bell" style="color: #FF9800; margin-left:8px; font-size: 0.9rem;" onclick="window.openVersionNotes('${v.id}')"></i>` : ''}
+                                ${v.has_alert ? `<i class="fa-solid fa-bell client-note-indicator" onclick="window.openVersionNotes('${v.id}')" title="Possui observações importantes" style="margin-left: 10px; font-size: 0.8rem;"></i>` : ''}
                             </div>
                             <div class="version-small-meta">
                                 <div class="version-meta-label">Data da última atualização: ${utils.formatDate(v.updated_at)}</div>

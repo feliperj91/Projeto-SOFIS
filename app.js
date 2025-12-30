@@ -889,9 +889,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                              <i class="fa-solid fa-link"></i>
                              ${hasUrls ? `<span class="btn-badge">${urlCount}</span>` : ''}
                          </button>
-                         <button class="btn-icon btn-edit-client" onclick="editClient('${client.id}'); event.stopPropagation();" title="Editar Cliente">
-                             <i class="fa-solid fa-pen"></i>
-                         </button>
                          <button class="btn-icon btn-danger btn-delete-client" onclick="deleteClient('${client.id}'); event.stopPropagation();" title="Excluir">
                              <i class="fa-solid fa-trash"></i>
                          </button>
@@ -1326,7 +1323,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         // ... updates to clients array ...
         let addedContactNames = '';
         if (editingId && mode !== 'addContact') {
-            newClient.updatedAt = new Date().toISOString();
+            const clientToUpdate = clients.find(c => c.id === editingId);
+
+            // Check if only name changed
+            const nameChanged = clientToUpdate.name !== newClient.name;
+            const contactsChanged = JSON.stringify(clientToUpdate.contacts) !== JSON.stringify(newClient.contacts);
+            const favoriteChanged = !!clientToUpdate.isFavorite !== !!newClient.isFavorite;
+
+            // Only update timestamp if contacts or favorite status changed (per user request: excluding name changes from updating "Atualizado")
+            if (contactsChanged || favoriteChanged) {
+                newClient.updatedAt = new Date().toISOString();
+            } else {
+                newClient.updatedAt = clientToUpdate.updatedAt;
+            }
+
             clients = clients.map(c => c.id === editingId ? newClient : c);
             showToast(`✅ Cliente "${newClient.name}" atualizado com sucesso!`, 'success');
         } else if (editingId && mode === 'addContact') {
