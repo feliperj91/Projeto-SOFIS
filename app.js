@@ -3018,29 +3018,29 @@ document.addEventListener('DOMContentLoaded', async () => {
             const oldName = client.name;
             client.name = newName;
 
-            await saveToLocal();
+            // Fecha o modal imediatamente para resposta rápida
+            document.getElementById('quickRenameModal').classList.add('hidden');
 
+            // Salva localmente e renderiza a lista principal
+            await saveToLocal(client.id);
+            renderClients(clients);
+
+            showToast('Nome atualizado com sucesso!', 'success');
+
+            // Sincroniza com Supabase
             if (window.supabaseClient) {
                 try {
                     await window.supabaseClient.from('clients').update({ name: newName }).eq('id', id);
+
+                    // Atualiza a tela de Controle de Versão se a função existir
+                    if (typeof window.loadVersionControls === 'function') {
+                        await window.loadVersionControls();
+                    }
                 } catch (err) {
                     console.error('Error updating name in Supabase:', err);
-                    showToast('Aviso: Erro ao salvar no servidor', 'warning');
+                    showToast('Aviso: Erro ao sincronizar com o servidor', 'warning');
                 }
             }
-
-            // Render updates
-            renderClients(clients);
-
-            // Only call if function exists
-            if (typeof window.loadAllVersions === 'function') {
-                window.loadAllVersions();
-            } else if (typeof loadAllVersions === 'function') {
-                loadAllVersions();
-            }
-
-            document.getElementById('quickRenameModal').classList.add('hidden');
-            showToast('Nome atualizado com sucesso!', 'success');
 
             if (window.registerAuditLog) {
                 await window.registerAuditLog('EDIÇÃO', 'Renomeação Rápida de Cliente', `Cliente renomeado de "${oldName}" para "${newName}"`, oldName, newName);
