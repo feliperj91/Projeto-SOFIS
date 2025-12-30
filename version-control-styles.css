@@ -716,10 +716,10 @@
 .version-item-main {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
+    /* Better vertical alignment */
     flex: 1;
-    gap: 15px;
-    /* Reduced gap */
+    gap: 12px;
 }
 
 .version-system-info {
@@ -732,9 +732,14 @@
 .version-system-name {
     font-weight: 600;
     color: #ffffff;
-    font-size: 1.1rem;
-    /* Significantly reduced */
+    font-size: 1rem;
+    /* Compact and clean */
     letter-spacing: 0.3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 130px;
+    /* Prevent overlap */
 }
 
 .environment-badge-small {
@@ -772,20 +777,22 @@
 .version-display-wrapper {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    min-width: 140px;
-    /* Reduced min-width */
+    align-items: flex-end;
+    /* Align data to the right */
+    text-align: right;
+    flex-shrink: 0;
 }
 
 .version-number-display {
     font-weight: 800;
-    font-size: 1.3rem;
-    /* Reduced font size */
+    font-size: 1.25rem;
+    /* Balanced size */
     display: flex;
     align-items: center;
-    margin-bottom: 4px;
-    /* Reduced margin */
+    justify-content: flex-end;
+    margin-bottom: 2px;
     font-family: 'Inter', sans-serif;
+    line-height: 1;
 }
 
 /* Colors for the Text in the Right Corner */
@@ -803,9 +810,12 @@
 
 .version-small-meta {
     color: #94a3b8;
-    font-size: 0.8rem;
-    /* Reduced font size */
-    line-height: 1.3;
+    font-size: 0.75rem;
+    /* Clean metadata */
+    line-height: 1.2;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
 }
 
 .version-meta-label {
@@ -827,9 +837,11 @@
 }
 
 .version-actions {
-    padding-left: 20px;
+    padding-left: 12px;
     border-left: 1px solid rgba(255, 255, 255, 0.05);
-    margin-left: 20px;
+    margin-left: 12px;
+    display: flex;
+    align-items: center;
 }
 
 .btn-icon-small {
