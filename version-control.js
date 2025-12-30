@@ -196,14 +196,14 @@ function createClientGroupCard(clientGroup) {
                 <h3>${escapeHtml(clientGroup.name)}</h3>
             </div>
             <div class="client-header-actions">
-                <button class="btn-secondary" style="width: 36px; height: 36px; padding: 0; display: inline-flex; align-items: center; justify-content: center;" onclick="window.openClientVersionsHistory('${clientGroup.id}')" title="Histórico de Atualizações">
+                <button class="btn-secondary" style="width: 36px; height: 36px; padding: 0; display: inline-flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.05); border: none; border-radius: 8px;" onclick="window.openClientVersionsHistory('${clientGroup.id}')" title="Histórico de Atualizações">
                     <i class="fa-solid fa-clipboard-list"></i>
                 </button>
-                <button class="btn-secondary" style="width: 36px; height: 36px; padding: 0; display: inline-flex; align-items: center; justify-content: center;" onclick="window.prefillClientVersion('${clientGroup.id}', '${escapeHtml(clientGroup.name)}')" title="Adicionar Sistema">
+                <button class="btn-secondary" style="width: 36px; height: 36px; padding: 0; display: inline-flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.05); border: none; border-radius: 8px;" onclick="window.prefillClientVersion('${clientGroup.id}', '${escapeHtml(clientGroup.name)}')" title="Adicionar Sistema">
                     <i class="fa-solid fa-code-branch"></i>
                 </button>
                 <div class="card-filter-dropdown">
-                    <button class="btn-secondary card-env-toggle" style="width: 36px; height: 36px; padding: 0; display: inline-flex; align-items: center; justify-content: center; color: var(--accent); border-color: var(--accent);" onclick="event.stopPropagation(); window.toggleCardFilterMenu(this)" data-current-env="all" title="Filtrar Ambiente">
+                    <button class="btn-secondary card-env-toggle" style="width: 36px; height: 36px; padding: 0; display: inline-flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.05); border: none; border-radius: 8px; color: var(--accent);" onclick="event.stopPropagation(); window.toggleCardFilterMenu(this)" data-current-env="all" title="Filtrar Ambiente">
                         <i class="fa-solid fa-filter"></i>
                     </button>
                     <div class="card-filter-menu hidden">
