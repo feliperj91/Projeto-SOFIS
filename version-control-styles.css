@@ -698,7 +698,7 @@
 .version-row-main {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     width: 100%;
 }
 
@@ -706,7 +706,7 @@
     display: flex;
     flex-direction: column;
     gap: 4px;
-    justify-content: center;
+    align-items: flex-start;
 }
 
 .version-system-name {
@@ -728,7 +728,6 @@
     gap: 6px;
     text-align: right;
     min-width: 0;
-    justify-content: center;
 }
 
 .version-header-right {
