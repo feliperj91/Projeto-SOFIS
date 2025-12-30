@@ -377,9 +377,8 @@
 }
 
 #userForm label {
-    display: flex;
-    align-items: center;
-    gap: 0;
+    display: block;
+    text-align: left;
     font-size: 0.9rem;
     color: var(--text-secondary);
     margin-bottom: 10px;
@@ -387,8 +386,6 @@
 
 #userForm label i {
     margin-right: 8px;
-    width: 20px;
-    text-align: center;
     font-size: 0.85rem;
 }
 
