@@ -578,8 +578,6 @@ async function openVersionHistory(versionId) {
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
                         <div style="font-weight: 700; color: var(--text-primary); font-size: 1rem;">${escapeHtml(version.system)}</div>
                         <div class="version-history-change" style="background: rgba(0,0,0,0.2); padding: 5px 10px; border-radius: 6px; display: flex; align-items: center; gap: 8px;">
-                            <span style="color: var(--text-secondary); text-decoration: line-through; font-size: 0.85rem;">${escapeHtml(entry.previous_version || '-')}</span>
-                            <i class="fa-solid fa-right-long" style="color: var(--accent); font-size: 0.8rem;"></i>
                             <span style="color: var(--accent); font-weight: 700; font-size: 1rem;">${escapeHtml(entry.new_version)}</span>
                         </div>
                     </div>
@@ -730,8 +728,19 @@ window.filterHistoryBySystem = function () {
     const prodItems = items.filter(h => h.version_controls?.environment === 'producao').slice(0, 3);
     const homolItems = items.filter(h => h.version_controls?.environment === 'homologacao').slice(0, 3);
 
-    // Combine and sort by date
-    const filteredItems = [...prodItems, ...homolItems].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    // Combine and sort
+    const filteredItems = [...prodItems, ...homolItems].sort((a, b) => {
+        // Se estiver filtrando por um sistema específico, agrupa por ambiente (Produção primeiro)
+        if (filterValue !== 'all') {
+            const envA = a.version_controls?.environment;
+            const envB = b.version_controls?.environment;
+            if (envA !== envB) {
+                return envA === 'producao' ? -1 : 1;
+            }
+        }
+        // Ordenação padrão por data
+        return new Date(b.created_at) - new Date(a.created_at);
+    });
 
     historyList.innerHTML = '';
 
@@ -756,8 +765,6 @@ window.filterHistoryBySystem = function () {
                 </div>
                 <div style="text-align: right;">
                     <div class="version-history-change" style="background: rgba(0,0,0,0.2); padding: 5px 10px; border-radius: 6px; display: flex; align-items: center; gap: 8px;">
-                        <span style="color: var(--text-secondary); text-decoration: line-through; font-size: 0.85rem;">${escapeHtml(entry.previous_version || '-')}</span>
-                        <i class="fa-solid fa-right-long" style="color: var(--accent); font-size: 0.8rem;"></i>
                         <span style="color: var(--accent); font-weight: 700; font-size: 1rem;">${escapeHtml(entry.new_version)}</span>
                     </div>
                 </div>
