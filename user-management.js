@@ -76,8 +76,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // --- User CRUD ---
+    function renderSkeletons() {
+        if (!usersListEl) return;
+        usersListEl.innerHTML = '';
+        for (let i = 0; i < 6; i++) {
+            const sk = document.createElement('div');
+            sk.className = 'skeleton-user-card';
+            usersListEl.appendChild(sk);
+        }
+    }
+
     async function loadUsers() {
         if (!window.supabaseClient) return;
+        renderSkeletons();
         try {
             const { data, error } = await window.supabaseClient
                 .from('users')
@@ -96,17 +107,33 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!usersListEl) return;
         usersListEl.innerHTML = '';
 
+        if (list.length === 0) {
+            usersListEl.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-secondary);">Nenhum usuário encontrado.</div>';
+            return;
+        }
+
         list.forEach(u => {
             const roleClass = `badge-${u.role?.toLowerCase() || 'tecnico'}`;
             const creationDate = u.created_at ? new Date(u.created_at).toLocaleDateString('pt-BR') : 'N/A';
+
+            // Get Initials
+            const initials = (u.full_name || u.username)
+                .split(' ')
+                .map(n => n[0])
+                .join('')
+                .toUpperCase()
+                .substring(0, 2);
 
             const card = document.createElement('div');
             card.className = 'user-card';
             card.innerHTML = `
                 <div class="user-info-top">
-                    <div class="user-name-group">
-                        <h3>${u.full_name || 'N/A'}</h3>
-                        <span class="user-handle">@${u.username}</span>
+                    <div class="user-card-header">
+                        <div class="user-avatar">${initials}</div>
+                        <div class="user-name-group">
+                            <h3>${u.full_name || 'N/A'}</h3>
+                            <span class="user-handle">@${u.username}</span>
+                        </div>
                     </div>
                     <div class="user-card-actions">
                         <button class="btn-icon" onclick="window.editUser('${u.id}')" title="Editar">
@@ -169,26 +196,69 @@ document.addEventListener('DOMContentLoaded', async () => {
     userForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const id = document.getElementById('userIdInput').value;
+        const currentFullName = document.getElementById('userFullName').value;
+        const currentUsername = document.getElementById('userUsername').value;
+        const currentPassword = document.getElementById('userPassword').value;
+        const currentRole = document.getElementById('userRoleSelect').value;
+
         const formData = {
-            full_name: document.getElementById('userFullName').value,
-            username: document.getElementById('userUsername').value,
-            password: document.getElementById('userPassword').value,
-            role: document.getElementById('userRoleSelect').value
+            full_name: currentFullName,
+            username: currentUsername,
+            password: currentPassword,
+            role: currentRole
         };
+
+        // If editing admin, block username change
+        if (id) {
+            const oldUser = usersList.find(x => x.id === id);
+            if (oldUser && oldUser.username === 'admin' && formData.username !== 'admin') {
+                window.showToast('O usuário admin não pode ter o login alterado.', 'danger');
+                return;
+            }
+        }
 
         try {
             let res;
+            let actionText = id ? 'Editou usuário' : 'Criou novo usuário';
+            let oldVal = null;
+
             if (id) {
+                oldVal = usersList.find(x => x.id === id);
                 res = await window.supabaseClient.from('users').update(formData).eq('id', id);
             } else {
+                // Check username uniqueness
+                const { data: existing } = await window.supabaseClient.from('users').select('id').eq('username', formData.username).maybeSingle();
+                if (existing) {
+                    window.showToast('Este usuário já existe!', 'danger');
+                    return;
+                }
                 res = await window.supabaseClient.from('users').insert([formData]);
             }
 
             if (res.error) throw res.error;
 
+            // Audit Log
+            if (window.registerAuditLog) {
+                await window.registerAuditLog(
+                    'SECURITY',
+                    actionText,
+                    `${actionText}: ${formData.full_name} (@${formData.username})`,
+                    oldVal,
+                    formData
+                );
+            }
+
             window.showToast('Usuário salvo com sucesso!', 'success');
             window.closeUserModal();
             await loadUsers();
+
+            // If current user edited themselves, update localStorage
+            const localUser = JSON.parse(localStorage.getItem('sofis_user') || '{}');
+            if (localUser.id === id || localUser.username === formData.username) {
+                localStorage.setItem('sofis_user', JSON.stringify({ ...localUser, ...formData }));
+                if (window.updateUserDisplay) window.updateUserDisplay();
+            }
+
         } catch (err) {
             console.error('Erro ao salvar usuário:', err.message);
             window.showToast('Erro ao salvar usuário.', 'danger');
@@ -196,10 +266,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     window.deleteUser = async (id) => {
-        if (!confirm('Deseja realmente remover este usuário?')) return;
+        const u = usersList.find(x => x.id === id);
+        if (!u) return;
+        if (u.username === 'admin') {
+            window.showToast('O usuário administrador central não pode ser removido.', 'danger');
+            return;
+        }
+
+        if (!confirm(`Deseja realmente remover o usuário ${u.full_name} (@${u.username})?`)) return;
+
         try {
             const { error } = await window.supabaseClient.from('users').delete().eq('id', id);
             if (error) throw error;
+
+            // Audit Log
+            if (window.registerAuditLog) {
+                await window.registerAuditLog(
+                    'SECURITY',
+                    'Removeu usuário',
+                    `Removeu usuário: ${u.full_name} (@${u.username})`,
+                    u,
+                    null
+                );
+            }
+
             window.showToast('Usuário removido.', 'success');
             await loadUsers();
         } catch (err) {

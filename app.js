@@ -67,11 +67,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     const gridViewBtn = document.getElementById('gridViewBtn');
 
     // Display current user
-    const userDisplay = document.getElementById('currentUserDisplay');
-    const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}');
-    if (userDisplay && currentUser.username) {
-        userDisplay.innerHTML = `<i class="fa-solid fa-user"></i> ${currentUser.username}`;
-    }
+    window.updateUserDisplay = () => {
+        const userDisplay = document.getElementById('currentUserDisplay');
+        const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}');
+        if (userDisplay && currentUser.username) {
+            userDisplay.innerHTML = `<i class="fa-solid fa-user"></i> ${currentUser.username}`;
+        }
+    };
+    window.updateUserDisplay();
 
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
