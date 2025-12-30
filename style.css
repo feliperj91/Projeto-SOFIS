@@ -2228,6 +2228,12 @@ button:hover .vpn-icon-img {
     border: 1px solid #000;
 }
 
+/* Harmonização das margens da aba de Contatos com o padrão de Versões e Cabeçalho */
+#contactsTab {
+    margin-left: -15px;
+    margin-right: -15px;
+}
+
 .version-legend-label {
     color: var(--text-secondary);
     font-size: 0.9rem;
