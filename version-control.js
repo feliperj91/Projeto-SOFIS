@@ -448,6 +448,23 @@
                 document.getElementById('versionNotesInput').disabled = !alertCheck.checked;
             };
         }
+
+        // Mask for Version Number: YYYY.MM-DD
+        const versionInput = document.getElementById('versionNumberInput');
+        if (versionInput) {
+            versionInput.addEventListener('input', function (e) {
+                let value = e.target.value.replace(/\D/g, ''); // Remove all non-digits
+                if (value.length > 8) value = value.substring(0, 8); // Max 8 digits
+
+                let result = '';
+                for (let i = 0; i < value.length; i++) {
+                    if (i === 4) result += '.';
+                    if (i === 6) result += '-';
+                    result += value[i];
+                }
+                e.target.value = result;
+            });
+        }
     };
 
     window.openClientVersionsHistory = async (clientId) => {
