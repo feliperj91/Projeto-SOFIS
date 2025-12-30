@@ -8,7 +8,6 @@
     // Internal state
     let versionControls = [];
     window.currentVersionFilter = 'all';
-    window.currentEnvFilter = 'producao'; // Default is Production
     let sofis_isUpdating = false;
     let sofis_isRendering = false;
     let sofis_isSaving = false;
@@ -96,7 +95,7 @@
 
             // Environment Filter Logic
             if (window.currentEnvFilter && window.currentEnvFilter !== 'all') {
-                filtered = filtered.filter(v => (v.environment || '').toLowerCase() === window.currentEnvFilter);
+                // Removed global logic as per user request
             }
 
             list.innerHTML = '';
@@ -149,7 +148,7 @@
             const timeInfo = utils.getTimeInfo(v.updated_at);
 
             return `
-                <div class="version-item-row status-${status}" data-environment="${v.environment}" data-system="${utils.escapeHtml(v.system)}">
+                <div class="version-item-row status-${status}" data-environment="${v.environment}" style="${v.environment !== 'producao' ? 'display:none;' : ''}" onclick="window.editVersion('${v.id}')" title="Editar Versão">
                     <div class="version-row-main">
                         <!-- Left section: System and Badge -->
                         <div class="version-left-info">
@@ -209,10 +208,10 @@
                             <i class="fa-solid fa-filter"></i>
                         </button>
                         <div class="card-filter-menu hidden">
-                            <div class="filter-menu-item active" onclick="window.applyCardEnvFilter(this, 'all')">
+                            <div class="filter-menu-item" onclick="window.applyCardEnvFilter(this, 'all')">
                                 <i class="fa-solid fa-layer-group"></i> <span>Todos</span>
                             </div>
-                            <div class="filter-menu-item" onclick="window.applyCardEnvFilter(this, 'producao')">
+                            <div class="filter-menu-item active" onclick="window.applyCardEnvFilter(this, 'producao')">
                                 <i class="fa-solid fa-server"></i> <span>Produção</span>
                             </div>
                             <div class="filter-menu-item" onclick="window.applyCardEnvFilter(this, 'homologacao')">
@@ -605,17 +604,6 @@
         document.getElementById('versionHistoryModal').classList.add('hidden');
     };
 
-    // Initialize Environment Filter Listeners
-    document.addEventListener('DOMContentLoaded', () => {
-        const envFilters = document.querySelectorAll('.version-env-filter');
-        envFilters.forEach(btn => {
-            btn.addEventListener('click', () => {
-                envFilters.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                window.currentEnvFilter = btn.dataset.envFilter;
-                renderVersionControls();
-            });
-        });
-    });
+
 
 })();
