@@ -123,23 +123,29 @@
 }
 
 /* Card Status Colors */
-/* Card Status Colors with Subtle Shadow/Glow */
+/* Card Status Colors with Subtle Shadow/Glow and Tint */
 .version-card.status-recent {
     border-left-color: var(--success);
     box-shadow: 0 4px 20px rgba(102, 187, 106, 0.15);
-    /* Green Glow */
+    background: rgba(102, 187, 106, 0.05);
+    /* Green Tint */
+    backdrop-filter: blur(5px);
 }
 
 .version-card.status-warning {
     border-left-color: var(--accent);
     box-shadow: 0 4px 20px rgba(255, 160, 0, 0.15);
-    /* Orange Glow */
+    background: rgba(255, 160, 0, 0.05);
+    /* Orange Tint */
+    backdrop-filter: blur(5px);
 }
 
 .version-card.status-outdated {
     border-left-color: var(--danger);
     box-shadow: 0 4px 20px rgba(239, 83, 80, 0.15);
-    /* Red Glow */
+    background: rgba(239, 83, 80, 0.05);
+    /* Red Tint */
+    backdrop-filter: blur(5px);
 }
 
 /* ===================================
