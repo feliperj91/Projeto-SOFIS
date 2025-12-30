@@ -860,9 +860,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <button class="btn-icon btn-star ${client.isFavorite ? 'favorite-active' : ''}" onclick="toggleFavorite('${client.id}'); event.stopPropagation();" title="${client.isFavorite ? 'Remover Favorito' : 'Favoritar'}" style="margin-top: 0;">
                         <i class="fa-${client.isFavorite ? 'solid' : 'regular'} fa-star"></i>
                     </button>
-                    <button class="btn-icon" onclick="window.openClientInteraction('${client.id}', '${escapeHtml(client.name)}'); event.stopPropagation();" title="Editar Cliente" style="margin-top: 0; color: var(--text-secondary);">
-                        <i class="fa-solid fa-pencil"></i>
-                    </button>
                     <div class="client-name-container" style="display: flex; flex-direction: column; justify-content: flex-start;">
                         <div class="client-name-row" title="Nome do Cliente" style="display: flex; align-items: center;">
                             <span>${escapeHtml(client.name)}</span>
@@ -894,6 +891,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                           <button class="${urlBtnClass} btn-with-badge" onclick="event.stopPropagation(); openUrlData('${client.id}');" title="URL">
                              <i class="fa-solid fa-link"></i>
                              ${hasUrls ? `<span class="btn-badge">${urlCount}</span>` : ''}
+                         </button>
+                         <button class="btn-icon btn-edit-client" onclick="window.openClientInteraction('${client.id}', '${escapeHtml(client.name)}'); event.stopPropagation();" title="Editar Cliente" style="color: var(--text-secondary);">
+                             <i class="fa-solid fa-pencil"></i>
                          </button>
                          <button class="btn-icon btn-danger btn-delete-client" onclick="deleteClient('${client.id}'); event.stopPropagation();" title="Excluir">
                              <i class="fa-solid fa-trash"></i>
