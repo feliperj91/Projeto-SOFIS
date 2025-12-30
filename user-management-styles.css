@@ -350,6 +350,100 @@
     font-size: 0.85rem;
 }
 
+/* User Modal Refinement to match Screenshot */
+#userModal .modal-content {
+    background: #1e242b;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+}
+
+#userModal .modal-header {
+    padding: 25px 30px 15px 30px;
+    border-bottom: none;
+}
+
+#userModal .modal-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+#userForm {
+    padding: 0 30px 30px 30px;
+}
+
+#userForm .form-group {
+    margin-bottom: 20px;
+}
+
+#userForm label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+}
+
+#userForm label i {
+    width: 20px;
+    text-align: center;
+    font-size: 0.85rem;
+}
+
+#userForm input,
+#userForm select {
+    background: #161b22;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 12px 15px;
+    border-radius: 8px;
+    font-size: 1rem;
+    width: 100%;
+    transition: all 0.3s;
+}
+
+#userForm input:focus,
+#userForm select:focus {
+    border-color: var(--accent);
+    background: #1c2229;
+    outline: none;
+}
+
+#userForm .modal-actions {
+    margin-top: 30px;
+    padding-top: 0;
+    justify-content: flex-end;
+    gap: 15px;
+}
+
+#userForm .btn-secondary {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-secondary);
+    padding: 10px 25px;
+}
+
+#userForm .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+}
+
+#userForm .btn-primary {
+    background: #f39c12;
+    border: none;
+    color: #1e242b;
+    font-weight: 700;
+    padding: 12px 30px;
+    box-shadow: 0 4px 15px rgba(243, 156, 18, 0.2);
+}
+
+#userForm .btn-primary:hover {
+    background: #e67e22;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(243, 156, 18, 0.3);
+}
+
 /* Utils */
 .hidden {
     display: none !important;
