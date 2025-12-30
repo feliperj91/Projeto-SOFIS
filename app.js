@@ -3079,11 +3079,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             if (window.registerAuditLog) {
-                await window.registerAuditLog('EDIÇÃO', 'Renomeação Rápida de Cliente', `Cliente renomeado de "${oldName}" para "${newName}"`, oldName, newName);
+                // Standardize format so it appears in history search (which filters by "Cliente: NEW_NAME")
+                await window.registerAuditLog('EDIÇÃO', 'Renomeação Rápida de Cliente', `Cliente: ${newName} - Renomeado de "${oldName}"`, oldName, newName);
             }
         } else {
             showToast(`Erro: Cliente não encontrado (ID: ${id})`, 'error');
         }
     };
 });
-
