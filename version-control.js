@@ -197,10 +197,10 @@ function createClientGroupCard(clientGroup) {
             </div>
             <div class="client-header-actions">
                 <button class="btn-secondary btn-sm" onclick="window.openClientVersionsHistory('${clientGroup.id}')" title="Histórico de Atualizações">
-                    <i class="fa-solid fa-clock-rotate-left"></i> <span class="desktop-only">Histórico</span>
+                    <i class="fa-solid fa-clipboard-list"></i> <span class="desktop-only">Histórico</span>
                 </button>
                 <button class="btn-secondary btn-sm" onclick="window.prefillClientVersion('${clientGroup.id}', '${escapeHtml(clientGroup.name)}')" title="Adicionar Sistema">
-                    <i class="fa-solid fa-plus"></i> <span class="desktop-only">Sistema</span>
+                    <i class="fa-solid fa-code-branch"></i> <span class="desktop-only">Sistema</span>
                 </button>
                 <div class="card-filter-dropdown">
                     <button class="btn-secondary btn-sm card-env-toggle" onclick="event.stopPropagation(); window.toggleCardFilterMenu(this)" data-current-env="all" title="Filtrar Ambiente">
