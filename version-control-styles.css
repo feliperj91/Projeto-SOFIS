@@ -673,75 +673,62 @@
 
 /* Version Item Row */
 .version-item-row {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    /* Subtle border for definition */
-    border-radius: 10px;
-    padding: 14px 18px;
-    /* Slightly more spacious */
-    margin-bottom: 12px;
-    /* More separation */
+    background: rgba(30, 41, 59, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-left-width: 6px;
+    /* Thick status bar */
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-bottom: 16px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
-    /* Depth */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    position: relative;
 }
 
 .version-item-row:hover {
-    background: rgba(255, 255, 255, 0.08);
-    transform: translateX(4px);
+    background: rgba(30, 41, 59, 0.6);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 
+/* Status Bar Colors on the LEFT */
 .version-item-row.status-recent {
-    background: rgba(102, 187, 106, 0.03);
+    border-left-color: #4ade80;
+    /* Modern Green */
 }
 
 .version-item-row.status-warning {
-    background: rgba(255, 160, 0, 0.03);
+    border-left-color: #facc15;
+    /* Modern Yellow */
 }
 
 .version-item-row.status-outdated {
-    background: rgba(239, 83, 80, 0.03);
-}
-
-.version-item-row.status-recent:hover {
-    background: rgba(102, 187, 106, 0.08);
-}
-
-.version-item-row.status-warning:hover {
-    background: rgba(255, 160, 0, 0.08);
-}
-
-.version-item-row.status-outdated:hover {
-    background: rgba(239, 83, 80, 0.08);
-}
-
-.version-item-row:last-child {
-    margin-bottom: 0;
+    border-left-color: #f87171;
+    /* Modern Red */
 }
 
 .version-item-main {
     display: flex;
+    justify-content: space-between;
     align-items: flex-start;
-    gap: 15px;
-    /* Reduced gap to pull data left */
     flex: 1;
+    gap: 30px;
 }
 
 .version-system-info {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    min-width: 150px;
+    gap: 12px;
 }
 
 .version-system-name {
-    font-weight: 500;
-    color: #CFD8DC;
-    font-size: 1.15rem;
-    /* Increased */
+    font-weight: 600;
+    color: #ffffff;
+    font-size: 1.4rem;
+    letter-spacing: 0.5px;
 }
 
 .environment-badge-small {
@@ -779,22 +766,40 @@
 .version-display-wrapper {
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    /* Reduced vertical gap */
-    flex: 1;
+    align-items: flex-start;
+    min-width: 180px;
+}
+
+.version-number-display {
+    font-weight: 800;
+    font-size: 1.6rem;
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Colors for the Text in the Right Corner */
+.status-recent .version-number-display {
+    color: #4ade80;
+}
+
+.status-warning .version-number-display {
+    color: #facc15;
+}
+
+.status-outdated .version-number-display {
+    color: #f87171;
 }
 
 .version-small-meta {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
+    color: #94a3b8;
+    font-size: 0.85rem;
+    line-height: 1.5;
 }
 
 .version-meta-label {
-    font-size: 0.72rem;
-    color: var(--text-secondary);
-    opacity: 0.8;
-    font-weight: 400;
+    margin-bottom: 2px;
 }
 
 .version-item-meta {
@@ -812,18 +817,13 @@
 }
 
 .version-actions {
-    display: flex;
-    gap: 8px;
+    padding-left: 20px;
+    border-left: 1px solid rgba(255, 255, 255, 0.05);
+    margin-left: 20px;
 }
 
 .btn-icon-small {
     background: transparent;
-    border: 1px solid transparent;
-    color: var(--text-secondary);
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
-    display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
