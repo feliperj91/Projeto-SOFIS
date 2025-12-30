@@ -148,7 +148,7 @@
             const timeInfo = utils.getTimeInfo(v.updated_at);
 
             return `
-                <div class="version-item-row status-${status}" data-environment="${v.environment}" style="${v.environment !== 'producao' ? 'display:none;' : ''}" onclick="window.editVersion('${v.id}')" title="Editar Versão">
+                <div class="version-item-row status-${status}" data-environment="${v.environment}" style="${v.environment !== 'producao' ? 'display:none;' : ''}">
                     <div class="version-row-main">
                         <!-- Left section: System and Badge -->
                         <div class="version-left-info">
@@ -190,11 +190,14 @@
         }).join('');
 
         card.innerHTML = `
-            <div class="client-group-header status-${overallStatus}">
-                <div class="client-group-title">
-                    <h3 onclick="window.openClientInteraction('${group.id}', '${utils.escapeHtml(group.name)}')" style="cursor:pointer" title="Clique para ver opções do cliente">${utils.escapeHtml(group.name)}</h3>
-                </div>
+                <div class="client-group-header status-${overallStatus}">
+                    <div class="client-group-title">
+                        <h3 style="cursor:default" title="Nome do Cliente">${utils.escapeHtml(group.name)}</h3>
+                    </div>
                 <div class="client-header-actions">
+                    <button class="btn-card-action" onclick="window.openClientInteraction('${group.id}', '${utils.escapeHtml(group.name)}')" title="Editar Cliente">
+                        <i class="fa-solid fa-pencil"></i>
+                    </button>
                     <button class="btn-card-action" onclick="window.openClientVersionsHistory('${group.id}')" title="Ver Histórico">
                         <i class="fa-solid fa-rotate"></i>
                     </button>
