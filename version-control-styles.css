@@ -942,3 +942,15 @@
 ::-webkit-scrollbar-thumb:hover {
     background: var(--accent-hover);
 }
+
+/* Clickable Client Name Hover Effect */
+.client-group-title h3 {
+    transition: all 0.2s ease;
+}
+
+.client-group-title h3:hover {
+    color: var(--accent);
+    text-shadow: 0 0 10px rgba(255, 193, 7, 0.3);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
