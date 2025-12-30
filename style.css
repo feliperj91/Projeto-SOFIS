@@ -88,7 +88,7 @@ header {
 }
 
 .logo-img {
-    height: 120px;
+    height: 2cm;
     width: auto;
     object-fit: contain;
     margin-left: -15px;
@@ -99,8 +99,6 @@ header {
     display: none;
     /* Hide old text logo */
 }
-
-
 
 .subtitle {
     font-size: 0.9rem;
@@ -115,7 +113,7 @@ header {
     font-weight: 300;
     margin-left: 0;
     /* Ensure alignment with logo */
-    margin-top: -25px;
+    margin-top: -15px;
     /* Pull closer to logo if needed, or just 0 */
 }
 
