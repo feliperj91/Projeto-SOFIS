@@ -233,10 +233,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 can_view: false, can_create: false, can_edit: false, can_delete: false
             };
 
+            const roleClass = `badge-${role.toLowerCase()}`;
+
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>${mod}</td>
-                <td><span class="badge-role ${role === 'ADMINISTRADOR' ? 'badge-admin' : role === 'ANALISTA' ? 'badge-analista' : 'badge-tecnico'}">${role}</span></td>
+                <td><span class="badge-role ${roleClass}">${role}</span></td>
                 <td><input type="checkbox" class="perm-checkbox" data-mod="${mod}" data-prop="can_view" ${p.can_view ? 'checked' : ''}></td>
                 <td><input type="checkbox" class="perm-checkbox" data-mod="${mod}" data-prop="can_create" ${p.can_create ? 'checked' : ''}></td>
                 <td><input type="checkbox" class="perm-checkbox" data-mod="${mod}" data-prop="can_edit" ${p.can_edit ? 'checked' : ''}></td>
