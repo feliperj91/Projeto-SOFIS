@@ -43,3 +43,11 @@ VALUES
 ('ANALISTA', 'Infraestruturas', true, false, false, false),
 ('ANALISTA', 'Gestão de Usuários', false, false, false, false),
 ('ANALISTA', 'Controle de Versões', true, true, true, false);
+-- 6. Habilitar RLS e Políticas de Acesso
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Enable all access for users" ON users;
+CREATE POLICY "Enable all access for users" ON users FOR ALL USING (true);
+
+ALTER TABLE role_permissions ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Enable all access for roles" ON role_permissions;
+CREATE POLICY "Enable all access for roles" ON role_permissions FOR ALL USING (true);

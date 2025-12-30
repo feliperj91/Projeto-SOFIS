@@ -165,17 +165,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // Modal Handlers
-    window.editUser = (id) => {
+    window.editUser = function (id) {
+        console.log('Editando usuário ID:', id);
         const u = usersList.find(x => x.id === id);
-        if (!u) return;
+        if (!u) {
+            console.error('Usuário não encontrado na lista local:', id);
+            return;
+        }
 
         editingUserId = id;
         userModalTitle.innerText = 'Editar Usuário';
-        document.getElementById('userIdInput').value = u.id;
-        document.getElementById('userFullName').value = u.full_name || '';
-        document.getElementById('userUsername').value = u.username;
-        document.getElementById('userPassword').value = u.password;
-        document.getElementById('userRoleSelect').value = u.role || 'TECNICO';
+        if (document.getElementById('userIdInput')) document.getElementById('userIdInput').value = u.id;
+        if (document.getElementById('userFullName')) document.getElementById('userFullName').value = u.full_name || '';
+        if (document.getElementById('userUsername')) document.getElementById('userUsername').value = u.username;
+        if (document.getElementById('userPassword')) document.getElementById('userPassword').value = u.password;
+        if (document.getElementById('userRoleSelect')) document.getElementById('userRoleSelect').value = u.role || 'TECNICO';
 
         userModal.classList.remove('hidden');
     };
