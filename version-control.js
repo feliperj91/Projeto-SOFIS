@@ -200,7 +200,7 @@ function createClientGroupCard(clientGroup) {
                     <i class="fa-solid fa-clipboard-list"></i>
                 </button>
                 <button class="btn-secondary" style="width: 36px; height: 36px; padding: 0; display: inline-flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.05); border: none; border-radius: 8px;" onclick="window.prefillClientVersion('${clientGroup.id}', '${escapeHtml(clientGroup.name)}')" title="Adicionar Sistema">
-                    <i class="fa-solid fa-code-branch"></i>
+                    <i class="fa-solid fa-plus"></i>
                 </button>
                 <div class="card-filter-dropdown">
                     <button class="btn-secondary card-env-toggle" style="width: 36px; height: 36px; padding: 0; display: inline-flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.05); border: none; border-radius: 8px; color: var(--accent);" onclick="event.stopPropagation(); window.toggleCardFilterMenu(this)" data-current-env="all" title="Filtrar Ambiente">
