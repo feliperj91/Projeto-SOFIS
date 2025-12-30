@@ -746,9 +746,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Update client name and note indicator
         const nameContainer = row.querySelector('.client-name-row');
         if (nameContainer) {
+            nameContainer.onclick = null; // Remove interaction from name click
+            nameContainer.style.cursor = 'default';
+            nameContainer.classList.remove('clickable');
             nameContainer.innerHTML = `
                 ${escapeHtml(client.name)}
-                ${client.notes ? `<i class="fa-solid fa-bell client-note-indicator" title="Possui observações importantes"></i>` : ''}
+                ${client.notes ? `<i class="fa-solid fa-bell client-note-indicator" style="margin-left: 15px; cursor: pointer;" onclick="window.openClientInteraction('${client.id}', '${escapeHtml(client.name)}'); event.stopPropagation();" title="Possui observações importantes"></i>` : ''}
             `;
         }
 
@@ -853,14 +856,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         row.innerHTML = `
             <div class="client-row-header">
-                <div class="header-left">
-                    <button class="btn-icon btn-star ${client.isFavorite ? 'favorite-active' : ''}" onclick="toggleFavorite('${client.id}'); event.stopPropagation();" title="${client.isFavorite ? 'Remover Favorito' : 'Favoritar'}">
+                <div class="header-left" style="align-items: flex-start;">
+                    <button class="btn-icon btn-star ${client.isFavorite ? 'favorite-active' : ''}" onclick="toggleFavorite('${client.id}'); event.stopPropagation();" title="${client.isFavorite ? 'Remover Favorito' : 'Favoritar'}" style="margin-top: 0;">
                         <i class="fa-${client.isFavorite ? 'solid' : 'regular'} fa-star"></i>
                     </button>
-                    <div class="client-name-container" style="display: flex; flex-direction: column; justify-content: center;">
-                        <div class="client-name-row clickable" onclick="window.openClientInteraction('${client.id}', '${escapeHtml(client.name)}'); event.stopPropagation();" title="Opções do Cliente">
-                            ${escapeHtml(client.name)}
-                            ${client.notes ? `<i class="fa-solid fa-bell client-note-indicator" title="Possui observações importantes"></i>` : ''}
+                    <div class="client-name-container" style="display: flex; flex-direction: column; justify-content: flex-start;">
+                        <div class="client-name-row" title="Nome do Cliente" style="display: flex; align-items: center;">
+                            <span>${escapeHtml(client.name)}</span>
+                            ${client.notes ? `<i class="fa-solid fa-bell client-note-indicator" title="Possui observações importantes" style="margin-left: 15px; cursor: pointer;" onclick="window.openClientInteraction('${client.id}', '${escapeHtml(client.name)}'); event.stopPropagation();"></i>` : ''}
                         </div>
                         ${client.updatedAt ? `
                             <div class="client-updated-info clickable" onclick="openClientHistory('${client.id}'); event.stopPropagation();" title="Ver Histórico de Alterações" style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 2px; font-weight: normal; display: flex; align-items: center; gap: 4px; cursor: pointer; width: fit-content;">
