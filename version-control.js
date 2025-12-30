@@ -144,28 +144,28 @@
 
             return `
                 <div class="version-item-row status-${status}" data-environment="${v.environment}">
-                    <!-- Top section: System and Version -->
-                    <div class="version-row-header">
-                        <div class="version-system-box">
+                    <div class="version-row-main">
+                        <!-- Left section: System and Badge -->
+                        <div class="version-left-info">
                             <span class="version-system-name">${utils.escapeHtml(v.system)}</span>
+                            <div class="version-badge-container">
+                                <span class="environment-badge-small ${v.environment}">${v.environment.toUpperCase()}</span>
+                            </div>
                         </div>
-                        <div class="version-right-box">
-                            <span class="version-number-display">${utils.escapeHtml(v.version)}</span>
-                            ${v.has_alert ? `<i class="fa-solid fa-bell client-note-indicator" onclick="window.openVersionNotes('${v.id}')" title="Possui observações importantes"></i>` : ''}
-                            <button class="btn-edit-version-small" onclick="window.editVersion('${v.id}')" title="Editar">
-                                <i class="fa-solid fa-pencil"></i>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- Bottom section: Badge and Meta -->
-                    <div class="version-row-body">
-                        <div class="version-badge-area">
-                            <span class="environment-badge-small ${v.environment}">${v.environment.toUpperCase()}</span>
-                        </div>
-                        <div class="version-meta-area">
-                            <div class="meta-line">Data: ${utils.formatDate(v.updated_at)}</div>
-                            <div class="meta-line">${timeInfo}</div>
+
+                        <!-- Right section: Version, Edit and Meta -->
+                        <div class="version-right-data">
+                            <div class="version-header-right">
+                                <span class="version-number-display">${utils.escapeHtml(v.version)}</span>
+                                ${v.has_alert ? `<i class="fa-solid fa-bell client-note-indicator" onclick="window.openVersionNotes('${v.id}')" title="Possui observações importantes"></i>` : ''}
+                                <button class="btn-edit-version-small" onclick="window.editVersion('${v.id}')" title="Editar">
+                                    <i class="fa-solid fa-pencil"></i>
+                                </button>
+                            </div>
+                            <div class="version-meta-area">
+                                <div class="meta-line">Data da atualização: ${utils.formatDate(v.updated_at)}</div>
+                                <div class="meta-line">${timeInfo}</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -179,10 +179,10 @@
                 </div>
                 <div class="client-header-actions">
                     <button class="btn-card-action" onclick="window.openClientVersionsHistory('${group.id}')" title="Ver Histórico">
-                        <i class="fa-solid fa-clock-rotate-left"></i> <span>Histórico</span>
+                        <i class="fa-solid fa-clock-rotate-left"></i>
                     </button>
                     <button class="btn-card-action" onclick="window.prefillClientVersion('${group.id}', '${utils.escapeHtml(group.name)}')" title="Adicionar Sistema">
-                        <i class="fa-solid fa-plus-circle"></i> <span>Sistema</span>
+                        <i class="fa-solid fa-plus-circle"></i>
                     </button>
                     
                     <!-- Card Level Filter -->
@@ -466,6 +466,7 @@
         }
     };
 
+    let currentHistoryData = [];
     window.openClientVersionsHistory = async (clientId) => {
         const modal = document.getElementById('versionHistoryModal');
         if (!modal) return;
@@ -476,29 +477,71 @@
         document.getElementById('versionHistoryTitle').innerHTML = `Histórico: <span style="color:var(--accent)">${utils.escapeHtml(clientName)}</span>`;
         modal.classList.remove('hidden');
 
-        const list = document.getElementById('versionHistoryList');
-        list.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-secondary)">Carregando...</div>';
+        // Reset filters
+        document.getElementById('historySystemFilter').value = 'all';
+        const envFilter = document.getElementById('historyEnvFilter');
+        if (envFilter) envFilter.value = 'all';
+
+        renderHistoryLoading();
 
         try {
+            const clientVCs = versionControls.filter(vc => vc.client_id === clientId);
+            if (clientVCs.length === 0) {
+                renderHistoryList([]);
+                return;
+            }
+
             const { data } = await window.supabaseClient.from('version_history')
-                .select('*, version_controls(system)')
-                .in('version_control_id', versionControls.filter(vc => vc.client_id === clientId).map(vc => vc.id))
+                .select('*, version_controls(system, environment)')
+                .in('version_control_id', clientVCs.map(vc => vc.id))
                 .order('created_at', { ascending: false });
 
-            list.innerHTML = (data || []).map(h => `
-                <div style="background:rgba(0,0,0,0.2); padding:10px; border-radius:8px; margin-bottom:10px; border-left:3px solid var(--accent)">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                        <strong style="color:var(--accent)">${h.version_controls?.system}</strong>
-                        <small style="opacity:0.6">${new Date(h.created_at).toLocaleDateString('pt-BR')} ${new Date(h.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</small>
-                    </div>
-                    <div style="font-size:0.9em; margin:5px 0;">Versão: ${h.previous_version || 'N/A'} <i class="fa-solid fa-arrow-right" style="opacity:0.5; font-size:0.8em"></i> ${h.new_version}</div>
-                    <div style="font-size:0.8em; opacity:0.7; font-style:italic;">Por: ${h.updated_by}</div>
-                    ${h.notes ? `<div style="font-size:0.85em; margin-top:5px; padding-top:5px; border-top:1px solid rgba(255,255,255,0.05)">${utils.escapeHtml(h.notes)}</div>` : ''}
-                </div>
-            `).join('') || '<div style="text-align:center; opacity:0.5; padding:20px;">Nenhum histórico disponível</div>';
+            currentHistoryData = data || [];
+            renderHistoryList(currentHistoryData);
         } catch (e) {
-            list.innerHTML = '<div style="color:var(--danger); text-align:center;">Erro ao carregar dados.</div>';
+            document.getElementById('versionHistoryList').innerHTML = '<div style="color:var(--danger); text-align:center; padding:20px;">Erro ao carregar dados.</div>';
         }
+    };
+
+    function renderHistoryLoading() {
+        document.getElementById('versionHistoryList').innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-secondary)">Carregando...</div>';
+    }
+
+    function renderHistoryList(data) {
+        const list = document.getElementById('versionHistoryList');
+        list.innerHTML = data.map(h => `
+            <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:10px; margin-bottom:12px; border-left:4px solid var(--accent); border: 1px solid rgba(255,255,255,0.05); border-left-width: 4px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px; align-items: flex-start;">
+                    <div>
+                        <strong style="color:var(--accent); font-size:1.1rem; display:block;">${h.version_controls?.system}</strong>
+                        <span class="environment-badge-small ${h.version_controls?.environment}" style="font-size: 0.6rem; padding: 1px 6px;">${h.version_controls?.environment?.toUpperCase()}</span>
+                    </div>
+                    <small style="opacity:0.6; text-align:right;">${new Date(h.created_at).toLocaleDateString('pt-BR')} ${new Date(h.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</small>
+                </div>
+                <div style="font-size:0.95rem; margin:8px 0; color:#fff; font-family:'Outfit', sans-serif;">
+                    <span style="opacity:0.6">Versão:</span> ${h.previous_version || 'N/A'} 
+                    <i class="fa-solid fa-arrow-right-long" style="opacity:0.3; margin:0 8px; font-size:0.8em"></i> 
+                    <span style="color:var(--success); font-weight:600;">${h.new_version}</span>
+                </div>
+                <div style="font-size:0.8rem; color:#94a3b8; font-style:italic;">Por: ${h.updated_by}</div>
+                ${h.notes ? `<div style="font-size:0.85rem; margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.05); color:#cfd8dc; border-radius:0;">${utils.escapeHtml(h.notes)}</div>` : ''}
+            </div>
+        `).join('') || '<div style="text-align:center; opacity:0.5; padding:30px;">Nenhum registro encontrado para os filtros selecionados.</div>';
+    }
+
+    window.filterHistory = () => {
+        const sys = document.getElementById('historySystemFilter').value;
+        const env = document.getElementById('historyEnvFilter').value;
+
+        let filtered = currentHistoryData;
+        if (sys !== 'all') {
+            filtered = filtered.filter(h => h.version_controls?.system === sys);
+        }
+        if (env !== 'all') {
+            filtered = filtered.filter(h => h.version_controls?.environment === env);
+        }
+
+        renderHistoryList(filtered);
     };
 
     window.closeVersionHistoryModal = () => {
