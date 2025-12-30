@@ -1396,24 +1396,42 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!client) return;
 
         if (confirm(`⚠️ EXCLUIR CLIENTE ⚠️\n\nTem certeza que deseja excluir "${client.name}"?`)) {
-            clients = clients.filter(c => c.id !== id);
+            const clientName = client.name;
+            const clientSnapshot = JSON.parse(JSON.stringify(client));
 
-            // Delete from Supabase
-            if (window.supabaseClient) {
-                const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-                if (isUUID) {
-                    try {
-                        await window.supabaseClient.from('clients').delete().eq('id', id);
-                    } catch (err) {
-                        console.error('Erro ao deletar do Supabase:', err);
-                    }
+            // 1. Atualização Instantânea na Memória e UI de Contatos
+            clients = clients.filter(c => c.id !== id);
+            window.clients = clients;
+            applyClientFilter();
+            showToast(`🗑️ Cliente "${clientName}" removido com sucesso!`, 'success');
+
+            // 2. Atualização Instantânea na UI de Controle de Versão
+            if (window.versionControls) {
+                window.versionControls = window.versionControls.filter(vc => vc.client_id !== id);
+                if (typeof window.renderVersionControls === 'function') {
+                    window.renderVersionControls();
                 }
             }
 
-            await saveToLocal();
-            applyClientFilter();
-            showToast(`🗑️ Cliente "${client.name}" removido com sucesso!`, 'success');
-            await registerAuditLog('EXCLUSÃO', 'Exclusão de Cliente', `Cliente: ${client.name}`, client, null);
+            // 3. Processamento em segundo plano (LocalStorage, Supabase e Logs)
+            (async () => {
+                await saveToLocal();
+
+                if (window.supabaseClient) {
+                    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+                    if (isUUID) {
+                        try {
+                            await window.supabaseClient.from('clients').delete().eq('id', id);
+                        } catch (err) {
+                            console.error('Erro ao deletar do Supabase:', err);
+                        }
+                    }
+                }
+
+                if (window.registerAuditLog) {
+                    await registerAuditLog('EXCLUSÃO', 'Exclusão de Cliente', `Cliente: ${clientName}`, clientSnapshot, null);
+                }
+            })();
         }
     }
     window.deleteClient = deleteClient;
