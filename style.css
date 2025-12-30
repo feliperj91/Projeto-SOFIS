@@ -2183,3 +2183,13 @@ button:hover .vpn-icon-img {
     display: inline-block;
     border: 1px solid #000;
 }
+
+.version-legend-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin: 0 5px 0 10px;
+    display: flex;
+    align-items: center;
+    opacity: 0.8;
+}
