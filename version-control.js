@@ -546,8 +546,8 @@ async function openVersionHistory(versionId) {
 
     if (!modal || !historyList || !version) return;
 
-    document.getElementById('versionHistoryTitle').textContent =
-        `Histórico - ${version.clients?.name} (${version.system})`;
+    document.getElementById('versionHistoryTitle').innerHTML =
+        `Histórico - <span style="color: var(--accent);">${escapeHtml(version.clients?.name)}</span> (${escapeHtml(version.system)})`;
 
     try {
         const { data, error } = await window.supabaseClient
@@ -568,16 +568,23 @@ async function openVersionHistory(versionId) {
                 const item = document.createElement('div');
                 item.className = 'version-history-item';
                 item.innerHTML = `
-                    <div class="version-history-header">
-                        <span class="version-history-date">${formatDateTime(entry.created_at)}</span>
-                        <span style="color: var(--text-secondary); font-size: 0.85rem;">${escapeHtml(entry.updated_by || 'Sistema')}</span>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+                        <div style="font-weight: 700; color: var(--text-primary); font-size: 1rem;">${escapeHtml(version.system)}</div>
+                        <div class="version-history-change" style="background: rgba(0,0,0,0.2); padding: 5px 10px; border-radius: 6px; display: flex; align-items: center; gap: 8px;">
+                            <span style="color: var(--text-secondary); text-decoration: line-through; font-size: 0.85rem;">${escapeHtml(entry.previous_version || '-')}</span>
+                            <i class="fa-solid fa-right-long" style="color: var(--accent); font-size: 0.8rem;"></i>
+                            <span style="color: var(--accent); font-weight: 700; font-size: 1rem;">${escapeHtml(entry.new_version)}</span>
+                        </div>
                     </div>
-                    <div class="version-history-change">
-                        ${entry.previous_version ? `<span class="version-history-old">${escapeHtml(entry.previous_version)}</span>` : '<span style="color: var(--text-secondary);">-</span>'}
-                        <i class="fa-solid fa-arrow-right version-history-arrow"></i>
-                        <span class="version-history-new">${escapeHtml(entry.new_version)}</span>
+                    <div style="font-size: 0.8rem; color: var(--text-secondary); display: flex; flex-direction: column; gap: 4px;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span><i class="fa-regular fa-calendar-days" style="margin-right: 5px;"></i> ${formatDateTime(entry.created_at)}</span>
+                            <span style="color: var(--text-secondary);"><i class="fa-regular fa-user" style="margin-right: 5px;"></i> ${escapeHtml(entry.updated_by || 'Sistema')}</span>
+                        </div>
+                        ${entry.notes ? `<div style="margin-top: 10px; padding: 12px; background: rgba(255,193,7,0.05); border-left: 3px solid var(--accent); border-radius: 4px; color: #e0e0e0; font-style: italic;">
+                            <i class="fa-solid fa-comment-dots" style="color: var(--accent); margin-right: 8px;"></i>${escapeHtml(entry.notes)}
+                        </div>` : ''}
                     </div>
-                    ${entry.notes ? `<div class="version-history-notes">${escapeHtml(entry.notes)}</div>` : ''}
                 `;
                 historyList.appendChild(item);
             });
@@ -640,85 +647,118 @@ function openVersionNotes(versionId) {
 // OPEN CLIENT VERSIONS HISTORY
 // ===================================
 
-function openClientVersionsHistory(clientId) {
+async function openClientVersionsHistory(clientId) {
     currentHistoryClientId = clientId;
 
     // Find client name
-    const client = versionControls.find(v => v.client_id === clientId);
+    const client = clients.find(c => c.id === clientId) || versionControls.find(v => v.client_id === clientId)?.clients;
     if (!client) return;
 
     const modal = document.getElementById('versionHistoryModal');
     if (!modal) return;
 
-    document.getElementById('versionHistoryTitle').textContent = `Histórico de Atualizações - ${client.clients?.name || 'Cliente'}`;
+    // Title with yellow client name
+    document.getElementById('versionHistoryTitle').innerHTML = `Histórico de Atualizações - <span style="color: var(--accent);">${escapeHtml(client.name)}</span>`;
 
     // Reset filter select to 'all'
     const filterSelect = document.getElementById('historySystemFilter');
     if (filterSelect) filterSelect.value = 'all';
 
-    // Render initial view
-    filterHistoryBySystem();
+    // Fetch history from database
+    try {
+        // 1. Get all control IDs for this client from pre-loaded versionControls
+        const controlIds = versionControls.filter(vc => vc.client_id === clientId).map(vc => vc.id);
 
-    modal.classList.remove('hidden');
+        if (controlIds.length === 0) {
+            document.getElementById('versionHistoryList').innerHTML = '<p style="text-align: center; color: var(--text-secondary); margin-top: 20px;">Nenhuma configuração de versão encontrada para este cliente.</p>';
+            modal.classList.remove('hidden');
+            return;
+        }
+
+        const { data: historyData, error: historyError } = await window.supabaseClient
+            .from('version_history')
+            .select(`
+                *,
+                version_controls (
+                    system,
+                    environment
+                )
+            `)
+            .in('version_control_id', controlIds)
+            .order('created_at', { ascending: false });
+
+        if (historyError) throw historyError;
+
+        // Store for filtering
+        window.currentHistoryData = historyData || [];
+
+        // Render initial view
+        filterHistoryBySystem();
+        modal.classList.remove('hidden');
+
+    } catch (err) {
+        console.error('Erro ao buscar histórico do cliente:', err);
+        showToast('Erro ao carregar histórico detalhado', 'error');
+    }
 }
 
 // Function to filter the history modal content
 window.filterHistoryBySystem = function () {
-    if (!currentHistoryClientId) return;
+    if (!window.currentHistoryData) return;
 
     const filterValue = document.getElementById('historySystemFilter').value;
-    const clientVersions = versionControls.filter(v => v.client_id === currentHistoryClientId);
-
     const historyList = document.getElementById('versionHistoryList');
     if (!historyList) return;
 
-    // Apply filtering
-    let items = clientVersions;
+    // Filter by system if specified
+    let items = window.currentHistoryData;
     if (filterValue !== 'all') {
-        items = items.filter(v => v.system === filterValue);
+        items = items.filter(h => h.version_controls?.system === filterValue);
     }
 
-    let filteredItems = [];
-    if (filterValue === 'all') {
-        const prod = items.filter(v => v.environment === 'producao').sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at) || b.id - a.id).slice(0, 3);
-        const homol = items.filter(v => v.environment === 'homologacao').sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at) || b.id - a.id).slice(0, 3);
-        filteredItems = [...prod, ...homol].sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at) || b.id - a.id);
-    } else {
-        filteredItems = items.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at) || b.id - a.id).slice(0, 3);
-    }
+    // Pick top 3 for each environment
+    const prodItems = items.filter(h => h.version_controls?.environment === 'producao').slice(0, 3);
+    const homolItems = items.filter(h => h.version_controls?.environment === 'homologacao').slice(0, 3);
+
+    // Combine and sort by date
+    const filteredItems = [...prodItems, ...homolItems].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
     historyList.innerHTML = '';
 
     if (filteredItems.length === 0) {
-        historyList.innerHTML = '<p style="text-align: center; color: var(--text-secondary); margin-top: 20px;">Nenhuma atualização encontrada para este filtro.</p>';
+        historyList.innerHTML = '<p style="text-align: center; color: var(--text-secondary); margin-top: 20px;">Nenhum histórico de alteração encontrado para este filtro.</p>';
         return;
     }
 
-    filteredItems.forEach(version => {
+    filteredItems.forEach(entry => {
         const item = document.createElement('div');
         item.className = 'version-history-item';
-        const color = getVersionStatus(version.updated_at) === 'outdated' ? 'var(--danger)' :
-            (getVersionStatus(version.updated_at) === 'warning' ? 'var(--accent)' : 'var(--success)');
+        const environment = entry.version_controls?.environment || 'producao';
+        const systemName = entry.version_controls?.system || 'Desconhecido';
 
         item.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
                 <div>
-                    <div style="font-weight: 600; color: var(--text-primary);">${escapeHtml(version.system)}</div>
-                    <div class="environment-badge-small ${version.environment}" style="margin-top: 4px;">
-                        ${version.environment === 'producao' ? 'PRODUÇÃO' : 'HOMOLOGAÇÃO'}
+                    <div style="font-weight: 700; color: var(--text-primary); font-size: 1rem;">${escapeHtml(systemName)}</div>
+                    <div class="environment-badge-small ${environment}" style="margin-top: 5px;">
+                        ${environment === 'producao' ? 'PRODUÇÃO' : 'HOMOLOGAÇÃO'}
                     </div>
                 </div>
                 <div style="text-align: right;">
-                    <div style="font-family: 'Outfit', sans-serif; font-weight: 700; color: ${color}; font-size: 1.1rem;">
-                        ${escapeHtml(version.version)}
+                    <div class="version-history-change" style="background: rgba(0,0,0,0.2); padding: 5px 10px; border-radius: 6px; display: flex; align-items: center; gap: 8px;">
+                        <span style="color: var(--text-secondary); text-decoration: line-through; font-size: 0.85rem;">${escapeHtml(entry.previous_version || '-')}</span>
+                        <i class="fa-solid fa-right-long" style="color: var(--accent); font-size: 0.8rem;"></i>
+                        <span style="color: var(--accent); font-weight: 700; font-size: 1rem;">${escapeHtml(entry.new_version)}</span>
                     </div>
                 </div>
             </div>
-            <div style="font-size: 0.8rem; color: var(--text-secondary); display: grid; gap: 4px;">
-                <span>Data: ${formatDate(version.updated_at)}</span>
-                <span>Tempo: ${getTimeInfo(version.updated_at)}</span>
-                ${version.notes ? `<div style="margin-top: 8px; padding: 10px; background: rgba(0,0,0,0.2); border-left: 3px solid var(--accent); border-radius: 4px; color: var(--text-primary);">
-                    <i class="fa-solid fa-bell client-note-indicator" style="margin-left: 0; margin-right: 8px;"></i> ${escapeHtml(version.notes)}
+            <div style="font-size: 0.8rem; color: var(--text-secondary); display: flex; flex-direction: column; gap: 4px;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span><i class="fa-regular fa-calendar-days" style="margin-right: 5px;"></i> ${formatDateTime(entry.created_at)}</span>
+                    <span style="color: var(--text-secondary);"><i class="fa-regular fa-user" style="margin-right: 5px;"></i> ${escapeHtml(entry.updated_by || 'Sistema')}</span>
+                </div>
+                ${entry.notes ? `<div style="margin-top: 10px; padding: 12px; background: rgba(255,193,7,0.05); border-left: 3px solid var(--accent); border-radius: 4px; color: #e0e0e0; font-style: italic;">
+                    <i class="fa-solid fa-comment-dots" style="color: var(--accent); margin-right: 8px;"></i>${escapeHtml(entry.notes)}
                 </div>` : ''}
             </div>
         `;
