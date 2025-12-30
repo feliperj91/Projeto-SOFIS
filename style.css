@@ -397,6 +397,14 @@ button {
     font-size: 1.1rem;
     font-weight: 600;
     color: var(--text-primary);
+    transition: all 0.2s ease;
+}
+
+.client-name-row:hover {
+    color: var(--accent);
+    text-shadow: 0 0 8px rgba(255, 193, 7, 0.3);
+    text-decoration: underline;
+    text-underline-offset: 4px;
 }
 
 .chevron-icon {

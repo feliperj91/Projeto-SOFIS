@@ -857,7 +857,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <i class="fa-${client.isFavorite ? 'solid' : 'regular'} fa-star"></i>
                     </button>
                     <div class="client-name-container" style="display: flex; flex-direction: column; justify-content: center;">
-                        <div class="client-name-row clickable" onclick="openClientNotes('${client.id}'); event.stopPropagation();" title="Ver Observações">
+                        <div class="client-name-row clickable" onclick="window.openClientInteraction('${client.id}', '${escapeHtml(client.name)}'); event.stopPropagation();" title="Opções do Cliente">
                             ${escapeHtml(client.name)}
                             ${client.notes ? `<i class="fa-solid fa-bell client-note-indicator" title="Possui observações importantes"></i>` : ''}
                         </div>
