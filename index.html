@@ -13,6 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="build-config.js"></script>
     <script>
         // Auth Guard - Run immediately to prevent flash
         if (!localStorage.getItem('sofis_user')) {
@@ -28,7 +29,7 @@
                 <img src="logo.png" alt="Sofis Logo" class="logo-img">
                 <div class="subtitle-wrapper">
                     <span class="app-subtitle">Gerenciamento de Clientes</span>
-                    <span class="app-build">Build: 1.9.58</span>
+                    <span class="app-build" id="appBuildNumber">Build: ...</span>
                 </div>
             </div>
             <div class="header-controls">
@@ -1007,10 +1008,18 @@
     </div>
 
     <script src="supabase-client.js?v=3.9"></script>
+    <script>
+        // Update Build Number Dynamically
+        if (window.SOFIS_BUILD) {
+            const buildEl = document.getElementById('appBuildNumber');
+            if (buildEl) {
+                buildEl.textContent = `Build: ${window.SOFIS_BUILD.version}`;
+            }
+        }
+    </script>
     <script src="app.js?v=3.9"></script>
     <script src="version-control.js?v=9.8"></script>
     <script src="user-management.js?v=1.0"></script>
 </body>
 
 </html>
-<!-- Build: 1.9.60 - 2025-12-30 10:19 -->
