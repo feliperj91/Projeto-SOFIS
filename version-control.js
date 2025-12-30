@@ -250,6 +250,16 @@
                 return;
             }
 
+            // Year Validation
+            if (fields.date) {
+                const year = parseInt(fields.date.split('-')[0]);
+                if (year < 2000 || year > 2099) {
+                    if (window.showToast) window.showToast('⚠️ Ano inválido na data. Por favor verifique.', 'warning');
+                    sofis_isSaving = false;
+                    return;
+                }
+            }
+
             const payload = {
                 client_id: fields.clientId,
                 environment: fields.env,
