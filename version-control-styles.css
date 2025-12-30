@@ -725,7 +725,8 @@
 .version-item-main {
     display: flex;
     align-items: flex-start;
-    gap: 25px;
+    gap: 15px;
+    /* Reduced gap to pull data left */
     flex: 1;
 }
 
@@ -778,7 +779,8 @@
 .version-display-wrapper {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 2px;
+    /* Reduced vertical gap */
     flex: 1;
 }
 
