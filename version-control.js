@@ -647,18 +647,21 @@ function openVersionNotes(versionId) {
 // OPEN CLIENT VERSIONS HISTORY
 // ===================================
 
-async function openClientVersionsHistory(clientId) {
+window.openClientVersionsHistory = async function (clientId) {
     currentHistoryClientId = clientId;
 
-    // Find client name
-    const client = clients.find(c => c.id === clientId) || versionControls.find(v => v.client_id === clientId)?.clients;
-    if (!client) return;
+    // Find client name from versionControls (which has the joined client data)
+    const clientEntry = versionControls.find(v => v.client_id === clientId);
+    const clientName = clientEntry?.clients?.name || 'Cliente';
+
+    // Fallback or explicit check if needed, but the above line covers the safe case.
+    if (!clientEntry) console.warn('Cliente não encontrado nos controle de versão:', clientId);
 
     const modal = document.getElementById('versionHistoryModal');
     if (!modal) return;
 
     // Title with yellow client name
-    document.getElementById('versionHistoryTitle').innerHTML = `Histórico de Atualizações - <span style="color: var(--accent);">${escapeHtml(client.name)}</span>`;
+    document.getElementById('versionHistoryTitle').innerHTML = `Histórico de Atualizações - <span style="color: var(--accent);">${escapeHtml(clientName)}</span>`;
 
     // Reset filter select to 'all'
     const filterSelect = document.getElementById('historySystemFilter');
