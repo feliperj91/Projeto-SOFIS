@@ -224,7 +224,8 @@
                 ver: document.getElementById('versionNumberInput').value,
                 date: document.getElementById('versionDateInput').value,
                 alert: document.getElementById('versionAlertCheck').checked,
-                notes: document.getElementById('versionNotesInput').value
+                notes: document.getElementById('versionNotesInput').value,
+                responsible: document.getElementById('versionResponsibleSelect').value
             };
 
             if (!fields.clientId) {
@@ -239,6 +240,7 @@
                 version: fields.ver,
                 has_alert: fields.alert,
                 notes: fields.notes,
+                responsible: fields.responsible,
                 updated_at: fields.date ? `${fields.date}T12:00:00+00:00` : new Date().toISOString()
             };
 
@@ -248,7 +250,7 @@
             } else {
                 result = await window.supabaseClient.from('version_controls').insert([payload]).select();
                 if (result.data && result.data[0]) {
-                    await logHistory(result.data[0].id, null, fields.ver, 'Registro Inicial');
+                    await logHistory(result.data[0].id, null, fields.ver, 'Registro Inicial', fields.responsible);
                 }
             }
 
@@ -270,9 +272,9 @@
         }
     }
 
-    async function logHistory(vcId, oldV, newV, notes) {
+    async function logHistory(vcId, oldV, newV, notes, responsible = null) {
         try {
-            const user = JSON.parse(localStorage.getItem('sofis_user') || '{}').username || 'Sistema';
+            const user = responsible || JSON.parse(localStorage.getItem('sofis_user') || '{}').username || 'Sistema';
             await window.supabaseClient.from('version_history').insert([{
                 version_control_id: vcId,
                 previous_version: oldV,
@@ -300,16 +302,35 @@
         if (v) {
             document.getElementById('versionClientSelect').value = v.client_id;
             document.getElementById('versionClientInput').value = v.clients?.name || '';
+            document.getElementById('versionClientInput').disabled = true; // Lock client on edit
             document.getElementById('versionEnvironmentSelect').value = v.environment;
             document.getElementById('versionSystemSelect').value = v.system;
             document.getElementById('versionNumberInput').value = v.version;
+            document.getElementById('versionResponsibleSelect').value = v.responsible || '';
             if (v.updated_at) document.getElementById('versionDateInput').value = v.updated_at.split('T')[0];
             const check = document.getElementById('versionAlertCheck');
             check.checked = !!v.has_alert;
             const notes = document.getElementById('versionNotesInput');
             notes.value = v.notes || '';
             notes.disabled = !check.checked;
+        } else {
+            document.getElementById('versionClientInput').disabled = false;
         }
+
+        // Auto-select current user in responsible list if new
+        if (!id) {
+            const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username;
+            if (currentUser) {
+                const respSelect = document.getElementById('versionResponsibleSelect');
+                for (let i = 0; i < respSelect.options.length; i++) {
+                    if (respSelect.options[i].value === currentUser) {
+                        respSelect.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+        }
+
         modal.classList.remove('hidden');
     };
 
@@ -335,6 +356,20 @@
         setTimeout(() => {
             document.getElementById('versionClientSelect').value = id;
             document.getElementById('versionClientInput').value = name;
+            document.getElementById('versionClientInput').disabled = true; // Lock client when prefilling
+
+            // Auto-select current user in responsible list
+            const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username;
+            if (currentUser) {
+                const respSelect = document.getElementById('versionResponsibleSelect');
+                for (let i = 0; i < respSelect.options.length; i++) {
+                    if (respSelect.options[i].value === currentUser) {
+                        respSelect.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+
             modal.classList.remove('hidden');
         }, 50);
     };
