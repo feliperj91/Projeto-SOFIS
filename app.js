@@ -1005,7 +1005,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Save data to localStorage and Supabase
-    async function saveToLocal(specificClientId = null) {
+    async function saveToLocal(specificClientId = null, preserveTimestamp = false) {
         localStorage.setItem('sofis_clients', JSON.stringify(clients));
         updateFilterCounts();
 
@@ -1015,18 +1015,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Only sync the specific client that was modified
                 const client = clients.find(c => c.id === specificClientId);
                 if (client) {
-                    await syncClientToSupabase(client);
+                    await syncClientToSupabase(client, preserveTimestamp);
                 }
             } else {
                 // Sync all clients (used for initial load or bulk operations)
                 for (const client of clients) {
-                    await syncClientToSupabase(client);
+                    await syncClientToSupabase(client, preserveTimestamp);
                 }
             }
         }
     }
 
-    async function syncClientToSupabase(client) {
+    async function syncClientToSupabase(client, preserveTimestamp = false) {
         if (!window.supabaseClient) return;
 
         const clientData = {
@@ -1057,7 +1057,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (result.error) throw result.error;
 
             // Update local updatedAt with the value from Supabase
-            if (result.data && result.data.updated_at) {
+            if (result.data && result.data.updated_at && !preserveTimestamp) {
                 client.updatedAt = result.data.updated_at;
             }
 
@@ -3038,7 +3038,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('quickRenameModal').classList.add('hidden');
 
             try {
-                await saveToLocal(client.id);
+                // Pass true to preserveTimestamp so the "Updated: ..." date doesn't change visually
+                await saveToLocal(client.id, true);
                 renderClients(clients);
             } catch (err) {
                 console.error('Erro ao salvar localmente:', err);
