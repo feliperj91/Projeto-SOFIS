@@ -248,7 +248,21 @@
             };
 
             if (!fields.clientId) {
-                if (window.showToast) window.showToast('Selecione um cliente', 'warning');
+                if (window.showToast) window.showToast('⚠️ Selecione um cliente', 'warning');
+                sofis_isSaving = false;
+                return;
+            }
+
+            // Version Validation (Incomplete or Empty)
+            if (!fields.ver || fields.ver.trim() === '') {
+                if (window.showToast) window.showToast('⚠️ O campo de versão é obrigatório.', 'warning');
+                sofis_isSaving = false;
+                return;
+            }
+
+            if (fields.ver.length < 10) {
+                if (window.showToast) window.showToast('⚠️ Formato de versão incompleto. Use: AAAA.MM-DD', 'warning');
+                sofis_isSaving = false;
                 return;
             }
 
