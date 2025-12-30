@@ -1435,17 +1435,17 @@ button:hover .vpn-icon-img {
 }
 
 /* Client Note Indicator */
-/* Client Note Indicator */
 .client-note-indicator {
     color: var(--accent);
-    margin-left: 16px;
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     animation: ring-bell 2s ease-in-out infinite;
-    display: inline-block;
-    vertical-align: middle;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     transform-origin: top center;
     cursor: pointer;
     transition: all 0.2s ease;
+    flex-shrink: 0;
 }
 
 .client-note-indicator:hover {

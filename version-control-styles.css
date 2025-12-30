@@ -731,7 +731,8 @@
 .version-header-right {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
+    flex-wrap: nowrap;
 }
 
 .version-number-display {
@@ -739,6 +740,7 @@
     font-size: 1.25rem;
     font-family: 'Outfit', sans-serif;
     line-height: 1;
+    flex-shrink: 0;
 }
 
 /* Edit Button Style */
