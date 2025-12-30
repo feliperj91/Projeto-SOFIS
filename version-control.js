@@ -85,7 +85,8 @@
             if (search) {
                 filtered = filtered.filter(v =>
                     (v.clients?.name || '').toLowerCase().includes(search) ||
-                    (v.system || '').toLowerCase().includes(search)
+                    (v.system || '').toLowerCase().includes(search) ||
+                    (v.version || '').toLowerCase().includes(search)
                 );
             }
 
