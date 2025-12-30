@@ -108,14 +108,17 @@ header {
 }
 
 .app-subtitle {
-    font-size: 1.7rem;
+    font-size: 32px !important;
     color: var(--text-secondary);
-    font-weight: 300;
+    font-weight: 600 !important;
     margin-left: 0;
-    word-spacing: 5px;
-    /* Increased space between words */
-    margin-top: calc(-55px - 1.0cm);
-    /* Raised even further and font increased to 1.7rem */
+    word-spacing: 8px !important;
+    /* Extra spacing */
+    margin-top: -80px !important;
+    /* Forcing it even higher */
+    display: block;
+    position: relative;
+    z-index: 10;
 }
 
 /* Buttons */
