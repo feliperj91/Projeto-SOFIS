@@ -762,6 +762,15 @@
     padding: 0;
 }
 
+/* Invisible placeholder when no bell - maintains spacing */
+.bell-placeholder {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    display: inline-flex;
+    visibility: hidden;
+}
+
 /* Edit Button Style */
 .btn-edit-version-small {
     background: transparent;

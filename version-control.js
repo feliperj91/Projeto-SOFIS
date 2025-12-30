@@ -157,7 +157,10 @@
                         <div class="version-right-data">
                             <div class="version-header-right">
                                 <span class="version-number-display">${utils.escapeHtml(v.version)}</span>
-                                ${v.has_alert ? `<i class="fa-solid fa-bell client-note-indicator" onclick="window.openVersionNotes('${v.id}')" title="Possui observações importantes"></i>` : ''}
+                                ${v.has_alert ?
+                    `<i class="fa-solid fa-bell client-note-indicator" onclick="window.openVersionNotes('${v.id}')" title="Possui observações importantes"></i>` :
+                    `<span class="bell-placeholder"></span>`
+                }
                                 <button class="btn-edit-version-small" onclick="window.editVersion('${v.id}')" title="Editar">
                                     <i class="fa-solid fa-pencil"></i>
                                 </button>
