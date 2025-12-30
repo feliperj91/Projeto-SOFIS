@@ -203,7 +203,7 @@ function createClientGroupCard(clientGroup) {
                     <i class="fa-solid fa-code-branch"></i>
                 </button>
                 <div class="card-filter-dropdown">
-                    <button class="btn-secondary btn-sm card-env-toggle" onclick="event.stopPropagation(); window.toggleCardFilterMenu(this)" data-current-env="all" title="Filtrar Ambiente">
+                    <button class="btn-secondary card-env-toggle" style="width: 36px; height: 36px; padding: 0; display: inline-flex; align-items: center; justify-content: center; color: var(--accent); border-color: var(--accent);" onclick="event.stopPropagation(); window.toggleCardFilterMenu(this)" data-current-env="all" title="Filtrar Ambiente">
                         <i class="fa-solid fa-filter"></i>
                     </button>
                     <div class="card-filter-menu hidden">
