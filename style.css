@@ -88,7 +88,7 @@ header {
 }
 
 .logo-img {
-    height: calc(120px + 2cm);
+    height: 120px;
     width: auto;
     object-fit: contain;
     margin-left: -15px;
@@ -113,8 +113,8 @@ header {
     font-weight: 300;
     margin-left: 0;
     /* Ensure alignment with logo */
-    margin-top: -45px;
-    /* Adjusted pull for larger logo */
+    margin-top: -25px;
+    /* Pull closer to logo if needed, or just 0 */
 }
 
 /* Buttons */
