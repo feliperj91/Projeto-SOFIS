@@ -1366,6 +1366,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         closeModal();
+        if (typeof populateVersionClientSelect === 'function') {
+            populateVersionClientSelect();
+        }
         const opType = editingId ? 'EDIÇÃO' : 'CRIAÇÃO';
         const actionLabel = editingId ? (mode === 'addContact' ? 'Adição de Contato' : 'Edição de Cliente') : 'Novo Cliente';
         const clientAfter = JSON.parse(JSON.stringify(clients.find(c => c.id === newClient.id) || newClient));
@@ -3067,8 +3070,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
 
-            showToast('Nome atualizado com sucesso!', 'success');
-
             // 3. Sincronização final
             try {
                 if (typeof window.loadVersionControls === 'function') {
@@ -3076,6 +3077,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             } catch (err) {
                 console.error('Erro na sincronização final:', err);
+            }
+
+            // 4. Update dropdown list immediately
+            if (typeof populateVersionClientSelect === 'function') {
+                populateVersionClientSelect();
             }
 
             if (window.registerAuditLog) {
