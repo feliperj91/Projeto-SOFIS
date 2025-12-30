@@ -529,17 +529,15 @@
             <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:10px; margin-bottom:12px; border-left:4px solid var(--accent); border: 1px solid rgba(255,255,255,0.05); border-left-width: 4px;">
                 <div style="display:flex; justify-content:space-between; margin-bottom:8px; align-items: flex-start;">
                     <div>
-                        <strong style="color:var(--accent); font-size:1.1rem; display:block;">${h.version_controls?.system}</strong>
+                        <strong style="color:#ffffff; font-size:1.1rem; display:block;">${h.version_controls?.system}</strong>
                         <span class="environment-badge-small ${h.version_controls?.environment}" style="font-size: 0.6rem; padding: 1px 6px;">${h.version_controls?.environment?.toUpperCase()}</span>
                     </div>
                     <small style="opacity:0.6; text-align:right;">${new Date(h.created_at).toLocaleDateString('pt-BR')} ${new Date(h.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</small>
                 </div>
                 <div style="font-size:0.95rem; margin:8px 0; color:#fff; font-family:'Outfit', sans-serif;">
-                    <span style="opacity:0.6">Versão:</span> ${h.previous_version || 'N/A'} 
-                    <i class="fa-solid fa-arrow-right-long" style="opacity:0.3; margin:0 8px; font-size:0.8em"></i> 
-                    <span style="color:var(--success); font-weight:600;">${h.new_version}</span>
+                    <span style="opacity:0.6">Versão:</span> <span style="color:var(--success); font-weight:600;">${h.new_version}</span>
                 </div>
-                <div style="font-size:0.8rem; color:#94a3b8; font-style:italic;">Por: ${h.updated_by}</div>
+                <div style="font-size:0.8rem; color:#94a3b8;">Atualizado por: <span style="color: #fff;">${h.updated_by}</span></div>
                 ${h.notes ? `<div style="font-size:0.85rem; margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.05); color:#cfd8dc; border-radius:0;">${utils.escapeHtml(h.notes)}</div>` : ''}
             </div>
         `).join('') || '<div style="text-align:center; opacity:0.5; padding:30px;">Nenhum registro encontrado para os filtros selecionados.</div>';
