@@ -2933,106 +2933,106 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (window.setupVersionControlFilters) {
         window.setupVersionControlFilters();
     }
-});
 
-// ===================================
-// CLIENT INTERACTION LOGIC (RENAME/NOTES)
-// ===================================
+    // ===================================
+    // CLIENT INTERACTION LOGIC (RENAME/NOTES)
+    // ===================================
 
-let interactionClientId = null;
-let interactionClientName = null;
+    let interactionClientId = null;
+    let interactionClientName = null;
 
-window.openClientInteraction = function (id, name) {
-    interactionClientId = id;
-    interactionClientName = name;
+    window.openClientInteraction = function (id, name) {
+        interactionClientId = id;
+        interactionClientName = name;
 
-    // Safety check if modal elements exist
-    const modal = document.getElementById('clientInteractionModal');
-    const title = document.getElementById('clientInteractionTitle');
+        // Safety check if modal elements exist
+        const modal = document.getElementById('clientInteractionModal');
+        const title = document.getElementById('clientInteractionTitle');
 
-    if (modal && title) {
-        title.textContent = name;
-        modal.classList.remove('hidden');
-    } else {
-        console.error('Client Interaction Modal elements not found');
-    }
-};
+        if (modal && title) {
+            title.textContent = name;
+            modal.classList.remove('hidden');
+        } else {
+            console.error('Client Interaction Modal elements not found');
+        }
+    };
 
-window.triggerRenameClient = function () {
-    const interactionModal = document.getElementById('clientInteractionModal');
-    const renameModal = document.getElementById('quickRenameModal');
-    const inputId = document.getElementById('quickRenameId');
-    const inputName = document.getElementById('quickRenameInput');
+    window.triggerRenameClient = function () {
+        const interactionModal = document.getElementById('clientInteractionModal');
+        const renameModal = document.getElementById('quickRenameModal');
+        const inputId = document.getElementById('quickRenameId');
+        const inputName = document.getElementById('quickRenameInput');
 
-    if (interactionModal) interactionModal.classList.add('hidden');
+        if (interactionModal) interactionModal.classList.add('hidden');
 
-    if (renameModal && inputId && inputName) {
-        inputId.value = interactionClientId;
-        inputName.value = interactionClientName;
-        renameModal.classList.remove('hidden');
-        setTimeout(() => inputName.focus(), 100);
-    }
-};
+        if (renameModal && inputId && inputName) {
+            inputId.value = interactionClientId;
+            inputName.value = interactionClientName;
+            renameModal.classList.remove('hidden');
+            setTimeout(() => inputName.focus(), 100);
+        }
+    };
 
-window.triggerClientNotes = function () {
-    const interactionModal = document.getElementById('clientInteractionModal');
-    if (interactionModal) interactionModal.classList.add('hidden');
+    window.triggerClientNotes = function () {
+        const interactionModal = document.getElementById('clientInteractionModal');
+        if (interactionModal) interactionModal.classList.add('hidden');
 
-    if (interactionClientId) {
-        window.openClientGeneralNotes(interactionClientId);
-    }
-};
+        if (interactionClientId) {
+            window.openClientGeneralNotes(interactionClientId);
+        }
+    };
 
-window.openClientGeneralNotes = function (id) {
-    if (typeof clients === 'undefined') return;
-    const client = clients.find(c => c.id === id);
-    if (!client) return;
+    window.openClientGeneralNotes = function (id) {
+        if (typeof clients === 'undefined') return;
+        const client = clients.find(c => c.id === id);
+        if (!client) return;
 
-    const modal = document.getElementById('notesModal');
-    const idInput = document.getElementById('notesClientId');
-    const textInput = document.getElementById('clientNoteInput');
+        const modal = document.getElementById('notesModal');
+        const idInput = document.getElementById('notesClientId');
+        const textInput = document.getElementById('clientNoteInput');
 
-    if (modal && idInput && textInput) {
-        idInput.value = id;
-        textInput.value = client.notes || '';
-        modal.classList.remove('hidden');
-    }
-};
+        if (modal && idInput && textInput) {
+            idInput.value = id;
+            textInput.value = client.notes || '';
+            modal.classList.remove('hidden');
+        }
+    };
 
-window.submitQuickRename = async function () {
-    const id = document.getElementById('quickRenameId').value;
-    const newName = document.getElementById('quickRenameInput').value.trim();
+    window.submitQuickRename = async function () {
+        const id = document.getElementById('quickRenameId').value;
+        const newName = document.getElementById('quickRenameInput').value.trim();
 
-    if (!newName) {
-        showToast('O nome não pode ser vazio', 'error');
-        return;
-    }
+        if (!newName) {
+            showToast('O nome não pode ser vazio', 'error');
+            return;
+        }
 
-    const client = clients.find(c => c.id === id);
-    if (client) {
-        const oldName = client.name;
-        client.name = newName;
+        const client = clients.find(c => c.id === id);
+        if (client) {
+            const oldName = client.name;
+            client.name = newName;
 
-        await saveToLocal();
-        if (window.supabaseClient) {
-            try {
-                await window.supabaseClient.from('clients').update({ name: newName }).eq('id', id);
-            } catch (err) {
-                console.error('Error updating name in Supabase:', err);
+            await saveToLocal();
+            if (window.supabaseClient) {
+                try {
+                    await window.supabaseClient.from('clients').update({ name: newName }).eq('id', id);
+                } catch (err) {
+                    console.error('Error updating name in Supabase:', err);
+                }
+            }
+
+            renderClients(clients);
+            if (typeof window.loadAllVersions === 'function') {
+                window.loadAllVersions();
+            }
+
+            document.getElementById('quickRenameModal').classList.add('hidden');
+            showToast('Nome atualizado com sucesso!', 'success');
+
+            if (window.registerAuditLog) {
+                await window.registerAuditLog('EDIÇÃO', 'Renomeação Rápida de Cliente', `Cliente renomeado de "${oldName}" para "${newName}"`, oldName, newName);
             }
         }
-
-        renderClients(clients);
-        if (typeof window.loadAllVersions === 'function') {
-            window.loadAllVersions();
-        }
-
-        document.getElementById('quickRenameModal').classList.add('hidden');
-        showToast('Nome atualizado com sucesso!', 'success');
-
-        if (window.registerAuditLog) {
-            await window.registerAuditLog('EDIÇÃO', 'Renomeação Rápida de Cliente', `Cliente renomeado de "${oldName}" para "${newName}"`, oldName, newName);
-        }
-    }
-};
+    };
+});
 
