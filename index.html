@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="style.css?v=5.6">
     <link rel="stylesheet" href="server-styles.css?v=2.5">
     <link rel="stylesheet" href="credential-styles.css?v=2.5">
-    <link rel="stylesheet" href="version-control-styles.css?v=5.9">
+    <link rel="stylesheet" href="version-control-styles.css?v=6.0">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -107,7 +107,19 @@
                 </button>
             </div>
 
-            <div class="filter-chips-container">
+            <div class="filter-chips-container" style="flex-direction: column; align-items: flex-start; gap: 10px;">
+                <div class="filter-buttons">
+                    <button class="version-env-filter active" data-env-filter="producao">
+                        <i class="fa-solid fa-server"></i> Produção
+                    </button>
+                    <button class="version-env-filter" data-env-filter="homologacao">
+                        <i class="fa-solid fa-flask"></i> Homologação
+                    </button>
+                    <button class="version-env-filter" data-env-filter="all">
+                        <i class="fa-solid fa-layer-group"></i> Todos
+                    </button>
+                </div>
+
                 <div class="filter-buttons">
                     <button class="version-legend-item active" data-version-filter="all">
                         <span>Todas</span>
@@ -880,8 +892,8 @@
 
     <script src="supabase-client.js?v=3.9"></script>
     <script src="app.js?v=3.6"></script>
-    <script src="version-control.js?v=9.0"></script>
+    <script src="version-control.js?v=9.1"></script>
 </body>
 
 </html>
-<!-- Build: 1.9.19 - 2025-12-30 05:46 -->
+<!-- Build: 1.9.20 - 2025-12-30 06:00 -->

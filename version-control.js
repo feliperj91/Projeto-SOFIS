@@ -8,6 +8,7 @@
     // Internal state
     let versionControls = [];
     window.currentVersionFilter = 'all';
+    window.currentEnvFilter = 'producao'; // Default is Production
     let sofis_isUpdating = false;
     let sofis_isRendering = false;
     let sofis_isSaving = false;
@@ -91,6 +92,11 @@
 
             if (window.currentVersionFilter !== 'all') {
                 filtered = filtered.filter(v => utils.getStatus(v.updated_at) === window.currentVersionFilter);
+            }
+
+            // Environment Filter Logic
+            if (window.currentEnvFilter && window.currentEnvFilter !== 'all') {
+                filtered = filtered.filter(v => (v.environment || '').toLowerCase() === window.currentEnvFilter);
             }
 
             list.innerHTML = '';
@@ -588,5 +594,18 @@
     window.closeVersionHistoryModal = () => {
         document.getElementById('versionHistoryModal').classList.add('hidden');
     };
+
+    // Initialize Environment Filter Listeners
+    document.addEventListener('DOMContentLoaded', () => {
+        const envFilters = document.querySelectorAll('.version-env-filter');
+        envFilters.forEach(btn => {
+            btn.addEventListener('click', () => {
+                envFilters.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                window.currentEnvFilter = btn.dataset.envFilter;
+                renderVersionControls();
+            });
+        });
+    });
 
 })();

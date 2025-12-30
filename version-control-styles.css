@@ -1126,6 +1126,38 @@
     background: rgba(255, 255, 255, 0.2);
 }
 
+/* Environment Filter Buttons */
+.version-env-filter {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.version-env-filter:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+.version-env-filter.active {
+    background: var(--accent);
+    color: #1a1a1a;
+    border-color: var(--accent);
+    font-weight: 600;
+}
+
+.version-env-filter i {
+    font-size: 0.9em;
+}
+
 /* Clickable Client Name Hover Effect */
 .client-group-title h3 {
     transition: all 0.2s ease;
