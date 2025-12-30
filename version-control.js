@@ -143,13 +143,13 @@
             const timeInfo = utils.getTimeInfo(v.updated_at);
 
             return `
-                <div class="version-item-row status-${status}" data-environment="${v.environment}">
+                <div class="version-item-row status-${status}" data-environment="${v.environment}" data-system="${utils.escapeHtml(v.system)}">
                     <div class="version-row-main">
                         <!-- Left section: System and Badge -->
                         <div class="version-left-info">
                             <span class="version-system-name">${utils.escapeHtml(v.system)}</span>
                             <div class="version-badge-container">
-                                <span class="environment-badge-small ${v.environment}">${v.environment.toUpperCase()}</span>
+                                <span class="environment-badge-small ${v.environment}">${v.environment === 'producao' ? 'PRODUÇÃO' : 'HOMOLOGAÇÃO'}</span>
                             </div>
                         </div>
 
