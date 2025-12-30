@@ -1005,7 +1005,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Save data to localStorage and Supabase
-    async function saveToLocal(specificClientId = null, preserveTimestamp = false) {
+    async function saveToLocal(specificClientId = null) {
         localStorage.setItem('sofis_clients', JSON.stringify(clients));
         updateFilterCounts();
 
@@ -1015,18 +1015,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Only sync the specific client that was modified
                 const client = clients.find(c => c.id === specificClientId);
                 if (client) {
-                    await syncClientToSupabase(client, preserveTimestamp);
+                    await syncClientToSupabase(client);
                 }
             } else {
                 // Sync all clients (used for initial load or bulk operations)
                 for (const client of clients) {
-                    await syncClientToSupabase(client, preserveTimestamp);
+                    await syncClientToSupabase(client);
                 }
             }
         }
     }
 
-    async function syncClientToSupabase(client, preserveTimestamp = false) {
+    async function syncClientToSupabase(client) {
         if (!window.supabaseClient) return;
 
         const clientData = {
@@ -1035,12 +1035,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             notes: client.notes || '',
             web_laudo: client.webLaudo || ''
         };
-
-        // If preserving timestamp, explicitly send the old date to preventing DB auto-update
-        // (This only works if there is no BEFORE UPDATE trigger forcing NOW())
-        if (preserveTimestamp && client.updatedAt) {
-            clientData.updated_at = client.updatedAt;
-        }
 
         try {
             let clientId = client.id;
@@ -1063,7 +1057,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (result.error) throw result.error;
 
             // Update local updatedAt with the value from Supabase
-            if (result.data && result.data.updated_at && !preserveTimestamp) {
+            if (result.data && result.data.updated_at) {
                 client.updatedAt = result.data.updated_at;
             }
 
@@ -2783,7 +2777,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!client) return;
 
         if (historyModal) {
-            historyModalTitle.textContent = `Histórico: ${client.name}`;
+            historyModalTitle.innerHTML = `Histórico: <span style="color: var(--accent); font-weight: bold;">${client.name}</span>`;
             historyList.innerHTML = '<div style="text-align:center; padding: 20px;"><i class="fa-solid fa-circle-notch fa-spin"></i> Carregando...</div>';
             historyModal.classList.remove('hidden');
         }
@@ -3044,8 +3038,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('quickRenameModal').classList.add('hidden');
 
             try {
-                // Pass true to preserveTimestamp so the "Updated: ..." date doesn't change visually
-                await saveToLocal(client.id, true);
+                // Removed preserveTimestamp=true so both card date and history date match (are updated)
+                await saveToLocal(client.id);
                 renderClients(clients);
             } catch (err) {
                 console.error('Erro ao salvar localmente:', err);
