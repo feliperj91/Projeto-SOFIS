@@ -155,19 +155,25 @@
 
                         <!-- Right section: Version, Edit and Meta -->
                         <div class="version-right-data">
-                            <div class="version-header-right">
-                                <span class="version-number-display">${utils.escapeHtml(v.version)}</span>
-                                ${v.has_alert ?
+                            <div class="version-right-new-layout">
+                                <!-- Text Group: Version + Metas (Aligned Left) -->
+                                <div class="version-text-group">
+                                    <span class="version-number-display" style="margin-bottom: 4px;">${utils.escapeHtml(v.version)}</span>
+                                    <div class="version-meta-area">
+                                        <div class="meta-line">Data da atualização: ${utils.formatDate(v.updated_at)}</div>
+                                        <div class="meta-line">${timeInfo}</div>
+                                    </div>
+                                </div>
+                                <!-- Actions Group: Icons (Aligned Right) -->
+                                <div class="version-actions-group">
+                                    ${v.has_alert ?
                     `<i class="fa-solid fa-bell client-note-indicator" onclick="window.openVersionNotes('${v.id}')" title="Possui observações importantes"></i>` :
                     `<span class="bell-placeholder"></span>`
                 }
-                                <button class="btn-edit-version-small" onclick="window.editVersion('${v.id}')" title="Editar">
-                                    <i class="fa-solid fa-pencil"></i>
-                                </button>
-                            </div>
-                            <div class="version-meta-area">
-                                <div class="meta-line">Data da atualização: ${utils.formatDate(v.updated_at)}</div>
-                                <div class="meta-line">${timeInfo}</div>
+                                    <button class="btn-edit-version-small" onclick="window.editVersion('${v.id}')" title="Editar">
+                                        <i class="fa-solid fa-pencil"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>

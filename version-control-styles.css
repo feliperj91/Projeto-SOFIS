@@ -486,6 +486,8 @@
     border: 1px solid var(--border);
     border-radius: var(--radius);
     overflow: hidden;
+    width: 100% !important;
+    /* Force width */
     display: flex;
     flex-direction: column;
     height: fit-content;
@@ -588,8 +590,8 @@
 }
 
 .card-env-toggle i {
-    color: var(--accent) !important;
-    /* System Standard Yellow */
+    color: var(--text-secondary) !important;
+    /* Standard Gray */
     font-size: 1.1rem !important;
 }
 
@@ -734,6 +736,28 @@
     gap: 6px;
     text-align: right;
     min-width: 0;
+}
+
+/* New Layout Classes */
+.version-right-new-layout {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    justify-content: flex-end;
+}
+
+.version-text-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    margin-top: 2px;
+}
+
+.version-actions-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .version-meta-area {
