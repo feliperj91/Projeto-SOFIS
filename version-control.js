@@ -193,7 +193,7 @@ function createClientGroupCard(clientGroup) {
     card.innerHTML = `
         <div class="client-group-header">
             <div class="client-group-title">
-                <h3>${escapeHtml(clientGroup.name)}</h3>
+                <h3 onclick="window.openClientInteraction('${clientGroup.id}', '${escapeHtml(clientGroup.name)}')" style="cursor: pointer;" title="Clique para Opções">${escapeHtml(clientGroup.name)}</h3>
             </div>
             <div class="client-header-actions">
                 <button class="btn-secondary" style="width: 36px; height: 36px; padding: 0; display: inline-flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.05); border: none; border-radius: 8px;" onclick="window.openClientVersionsHistory('${clientGroup.id}')" title="Histórico de Atualizações">
