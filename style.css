@@ -1249,8 +1249,8 @@ button {
 }
 
 .toast-warning {
-    background: #facc15;
-    color: #1e293b;
+    background: var(--accent);
+    color: #1a1a1a;
 }
 
 .toast.hidden {
