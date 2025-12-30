@@ -534,11 +534,13 @@
                     </div>
                     <small style="opacity:0.6; text-align:right;">${new Date(h.created_at).toLocaleDateString('pt-BR')} ${new Date(h.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</small>
                 </div>
-                <div style="font-size:0.95rem; margin:8px 0; color:#fff; font-family:'Outfit', sans-serif;">
-                    <span style="opacity:0.6">Versão:</span> <span style="color:var(--success); font-weight:600;">${h.new_version}</span>
+                <div style="font-size:0.9rem; margin:5px 0; color:#fff; font-family:'Outfit', sans-serif;">
+                    <span style="font-weight: 400;">Versão:</span> <span style="color:var(--success); font-weight:600;">${h.new_version}</span>
                 </div>
-                <div style="font-size:0.8rem; color:#94a3b8;">Atualizado por: <span style="color: #fff;">${h.updated_by}</span></div>
-                ${h.notes && h.notes !== 'Versão inicial cadastrada' ? `<div style="font-size:0.85rem; margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.05); color:#cfd8dc; border-radius:0;">${utils.escapeHtml(h.notes)}</div>` : ''}
+                <div style="font-size:0.9rem; color:#fff; font-family:'Outfit', sans-serif;">
+                    <span style="font-weight: 400;">Atualizado por:</span> <span>${h.updated_by}</span>
+                </div>
+                ${h.notes && h.notes !== 'Versão inicial cadastrada' && h.notes !== 'Registro Inicial' ? `<div style="font-size:0.85rem; margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.05); color:#cfd8dc; border-radius:0;">${utils.escapeHtml(h.notes)}</div>` : ''}
             </div>
         `).join('') || '<div style="text-align:center; opacity:0.5; padding:30px;">Nenhum registro encontrado para os filtros selecionados.</div>';
     }
