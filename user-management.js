@@ -191,12 +191,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         userModal.classList.add('hidden');
         userForm.reset();
         editingUserId = null;
+        // Clear hidden ID field
+        if (document.getElementById('userIdInput')) {
+            document.getElementById('userIdInput').value = '';
+        }
     };
 
     document.getElementById('addNewUserBtn')?.addEventListener('click', () => {
         editingUserId = null;
         userModalTitle.innerText = 'Novo Usuário';
         userForm.reset();
+        // Ensure ID field is cleared for new user
+        if (document.getElementById('userIdInput')) {
+            document.getElementById('userIdInput').value = '';
+        }
         userModal.classList.remove('hidden');
     });
 
