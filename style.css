@@ -107,16 +107,30 @@ header {
     margin-left: 8px;
 }
 
+.subtitle-wrapper {
+    margin-top: -40px !important;
+    display: flex;
+    align-items: baseline;
+    gap: 15px;
+    position: relative;
+    z-index: 10;
+}
+
 .app-subtitle {
     font-size: 22px !important;
     color: var(--text-secondary);
     font-weight: 300 !important;
     margin-left: 0;
     word-spacing: 6px !important;
-    margin-top: -40px !important;
-    display: block;
-    position: relative;
-    z-index: 10;
+    display: inline-block;
+}
+
+.app-build {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    opacity: 0.5;
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: 1px;
 }
 
 /* Buttons */
