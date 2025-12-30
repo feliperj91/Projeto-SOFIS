@@ -2289,7 +2289,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!client) return;
 
         notesClientIdInput.value = clientId;
-        notesModalTitle.textContent = `Observações - ${client.name} `;
+        notesModalTitle.innerHTML = `Observações - <span style="color: var(--accent);">${client.name}</span>`;
         clientNoteInput.value = client.notes || '';
 
         notesModal.classList.remove('hidden');
