@@ -2903,6 +2903,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Load tab specific data
             if (tabId === 'versions' && window.loadVersionControls) {
                 window.loadVersionControls();
+            } else if (tabId === 'management' && window.loadManagementTab) {
+                window.loadManagementTab();
             }
         });
     });

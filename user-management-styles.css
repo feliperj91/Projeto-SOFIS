@@ -1,0 +1,307 @@
+/* ===================================
+   USER MANAGEMENT STYLES
+   =================================== */
+
+/* Header & Sub-navigation */
+.management-controls-header {
+    background: var(--glass);
+    padding: 15px 25px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.management-subtabs {
+    display: flex;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 4px;
+    border-radius: 8px;
+}
+
+.mng-tab-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mng-tab-btn.active {
+    background: var(--accent);
+    color: white;
+    box-shadow: 0 0 15px rgba(255, 160, 0, 0.4);
+}
+
+.mng-controls-group {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex: 1;
+    justify-content: flex-end;
+}
+
+.mng-search-wrapper {
+    position: relative;
+    max-width: 400px;
+    width: 100%;
+}
+
+.mng-search-wrapper .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.mng-search-wrapper input {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 10px 15px 10px 35px;
+    color: white;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.mng-search-wrapper input:focus {
+    border-color: var(--accent);
+}
+
+/* Role Selector Pill */
+.role-selector-pill {
+    display: flex;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 4px;
+    border-radius: 8px;
+}
+
+.role-pill-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.role-pill-btn.active {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--accent);
+}
+
+/* User Grid */
+.users-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+@media (max-width: 1300px) {
+    .users-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 850px) {
+    .users-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* User Card */
+.user-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.user-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.user-info-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 25px;
+}
+
+.user-name-group h3 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: white;
+}
+
+.user-name-group .user-handle {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
+.user-card-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.user-info-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+}
+
+.badge-role {
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.badge-admin {
+    background: rgba(239, 83, 80, 0.15);
+    color: #ef5350;
+    border: 1px solid rgba(239, 83, 80, 0.3);
+}
+
+.badge-tecnico {
+    background: rgba(102, 187, 106, 0.15);
+    color: #66bb6a;
+    border: 1px solid rgba(102, 187, 106, 0.3);
+}
+
+.badge-analista {
+    background: rgba(41, 182, 246, 0.15);
+    color: #29b6f6;
+    border: 1px solid rgba(41, 182, 246, 0.3);
+}
+
+.user-date {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Permissions Table */
+.permissions-container {
+    background: var(--glass);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.permissions-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.permissions-table th {
+    background: rgba(0, 0, 0, 0.2);
+    text-align: left;
+    padding: 15px 20px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.permissions-table td {
+    padding: 15px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.95rem;
+}
+
+.permissions-table tr:hover td {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.permissions-table .badge-role {
+    font-size: 0.7rem;
+}
+
+/* Custom Checkbox */
+.perm-checkbox {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.perm-checkbox:checked {
+    background: var(--accent);
+    border-color: var(--accent);
+}
+
+.perm-checkbox:checked::after {
+    content: '\f00c';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    color: white;
+    font-size: 0.75rem;
+}
+
+/* Utils */
+.hidden {
+    display: none !important;
+}
+
+.btn-gold {
+    background: var(--accent) !important;
+    border-color: var(--accent) !important;
+    color: white !important;
+}
+
+.btn-green {
+    background: #27ae60 !important;
+    border-color: #27ae60 !important;
+    color: white !important;
+}
+
+.btn-green:hover {
+    background: #2ecc71 !important;
+    box-shadow: 0 0 15px rgba(46, 204, 113, 0.3);
+}
+
+.user-display-sidebar {
+    position: fixed;
+    top: 20px;
+    right: 320px;
+    z-index: 100;
+}

@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="server-styles.css?v=2.5">
     <link rel="stylesheet" href="credential-styles.css?v=2.5">
     <link rel="stylesheet" href="version-control-styles.css?v=6.2">
+    <link rel="stylesheet" href="user-management-styles.css?v=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -27,7 +28,7 @@
                 <img src="logo.png" alt="Sofis Logo" class="logo-img">
                 <div class="subtitle-wrapper">
                     <span class="app-subtitle">Gerenciamento de Clientes</span>
-                    <span class="app-build">Build: 1.9.52</span>
+                    <span class="app-build">Build: 1.9.58</span>
                 </div>
             </div>
             <div class="header-controls">
@@ -45,6 +46,9 @@
             </button>
             <button class="tab-btn" data-tab="versions">
                 Controle de Versões
+            </button>
+            <button class="tab-btn" data-tab="management" id="btnUserManagement" style="display: none;">
+                Gerenciamento de Usuários
             </button>
         </div>
 
@@ -136,6 +140,80 @@
 
             <div id="versionList" class="version-grid">
                 <!-- Version cards will be rendered here -->
+            </div>
+        </main>
+
+        <!-- User Management Tab Content -->
+        <main id="managementTab" class="tab-content">
+            <!-- Header for Management -->
+            <div class="management-controls-header">
+                <div class="management-subtabs">
+                    <button class="mng-tab-btn active" data-mng-tab="users">
+                        <i class="fa-solid fa-users"></i> Usuários
+                    </button>
+                    <button class="mng-tab-btn" data-mng-tab="permissions">
+                        <i class="fa-solid fa-shield-halved"></i> Permissões
+                    </button>
+                </div>
+
+                <!-- Users Search & Add (Only visible in users tab) -->
+                <div id="users-mng-controls" class="mng-controls-group">
+                    <div class="mng-search-wrapper">
+                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                        <input type="text" id="userSearchInput" placeholder="Pesquisar por nome ou usuário...">
+                    </div>
+                    <button id="addNewUserBtn" class="btn-primary btn-gold">
+                        <i class="fa-solid fa-user-plus"></i> Novo Usuário
+                    </button>
+                </div>
+
+                <!-- Permissions Controls (Only visible in permissions tab) -->
+                <div id="permissions-mng-controls" class="mng-controls-group hidden">
+                    <div class="role-selector-pill">
+                        <button class="role-pill-btn active" data-role="ADMINISTRADOR">Administrador</button>
+                        <button class="role-pill-btn" data-role="ANALISTA">Analista</button>
+                        <button class="role-pill-btn" data-role="TECNICO">Técnico</button>
+                    </div>
+                    <button id="savePermissionsBtn" class="btn-primary btn-green">
+                        <i class="fa-solid fa-floppy-disk"></i> Salvar Alterações
+                    </button>
+                </div>
+            </div>
+
+            <!-- Management Content Body -->
+            <div id="management-body">
+                <!-- User Grid -->
+                <div id="users-container" class="mng-panel-active">
+                    <div id="usersList" class="users-grid">
+                        <!-- User cards will be rendered here -->
+                    </div>
+                </div>
+
+                <!-- Permissions Table -->
+                <div id="permissions-container" class="hidden">
+                    <table class="permissions-table">
+                        <thead>
+                            <tr>
+                                <th>MÓDULO</th>
+                                <th>GRUPO REQUISITADO</th>
+                                <th>VISUALIZAR</th>
+                                <th>CRIAR</th>
+                                <th>EDITAR</th>
+                                <th>EXCLUIR</th>
+                            </tr>
+                        </thead>
+                        <tbody id="permissionsTableBody">
+                            <!-- Rows like:
+                            <tr>
+                                <td>Logs e Atividades</td>
+                                <td><span class="badge-role badge-admin">ADMINISTRADOR</span></td>
+                                <td><input type="checkbox" checked></td>
+                                ...
+                            </tr> 
+                            -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </main>
 
@@ -885,10 +963,54 @@
         </div>
     </div>
 
+    <!-- User Management Modal -->
+    <div id="userModal" class="modal hidden">
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="modal-header">
+                <h2 id="userModalTitle">Novo Usuário</h2>
+                <button type="button" class="btn-icon" onclick="closeUserModal()">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <form id="userForm">
+                <input type="hidden" id="userIdInput">
+                <div class="form-group">
+                    <label for="userFullName"><i class="fa-solid fa-signature"></i> Nome Completo<span
+                            class="required">*</span></label>
+                    <input type="text" id="userFullName" required placeholder="Ex: Felipe Almeida">
+                </div>
+                <div class="form-group">
+                    <label for="userUsername"><i class="fa-solid fa-at"></i> Usuário<span
+                            class="required">*</span></label>
+                    <input type="text" id="userUsername" required placeholder="Ex: felipe.almeida">
+                </div>
+                <div class="form-group">
+                    <label for="userPassword"><i class="fa-solid fa-key"></i> Senha<span
+                            class="required">*</span></label>
+                    <input type="password" id="userPassword" required placeholder="Digite a senha">
+                </div>
+                <div class="form-group">
+                    <label for="userRoleSelect"><i class="fa-solid fa-user-tag"></i> Cargo<span
+                            class="required">*</span></label>
+                    <select id="userRoleSelect" required>
+                        <option value="ADMINISTRADOR">Administrador</option>
+                        <option value="ANALISTA">Analista</option>
+                        <option value="TECNICO">Técnico</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeUserModal()">Cancelar</button>
+                    <button type="submit" class="btn-primary">Salvar Usuário</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script src="supabase-client.js?v=3.9"></script>
     <script src="app.js?v=3.9"></script>
     <script src="version-control.js?v=9.8"></script>
+    <script src="user-management.js?v=1.0"></script>
 </body>
 
 </html>
-<!-- Build: 1.9.52 - 2025-12-30 07:50 -->
+<!-- Build: 1.9.58 - 2025-12-30 09:25 -->
