@@ -571,6 +571,17 @@
             }
         });
 
+        // Sort by Environment if a system is selected (Production first)
+        if (sys !== 'all') {
+            finalResults.sort((a, b) => {
+                const envA = a.version_controls?.environment || '';
+                const envB = b.version_controls?.environment || '';
+                if (envA === 'producao' && envB !== 'producao') return -1;
+                if (envA !== 'producao' && envB === 'producao') return 1;
+                return 0; // Preserve date order
+            });
+        }
+
         renderHistoryList(finalResults);
     };
 
