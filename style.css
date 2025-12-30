@@ -108,14 +108,14 @@ header {
 }
 
 .app-subtitle {
-    font-size: 1.5rem;
+    font-size: 1.7rem;
     color: var(--text-secondary);
     font-weight: 300;
     margin-left: 0;
     word-spacing: 5px;
     /* Increased space between words */
     margin-top: calc(-55px - 1.0cm);
-    /* Raised even further and font increased to 1.5rem */
+    /* Raised even further and font increased to 1.7rem */
 }
 
 /* Buttons */
