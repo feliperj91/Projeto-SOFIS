@@ -730,6 +730,20 @@
     min-width: 0;
 }
 
+.version-meta-area {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.meta-line {
+    font-size: 0.8rem;
+    color: #ffffff;
+    opacity: 1;
+    /* Ensure full visibility */
+    font-weight: 400;
+}
+
 .version-header-right {
     display: flex;
     align-items: center;
