@@ -495,9 +495,8 @@
         modal.classList.remove('hidden');
 
         // Reset filters
+        // Reset filters
         document.getElementById('historySystemFilter').value = 'all';
-        const envFilter = document.getElementById('historyEnvFilter');
-        if (envFilter) envFilter.value = 'all';
 
         renderHistoryLoading();
 
@@ -514,7 +513,7 @@
                 .order('created_at', { ascending: false });
 
             currentHistoryData = data || [];
-            renderHistoryList(currentHistoryData);
+            window.filterHistory(); // Apply limits immediately
         } catch (e) {
             document.getElementById('versionHistoryList').innerHTML = '<div style="color:var(--danger); text-align:center; padding:20px;">Erro ao carregar dados.</div>';
         }
@@ -548,17 +547,31 @@
 
     window.filterHistory = () => {
         const sys = document.getElementById('historySystemFilter').value;
-        const env = document.getElementById('historyEnvFilter').value;
 
+        // Base filter by system if selected
         let filtered = currentHistoryData;
         if (sys !== 'all') {
             filtered = filtered.filter(h => h.version_controls?.system === sys);
         }
-        if (env !== 'all') {
-            filtered = filtered.filter(h => h.version_controls?.environment === env);
-        }
 
-        renderHistoryList(filtered);
+        // Apply Logic: Top 3 latest updates per System per Environment
+        const finalResults = [];
+        const counters = {}; // stores count for "System|Environment"
+
+        filtered.forEach(h => {
+            const system = h.version_controls?.system || 'Unknown';
+            const env = h.version_controls?.environment || 'Unknown';
+            const key = `${system}|${env}`;
+
+            if (!counters[key]) counters[key] = 0;
+
+            if (counters[key] < 3) {
+                finalResults.push(h);
+                counters[key]++;
+            }
+        });
+
+        renderHistoryList(finalResults);
     };
 
     window.closeVersionHistoryModal = () => {
