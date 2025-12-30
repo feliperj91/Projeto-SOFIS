@@ -1639,6 +1639,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (type === 'error') {
             toast.classList.add('toast-error');
+        } else if (type === 'warning') {
+            toast.classList.add('toast-warning');
         } else {
             toast.classList.add('toast-success');
         }
@@ -3038,8 +3040,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // 1. Atualização INSTANTÂNEA na tela atual (Contatos)
             document.getElementById('quickRenameModal').classList.add('hidden');
-            await saveToLocal(client.id);
-            renderClients(clients);
+
+            try {
+                await saveToLocal(client.id);
+                renderClients(clients);
+            } catch (err) {
+                console.error('Erro ao salvar localmente:', err);
+                showToast('Aviso: Erro ao sincronizar com o servidor', 'warning');
+            }
 
             // 2. Atualização INSTANTÂNEA na outra tela (Controle de Versão)
             if (window.versionControls) {
@@ -3058,19 +3066,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             showToast('Nome atualizado com sucesso!', 'success');
 
-            // 3. Sincronização em segundo plano com o Supabase
-            if (window.supabaseClient) {
-                try {
-                    await window.supabaseClient.from('clients').update({ name: newName }).eq('id', id);
-
-                    // Recarrega do banco para garantir total sincronia (opcional, mas bom para confirmar)
-                    if (typeof window.loadVersionControls === 'function') {
-                        await window.loadVersionControls();
-                    }
-                } catch (err) {
-                    console.error('Error updating name in Supabase:', err);
-                    showToast('Aviso: Erro ao sincronizar com o servidor', 'warning');
+            // 3. Sincronização final
+            try {
+                if (typeof window.loadVersionControls === 'function') {
+                    await window.loadVersionControls();
                 }
+            } catch (err) {
+                console.error('Erro na sincronização final:', err);
             }
 
             if (window.registerAuditLog) {

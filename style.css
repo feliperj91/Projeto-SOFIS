@@ -1235,6 +1235,11 @@ button {
     background: var(--danger);
 }
 
+.toast-warning {
+    background: #facc15;
+    color: #1e293b;
+}
+
 .toast.hidden {
     transform: translateY(100px);
     opacity: 0;
