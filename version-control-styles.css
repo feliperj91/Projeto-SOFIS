@@ -576,15 +576,21 @@
 }
 
 .card-env-toggle {
-    width: 28px;
-    min-width: 28px;
+    width: 32px !important;
+    min-width: 32px !important;
+    height: 32px !important;
     padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .card-env-toggle i {
-    color: #FFC107 !important;
-    /* Bright Yellow */
-    font-size: 0.9rem !important;
+    color: var(--accent) !important;
+    /* System Standard Yellow */
+    font-size: 1.1rem !important;
 }
 
 .card-env-toggle.active {
@@ -734,6 +740,28 @@
     display: flex;
     flex-direction: column;
     gap: 2px;
+    align-items: flex-start !important;
+    /* Align text to start of block */
+    text-align: left !important;
+}
+
+/* New class for action buttons to remove borders/bg */
+.btn-card-action {
+    background: transparent !important;
+    border: none !important;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 6px;
+    transition: color 0.2s;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-card-action:hover {
+    color: var(--text-primary);
+    transform: scale(1.1);
 }
 
 .meta-line {
