@@ -128,7 +128,7 @@
 }
 
 .version-card.status-warning {
-    border-left-color: var(--warning);
+    border-left-color: var(--accent);
 }
 
 .version-card.status-outdated {
@@ -289,8 +289,8 @@
 }
 
 .version-time-badge.warning {
-    background: rgba(241, 196, 15, 0.2);
-    color: var(--warning);
+    background: rgba(255, 160, 0, 0.2);
+    color: var(--accent);
 }
 
 .version-time-badge.outdated {
