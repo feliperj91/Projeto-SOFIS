@@ -182,7 +182,7 @@
                                 <div class="version-text-group">
                                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px;">
                                         <div style="display: flex; align-items: baseline;">
-                                            <span style="color: var(--text-secondary); font-size: 0.75rem; margin-right: 5px; font-weight: 400;">Versão:</span>
+                                            <span style="color: #94a3b8; font-size: 0.75rem; margin-right: 5px; font-weight: 400;">Versão:</span>
                                             <span class="version-number-display">${utils.escapeHtml(v.version)}</span>
                                         </div>
                                         ${v.has_alert ?
