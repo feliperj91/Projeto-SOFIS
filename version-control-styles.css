@@ -867,31 +867,30 @@
 
 /* Status Bar Colors on the LEFT */
 .version-item-row.status-recent {
-    border-left-color: #4ade80;
-    /* Modern Green */
+    border-left-color: var(--success);
 }
 
 .version-item-row.status-warning {
-    border-left-color: #facc15;
-    /* Modern Yellow */
+    border-left-color: var(--accent);
+    /* Agora idêntico à legenda */
 }
 
 .version-item-row.status-outdated {
-    border-left-color: #f87171;
-    /* Modern Red */
+    border-left-color: var(--danger);
+    /* Agora realmente vermelho */
 }
 
 /* Colors for the Text in the Right Corner */
 .status-recent .version-number-display {
-    color: #4ade80;
+    color: var(--success);
 }
 
 .status-warning .version-number-display {
-    color: #facc15;
+    color: var(--accent);
 }
 
 .status-outdated .version-number-display {
-    color: #f87171;
+    color: var(--danger);
 }
 
 .version-meta-area {

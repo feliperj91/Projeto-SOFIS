@@ -6,8 +6,10 @@
     --text-secondary: #B0BEC5;
     --accent: #FFA000;
     --accent-hover: #FFB300;
-    --danger: #EF5350;
-    --success: #66BB6A;
+    --danger: #FF3D00;
+    /* Vermelho vibrante, menos rosa */
+    --success: #4CAF50;
+    /* Verde sólido */
     --border: #455A64;
     --glass: rgba(55, 71, 79, 0.8);
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
