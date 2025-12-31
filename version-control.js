@@ -1091,28 +1091,6 @@
             }
         });
     }
-    scales: {
-        x: {
-            grid: { display: false },
-            ticks: {
-                color: chartColors.text,
-                    font: { size: 11, weight: '500' },
-                maxRotation: 45,
-                    minRotation: 45
-            }
-        },
-        y: {
-            grid: { color: chartColors.grid },
-            ticks: {
-                color: chartColors.text,
-                    precision: 0,
-                        font: { size: 11 }
-            },
-            beginAtZero: true
-        }
-    }
-}
-        });
-    }
 
-}) ();
+
+})();
