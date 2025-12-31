@@ -752,17 +752,19 @@
         renderVersionsChart(data);
     }
 
-    // Chart Configuration
+    // Chart Configuration - Modern Vibrant Colors
     const chartColors = {
-        purple: '#a855f7',
-        purpleLight: 'rgba(168, 85, 247, 0.2)',
-        blue: '#38bdf8',
-        blueLight: 'rgba(56, 189, 248, 0.2)',
+        purple: '#8b5cf6',
+        blue: '#3b82f6',
         green: '#10b981',
-        greenLight: 'rgba(16, 185, 129, 0.2)',
+        teal: '#14b8a6',
         orange: '#f59e0b',
-        text: '#94a3b8',
-        grid: 'rgba(255,255,255,0.05)'
+        pink: '#ec4899',
+        red: '#ef4444',
+        indigo: '#6366f1',
+        text: '#6b7280',
+        grid: 'rgba(229, 231, 235, 0.5)',
+        gridDark: 'rgba(156, 163, 175, 0.2)'
     };
 
     function destroyChart(id) {
@@ -784,35 +786,41 @@
         });
 
         pulseCharts['envChart'] = new Chart(ctx, {
-            type: 'doughnut',
+            type: 'bar',
             data: {
                 labels: ['Produção', 'Homologação'],
                 datasets: [{
                     data: [prod, homolog],
-                    backgroundColor: [chartColors.blue, chartColors.orange],
-                    borderWidth: 0,
-                    hoverOffset: 8
+                    backgroundColor: [chartColors.teal, chartColors.teal],
+                    borderRadius: 8,
+                    borderSkipped: false,
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                cutout: '70%',
                 plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            color: chartColors.text,
-                            usePointStyle: true,
-                            padding: 20,
-                            font: { size: 12 }
-                        }
-                    },
+                    legend: { display: false },
                     tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        backgroundColor: 'rgba(17, 24, 39, 0.95)',
+                        titleColor: '#fff',
+                        bodyColor: '#e5e7eb',
+                        borderColor: 'rgba(255, 255, 255, 0.1)',
+                        borderWidth: 1,
                         padding: 12,
-                        titleFont: { size: 14 },
-                        bodyFont: { size: 13 }
+                        titleFont: { size: 13, weight: 'bold' },
+                        bodyFont: { size: 12 }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: chartColors.text, font: { size: 12, weight: '600' } }
+                    },
+                    y: {
+                        grid: { color: chartColors.grid },
+                        ticks: { color: chartColors.text, precision: 0 },
+                        beginAtZero: true
                     }
                 }
             }
@@ -826,44 +834,69 @@
 
         const labels = Object.keys(counts);
         const values = Object.values(counts);
+        const total = values.reduce((a, b) => a + b, 0);
 
         const bgColors = labels.map((_, i) => {
-            const colors = ['#38bdf8', '#a855f7', '#10b981', '#f59e0b', '#ec4899', '#6366f1'];
+            const colors = [chartColors.purple, chartColors.pink, chartColors.orange, chartColors.teal, chartColors.blue, chartColors.indigo];
             return colors[i % colors.length];
         });
 
         pulseCharts['systemDistChart'] = new Chart(ctx, {
-            type: 'polarArea',
+            type: 'pie',
             data: {
                 labels: labels,
                 datasets: [{
                     data: values,
-                    backgroundColor: bgColors.map(c => c + 'AA'),
-                    borderWidth: 1,
-                    borderColor: 'rgba(255,255,255,0.1)'
+                    backgroundColor: bgColors,
+                    borderWidth: 3,
+                    borderColor: '#ffffff',
+                    hoverOffset: 8
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                scales: {
-                    r: {
-                        grid: { color: 'rgba(255,255,255,0.05)' },
-                        ticks: { display: false, backdropColor: 'transparent' }
-                    }
-                },
                 plugins: {
                     legend: {
                         position: 'right',
                         labels: {
                             color: chartColors.text,
                             usePointStyle: true,
-                            font: { size: 11 }
+                            pointStyle: 'circle',
+                            padding: 16,
+                            font: { size: 12, weight: '600' },
+                            generateLabels: function (chart) {
+                                const data = chart.data;
+                                if (data.labels.length && data.datasets.length) {
+                                    return data.labels.map((label, i) => {
+                                        const value = data.datasets[0].data[i];
+                                        const percentage = ((value / total) * 100).toFixed(1);
+                                        return {
+                                            text: `${label}: ${percentage}%`,
+                                            fillStyle: data.datasets[0].backgroundColor[i],
+                                            hidden: false,
+                                            index: i
+                                        };
+                                    });
+                                }
+                                return [];
+                            }
                         }
                     },
                     tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        padding: 12
+                        backgroundColor: 'rgba(17, 24, 39, 0.95)',
+                        titleColor: '#fff',
+                        bodyColor: '#e5e7eb',
+                        borderColor: 'rgba(255, 255, 255, 0.1)',
+                        borderWidth: 1,
+                        padding: 12,
+                        callbacks: {
+                            label: function (context) {
+                                const value = context.parsed;
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return `${context.label}: ${value} (${percentage}%)`;
+                            }
+                        }
                     }
                 }
             }
@@ -901,21 +934,21 @@
                     {
                         label: 'Atualizado',
                         data: systems.map(s => systemCounts[s].recent),
-                        backgroundColor: chartColors.green,
+                        backgroundColor: chartColors.purple,
                         borderRadius: 8,
                         borderSkipped: false,
                     },
                     {
                         label: 'Atenção',
                         data: systems.map(s => systemCounts[s].warning),
-                        backgroundColor: chartColors.orange,
+                        backgroundColor: chartColors.pink,
                         borderRadius: 8,
                         borderSkipped: false,
                     },
                     {
                         label: 'Desatualizado',
                         data: systems.map(s => systemCounts[s].outdated),
-                        backgroundColor: '#ef4444',
+                        backgroundColor: chartColors.orange,
                         borderRadius: 8,
                         borderSkipped: false,
                     }
