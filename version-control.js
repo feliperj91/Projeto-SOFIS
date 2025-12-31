@@ -213,13 +213,13 @@
                     </div>
                 <div class="client-header-actions">
                     <button class="btn-card-action" onclick="window.openClientInteraction('${group.id}', '${utils.escapeHtml(group.name)}')" title="Editar Cliente">
-                        <i class="fa-solid fa-pencil" style="color: var(--accent);"></i>
+                        <i class="fa-solid fa-pencil"></i>
                     </button>
                     <button class="btn-card-action" onclick="window.openClientVersionsHistory('${group.id}')" title="Ver Histórico">
-                        <i class="fa-solid fa-rotate" style="color: var(--accent);"></i>
+                        <i class="fa-solid fa-rotate"></i>
                     </button>
                     <button class="btn-card-action" onclick="window.prefillClientVersion('${group.id}', '${utils.escapeHtml(group.name)}')" title="Adicionar Sistema">
-                        <i class="fa-solid fa-plus-circle" style="color: var(--accent);"></i>
+                        <i class="fa-solid fa-plus-circle"></i>
                     </button>
                     
                     <!-- Card Level Filter -->
