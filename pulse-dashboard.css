@@ -188,13 +188,21 @@
     color: #333;
 }
 
+.kpi-info {
+    flex: 1;
+    min-width: 0;
+}
+
 .kpi-info h4 {
     margin: 0 0 8px 0;
-    font-size: 0.85rem;
-    font-weight: 500;
+    font-size: 0.8rem;
+    font-weight: 600;
     color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .kpi-info h2 {
@@ -202,7 +210,9 @@
     font-size: 2.2rem;
     font-weight: 700;
     color: var(--text-primary);
-    line-height: 1;
+    line-height: 1.2;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 /* Chart Cards */

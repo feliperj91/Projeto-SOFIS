@@ -878,14 +878,20 @@
         // Agrupar por sistema e status
         const systemCounts = {};
         data.forEach(d => {
-            const sys = d.system_name || 'Outros';
+            // Usar o nome do sistema real, não "Outros"
+            const sys = d.system_name && d.system_name.trim() !== '' ? d.system_name : 'Sem Sistema';
             if (!systemCounts[sys]) systemCounts[sys] = { recent: 0, warning: 0, outdated: 0 };
 
             const status = utils.getStatus(d.updated_at);
             systemCounts[sys][status]++;
         });
 
-        const systems = Object.keys(systemCounts).sort();
+        // Ordenar sistemas por total de registros (mais relevantes primeiro)
+        const systems = Object.keys(systemCounts).sort((a, b) => {
+            const totalA = systemCounts[a].recent + systemCounts[a].warning + systemCounts[a].outdated;
+            const totalB = systemCounts[b].recent + systemCounts[b].warning + systemCounts[b].outdated;
+            return totalB - totalA;
+        });
 
         pulseCharts['versionsChart'] = new Chart(ctx, {
             type: 'bar',
@@ -893,40 +899,59 @@
                 labels: systems,
                 datasets: [
                     {
-                        label: 'Atualizado (≤30d)',
+                        label: 'Atualizado',
                         data: systems.map(s => systemCounts[s].recent),
                         backgroundColor: chartColors.green,
-                        borderRadius: 6,
-                        stack: 'Stack 0',
+                        borderRadius: 8,
+                        borderSkipped: false,
                     },
                     {
-                        label: 'Atenção (30-90d)',
+                        label: 'Atenção',
                         data: systems.map(s => systemCounts[s].warning),
                         backgroundColor: chartColors.orange,
-                        borderRadius: 6,
-                        stack: 'Stack 0',
+                        borderRadius: 8,
+                        borderSkipped: false,
                     },
                     {
-                        label: 'Desatualizado (>90d)',
+                        label: 'Desatualizado',
                         data: systems.map(s => systemCounts[s].outdated),
                         backgroundColor: '#ef4444',
-                        borderRadius: 6,
-                        stack: 'Stack 0',
+                        borderRadius: 8,
+                        borderSkipped: false,
                     }
                 ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                indexAxis: 'x',
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
                 scales: {
                     x: {
-                        grid: { display: false },
-                        ticks: { color: chartColors.text, font: { size: 11 } }
+                        stacked: true,
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: chartColors.text,
+                            font: { size: 12, weight: '500' },
+                            maxRotation: 45,
+                            minRotation: 0
+                        }
                     },
                     y: {
-                        grid: { color: chartColors.grid },
-                        ticks: { color: chartColors.text, precision: 0 },
+                        stacked: true,
+                        grid: {
+                            color: chartColors.grid,
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: chartColors.text,
+                            precision: 0,
+                            font: { size: 11 }
+                        },
                         beginAtZero: true
                     }
                 },
@@ -935,17 +960,39 @@
                         position: 'top',
                         align: 'end',
                         labels: {
-                            color: chartColors.text,
+                            color: '#e2e8f0',
                             usePointStyle: true,
-                            padding: 15,
-                            font: { size: 11 }
+                            pointStyle: 'circle',
+                            padding: 20,
+                            font: { size: 13, weight: '600' },
+                            boxWidth: 10,
+                            boxHeight: 10
                         }
                     },
                     tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        padding: 12,
-                        titleFont: { size: 13 },
-                        bodyFont: { size: 12 }
+                        backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                        titleColor: '#fff',
+                        bodyColor: '#e2e8f0',
+                        borderColor: 'rgba(255, 255, 255, 0.1)',
+                        borderWidth: 1,
+                        padding: 16,
+                        titleFont: { size: 14, weight: 'bold' },
+                        bodyFont: { size: 13 },
+                        displayColors: true,
+                        callbacks: {
+                            title: function (context) {
+                                return context[0].label;
+                            },
+                            label: function (context) {
+                                const label = context.dataset.label || '';
+                                const value = context.parsed.y;
+                                const total = context.chart.data.datasets.reduce((sum, dataset) => {
+                                    return sum + dataset.data[context.dataIndex];
+                                }, 0);
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return `${label}: ${value} (${percentage}%)`;
+                            }
+                        }
                     }
                 }
             }
