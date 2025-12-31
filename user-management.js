@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const mngSubTabBtns = document.querySelectorAll('.mng-tab-btn');
     // Note: mngControlsGroups are mostly gone in new layout using visibility toggles
     const roleTextBtns = document.querySelectorAll('.role-text-btn'); // Renamed from pill
+    const roleSelector = document.getElementById('shared-mng-controls');
     const usersListEl = document.getElementById('usersList');
     const permissionsTableBody = document.getElementById('permissionsTableBody');
     const userSearchInput = document.getElementById('userSearchInput');
@@ -55,9 +56,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // HIDE Save button on Users tab
                 if (savePermissionsBtn) savePermissionsBtn.classList.add('hidden');
 
-                // Apply filter
-                const filtered = usersList.filter(u => u.role === currentSelectedRole);
-                renderUsers(filtered);
+                // HIDE Role Selector on Users tab
+                if (roleSelector) roleSelector.classList.add('hidden');
+
+                // Remove filter, show all users
+                renderUsers(usersList);
 
             } else {
                 usersContainer.classList.add('hidden');
@@ -68,6 +71,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     savePermissionsBtn.classList.remove('hidden');
                     savePermissionsBtn.disabled = true;
                 }
+
+                // SHOW Role Selector on Permissions tab
+                if (roleSelector) roleSelector.classList.remove('hidden');
 
                 loadPermissions(currentSelectedRole);
             }
