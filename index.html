@@ -983,7 +983,7 @@
 
     <!-- User Management Modal -->
     <div id="userModal" class="modal hidden">
-        <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-content" style="max-width: 520px;">
             <div class="modal-header">
                 <h2 id="userModalTitle">Novo Usuário</h2>
                 <button type="button" class="btn-icon" onclick="closeUserModal()">
@@ -1011,6 +1011,7 @@
                     <label for="userRoleSelect"><i class="fa-solid fa-user-tag" style="color: var(--accent);"></i> Cargo
                         <span class="required">*</span></label>
                     <select id="userRoleSelect" required>
+                        <option value="" disabled selected>Selecione um cargo...</option>
                         <option value="ADMINISTRADOR">Administrador</option>
                         <option value="ANALISTA">Analista</option>
                         <option value="TECNICO">Técnico</option>
