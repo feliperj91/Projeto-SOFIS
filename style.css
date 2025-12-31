@@ -1556,7 +1556,8 @@ button:hover .vpn-icon-img {
 /* Section Headers for Favorites and Regular Clients */
 .clients-section-header {
     margin: 20px 0 12px 0;
-    padding: 12px 20px;
+    padding: 10px 20px;
+    /* Reduzido levemente para manter o layout compacto */
     background: linear-gradient(135deg, rgba(255, 160, 0, 0.1), rgba(255, 160, 0, 0.05));
     border-left: 4px solid var(--accent);
     border-radius: 8px;
@@ -1633,8 +1634,7 @@ button:hover .vpn-icon-img {
 
 .clients-section-header {
     margin-top: 0 !important;
-    margin-bottom: 10px !important;
-    padding-top: 0 !important;
+    margin-bottom: 12px !important;
 }
 
 .clients-section-header:not(:first-child) {
