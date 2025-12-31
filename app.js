@@ -1885,20 +1885,42 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    window.copyToClipboard = (text) => {
-        navigator.clipboard.writeText(text).then(() => {
-            showToast('📋 Copiado!', 'success');
-        });
+    window.copyToClipboard = async (text) => {
+        try {
+            const valueToCopy = Security.isEncrypted(text)
+                ? await Security.decrypt(text)
+                : text;
+
+            navigator.clipboard.writeText(valueToCopy).then(() => {
+                showToast('📋 Copiado!', 'success');
+            });
+        } catch (err) {
+            console.error('Erro ao copiar:', err);
+            // Fallback to copying whatever was passed if decryption fails
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('📋 Copiado!', 'success');
+            });
+        }
     };
 
-    window.togglePassword = (btn) => {
+    window.togglePassword = async (btn) => {
         const row = btn.closest('.credential-row') || btn.closest('.server-info');
         const valueSpan = row.querySelector('.credential-value') || row.querySelector('.pass-hidden');
         const icon = btn.querySelector('i');
         const isMasked = valueSpan.textContent === '••••••';
 
         if (isMasked) {
-            valueSpan.textContent = valueSpan.dataset.raw;
+            const rawValue = valueSpan.dataset.raw;
+            try {
+                const displayValue = Security.isEncrypted(rawValue)
+                    ? await Security.decrypt(rawValue)
+                    : rawValue;
+
+                valueSpan.textContent = displayValue;
+            } catch (err) {
+                console.error('Erro ao descriptografar:', err);
+                valueSpan.textContent = rawValue;
+            }
             icon.className = 'fa-solid fa-eye-slash';
             btn.title = 'Ocultar Senha';
         } else {
