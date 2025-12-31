@@ -961,6 +961,10 @@
 
         // Agrupar por VERSÃO (sem sistema) e contar CLIENTES ÚNICOS
         console.log(`📊 [Versions Chart] Recebendo ${data.length} registros de produção`);
+        console.log(`📊 [Versions Chart] Detalhes dos registros:`);
+        data.forEach((d, idx) => {
+            console.log(`  ${idx + 1}. Cliente: ${d.client_id}, Sistema: ${d.system}, Versão: ${d.version}, Ambiente: ${d.environment}`);
+        });
 
         const versionClientSets = {};
         data.forEach(d => {
@@ -1002,17 +1006,26 @@
             '#84cc16'  // lime
         ];
 
-        const bgColors = labels.map((_, i) => colors[i % colors.length]);
+
+        // Preparar dados para o gráfico de bolhas
+        const bubbleData = sortedVersions.map((v, i) => ({
+            x: i,
+            y: v.count,
+            r: v.count * 8, // Tamanho da bolha baseado na contagem
+            version: v.version // Guardar nome para tooltip/eixo
+        }));
+
+        const bgColors = bubbleData.map((_, i) => colors[i % colors.length]);
 
         pulseCharts['versionsChart'] = new Chart(ctx, {
-            type: 'bar',
+            type: 'bubble',
             data: {
-                labels: labels,
                 datasets: [{
-                    data: values,
+                    label: 'Versões',
+                    data: bubbleData,
                     backgroundColor: bgColors,
-                    borderRadius: 8,
-                    borderSkipped: false,
+                    borderColor: bgColors,
+                    borderWidth: 1
                 }]
             },
             options: {
@@ -1030,8 +1043,13 @@
                         titleFont: { size: 13, weight: 'bold' },
                         bodyFont: { size: 12 },
                         callbacks: {
+                            title: function (context) {
+                                // Mostrar nome da versão no título do tooltip
+                                const item = context[0].raw;
+                                return item.version;
+                            },
                             label: function (context) {
-                                const count = context.parsed.y;
+                                const count = context.raw.y;
                                 return `${count} cliente${count !== 1 ? 's' : ''}`;
                             }
                         }
@@ -1039,26 +1057,62 @@
                 },
                 scales: {
                     x: {
-                        grid: { display: false },
                         ticks: {
-                            color: chartColors.text,
-                            font: { size: 11, weight: '500' },
+                            callback: function (value, index, values) {
+                                // Mostrar nome da versão no eixo X
+                                return sortedVersions[value] ? sortedVersions[value].version : '';
+                            },
+                            autoSkip: false,
                             maxRotation: 45,
                             minRotation: 45
-                        }
+                        },
+                        grid: { display: false },
+                        border: { display: false }
                     },
                     y: {
-                        grid: { color: chartColors.grid },
-                        ticks: {
-                            color: chartColors.text,
-                            precision: 0,
-                            font: { size: 11 }
-                        },
-                        beginAtZero: true
+                        beginAtZero: true,
+                        ticks: { stepSize: 1 },
+                        grid: { color: '#f3f4f6', borderDash: [4, 4] },
+                        border: { display: false },
+                        title: {
+                            display: true,
+                            text: 'Quantidade de Clientes'
+                        }
+                    }
+                },
+                elements: {
+                    point: {
+                        radius: function (context) {
+                            const value = context.raw;
+                            return value ? value.r : 0;
+                        }
                     }
                 }
             }
         });
     }
+    scales: {
+        x: {
+            grid: { display: false },
+            ticks: {
+                color: chartColors.text,
+                    font: { size: 11, weight: '500' },
+                maxRotation: 45,
+                    minRotation: 45
+            }
+        },
+        y: {
+            grid: { color: chartColors.grid },
+            ticks: {
+                color: chartColors.text,
+                    precision: 0,
+                        font: { size: 11 }
+            },
+            beginAtZero: true
+        }
+    }
+}
+        });
+    }
 
-})();
+}) ();
