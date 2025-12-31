@@ -714,13 +714,24 @@
 
         const allData = window.versionControls;
 
-        // ===== FILTRAR APENAS PRODUÇÃO =====
+        // ===== FILTRAR APENAS PRODUÇÃO (Validação Rigorosa) =====
         const data = allData.filter(d => {
-            const env = (d.environment || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-            return env.includes('produ');
+            const env = (d.environment || '').toLowerCase().trim();
+            const normalized = env.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+            // Aceitar: producao, produção, PRODUCAO, PRODUÇÃO
+            const isProduction = normalized === 'producao';
+
+            if (!isProduction) {
+                console.log(`❌ [Pulse] Filtrado: ${d.system} ${d.version} (ambiente: "${d.environment}")`);
+            }
+
+            return isProduction;
         });
 
-        console.log(`📊 [Pulse] Processing ${data.length} production records (${allData.length} total)`);
+        console.log(`📊 [Pulse] Total de registros: ${allData.length}`);
+        console.log(`📊 [Pulse] Filtrados (homologação): ${allData.length - data.length}`);
+        console.log(`📊 [Pulse] Produção: ${data.length} registros`);
 
         if (data.length === 0) {
             console.warn("📊 [Pulse] No production data available");
@@ -949,21 +960,32 @@
 
 
         // Coletar versões únicas (sistema + versão)
-        console.log(`📊 [Versions Chart] Recebendo ${data.length} registros`);
+        console.log(`📊 [Versions Chart] Recebendo ${data.length} registros de produção`);
 
         const versionSet = new Set();
         data.forEach(d => {
             const sys = d.system || 'Sem Sistema';
             const ver = d.version || 'S/V';
-            const env = d.environment || '';
             const key = `${sys} ${ver}`;
-            console.log(`  - ${key} (${env})`);
             versionSet.add(key);
         });
 
-        // Converter para array e ordenar alfabeticamente
-        const sortedVersions = Array.from(versionSet).sort();
-        console.log(`📊 [Versions Chart] Total de versões únicas: ${sortedVersions.length}`);
+        // Converter para array, ordenar e limitar a 15
+        let sortedVersions = Array.from(versionSet).sort();
+
+        // Validação: alertar se não tiver exatamente 10 versões
+        if (sortedVersions.length !== 10) {
+            console.warn(`⚠️ [Versions Chart] Esperado 10 versões, encontrado ${sortedVersions.length}`);
+            console.table(sortedVersions);
+        }
+
+        // Limitar a 15 versões para evitar gráfico poluído
+        if (sortedVersions.length > 15) {
+            console.warn(`⚠️ [Versions Chart] Limitando de ${sortedVersions.length} para 15 versões`);
+            sortedVersions = sortedVersions.slice(0, 15);
+        }
+
+        console.log(`📊 [Versions Chart] Mostrando ${sortedVersions.length} versões únicas`);
 
         const labels = sortedVersions;
         const values = sortedVersions.map(() => 1); // Todas com altura 1
