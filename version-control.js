@@ -948,29 +948,20 @@
         destroyChart('versionsChart');
 
 
-        // Agrupar por versão completa (sistema + versão) e contar CLIENTES ÚNICOS
-        const versionClientSets = {};
+        // Coletar versões únicas (sistema + versão)
+        const versionSet = new Set();
         data.forEach(d => {
             const sys = d.system || 'Sem Sistema';
             const ver = d.version || 'S/V';
             const key = `${sys} ${ver}`;
-
-            if (!versionClientSets[key]) {
-                versionClientSets[key] = new Set();
-            }
-            versionClientSets[key].add(d.client_id);
+            versionSet.add(key);
         });
 
-        // Converter para array com contagens e ordenar por quantidade
-        const sortedVersions = Object.entries(versionClientSets)
-            .map(([version, clientSet]) => ({
-                version: version,
-                count: clientSet.size
-            }))
-            .sort((a, b) => b.count - a.count);
+        // Converter para array e ordenar alfabeticamente
+        const sortedVersions = Array.from(versionSet).sort();
 
-        const labels = sortedVersions.map(v => v.version);
-        const values = sortedVersions.map(v => v.count);
+        const labels = sortedVersions;
+        const values = sortedVersions.map(() => 1); // Todas com altura 1
 
         // Cores vibrantes diferentes para cada barra
         const colors = [
@@ -1017,8 +1008,7 @@
                         bodyFont: { size: 12 },
                         callbacks: {
                             label: function (context) {
-                                const count = context.parsed.y;
-                                return `${count} cliente${count !== 1 ? 's' : ''}`;
+                                return context.label;
                             }
                         }
                     }
