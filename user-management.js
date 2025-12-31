@@ -140,11 +140,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                     <div class="user-card-actions">
                         <button class="btn-icon" onclick="window.editUser('${u.id}')" title="Editar">
-                            <i class="fa-solid fa-pen-to-square"></i>
+                            <i class="fa-solid fa-pencil"></i>
                         </button>
                         ${u.username !== 'admin' ? `
                             <button class="btn-icon" onclick="window.deleteUser('${u.id}')" title="Excluir" style="color: var(--danger)">
-                                <i class="fa-solid fa-trash-can"></i>
+                                <i class="fa-solid fa-trash"></i>
                             </button>
                         ` : ''}
                     </div>
