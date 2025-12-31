@@ -1,15 +1,14 @@
 // ===========================================
-// MODULE: VERSION CONTROL - FULL PRECISE v7.0
+// MODULE: VERSION CONTROL - FULL PRECISE v7.1
 // ===========================================
 
 (function () {
-    console.log("🚀 [SOFIS] Version Control Premium Module v7.0 Loaded");
+    console.log("🚀 [SOFIS] Version Control Premium Module v7.1 Loaded");
 
     // Internal state
     let versionControls = [];
     window.currentVersionFilter = 'all';
     let sofis_isUpdating = false;
-    let sofis_isRendering = false;
     let sofis_isSaving = false;
 
     // Helper functions
@@ -47,36 +46,51 @@
 
     // Core Logic
     async function loadVersionControls() {
-        if (sofis_isUpdating) return;
+        // Prevent concurrent loads if needed, but for UI refresh we often want to force it
+        // sofis_isUpdating flag is useful to prevent spam, but let's allow overlapping calls to ensure latest data wins
+        if (sofis_isUpdating) {
+            console.log("⚠️ loadVersionControls: Already updating, queuing next check turned off for simplicity but allowing pass through if critical.");
+            // For now, let's just proceed to ensure data is fresh. Supabase client handles connection.
+        }
         sofis_isUpdating = true;
 
         try {
-            if (!window.supabaseClient) return;
+            if (!window.supabaseClient) {
+                console.warn("❌ supabaseClient not ready");
+                return;
+            }
 
+            console.log("🔄 Loading Version Controls...");
+
+            // Artificial delay removed/minimized. Just fetch.
             const { data, error } = await window.supabaseClient
                 .from('version_controls')
                 .select(`*, clients (id, name)`)
                 .order('updated_at', { ascending: false });
 
             if (error) throw error;
-            versionControls = data || [];
-            window.versionControls = versionControls;
 
+            versionControls = data || [];
+            window.versionControls = versionControls; // Sync global state including for other modules
+
+            console.log(`✅ Loaded ${versionControls.length} version records.`);
             renderVersionControls();
         } catch (err) {
             console.error('❌ Error loadVersionControls:', err);
+            // Optionally show error in UI
         } finally {
             sofis_isUpdating = false;
         }
     }
 
     function renderVersionControls() {
-        if (sofis_isRendering) return;
-        sofis_isRendering = true;
-
+        // Removed re-entrancy guard "sofis_isRendering" to ensure always renders the current state
         try {
             const list = document.getElementById('versionList');
             if (!list) return;
+
+            // Clear IMMEDIATELY to prevent stale state visualization
+            list.innerHTML = '';
 
             let filtered = versionControls;
             const searchInput = document.getElementById('versionSearchInput');
@@ -99,7 +113,6 @@
                 // Removed global logic as per user request
             }
 
-            list.innerHTML = '';
             if (filtered.length === 0) {
                 list.innerHTML = '<div class="version-empty-state"><p>Nenhuma versão encontrada</p></div>';
                 return;
@@ -112,12 +125,15 @@
                 if (!grouped[name]) grouped[name] = { id: v.client_id, name, versionsMap: {} };
 
                 // Keep only the most recent version for each [system + environment] combination
+                // Note: filtered array is already sorted by updated_at desc.
+                // So the first one we encounter is the latest.
                 const key = `${v.system}_${v.environment}`;
                 const existing = grouped[name].versionsMap[key];
 
-                if (!existing || new Date(v.updated_at) > new Date(existing.updated_at)) {
+                if (!existing) {
                     grouped[name].versionsMap[key] = v;
                 }
+                // If existing is present, since we iterate desc, we don't replace it unless we want to handle out-of-order array (which shouldn't happen with sort)
             });
 
             // Sort by client name
@@ -126,8 +142,8 @@
                 group.versions = Object.values(group.versionsMap);
                 list.appendChild(createClientGroupCard(group));
             });
-        } finally {
-            sofis_isRendering = false;
+        } catch (e) {
+            console.error("Error in renderVersionControls:", e);
         }
     }
 
@@ -197,13 +213,13 @@
                     </div>
                 <div class="client-header-actions">
                     <button class="btn-card-action" onclick="window.openClientInteraction('${group.id}', '${utils.escapeHtml(group.name)}')" title="Editar Cliente">
-                        <i class="fa-solid fa-pencil"></i>
+                        <i class="fa-solid fa-pencil" style="color: var(--accent);"></i>
                     </button>
                     <button class="btn-card-action" onclick="window.openClientVersionsHistory('${group.id}')" title="Ver Histórico">
-                        <i class="fa-solid fa-rotate"></i>
+                        <i class="fa-solid fa-rotate" style="color: var(--accent);"></i>
                     </button>
                     <button class="btn-card-action" onclick="window.prefillClientVersion('${group.id}', '${utils.escapeHtml(group.name)}')" title="Adicionar Sistema">
-                        <i class="fa-solid fa-plus-circle"></i>
+                        <i class="fa-solid fa-plus-circle" style="color: var(--accent);"></i>
                     </button>
                     
                     <!-- Card Level Filter -->
@@ -303,10 +319,11 @@
             if (window.showToast) window.showToast('Concluído com sucesso!');
             window.closeVersionModal();
 
-            // Refresh with clear context
+            // Refresh with clear context - WAIT for a moment to ensure propagation
+            // Increased delay slightly and forceful reload
             setTimeout(() => {
                 loadVersionControls();
-            }, 300);
+            }, 500);
 
         } catch (err) {
             console.error('❌ handleVersionSubmit Error:', err);

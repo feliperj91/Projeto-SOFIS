@@ -890,7 +890,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </div>
                         ${client.updatedAt ? `
                             <div class="client-updated-info clickable" onclick="openClientHistory('${client.id}'); event.stopPropagation();" title="Ver Histórico de Alterações" style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 2px; font-weight: normal; display: flex; align-items: center; gap: 4px; cursor: pointer; width: fit-content;">
-                                <i class="fa-solid fa-clock-rotate-left" style="font-size: 0.65rem;"></i>
+                                <i class="fa-solid fa-clock-rotate-left" style="font-size: 0.65rem; color: var(--accent);"></i>
                                 <span class="hover-underline">Atualizado: ${new Date(client.updatedAt).toLocaleDateString('pt-BR')} ${new Date(client.updatedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
                             </div>
                         ` : ''}
@@ -1540,14 +1540,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             <div class="contact-details">
                 <div class="contact-section">
                     <label class="section-label section-label-left">
-                        <span><i class="fa-solid fa-user"></i> Nome do Contato <span class="required">*</span></span>
+                        <span><i class="fa-solid fa-user" style="color: var(--accent);"></i> Nome do Contato <span class="required">*</span></span>
                     </label>
                     <input type="text" class="contact-name-input" placeholder="Ex: João Silva, Comercial" value="${escapeHtml(name)}">
                 </div>
 
                 <div class="contact-section">
                     <label class="section-label section-label-left">
-                        <span><i class="fa-solid fa-phone"></i> Telefones <span class="required">*</span></span>
+                        <span><i class="fa-solid fa-phone" style="color: var(--accent);"></i> Telefones <span class="required">*</span></span>
                         <button type="button" class="btn-add-phone" onclick="addPhone(this)" title="Adicionar Telefone" tabindex="-1">
                             <i class="fa-solid fa-plus"></i>
                         </button>
@@ -1557,7 +1557,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 <div class="contact-section">
                     <label class="section-label section-label-left">
-                        <span><i class="fa-solid fa-envelope"></i> E-mails</span>
+                        <span><i class="fa-solid fa-envelope" style="color: var(--accent);"></i> E-mails</span>
                         <button type="button" class="btn-add-email" onclick="addEmail(this)" title="Adicionar E-mail" tabindex="-1">
                             <i class="fa-solid fa-plus"></i>
                         </button>
@@ -1955,7 +1955,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (filteredServers.length === 0) {
             serversList.innerHTML = `
                 <div class="servers-grid-empty">
-                    <i class="fa-solid fa-database"></i>
+                    <i class="fa-solid fa-database" style="color: var(--accent);"></i>
                     <p>${filterValue === 'all' ? 'Nenhum dado de acesso cadastrado ainda.' : 'Nenhum dado de acesso encontrado para este filtro.'}</p>
                 </div>
             `;
@@ -2001,7 +2001,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const notesHTML = server.notes
                 ? `<div class="server-notes">
-                    <div class="server-notes-title">Observações</div>
+                    <div class="server-notes-title"><i class="fa-solid fa-comment-dots" style="color: var(--accent); margin-right: 6px;"></i> Observações</div>
                     <div class="server-notes-content">${escapeHtml(server.notes)}</div>
                    </div>`
                 : '';
@@ -2047,11 +2047,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         div.innerHTML = `
             <div class="credential-fields-container">
                 <div class="credential-field-item">
-                    <label class="credential-label-text">Usuário<span class="required">*</span></label>
+                    <label class="credential-label-text"><i class="fa-solid fa-user" style="color: var(--accent); margin-right: 5px;"></i> Usuário<span class="required">*</span></label>
                     <input type="text" class="server-user-input" placeholder="Digite o usuário" value="${escapeHtml(user)}" required>
                 </div>
                 <div class="credential-field-item">
-                    <label class="credential-label-text">Senha<span class="required">*</span></label>
+                    <label class="credential-label-text"><i class="fa-solid fa-key" style="color: var(--accent); margin-right: 5px;"></i> Senha<span class="required">*</span></label>
                     <input type="text" class="server-pass-input" placeholder="Digite a senha" value="${escapeHtml(password)}" required>
                 </div>
                 <button type="button" class="btn-remove-credential" onclick="removeCredentialField(this)" title="Remover Credencial" tabindex="-1">
@@ -2225,14 +2225,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                     <div class="credential-item">
                         <div class="credential-row">
-                            <span class="credential-label">Usuário:</span>
+                            <span class="credential-label"><i class="fa-solid fa-user" style="color: var(--accent); margin-right: 5px;"></i> Usuário:</span>
                             <span class="credential-value">${escapeHtml(vpn.user)}</span>
                             <button class="btn-copy-small" onclick="copyToClipboard('${escapeHtml(vpn.user).replace(/'/g, "\\'")}')" title="Copiar Usuário">
                                 <i class="fa-regular fa-copy"></i>
                             </button>
                         </div>
                         <div class="credential-row">
-                            <span class="credential-label">Senha:</span>
+                            <span class="credential-label"><i class="fa-solid fa-key" style="color: var(--accent); margin-right: 5px;"></i> Senha:</span>
                             <span class="credential-value" data-raw="${escapeHtml(vpn.password)}">••••••</span>
                             <button class="btn-copy-small" onclick="togglePassword(this)" title="Visualizar Senha" style="margin-right: 4px;">
                                 <i class="fa-solid fa-eye"></i>
@@ -2244,7 +2244,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                     ${vpn.notes ? `
                         <div class="server-notes">
-                            <div class="server-notes-title"><i class="fa-solid fa-comment-dots" style="margin-right: 6px;"></i> Observações</div>
+                            <div class="server-notes-title"><i class="fa-solid fa-comment-dots" style="color: var(--accent); margin-right: 6px;"></i> Observações</div>
                             <div class="server-notes-content">${escapeHtml(vpn.notes)}</div>
                         </div>` : ''}
                 </div>
@@ -2537,14 +2537,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                     <div class="server-info">
                         <div class="server-info-label">
-                            <i class="fa-solid fa-window-maximize" style="margin-right: 6px;"></i> Sistema
+                            <i class="fa-solid fa-window-maximize" style="color: var(--accent); margin-right: 6px;"></i> Sistema
                         </div>
                         <div class="server-info-value" style="font-weight: 600; color: var(--accent);">${escapeHtml(url.system)}</div>
                     </div>
                     ${url.bridgeDataAccess ? `
                         <div class="server-info">
                             <div class="server-info-label">
-                                <i class="fa-solid fa-bridge" style="margin-right: 6px;"></i> Bridge data_access
+                                <i class="fa-solid fa-bridge" style="color: var(--accent); margin-right: 6px;"></i> Bridge data_access
                             </div>
                             <div class="server-info-value" style="display: flex; justify-content: space-between; align-items: center; background: rgba(0, 0, 0, 0.2); padding: 10px; border-radius: 8px;">
                                 <span style="font-family: monospace; color: var(--text-primary); word-break: break-all; margin-right: 10px; font-size: 0.75rem;">${escapeHtml(url.bridgeDataAccess)}</span>
@@ -2557,7 +2557,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     ${url.bootstrap ? `
                         <div class="server-info">
                             <div class="server-info-label">
-                                <i class="fa-solid fa-bolt" style="margin-right: 6px;"></i> Bootstrap
+                                <i class="fa-solid fa-bolt" style="color: var(--accent); margin-right: 6px;"></i> Bootstrap
                             </div>
                             <div class="server-info-value" style="display: flex; justify-content: space-between; align-items: center; background: rgba(0, 0, 0, 0.2); padding: 10px; border-radius: 8px;">
                                 <span style="font-family: monospace; color: var(--text-primary); word-break: break-all; margin-right: 10px; font-size: 0.75rem;">${escapeHtml(url.bootstrap)}</span>
@@ -2570,7 +2570,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     ${url.execUpdate ? `
                         <div class="server-info">
                             <div class="server-info-label">
-                                <i class="fa-solid fa-download" style="margin-right: 6px;"></i> Atualização de Executáveis
+                                <i class="fa-solid fa-download" style="color: var(--accent); margin-right: 6px;"></i> Atualização de Executáveis
                             </div>
                             <div class="server-info-value" style="display: flex; justify-content: space-between; align-items: center; background: rgba(0, 0, 0, 0.2); padding: 10px; border-radius: 8px;">
                                 <span style="font-family: monospace; color: var(--text-primary); word-break: break-all; margin-right: 10px; font-size: 0.75rem;">${escapeHtml(url.execUpdate)}</span>
@@ -2583,7 +2583,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     ${url.notes ? `
                         <div class="server-notes">
                             <div class="server-notes-title">
-                                <i class="fa-solid fa-comment-dots" style="margin-right: 6px;"></i> Observações
+                                <i class="fa-solid fa-comment-dots" style="color: var(--accent); margin-right: 6px;"></i> Observações
                             </div>
                             <div class="server-notes-content">${escapeHtml(url.notes)}</div>
                         </div>` : ''

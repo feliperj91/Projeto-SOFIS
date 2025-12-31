@@ -383,7 +383,8 @@
                     <div class="server-form-grid">
                         <div class="form-group">
                             <label for="environmentSelect">
-                                <span><i class="fa-solid fa-server"></i> Ambiente <span class="required">*</span></span>
+                                <span><i class="fa-solid fa-server" style="color: var(--accent);"></i> Ambiente <span
+                                        class="required">*</span></span>
                             </label>
                             <select id="environmentSelect" required>
                                 <option value="">Selecione...</option>
@@ -394,7 +395,7 @@
 
                         <div class="form-group">
                             <label for="sqlServerInput"><span><i class="fa-solid fa-database"
-                                        style="margin-right: 5px;"></i> Instância do SQL Server
+                                        style="color: var(--accent); margin-right: 5px;"></i> Instância do SQL Server
                                     <span class="required">*</span></span></label>
                             <input type="text" id="sqlServerInput" required
                                 placeholder="Ex: servidor.database.windows.net">
@@ -403,7 +404,7 @@
 
                     <div class="form-group">
                         <label>
-                            <span><i class="fa-solid fa-key"></i> Autenticação</span>
+                            <span><i class="fa-solid fa-key" style="color: var(--accent);"></i> Autenticação</span>
                             <button type="button" id="addCredentialBtn" class="btn-add-field" tabindex="-1">
                                 <i class="fa-solid fa-plus"></i> Adicionar
                             </button>
@@ -415,7 +416,7 @@
 
                     <div class="form-group">
                         <label for="serverNotesInput"><span><i class="fa-solid fa-comment-dots"
-                                    style="margin-right: 5px;"></i>
+                                    style="color: var(--accent); margin-right: 5px;"></i>
                                 Observações</span></label>
                         <textarea id="serverNotesInput" rows="3"
                             placeholder="Detalhes adicionais, procedimentos de acesso, etc..."></textarea>
@@ -502,20 +503,22 @@
                     <input type="hidden" id="editingVpnIndex">
 
                     <div class="form-group">
-                        <label for="vpnUserInput"><span><i class="fa-solid fa-user" style="margin-right: 5px;"></i>
+                        <label for="vpnUserInput"><span><i class="fa-solid fa-user"
+                                    style="color: var(--accent); margin-right: 5px;"></i>
                                 Usuário <span class="required">*</span></span></label>
                         <input type="text" id="vpnUserInput" required placeholder="Digite o usuário">
                     </div>
 
                     <div class="form-group">
-                        <label for="vpnPassInput"><span><i class="fa-solid fa-key" style="margin-right: 5px;"></i> Senha
+                        <label for="vpnPassInput"><span><i class="fa-solid fa-key"
+                                    style="color: var(--accent); margin-right: 5px;"></i> Senha
                                 <span class="required">*</span></span></label>
                         <input type="text" id="vpnPassInput" required placeholder="Digite a senha">
                     </div>
 
                     <div class="form-group">
                         <label for="vpnNotesInput"><span><i class="fa-solid fa-comment-dots"
-                                    style="margin-right: 5px;"></i> Observações</span></label>
+                                    style="color: var(--accent); margin-right: 5px;"></i> Observações</span></label>
                         <textarea id="vpnNotesInput" rows="3" placeholder="Detalhes adicionais..."></textarea>
                     </div>
 
@@ -626,7 +629,7 @@
                     <div class="server-form-grid">
                         <div class="form-group">
                             <label for="urlEnvironmentSelect">
-                                <span><i class="fa-solid fa-server"></i> Ambiente <span class="required">*</span></span>
+                                <span><i class="fa-solid fa-server" style="color: var(--accent);"></i> Ambiente <span class="required">*</span></span>
                             </label>
                             <select id="urlEnvironmentSelect" required>
                                 <option value="">Selecione...</option>
@@ -637,7 +640,7 @@
 
                         <div class="form-group">
                             <label for="urlSystemSelect">
-                                <span><i class="fa-solid fa-window-maximize"></i> Sistema <span
+                                <span><i class="fa-solid fa-window-maximize" style="color: var(--accent);"></i> Sistema <span
                                         class="required">*</span></span>
                             </label>
                             <select id="urlSystemSelect" required>
@@ -652,7 +655,7 @@
 
                     <div class="form-group">
                         <label for="bridgeDataAccessInput">
-                            <span><i class="fa-solid fa-bridge"></i> Bridge data_access <span
+                            <span><i class="fa-solid fa-bridge" style="color: var(--accent);"></i> Bridge data_access <span
                                     class="required">*</span></span>
                         </label>
                         <input type="text" id="bridgeDataAccessInput" required placeholder="URL">
@@ -660,21 +663,21 @@
 
                     <div id="bootstrapGroup" class="form-group">
                         <label for="bootstrapInput">
-                            <span><i class="fa-solid fa-bolt"></i> Bootstrap</span>
+                            <span><i class="fa-solid fa-bolt" style="color: var(--accent);"></i> Bootstrap</span>
                         </label>
                         <input type="text" id="bootstrapInput" placeholder="URL">
                     </div>
 
                     <div id="execUpdateGroup" class="form-group">
                         <label for="execUpdateInput">
-                            <span><i class="fa-solid fa-download"></i> Atualização de Executáveis</span>
+                            <span><i class="fa-solid fa-download" style="color: var(--accent);"></i> Atualização de Executáveis</span>
                         </label>
                         <input type="text" id="execUpdateInput" placeholder="Caminho de atualização do bootstrap">
                     </div>
 
                     <div class="form-group">
                         <label for="urlNotesInput">
-                            <span><i class="fa-solid fa-comment-dots"></i> Observações</span>
+                            <span><i class="fa-solid fa-comment-dots" style="color: var(--accent);"></i> Observações</span>
                         </label>
                         <textarea id="urlNotesInput" rows="3" placeholder="Detalhes adicionais..."></textarea>
                     </div>
@@ -746,7 +749,7 @@
     <!-- Recent Activity Sidebar -->
     <div id="activitySidebar" class="activity-sidebar hidden">
         <div class="activity-header">
-            <h3><i class="fa-solid fa-clock-rotate-left"></i> Atividades Recentes</h3>
+            <h3><i class="fa-solid fa-clock-rotate-left" style="color: var(--accent);"></i> Atividades Recentes</h3>
             <button id="closeActivityBtn" class="btn-icon"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div id="activityList" class="activity-list">
@@ -781,7 +784,8 @@
                 <div class="version-modal-form">
                     <div class="form-group">
                         <label for="versionClientInput">
-                            <i class="fa-solid fa-building"></i> Cliente<span class="required">*</span>
+                            <i class="fa-solid fa-building" style="color: var(--accent);"></i> Cliente<span
+                                class="required">*</span>
                         </label>
                         <input type="text" id="versionClientInput" list="versionClientList"
                             placeholder="Busque o cliente..." required autocomplete="off">
@@ -791,7 +795,8 @@
                     <div class="version-form-row">
                         <div class="form-group">
                             <label for="versionEnvironmentSelect">
-                                <i class="fa-solid fa-server"></i> Ambiente<span class="required">*</span>
+                                <i class="fa-solid fa-server" style="color: var(--accent);"></i> Ambiente<span
+                                    class="required">*</span>
                             </label>
                             <select id="versionEnvironmentSelect" required>
                                 <option value="producao">Produção</option>
@@ -800,7 +805,8 @@
                         </div>
                         <div class="form-group">
                             <label for="versionSystemSelect">
-                                <i class="fa-solid fa-window-maximize"></i> Sistema<span class="required">*</span>
+                                <i class="fa-solid fa-window-maximize" style="color: var(--accent);"></i> Sistema<span
+                                    class="required">*</span>
                             </label>
                             <select id="versionSystemSelect" required>
                                 <option value="CellVida">CellVida</option>
@@ -814,22 +820,24 @@
                     <div class="form-group-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <div class="form-group">
                             <label for="versionNumberInput">
-                                <i class="fa-solid fa-code-branch"></i> Versão<span class="required">*</span>
+                                <i class="fa-solid fa-code-branch" style="color: var(--accent);"></i> Versão<span
+                                    class="required">*</span>
                             </label>
                             <input type="text" id="versionNumberInput" required placeholder="Ex: 2025.01-01"
                                 maxlength="10">
                         </div>
                         <div class="form-group">
                             <label for="versionDateInput">
-                                <i class="fa-solid fa-calendar-days"></i> Data da Atualização<span
-                                    class="required">*</span>
+                                <i class="fa-solid fa-calendar-days" style="color: var(--accent);"></i> Data da
+                                Atualização<span class="required">*</span>
                             </label>
                             <input type="date" id="versionDateInput" required min="2000-01-01" max="2099-12-31">
                         </div>
                     </div>
                     <div class="form-group">
                         <label for="versionResponsibleSelect">
-                            <i class="fa-solid fa-user-gear"></i> Responsável atualização<span class="required">*</span>
+                            <i class="fa-solid fa-user-gear" style="color: var(--accent);"></i> Responsável
+                            atualização<span class="required">*</span>
                         </label>
                         <select id="versionResponsibleSelect" required>
                             <option value="">Selecione...</option>
@@ -982,23 +990,23 @@
             <form id="userForm">
                 <input type="hidden" id="userIdInput">
                 <div class="form-group">
-                    <label for="userFullName"><i class="fa-solid fa-signature"></i> Nome Completo <span
-                            class="required">*</span></label>
+                    <label for="userFullName"><i class="fa-solid fa-signature" style="color: var(--accent);"></i> Nome
+                        Completo <span class="required">*</span></label>
                     <input type="text" id="userFullName" required>
                 </div>
                 <div class="form-group">
-                    <label for="userUsername"><i class="fa-solid fa-at"></i> Usuário <span
+                    <label for="userUsername"><i class="fa-solid fa-at" style="color: var(--accent);"></i> Usuário <span
                             class="required">*</span></label>
                     <input type="text" id="userUsername" required>
                 </div>
                 <div class="form-group">
-                    <label for="userPassword"><i class="fa-solid fa-key"></i> Senha <span
+                    <label for="userPassword"><i class="fa-solid fa-key" style="color: var(--accent);"></i> Senha <span
                             class="required">*</span></label>
                     <input type="password" id="userPassword" required>
                 </div>
                 <div class="form-group">
-                    <label for="userRoleSelect"><i class="fa-solid fa-user-tag"></i> Cargo <span
-                            class="required">*</span></label>
+                    <label for="userRoleSelect"><i class="fa-solid fa-user-tag" style="color: var(--accent);"></i> Cargo
+                        <span class="required">*</span></label>
                     <select id="userRoleSelect" required>
                         <option value="ADMINISTRADOR">Administrador</option>
                         <option value="ANALISTA">Analista</option>

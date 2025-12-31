@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </div>
                 <div class="user-info-bottom">
                     <span class="badge-role ${roleClass}">${u.role || 'TÉCNICO'}</span>
-                    <span class="user-date"><i class="fa-solid fa-calendar-days"></i> ${creationDate}</span>
+                    <span class="user-date"><i class="fa-solid fa-calendar-days" style="color: var(--accent);"></i> ${creationDate}</span>
                 </div>
             `;
             usersListEl.appendChild(card);
