@@ -1955,7 +1955,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (filteredServers.length === 0) {
             serversList.innerHTML = `
                 <div class="servers-grid-empty">
-                    <i class="fa-solid fa-database" style="color: var(--accent);"></i>
+                    <i class="fa-solid fa-database"></i>
                     <p>${filterValue === 'all' ? 'Nenhum dado de acesso cadastrado ainda.' : 'Nenhum dado de acesso encontrado para este filtro.'}</p>
                 </div>
             `;
