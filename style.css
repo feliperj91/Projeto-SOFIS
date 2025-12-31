@@ -378,7 +378,17 @@ button {
 
 .client-list-container.grid-mode .header-left {
     padding-right: 80px;
-    align-items: center !important;
+    align-items: flex-start !important;
+}
+
+.client-list-container.grid-mode .header-left .btn-star {
+    margin-top: 0 !important;
+    height: 26px !important;
+    width: 26px !important;
+    padding: 0 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .client-list-container.grid-mode .btn-edit-client,
