@@ -733,17 +733,23 @@
         const uniqueClients = new Set(data.map(d => d.client_id)).size;
         document.getElementById('kpiTotalClients').innerText = uniqueClients;
 
-        // ===== KPI 2: Sistema Mais Utilizado (campo 'system') =====
+        // ===== KPI 2: Todos os Sistemas com Quantidades =====
         const systemCounts = {};
         data.forEach(d => {
             const sys = d.system || 'Desconhecido';
             systemCounts[sys] = (systemCounts[sys] || 0) + 1;
         });
         const sortedSystems = Object.entries(systemCounts).sort((a, b) => b[1] - a[1]);
+
+        // Renderizar lista de sistemas com quantidades
+        const kpiElement = document.getElementById('kpiMostPopularSystem');
         if (sortedSystems.length > 0) {
-            document.getElementById('kpiMostPopularSystem').innerText = sortedSystems[0][0];
+            const systemsList = sortedSystems.map(([sys, count]) => `${sys} (${count})`).join(', ');
+            kpiElement.innerHTML = systemsList;
+            kpiElement.style.fontSize = '0.95rem';
+            kpiElement.style.lineHeight = '1.4';
         } else {
-            document.getElementById('kpiMostPopularSystem').innerText = '-';
+            kpiElement.innerText = '-';
         }
 
         // ===== Renderizar Gráficos =====
