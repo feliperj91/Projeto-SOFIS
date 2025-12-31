@@ -534,9 +534,9 @@
 }
 
 #userForm .btn-primary {
-    background: #f39c12;
+    background: linear-gradient(135deg, var(--accent), var(--accent-hover));
     border: none;
-    color: #1e242b;
+    color: #ffffff;
     font-weight: 700;
     padding: 12px 32px;
     font-size: 1rem;
@@ -547,9 +547,10 @@
 }
 
 #userForm .btn-primary:hover {
-    background: #e67e22;
+    background: linear-gradient(135deg, #4a5c68, #37474f);
+    color: #ffffff;
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(243, 156, 18, 0.3);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }
 
 /* Utils */
