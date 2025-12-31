@@ -12,6 +12,13 @@
     margin-left: 2px;
 }
 
+/* Force icons within form labels to accent color */
+.form-group label i,
+.form-group label span i,
+.credential-label-text i {
+    color: var(--accent) !important;
+}
+
 /* Servers Section */
 .servers-section {
     margin-top: 30px;
