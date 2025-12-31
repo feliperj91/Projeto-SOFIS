@@ -182,12 +182,17 @@
                 </div>
 
                 <!-- Permissions Controls (Only visible in permissions tab) -->
-                <div id="permissions-mng-controls" class="mng-controls-group hidden">
+                <!-- Shared Controls (Visible on both) -->
+                <div id="shared-mng-controls" class="mng-controls-group">
                     <div class="role-selector-pill">
                         <button class="role-pill-btn active" data-role="ADMINISTRADOR">Administrador</button>
                         <button class="role-pill-btn" data-role="ANALISTA">Analista</button>
                         <button class="role-pill-btn" data-role="TECNICO">Técnico</button>
                     </div>
+                </div>
+
+                <!-- Permissions Controls (Only visible in permissions tab) -->
+                <div id="permissions-mng-controls" class="mng-controls-group hidden">
                     <button id="savePermissionsBtn" class="btn-primary btn-green">
                         <i class="fa-solid fa-floppy-disk"></i> Salvar Alterações
                     </button>

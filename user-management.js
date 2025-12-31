@@ -60,6 +60,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 if (usersCtrl) usersCtrl.classList.remove('hidden');
                 if (permsCtrl) permsCtrl.classList.add('hidden');
+
+                // Apply current role filter to users list
+                if (currentSelectedRole) {
+                    const filtered = usersList.filter(u => u.role === currentSelectedRole);
+                    renderUsers(filtered);
+                } else {
+                    renderUsers(usersList);
+                }
             } else {
                 usersContainer.classList.add('hidden');
                 permissionsContainer.classList.remove('hidden');
@@ -85,8 +93,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.log('🔄 Trocando perfil para:', newRole);
             currentSelectedRole = newRole;
 
-            // Load new permissions
-            await loadPermissions(currentSelectedRole);
+            if (currentMngTab === 'users') {
+                // Filter Users List
+                const filtered = usersList.filter(u => u.role === newRole);
+                renderUsers(filtered);
+            } else {
+                // Load new permissions
+                await loadPermissions(currentSelectedRole);
+            }
         });
     });
 
