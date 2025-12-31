@@ -949,16 +949,21 @@
 
 
         // Coletar versões únicas (sistema + versão)
+        console.log(`📊 [Versions Chart] Recebendo ${data.length} registros`);
+
         const versionSet = new Set();
         data.forEach(d => {
             const sys = d.system || 'Sem Sistema';
             const ver = d.version || 'S/V';
+            const env = d.environment || '';
             const key = `${sys} ${ver}`;
+            console.log(`  - ${key} (${env})`);
             versionSet.add(key);
         });
 
         // Converter para array e ordenar alfabeticamente
         const sortedVersions = Array.from(versionSet).sort();
+        console.log(`📊 [Versions Chart] Total de versões únicas: ${sortedVersions.length}`);
 
         const labels = sortedVersions;
         const values = sortedVersions.map(() => 1); // Todas com altura 1
