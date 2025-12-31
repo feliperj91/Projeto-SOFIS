@@ -21,7 +21,9 @@
 #user-search-bar input[type="text"] {
     width: 100%;
     padding: 14px 45px 14px 45px;
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 10px;
     color: var(--text-primary);
