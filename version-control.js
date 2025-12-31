@@ -734,23 +734,53 @@
         console.log(`📊 [Pulse] Produção: ${data.length} registros`);
 
 
+
+        // Helper para parsear datas (aceita ISO ou PT-BR DD/MM/YYYY)
+        const parseDate = (dateStr) => {
+            if (!dateStr) return new Date(0);
+            if (dateStr instanceof Date) return dateStr;
+
+            // Tenta formato ISO direto
+            let d = new Date(dateStr);
+            if (!isNaN(d.getTime())) return d;
+
+            // Tenta formato PT-BR (DD/MM/YYYY)
+            const parts = dateStr.split('/');
+            if (parts.length === 3) {
+                // assume DD/MM/YYYY -> YYYY-MM-DD
+                return new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+            }
+
+            return new Date(0);
+        };
+
         // ===== REMOVER REGISTROS ANTIGOS (Manter apenas o mais recente por Cliente + Sistema) =====
         const latestRecordsMap = new Map();
 
         data.forEach(d => {
+            // Log específico para caçar a versão sumida 2026
+            if ((d.version || '').includes('2026')) {
+                console.warn("🎯 [Pulse] ENCONTREI VERSÃO 2026:", d.system, d.version, d.updated_at, "ID:", d.client_id);
+            }
+
             // Chave única: Cliente + Sistema (ex: "GHC-Hemote Plus")
             const key = `${d.client_id}-${d.system}`;
+
+            const newDate = parseDate(d.updated_at);
 
             if (!latestRecordsMap.has(key)) {
                 latestRecordsMap.set(key, d);
             } else {
                 // Se já existe, compara as datas para manter o mais novo
                 const existing = latestRecordsMap.get(key);
-                const existingDate = new Date(existing.updated_at || 0);
-                const newDate = new Date(d.updated_at || 0);
+                const existingDate = parseDate(existing.updated_at);
 
                 if (newDate > existingDate) {
                     latestRecordsMap.set(key, d);
+                } else {
+                    if ((d.version || '').includes('2026')) {
+                        console.warn("⚠️ [Pulse] VERSÃO 2026 DESCARTADA POR:", existing.version, "DATA:", existing.updated_at);
+                    }
                 }
             }
         });
