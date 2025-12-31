@@ -32,6 +32,30 @@ document.addEventListener('DOMContentLoaded', async () => {
         const user = JSON.parse(localStorage.getItem('sofis_user') || '{}');
         const username = user.username || 'Sistema';
 
+        // Helper to mask sensitive fields in objects
+        const sanitize = (obj) => {
+            if (!obj || typeof obj !== 'object') return obj;
+            try {
+                const s = JSON.parse(JSON.stringify(obj)); // Deep copy
+
+                const mask = (item) => {
+                    if (item.password) item.password = '********';
+                    if (item.credentials && Array.isArray(item.credentials)) {
+                        item.credentials.forEach(c => { if (c.password) c.password = '********'; });
+                    }
+                };
+
+                if (Array.isArray(s)) {
+                    s.forEach(mask);
+                } else {
+                    mask(s);
+                }
+                return s;
+            } catch (e) {
+                return obj;
+            }
+        };
+
         if (window.supabaseClient) {
             try {
                 await window.supabaseClient.from('audit_logs').insert([{
@@ -39,8 +63,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     operation_type: opType,
                     action: action,
                     details: details,
-                    old_value: oldVal,
-                    new_value: newVal
+                    old_value: sanitize(oldVal),
+                    new_value: sanitize(newVal)
                 }]);
                 // Refresh activity feed if sidebar is open or after an action
                 await fetchRecentActivities();
@@ -255,7 +279,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (error) throw error;
 
                 if (dbClients) {
-                    clients = dbClients.map(c => ({
+                    clients = await Promise.all(dbClients.map(async c => ({
                         id: c.id,
                         name: c.name,
                         updatedAt: c.updated_at,
@@ -267,17 +291,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                             phones: con.phones,
                             emails: con.emails
                         })),
-                        servers: (c.servers || []).map(s => ({
+                        servers: await Promise.all((c.servers || []).map(async s => ({
                             environment: s.environment,
                             sqlServer: s.sql_server,
                             notes: s.notes,
-                            credentials: s.credentials
-                        })),
-                        vpns: (c.vpns || []).map(v => ({
+                            credentials: await Promise.all((s.credentials || []).map(async cred => ({
+                                user: cred.user,
+                                password: await Security.decrypt(cred.password)
+                            })))
+                        }))),
+                        vpns: await Promise.all((c.vpns || []).map(async v => ({
                             user: v.username,
-                            password: v.password,
+                            password: await Security.decrypt(v.password),
                             notes: v.notes
-                        })),
+                        }))),
                         urls: (c.urls || []).map(u => ({
                             environment: u.environment,
                             system: u.system,
@@ -286,7 +313,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             execUpdate: u.exec_update,
                             notes: u.notes
                         }))
-                    }));
+                    })));
                 } else {
                     clients = JSON.parse(localStorage.getItem('sofis_clients')) || [];
                 }
@@ -1103,23 +1130,28 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             await window.supabaseClient.from('servers').delete().eq('client_id', clientId);
             if (client.servers?.length > 0) {
-                await window.supabaseClient.from('servers').insert(client.servers.map(s => ({
+                const encryptedServers = await Promise.all(client.servers.map(async s => ({
                     client_id: clientId,
                     environment: s.environment,
                     sql_server: s.sqlServer,
                     notes: s.notes || '',
-                    credentials: s.credentials || []
+                    credentials: await Promise.all((s.credentials || []).map(async cred => ({
+                        user: cred.user,
+                        password: await Security.encrypt(cred.password)
+                    })))
                 })));
+                await window.supabaseClient.from('servers').insert(encryptedServers);
             }
 
             await window.supabaseClient.from('vpns').delete().eq('client_id', clientId);
             if (client.vpns?.length > 0) {
-                await window.supabaseClient.from('vpns').insert(client.vpns.map(v => ({
+                const encryptedVpns = await Promise.all(client.vpns.map(async v => ({
                     client_id: clientId,
                     username: v.user,
-                    password: v.password,
+                    password: await Security.encrypt(v.password),
                     notes: v.notes || ''
                 })));
+                await window.supabaseClient.from('vpns').insert(encryptedVpns);
             }
 
             await window.supabaseClient.from('urls').delete().eq('client_id', clientId);

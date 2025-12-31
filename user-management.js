@@ -191,7 +191,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     // Modal Handlers
-    window.editUser = function (id) {
+    window.editUser = async function (id) {
         console.log('Editando usuário ID:', id);
         const u = usersList.find(x => x.id === id);
         if (!u) {
@@ -204,7 +204,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (document.getElementById('userIdInput')) document.getElementById('userIdInput').value = u.id;
         if (document.getElementById('userFullName')) document.getElementById('userFullName').value = u.full_name || '';
         if (document.getElementById('userUsername')) document.getElementById('userUsername').value = u.username;
-        if (document.getElementById('userPassword')) document.getElementById('userPassword').value = u.password;
+
+        // Decrypt password for editing
+        const decryptedPass = await Security.decrypt(u.password);
+        if (document.getElementById('userPassword')) document.getElementById('userPassword').value = decryptedPass;
+
         if (document.getElementById('userRoleSelect')) document.getElementById('userRoleSelect').value = u.role || 'TECNICO';
 
         userModal.classList.remove('hidden');
@@ -242,7 +246,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const formData = {
             full_name: currentFullName,
             username: currentUsername,
-            password: currentPassword,
+            password: await Security.encrypt(currentPassword),
             role: currentRole
         };
 
