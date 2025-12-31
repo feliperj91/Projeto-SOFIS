@@ -959,36 +959,32 @@
         destroyChart('versionsChart');
 
 
-        // Coletar versões únicas (sistema + versão)
+        // Agrupar por VERSÃO (sem sistema) e contar CLIENTES ÚNICOS
         console.log(`📊 [Versions Chart] Recebendo ${data.length} registros de produção`);
 
-        const versionSet = new Set();
+        const versionClientSets = {};
         data.forEach(d => {
-            const sys = d.system || 'Sem Sistema';
             const ver = d.version || 'S/V';
-            const key = `${sys} ${ver}`;
-            versionSet.add(key);
+
+            if (!versionClientSets[ver]) {
+                versionClientSets[ver] = new Set();
+            }
+            versionClientSets[ver].add(d.client_id);
         });
 
-        // Converter para array, ordenar e limitar a 15
-        let sortedVersions = Array.from(versionSet).sort();
+        // Converter para array com contagens e ordenar por quantidade (maior para menor)
+        const sortedVersions = Object.entries(versionClientSets)
+            .map(([version, clientSet]) => ({
+                version: version,
+                count: clientSet.size
+            }))
+            .sort((a, b) => b.count - a.count);
 
-        // Validação: alertar se não tiver exatamente 10 versões
-        if (sortedVersions.length !== 10) {
-            console.warn(`⚠️ [Versions Chart] Esperado 10 versões, encontrado ${sortedVersions.length}`);
-            console.table(sortedVersions);
-        }
+        console.log(`📊 [Versions Chart] ${sortedVersions.length} versões únicas encontradas`);
+        console.table(sortedVersions);
 
-        // Limitar a 15 versões para evitar gráfico poluído
-        if (sortedVersions.length > 15) {
-            console.warn(`⚠️ [Versions Chart] Limitando de ${sortedVersions.length} para 15 versões`);
-            sortedVersions = sortedVersions.slice(0, 15);
-        }
-
-        console.log(`📊 [Versions Chart] Mostrando ${sortedVersions.length} versões únicas`);
-
-        const labels = sortedVersions;
-        const values = sortedVersions.map(() => 1); // Todas com altura 1
+        const labels = sortedVersions.map(v => v.version);
+        const values = sortedVersions.map(v => v.count);
 
         // Cores vibrantes diferentes para cada barra
         const colors = [
@@ -1035,7 +1031,8 @@
                         bodyFont: { size: 12 },
                         callbacks: {
                             label: function (context) {
-                                return context.label;
+                                const count = context.parsed.y;
+                                return `${count} cliente${count !== 1 ? 's' : ''}`;
                             }
                         }
                     }
