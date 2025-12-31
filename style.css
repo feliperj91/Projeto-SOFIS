@@ -378,6 +378,7 @@ button {
 
 .client-list-container.grid-mode .header-left {
     padding-right: 80px;
+    align-items: center !important;
 }
 
 .client-list-container.grid-mode .btn-edit-client,
