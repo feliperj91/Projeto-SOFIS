@@ -786,7 +786,8 @@
         });
 
         // Usar APENAS os registros mais recentes para o dashboard
-        const cleanData = Array.from(latestRecordsMap.values());
+        // const cleanData = Array.from(latestRecordsMap.values());
+        const cleanData = data; // DEBUG: Usando dados crus para ver tudo
 
         console.log(`📊 [Pulse] Dados Brutos (Produção): ${data.length}`);
         console.log(`📊 [Pulse] Dados Limpos (Apenas Recentes): ${cleanData.length}`);
