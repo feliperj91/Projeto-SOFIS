@@ -26,14 +26,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const usersContainer = document.getElementById('users-container');
     const permissionsContainer = document.getElementById('permissions-container');
     const mngSubTabBtns = document.querySelectorAll('.mng-tab-btn');
-    const mngControlsGroups = document.querySelectorAll('.mng-controls-group');
-    const rolePillBtns = document.querySelectorAll('.role-pill-btn');
+    // Note: mngControlsGroups are mostly gone in new layout using visibility toggles
+    const roleTextBtns = document.querySelectorAll('.role-text-btn'); // Renamed from pill
     const usersListEl = document.getElementById('usersList');
     const permissionsTableBody = document.getElementById('permissionsTableBody');
     const userSearchInput = document.getElementById('userSearchInput');
-    const userModal = document.getElementById('userModal');
-    const userForm = document.getElementById('userForm');
-    const userModalTitle = document.getElementById('userModalTitle');
+    const savePermissionsBtn = document.getElementById('savePermissionsBtn');
 
     // --- Initialization ---
     async function initUserManagement() {
@@ -46,63 +44,59 @@ document.addEventListener('DOMContentLoaded', async () => {
         btn.addEventListener('click', (e) => {
             currentMngTab = btn.dataset.mngTab;
 
-            // Switch Buttons
+            // Switch Tab Buttons
             mngSubTabBtns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-
-            // Switch Containers & Controls
-            const usersCtrl = document.getElementById('users-mng-controls');
-            const permsCtrl = document.getElementById('permissions-mng-controls');
 
             if (currentMngTab === 'users') {
                 usersContainer.classList.remove('hidden');
                 permissionsContainer.classList.add('hidden');
 
-                if (usersCtrl) usersCtrl.classList.remove('hidden');
-                if (permsCtrl) permsCtrl.classList.add('hidden');
+                // HIDE Save button on Users tab
+                if (savePermissionsBtn) savePermissionsBtn.classList.add('hidden');
 
-                // Apply current role filter to users list
-                if (currentSelectedRole) {
-                    const filtered = usersList.filter(u => u.role === currentSelectedRole);
-                    renderUsers(filtered);
-                } else {
-                    renderUsers(usersList);
-                }
+                // Apply filter
+                const filtered = usersList.filter(u => u.role === currentSelectedRole);
+                renderUsers(filtered);
+
             } else {
                 usersContainer.classList.add('hidden');
                 permissionsContainer.classList.remove('hidden');
 
-                if (usersCtrl) usersCtrl.classList.add('hidden');
-                if (permsCtrl) permsCtrl.classList.remove('hidden');
+                // SHOW Save button on Permissions tab (disabled initially)
+                if (savePermissionsBtn) {
+                    savePermissionsBtn.classList.remove('hidden');
+                    savePermissionsBtn.disabled = true;
+                }
 
-                // Reload permissions to ensure freshness
                 loadPermissions(currentSelectedRole);
             }
         });
     });
 
-    // Role Pills Logic
-    rolePillBtns.forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-            // Update active state
-            rolePillBtns.forEach(b => b.classList.remove('active'));
-            e.currentTarget.classList.add('active');
+    // Role Text Click Logic
+    if (roleTextBtns) {
+        roleTextBtns.forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                // Update active state
+                roleTextBtns.forEach(b => b.classList.remove('active'));
+                e.currentTarget.classList.add('active');
 
-            // Update role
-            const newRole = e.currentTarget.dataset.role;
-            console.log('🔄 Trocando perfil para:', newRole);
-            currentSelectedRole = newRole;
+                // Update role
+                const newRole = e.currentTarget.dataset.role;
+                currentSelectedRole = newRole;
 
-            if (currentMngTab === 'users') {
-                // Filter Users List
-                const filtered = usersList.filter(u => u.role === newRole);
-                renderUsers(filtered);
-            } else {
-                // Load new permissions
-                await loadPermissions(currentSelectedRole);
-            }
+                if (currentMngTab === 'users') {
+                    const filtered = usersList.filter(u => u.role === newRole);
+                    renderUsers(filtered);
+                } else {
+                    await loadPermissions(currentSelectedRole);
+                    // Reset save button on role switch
+                    if (savePermissionsBtn) savePermissionsBtn.disabled = true;
+                }
+            });
         });
-    });
+    }
 
     // --- User CRUD ---
     function renderSkeletons() {
@@ -412,9 +406,23 @@ document.addEventListener('DOMContentLoaded', async () => {
             `;
             permissionsTableBody.appendChild(tr);
         });
+
+        // Add Listeners for Changes
+        document.querySelectorAll('.perm-checkbox').forEach(chk => {
+            chk.addEventListener('change', () => {
+                const saveBtn = document.getElementById('savePermissionsBtn');
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.style.opacity = '1';
+                }
+            });
+        });
     }
 
     document.getElementById('savePermissionsBtn')?.addEventListener('click', async () => {
+        const btn = document.getElementById('savePermissionsBtn');
+        if (btn) btn.disabled = true; // Prevent double click
+
         const rows = document.querySelectorAll('#permissionsTableBody tr');
         const updateData = [];
 
@@ -434,6 +442,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 .upsert(updateData, { onConflict: 'role_name,module' });
 
             if (error) throw error;
+            window.showToast('Permissões atualizadas!', 'success');
+            if (btn) btn.disabled = true; // Keep disabled until next change
             window.showToast('Permissões atualizadas!', 'success');
         } catch (err) {
             console.error('Erro ao salvar permissões:', err.message);
