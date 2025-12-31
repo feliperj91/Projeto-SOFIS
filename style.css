@@ -226,14 +226,13 @@ button {
     display: flex;
     gap: 10px;
     align-items: center;
-    margin-bottom: 20px;
-    /* Reduzido de 24px */
+    margin-bottom: 12px !important;
+    /* Espaço bem curto conforme anexo 2 */
     width: 100%;
 }
 
 .search-input-group {
     position: relative;
-    flex: 1;
 }
 
 .search-container .search-icon {
@@ -663,6 +662,11 @@ button {
     word-break: break-word;
     /* Force long text to wrap */
     overflow-wrap: break-word;
+}
+
+.contact-group-display:hover .contact-value {
+    white-space: normal;
+    word-break: break-all;
 }
 
 .contact-item {
@@ -1630,13 +1634,13 @@ button:hover .vpn-icon-img {
 }
 
 .clients-section-header {
-    margin-top: 0;
-    /* Removido para alinhar com o topo */
-    margin-bottom: 15px;
+    margin-top: 0 !important;
+    margin-bottom: 10px !important;
+    padding-top: 0 !important;
 }
 
 .clients-section-header:not(:first-child) {
-    margin-top: 30px;
+    margin-top: 25px !important;
 }
 
 /* Filter Chips */
@@ -1645,8 +1649,8 @@ button:hover .vpn-icon-img {
     justify-content: space-between;
     align-items: center;
     gap: 12px;
-    margin: 0 0 15px 0;
-    /* Ajustado para 15px para compensar a altura dos chips */
+    margin: 0 0 12px 0 !important;
+    /* Espaço curto após os filtros */
     padding: 0;
     flex-wrap: wrap;
     min-height: 40px;
