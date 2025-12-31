@@ -181,7 +181,10 @@
                                 <!-- Text Group: Version + Metas (Aligned Left) -->
                                 <div class="version-text-group">
                                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px;">
-                                        <span class="version-number-display">${utils.escapeHtml(v.version)}</span>
+                                        <div style="display: flex; align-items: baseline;">
+                                            <span style="color: var(--text-secondary); font-size: 0.75rem; margin-right: 5px; font-weight: 400;">Versão:</span>
+                                            <span class="version-number-display">${utils.escapeHtml(v.version)}</span>
+                                        </div>
                                         ${v.has_alert ?
                     `<i class="fa-solid fa-bell client-note-indicator" onclick="window.openVersionNotes('${v.id}')" title="Possui observações importantes" style="color: #ffc107; cursor: pointer; font-size: 0.9rem;"></i>` :
                     ``
