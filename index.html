@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerenciador de Clientes - SOFIS</title>
-    <link rel="stylesheet" href="style.css?v=8.4">
+    <link rel="stylesheet" href="style.css?v=8.5">
     <link rel="stylesheet" href="server-styles.css?v=2.5">
     <link rel="stylesheet" href="credential-styles.css?v=2.5">
     <link rel="stylesheet" href="version-control-styles.css?v=6.2">
@@ -55,15 +55,16 @@
 
         <!-- Contacts Tab Content -->
         <main id="contactsTab" class="tab-content active">
-            <div id="search-bar" style="display: flex; gap: 10px; align-items: center;">
-                <div style="position: relative; flex: 1;">
+            <!-- Search Bar & Add Button -->
+            <div id="client-search-bar" class="search-container">
+                <div class="search-input-group">
                     <i class="fa-solid fa-magnifying-glass search-icon"></i>
                     <input type="text" id="searchInput" placeholder="Buscar clientes, telefones ou e-mails...">
                     <button id="clearSearch" class="btn-clear hidden" title="Limpar pesquisa" tabindex="-1">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
                 </div>
-                <button id="addClientBtn" class="btn-primary">
+                <button id="addClientBtn" class="btn-primary" onclick="openModal('clientModal')">
                     <i class="fa-solid fa-plus"></i> Novo Cliente
                 </button>
             </div>
@@ -105,8 +106,8 @@
 
         <!-- Versions Tab Content -->
         <main id="versionsTab" class="tab-content">
-            <div id="version-search-bar" style="display: flex; gap: 10px; align-items: center;">
-                <div style="position: relative; flex: 1;">
+            <div id="version-search-bar" class="search-container">
+                <div class="search-input-group">
                     <i class="fa-solid fa-magnifying-glass search-icon"></i>
                     <input type="text" id="versionSearchInput" placeholder="Buscar por cliente, sistema ou versão...">
                     <button id="clearVersionSearch" class="btn-clear hidden" title="Limpar pesquisa" tabindex="-1">
@@ -149,8 +150,8 @@
         <!-- User Management Tab Content -->
         <main id="managementTab" class="tab-content">
             <!-- Search Bar & Add Button (matching other tabs) -->
-            <div id="user-search-bar" style="display: flex; gap: 10px; align-items: center;">
-                <div style="position: relative; flex: 1;">
+            <div id="user-search-bar" class="search-container">
+                <div class="search-input-group">
                     <i class="fa-solid fa-magnifying-glass search-icon"></i>
                     <input type="text" id="userSearchInput" placeholder="Pesquisar por nome ou usuário...">
                     <button id="clearUserSearch" class="btn-clear hidden" title="Limpar pesquisa" tabindex="-1">
@@ -158,7 +159,7 @@
                     </button>
                 </div>
                 <button id="addNewUserBtn" class="btn-primary">
-                    <i class="fa-solid fa-plus"></i> Novo Usuário
+                    <i class="fa-solid fa-plus"></i><span>Novo Usuário</span>
                 </button>
             </div>
 

@@ -221,26 +221,34 @@ button {
 }
 
 /* Search */
-#search-bar {
-    position: relative;
-    margin-bottom: 30px;
+/* Search Bar Container Standard */
+.search-container {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 24px;
     width: 100%;
 }
 
-#search-bar .search-icon,
-#version-search-bar .search-icon {
+.search-input-group {
+    position: relative;
+    flex: 1;
+}
+
+.search-container .search-icon {
     position: absolute;
     left: 16px;
     top: 50%;
     transform: translateY(-50%);
     color: var(--text-secondary);
     pointer-events: none;
+    font-size: 1.1rem;
     z-index: 2;
 }
 
-
 #searchInput,
-#versionSearchInput {
+#versionSearchInput,
+#userSearchInput {
     width: 100%;
     background: var(--card-bg);
     backdrop-filter: blur(10px);
@@ -295,8 +303,8 @@ button {
 .client-list-container {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    margin-top: 10px;
+    gap: 12px;
+    margin-top: 20px;
 }
 
 /* Grid Mode Styles */
@@ -1631,7 +1639,7 @@ button:hover .vpn-icon-img {
     justify-content: space-between;
     align-items: center;
     gap: 12px;
-    margin: 20px 0;
+    margin: 24px 0;
     padding: 0;
     flex-wrap: wrap;
 }
