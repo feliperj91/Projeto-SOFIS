@@ -1627,10 +1627,14 @@ button:hover .vpn-icon-img {
 
 .clients-section-header.regular-header .section-count {
     background: var(--text-secondary);
-    color: var(--bg-color);
 }
 
-/* Add spacing between sections */
+.clients-section-header {
+    margin-top: 0;
+    /* Removido para alinhar com o topo */
+    margin-bottom: 15px;
+}
+
 .clients-section-header:not(:first-child) {
     margin-top: 30px;
 }
@@ -1641,10 +1645,12 @@ button:hover .vpn-icon-img {
     justify-content: space-between;
     align-items: center;
     gap: 12px;
-    margin: 0 0 20px 0;
-    /* Removido margem superior para não somar com a busca */
+    margin: 0 0 15px 0;
+    /* Ajustado para 15px para compensar a altura dos chips */
     padding: 0;
     flex-wrap: wrap;
+    min-height: 40px;
+    /* Garante altura mínima consistente */
 }
 
 .filter-buttons {
