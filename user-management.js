@@ -3,10 +3,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     const managementTabBtn = document.getElementById('btnUserManagement');
 
     // Auth Guard for Management Tab
-    // Using a list of admins or checking role if available
-    if (user && (user.username === 'admin' || (user.role && user.role === 'ADMINISTRADOR'))) {
-        if (managementTabBtn) managementTabBtn.style.display = 'block';
+    function checkUserManagementAccess() {
+        if (managementTabBtn && window.Permissions) {
+            if (window.Permissions.can('Gestão de Usuários', 'can_view')) {
+                managementTabBtn.style.display = 'block';
+            } else {
+                managementTabBtn.style.display = 'none';
+            }
+        }
     }
+
+    document.addEventListener('permissions-loaded', checkUserManagementAccess);
+    // Check if already loaded
+    if (window.Permissions && window.Permissions.rules) checkUserManagementAccess();
 
     // --- State & Constants ---
     let usersList = [];
@@ -59,6 +68,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // HIDE Role Selector on Users tab
                 if (roleSelector) roleSelector.classList.add('hidden');
 
+                // SHOW Search on Users tab
+                if (userSearchInput) userSearchInput.parentElement.classList.remove('hidden');
+
                 // Remove filter, show all users
                 renderUsers(usersList);
 
@@ -74,6 +86,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 // SHOW Role Selector on Permissions tab
                 if (roleSelector) roleSelector.classList.remove('hidden');
+
+                // HIDE Search on Permissions tab
+                if (userSearchInput) userSearchInput.parentElement.classList.add('hidden');
 
                 loadPermissions(currentSelectedRole);
             }

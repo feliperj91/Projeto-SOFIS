@@ -1,4 +1,47 @@
 document.addEventListener('DOMContentLoaded', async () => {
+    // --- Permissions System ---
+    window.Permissions = {
+        userRole: 'TECNICO',
+        rules: {},
+
+        async load() {
+            if (!window.supabaseClient) return;
+            const user = JSON.parse(localStorage.getItem('sofis_user') || '{}');
+            this.userRole = user.role || 'TECNICO';
+
+            // Special Case: admin username always gets full access if role is missing or fallback
+            // But if role exists, we respect DB. 
+            // Actually, let's just fetch from DB. 
+
+            try {
+                const { data, error } = await window.supabaseClient
+                    .from('role_permissions')
+                    .select('*')
+                    .eq('role_name', this.userRole);
+
+                if (!error && data) {
+                    this.rules = {};
+                    data.forEach(r => {
+                        this.rules[r.module] = r;
+                    });
+                }
+                console.log('🔒 Permissões carregadas:', this.userRole, this.rules);
+            } catch (e) {
+                console.error('Erro ao carregar permissões:', e);
+            }
+        },
+
+        can(moduleName, action) {
+            // action: 'can_view', 'can_create', 'can_edit', 'can_delete'
+            const mod = this.rules[moduleName];
+            if (!mod) return false; // Default deny
+            return !!mod[action];
+        }
+    };
+
+    // Load permissions immediately
+    await window.Permissions.load();
+
     // State
     let clients = JSON.parse(localStorage.getItem('sofis_clients') || '[]');
     window.clients = clients;
@@ -905,11 +948,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         row.className = `client-row ${client.isFavorite ? 'favorite' : ''}`;
         row.id = `client-row-${client.id}`;
 
+        // Permissions
+        const P = window.Permissions;
+        const canEdit = P ? P.can('Clientes e Contatos', 'can_edit') : false;
+        const canDelete = P ? P.can('Clientes e Contatos', 'can_delete') : false;
+        const canViewInfra = P ? P.can('Infraestruturas', 'can_view') : false;
+        const canViewContacts = P ? P.can('Clientes e Contatos', 'can_view') : false; // Assumed true if here
+
         const hasServers = client.servers && client.servers.length > 0;
         const hasVpns = client.vpns && client.vpns.length > 0;
         const urlCount = (client.urls ? client.urls.length : 0) + (client.webLaudo && client.webLaudo.trim() !== '' ? 1 : 0);
         const hasUrls = urlCount > 0;
         const hasContacts = client.contacts && client.contacts.length > 0;
+
         const serverBtnClass = hasServers ? 'btn-icon active-success' : 'btn-icon';
         const vpnBtnClass = hasVpns ? 'btn-icon active-success' : 'btn-icon';
         const urlBtnClass = hasUrls ? 'btn-icon active-success' : 'btn-icon';
@@ -942,24 +993,36 @@ document.addEventListener('DOMContentLoaded', async () => {
                              <img src="contact-icon.png" class="contact-icon-img ${hasContacts ? 'vpn-icon-success' : ''}" alt="Contatos">
                              ${hasContacts ? `<span class="btn-badge">${client.contacts.length}</span>` : ''}
                          </button>
-                          <button class="${serverBtnClass} btn-with-badge" onclick="openServerData('${client.id}'); event.stopPropagation();" title="Dados de acesso ao SQL">
+                         
+                         <!-- Infra Permissions Check -->
+                         ${canViewInfra ? `
+                          <button class="${serverBtnClass} btn-with-badge perm-infra" onclick="openServerData('${client.id}'); event.stopPropagation();" title="Dados de acesso ao SQL">
                               <i class="fa-solid fa-database"></i>
                               ${hasServers ? `<span class="btn-badge">${client.servers.length}</span>` : ''}
                           </button>
-                          <button class="${vpnBtnClass} btn-with-badge" onclick="openVpnData('${client.id}'); event.stopPropagation();" title="Dados de Acesso VPN">
+                          <button class="${vpnBtnClass} btn-with-badge perm-infra" onclick="openVpnData('${client.id}'); event.stopPropagation();" title="Dados de Acesso VPN">
                              <img src="vpn-icon.png" class="${vpnIconClass}" alt="VPN">
                              ${hasVpns ? `<span class="btn-badge">${client.vpns.length}</span>` : ''}
                          </button>
-                          <button class="${urlBtnClass} btn-with-badge" onclick="event.stopPropagation(); openUrlData('${client.id}');" title="URL">
+                          <button class="${urlBtnClass} btn-with-badge perm-infra" onclick="event.stopPropagation(); openUrlData('${client.id}');" title="URL">
                              <i class="fa-solid fa-link"></i>
                              ${hasUrls ? `<span class="btn-badge">${urlCount}</span>` : ''}
                          </button>
-                         <button class="btn-icon btn-edit-client" onclick="window.openClientInteraction('${client.id}', '${escapeHtml(client.name)}'); event.stopPropagation();" title="Editar Cliente" style="color: var(--text-secondary);">
+                         ` : ''}
+
+                         <!-- Edit Permission Check -->
+                         ${canEdit ? `
+                         <button class="btn-icon btn-edit-client perm-edit" onclick="window.openClientInteraction('${client.id}', '${escapeHtml(client.name)}'); event.stopPropagation();" title="Editar Cliente" style="color: var(--text-secondary);">
                              <i class="fa-solid fa-pencil"></i>
                          </button>
-                         <button class="btn-icon btn-danger btn-delete-client" onclick="deleteClient('${client.id}'); event.stopPropagation();" title="Excluir">
+                         ` : ''}
+
+                         <!-- Delete Permission Check -->
+                         ${canDelete ? `
+                         <button class="btn-icon btn-danger btn-delete-client perm-delete" onclick="deleteClient('${client.id}'); event.stopPropagation();" title="Excluir">
                              <i class="fa-solid fa-trash"></i>
                          </button>
+                         ` : ''}
                      </div>
                 </div>
             </div>
@@ -3216,4 +3279,44 @@ document.addEventListener('DOMContentLoaded', async () => {
             showToast(`Erro: Cliente não encontrado (ID: ${id})`, 'error');
         }
     };
+    // --- Global Permission Enforcement ---
+    window.applyPermissions = () => {
+        const P = window.Permissions;
+        if (!P) return;
+
+        // 1. Logs e Atividades
+        const btnActivity = document.getElementById('toggleActivityBtn');
+        if (btnActivity) {
+            btnActivity.style.display = P.can('Logs e Atividades', 'can_view') ? '' : 'none';
+        }
+
+        // 2. Clientes e Contatos - Create
+        const btnAddClient = document.getElementById('addClientBtn');
+        if (btnAddClient) {
+            btnAddClient.style.display = P.can('Clientes e Contatos', 'can_create') ? '' : 'none';
+        }
+
+        // 3. Controle de Versões - View Tab
+        const versionTabBtn = document.querySelector('.tab-btn[data-tab="versions"]');
+        if (versionTabBtn) {
+            versionTabBtn.style.display = P.can('Controle de Versões', 'can_view') ? '' : 'none';
+        }
+
+        // 4. Controle de Versões - Create (inside tab)
+        const btnAddVersion = document.getElementById('addVersionBtn');
+        if (btnAddVersion) {
+            btnAddVersion.style.display = P.can('Controle de Versões', 'can_create') ? '' : 'none';
+        }
+
+        // 5. User Management - handled separately, but let's reinforce hiding tab button
+        const userMngBtn = document.getElementById('btnUserManagement');
+        if (userMngBtn && !P.can('Gestão de Usuários', 'can_view')) {
+            userMngBtn.style.setProperty('display', 'none', 'important');
+        }
+    };
+
+    // Apply initially
+    window.applyPermissions();
+    document.dispatchEvent(new CustomEvent('permissions-loaded'));
+
 });
