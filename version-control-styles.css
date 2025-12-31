@@ -866,18 +866,20 @@
 }
 
 /* Status Bar Colors on the LEFT */
+/* Status Bar Colors on the LEFT with Soft Gradient */
 .version-item-row.status-recent {
     border-left-color: var(--success);
+    background: linear-gradient(90deg, rgba(76, 175, 80, 0.08) 0%, rgba(76, 175, 80, 0.01) 100%);
 }
 
 .version-item-row.status-warning {
     border-left-color: var(--accent);
-    /* Agora idêntico à legenda */
+    background: linear-gradient(90deg, rgba(255, 160, 0, 0.08) 0%, rgba(255, 160, 0, 0.01) 100%);
 }
 
 .version-item-row.status-outdated {
     border-left-color: var(--danger);
-    /* Agora realmente vermelho */
+    background: linear-gradient(90deg, rgba(255, 61, 0, 0.08) 0%, rgba(255, 61, 0, 0.01) 100%);
 }
 
 /* Colors for the Text in the Right Corner */
