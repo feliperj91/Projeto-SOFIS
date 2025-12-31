@@ -1007,32 +1007,38 @@
         ];
 
 
-        // Preparar dados para o gráfico de bolhas
-        const bubbleData = sortedVersions.map((v, i) => ({
-            x: i,
-            y: v.count,
-            r: v.count * 8, // Tamanho da bolha baseado na contagem
-            version: v.version // Guardar nome para tooltip/eixo
-        }));
 
-        const bgColors = bubbleData.map((_, i) => colors[i % colors.length]);
+
+        const bgColors = labels.map((_, i) => colors[i % colors.length]);
 
         pulseCharts['versionsChart'] = new Chart(ctx, {
-            type: 'bubble',
+            type: 'pie',
             data: {
+                labels: labels,
                 datasets: [{
-                    label: 'Versões',
-                    data: bubbleData,
+                    data: values,
                     backgroundColor: bgColors,
-                    borderColor: bgColors,
-                    borderWidth: 1
+                    borderColor: '#ffffff',
+                    borderWidth: 2
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                layout: {
+                    padding: 20
+                },
                 plugins: {
-                    legend: { display: false },
+                    legend: {
+                        display: true,
+                        position: 'right',
+                        labels: {
+                            color: chartColors.text,
+                            font: { size: 11 },
+                            boxWidth: 12,
+                            padding: 10
+                        }
+                    },
                     tooltip: {
                         backgroundColor: 'rgba(17, 24, 39, 0.95)',
                         titleColor: '#fff',
@@ -1043,48 +1049,12 @@
                         titleFont: { size: 13, weight: 'bold' },
                         bodyFont: { size: 12 },
                         callbacks: {
-                            title: function (context) {
-                                // Mostrar nome da versão no título do tooltip
-                                const item = context[0].raw;
-                                return item.version;
-                            },
                             label: function (context) {
-                                const count = context.raw.y;
-                                return `${count} cliente${count !== 1 ? 's' : ''}`;
+                                const count = context.parsed;
+                                const total = context.chart._metasets[context.datasetIndex].total;
+                                const percentage = ((count / total) * 100).toFixed(1) + '%';
+                                return ` ${count} cliente${count !== 1 ? 's' : ''} (${percentage})`;
                             }
-                        }
-                    }
-                },
-                scales: {
-                    x: {
-                        ticks: {
-                            callback: function (value, index, values) {
-                                // Mostrar nome da versão no eixo X
-                                return sortedVersions[value] ? sortedVersions[value].version : '';
-                            },
-                            autoSkip: false,
-                            maxRotation: 45,
-                            minRotation: 45
-                        },
-                        grid: { display: false },
-                        border: { display: false }
-                    },
-                    y: {
-                        beginAtZero: true,
-                        ticks: { stepSize: 1 },
-                        grid: { color: '#f3f4f6', borderDash: [4, 4] },
-                        border: { display: false },
-                        title: {
-                            display: true,
-                            text: 'Quantidade de Clientes'
-                        }
-                    }
-                },
-                elements: {
-                    point: {
-                        radius: function (context) {
-                            const value = context.raw;
-                            return value ? value.r : 0;
                         }
                     }
                 }
