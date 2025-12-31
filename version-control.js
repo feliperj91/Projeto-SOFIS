@@ -733,10 +733,10 @@
         const uniqueClients = new Set(data.map(d => d.client_id)).size;
         document.getElementById('kpiTotalClients').innerText = uniqueClients;
 
-        // ===== KPI 2: Sistema Mais Utilizado (campo system_name) =====
+        // ===== KPI 2: Sistema Mais Utilizado (campo 'system') =====
         const systemCounts = {};
         data.forEach(d => {
-            const sys = d.system_name || 'Desconhecido';
+            const sys = d.system || 'Desconhecido';
             systemCounts[sys] = (systemCounts[sys] || 0) + 1;
         });
         const sortedSystems = Object.entries(systemCounts).sort((a, b) => b[1] - a[1]);
@@ -928,10 +928,11 @@
         const ctx = document.getElementById('versionsChart').getContext('2d');
         destroyChart('versionsChart');
 
+
         // Agrupar por versão completa (sistema + versão)
         const versionCounts = {};
         data.forEach(d => {
-            const sys = d.system_name || 'Sem Sistema';
+            const sys = d.system || 'Sem Sistema';
             const ver = d.version || 'S/V';
             const key = `${sys} ${ver}`;
             versionCounts[key] = (versionCounts[key] || 0) + 1;
