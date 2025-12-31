@@ -551,10 +551,7 @@ button {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    max-width: 95%;
-    /* Reduce length slightly */
-    margin: 0 auto;
-    /* Center it */
+    width: 100%;
 }
 
 .btn-icon {
