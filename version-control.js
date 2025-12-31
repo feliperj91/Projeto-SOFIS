@@ -829,17 +829,35 @@
 
     // ===== Gráfico 2: Distribuição de Clientes por Sistema =====
     function renderSystemDistributionChart(data, counts) {
-        const ctx = document.getElementById('systemDistChart').getContext('2d');
-        destroyChart('systemDistChart');
+        const container = document.getElementById('systemDistChart').parentElement;
+        const total = Object.values(counts).reduce((a, b) => a + b, 0);
+
+        // Criar layout customizado: Pizza à esquerda + Barras à direita
+        container.innerHTML = `
+            <div style="display: flex; gap: 32px; align-items: center; height: 100%;">
+                <div style="flex: 0 0 280px; position: relative;">
+                    <canvas id="systemPieChart"></canvas>
+                </div>
+                <div id="systemBars" style="flex: 1; display: flex; flex-direction: column; gap: 16px; justify-content: center;">
+                </div>
+            </div>
+        `;
 
         const labels = Object.keys(counts);
         const values = Object.values(counts);
-        const total = values.reduce((a, b) => a + b, 0);
 
-        const bgColors = labels.map((_, i) => {
-            const colors = [chartColors.purple, chartColors.pink, chartColors.orange, chartColors.teal, chartColors.blue, chartColors.indigo];
-            return colors[i % colors.length];
-        });
+        const colors = [
+            { main: '#6366f1', light: '#6366f1' },  // indigo
+            { main: '#8b5cf6', light: '#8b5cf6' },  // purple
+            { main: '#ec4899', light: '#ec4899' },  // pink
+            { main: '#f59e0b', light: '#f59e0b' },  // orange
+            { main: '#14b8a6', light: '#14b8a6' },  // teal
+            { main: '#3b82f6', light: '#3b82f6' }   // blue
+        ];
+
+        // Renderizar Pizza
+        const ctx = document.getElementById('systemPieChart').getContext('2d');
+        destroyChart('systemDistChart');
 
         pulseCharts['systemDistChart'] = new Chart(ctx, {
             type: 'pie',
@@ -847,7 +865,7 @@
                 labels: labels,
                 datasets: [{
                     data: values,
-                    backgroundColor: bgColors,
+                    backgroundColor: colors.map(c => c.main),
                     borderWidth: 3,
                     borderColor: '#ffffff',
                     hoverOffset: 8
@@ -855,34 +873,9 @@
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: false,
+                maintainAspectRatio: true,
                 plugins: {
-                    legend: {
-                        position: 'right',
-                        labels: {
-                            color: chartColors.text,
-                            usePointStyle: true,
-                            pointStyle: 'circle',
-                            padding: 16,
-                            font: { size: 12, weight: '600' },
-                            generateLabels: function (chart) {
-                                const data = chart.data;
-                                if (data.labels.length && data.datasets.length) {
-                                    return data.labels.map((label, i) => {
-                                        const value = data.datasets[0].data[i];
-                                        const percentage = ((value / total) * 100).toFixed(1);
-                                        return {
-                                            text: `${label}: ${percentage}%`,
-                                            fillStyle: data.datasets[0].backgroundColor[i],
-                                            hidden: false,
-                                            index: i
-                                        };
-                                    });
-                                }
-                                return [];
-                            }
-                        }
-                    },
+                    legend: { display: false },
                     tooltip: {
                         backgroundColor: 'rgba(17, 24, 39, 0.95)',
                         titleColor: '#fff',
@@ -900,6 +893,28 @@
                     }
                 }
             }
+        });
+
+        // Renderizar Barras Horizontais
+        const barsContainer = document.getElementById('systemBars');
+        labels.forEach((label, i) => {
+            const value = values[i];
+            const percentage = ((value / total) * 100).toFixed(1);
+            const color = colors[i % colors.length];
+
+            const barHtml = `
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 12px; height: 12px; border-radius: 50%; background: ${color.main}; flex-shrink: 0;"></div>
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-size: 0.85rem; font-weight: 600; color: #374151; margin-bottom: 4px;">${label}</div>
+                        <div style="width: 100%; height: 8px; background: #f3f4f6; border-radius: 4px; overflow: hidden;">
+                            <div style="height: 100%; background: ${color.main}; border-radius: 4px; width: ${percentage}%; transition: width 0.6s ease;"></div>
+                        </div>
+                    </div>
+                    <div style="font-size: 0.85rem; font-weight: 700; color: #111827; min-width: 50px; text-align: right;">${percentage}%</div>
+                </div>
+            `;
+            barsContainer.innerHTML += barHtml;
         });
     }
 
