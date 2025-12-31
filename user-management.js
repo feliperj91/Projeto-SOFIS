@@ -43,34 +43,49 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- Tab Logic ---
     mngSubTabBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', (e) => {
             currentMngTab = btn.dataset.mngTab;
 
             // Switch Buttons
             mngSubTabBtns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
 
-            // Switch Containers
+            // Switch Containers & Controls
+            const usersCtrl = document.getElementById('users-mng-controls');
+            const permsCtrl = document.getElementById('permissions-mng-controls');
+
             if (currentMngTab === 'users') {
                 usersContainer.classList.remove('hidden');
                 permissionsContainer.classList.add('hidden');
-                document.getElementById('users-mng-controls').classList.remove('hidden');
-                document.getElementById('permissions-mng-controls').classList.add('hidden');
+
+                if (usersCtrl) usersCtrl.classList.remove('hidden');
+                if (permsCtrl) permsCtrl.classList.add('hidden');
             } else {
                 usersContainer.classList.add('hidden');
                 permissionsContainer.classList.remove('hidden');
-                document.getElementById('users-mng-controls').classList.add('hidden');
-                document.getElementById('permissions-mng-controls').classList.remove('hidden');
+
+                if (usersCtrl) usersCtrl.classList.add('hidden');
+                if (permsCtrl) permsCtrl.classList.remove('hidden');
+
+                // Reload permissions to ensure freshness
+                loadPermissions(currentSelectedRole);
             }
         });
     });
 
-    // Role Plls Logic
+    // Role Pills Logic
     rolePillBtns.forEach(btn => {
-        btn.addEventListener('click', async () => {
-            currentSelectedRole = btn.dataset.role;
+        btn.addEventListener('click', async (e) => {
+            // Update active state
             rolePillBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+            e.currentTarget.classList.add('active');
+
+            // Update role
+            const newRole = e.currentTarget.dataset.role;
+            console.log('🔄 Trocando perfil para:', newRole);
+            currentSelectedRole = newRole;
+
+            // Load new permissions
             await loadPermissions(currentSelectedRole);
         });
     });
