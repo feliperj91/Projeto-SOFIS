@@ -903,129 +903,94 @@
         });
     }
 
-    // ===== Gráfico 3: Distribuição de Versões por Sistema =====
+    // ===== Gráfico 3: Distribuição de Versões =====
     function renderVersionsChart(data) {
         const ctx = document.getElementById('versionsChart').getContext('2d');
         destroyChart('versionsChart');
 
-        // Agrupar por sistema e status
-        const systemCounts = {};
+        // Agrupar por versão completa (sistema + versão)
+        const versionCounts = {};
         data.forEach(d => {
-            // Usar o nome do sistema real, não "Outros"
-            const sys = d.system_name && d.system_name.trim() !== '' ? d.system_name : 'Sem Sistema';
-            if (!systemCounts[sys]) systemCounts[sys] = { recent: 0, warning: 0, outdated: 0 };
-
-            const status = utils.getStatus(d.updated_at);
-            systemCounts[sys][status]++;
+            const sys = d.system_name || 'Sem Sistema';
+            const ver = d.version || 'S/V';
+            const key = `${sys} ${ver}`;
+            versionCounts[key] = (versionCounts[key] || 0) + 1;
         });
 
-        // Ordenar sistemas por total de registros (mais relevantes primeiro)
-        const systems = Object.keys(systemCounts).sort((a, b) => {
-            const totalA = systemCounts[a].recent + systemCounts[a].warning + systemCounts[a].outdated;
-            const totalB = systemCounts[b].recent + systemCounts[b].warning + systemCounts[b].outdated;
-            return totalB - totalA;
-        });
+        // Ordenar por quantidade (top versões)
+        const sortedVersions = Object.entries(versionCounts)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 10); // Top 10 versões
+
+        const labels = sortedVersions.map(v => v[0]);
+        const values = sortedVersions.map(v => v[1]);
+
+        // Cores vibrantes diferentes para cada barra
+        const colors = [
+            '#8b5cf6', // purple
+            '#6366f1', // indigo
+            '#ec4899', // pink
+            '#f59e0b', // orange
+            '#10b981', // green
+            '#14b8a6', // teal
+            '#3b82f6', // blue
+            '#f97316', // orange-red
+            '#a855f7', // purple-light
+            '#06b6d4'  // cyan
+        ];
+
+        const bgColors = labels.map((_, i) => colors[i % colors.length]);
 
         pulseCharts['versionsChart'] = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: systems,
-                datasets: [
-                    {
-                        label: 'Atualizado',
-                        data: systems.map(s => systemCounts[s].recent),
-                        backgroundColor: chartColors.purple,
-                        borderRadius: 8,
-                        borderSkipped: false,
-                    },
-                    {
-                        label: 'Atenção',
-                        data: systems.map(s => systemCounts[s].warning),
-                        backgroundColor: chartColors.pink,
-                        borderRadius: 8,
-                        borderSkipped: false,
-                    },
-                    {
-                        label: 'Desatualizado',
-                        data: systems.map(s => systemCounts[s].outdated),
-                        backgroundColor: chartColors.orange,
-                        borderRadius: 8,
-                        borderSkipped: false,
-                    }
-                ]
+                labels: labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: bgColors,
+                    borderRadius: 8,
+                    borderSkipped: false,
+                }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                interaction: {
-                    mode: 'index',
-                    intersect: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(17, 24, 39, 0.95)',
+                        titleColor: '#fff',
+                        bodyColor: '#e5e7eb',
+                        borderColor: 'rgba(255, 255, 255, 0.1)',
+                        borderWidth: 1,
+                        padding: 12,
+                        titleFont: { size: 13, weight: 'bold' },
+                        bodyFont: { size: 12 },
+                        callbacks: {
+                            label: function (context) {
+                                return `Clientes: ${context.parsed.y}`;
+                            }
+                        }
+                    }
                 },
                 scales: {
                     x: {
-                        stacked: true,
-                        grid: {
-                            display: false
-                        },
+                        grid: { display: false },
                         ticks: {
                             color: chartColors.text,
-                            font: { size: 12, weight: '500' },
+                            font: { size: 11, weight: '500' },
                             maxRotation: 45,
-                            minRotation: 0
+                            minRotation: 45
                         }
                     },
                     y: {
-                        stacked: true,
-                        grid: {
-                            color: chartColors.grid,
-                            drawBorder: false
-                        },
+                        grid: { color: chartColors.grid },
                         ticks: {
                             color: chartColors.text,
                             precision: 0,
                             font: { size: 11 }
                         },
                         beginAtZero: true
-                    }
-                },
-                plugins: {
-                    legend: {
-                        position: 'top',
-                        align: 'end',
-                        labels: {
-                            color: '#e2e8f0',
-                            usePointStyle: true,
-                            pointStyle: 'circle',
-                            padding: 20,
-                            font: { size: 13, weight: '600' },
-                            boxWidth: 10,
-                            boxHeight: 10
-                        }
-                    },
-                    tooltip: {
-                        backgroundColor: 'rgba(15, 23, 42, 0.95)',
-                        titleColor: '#fff',
-                        bodyColor: '#e2e8f0',
-                        borderColor: 'rgba(255, 255, 255, 0.1)',
-                        borderWidth: 1,
-                        padding: 16,
-                        titleFont: { size: 14, weight: 'bold' },
-                        bodyFont: { size: 13 },
-                        displayColors: true,
-                        callbacks: {
-                            title: function (context) {
-                                return context[0].label;
-                            },
-                            label: function (context) {
-                                const label = context.dataset.label || '';
-                                const value = context.parsed.y;
-                                const total = context.chart.data.datasets.reduce((sum, dataset) => {
-                                    return sum + dataset.data[context.dataIndex];
-                                }, 0);
-                                const percentage = ((value / total) * 100).toFixed(1);
-                                return `${label}: ${value} (${percentage}%)`;
-                            }
-                        }
                     }
                 }
             }
