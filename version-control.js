@@ -719,11 +719,7 @@
         const uniqueClients = new Set(data.map(d => d.client_id)).size;
         document.getElementById('kpiTotalClients').innerText = uniqueClients;
 
-        // ===== KPI 2: Sistemas Monitorados =====
-        const uniqueSystems = [...new Set(data.map(d => d.system_name))];
-        document.getElementById('kpiActiveSystems').innerText = uniqueSystems.length;
-
-        // ===== KPI 3: Sistema Mais Utilizado =====
+        // ===== KPI 2: Sistema Mais Utilizado =====
         const systemCounts = {};
         data.forEach(d => {
             const sys = d.system_name || 'Desconhecido';
