@@ -948,22 +948,17 @@
         destroyChart('versionsChart');
 
 
-        // Agrupar por versão completa (sistema + versão)
-        const versionCounts = {};
+        // Agrupar por versão completa (sistema + versão) - APENAS VERSÕES ÚNICAS
+        const versionSet = new Set();
         data.forEach(d => {
             const sys = d.system || 'Sem Sistema';
             const ver = d.version || 'S/V';
             const key = `${sys} ${ver}`;
-            versionCounts[key] = (versionCounts[key] || 0) + 1;
+            versionSet.add(key);
         });
 
-        // Ordenar por quantidade (top versões)
-        const sortedVersions = Object.entries(versionCounts)
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 10); // Top 10 versões
-
-        const labels = sortedVersions.map(v => v[0]);
-        const values = sortedVersions.map(v => v[1]);
+        // Converter para array e ordenar alfabeticamente
+        const sortedVersions = Array.from(versionSet).sort();
 
         // Cores vibrantes diferentes para cada barra
         const colors = [
@@ -976,17 +971,19 @@
             '#3b82f6', // blue
             '#f97316', // orange-red
             '#a855f7', // purple-light
-            '#06b6d4'  // cyan
+            '#06b6d4', // cyan
+            '#ef4444', // red
+            '#84cc16'  // lime
         ];
 
-        const bgColors = labels.map((_, i) => colors[i % colors.length]);
+        const bgColors = sortedVersions.map((_, i) => colors[i % colors.length]);
 
         pulseCharts['versionsChart'] = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: labels,
+                labels: sortedVersions,
                 datasets: [{
-                    data: values,
+                    data: sortedVersions.map(() => 1), // Cada versão única = 1
                     backgroundColor: bgColors,
                     borderRadius: 8,
                     borderSkipped: false,
@@ -1008,7 +1005,7 @@
                         bodyFont: { size: 12 },
                         callbacks: {
                             label: function (context) {
-                                return `Clientes: ${context.parsed.y}`;
+                                return context.label; // Apenas o nome da versão
                             }
                         }
                     }
