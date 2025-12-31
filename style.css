@@ -77,6 +77,20 @@ header {
     gap: 15px;
 }
 
+#logoutBtn {
+    color: var(--danger);
+    border-color: var(--danger);
+    transition: all 0.3s ease;
+}
+
+#logoutBtn:hover {
+    background-color: var(--danger) !important;
+    color: #ffffff !important;
+    border-color: var(--danger) !important;
+    box-shadow: 0 4px 12px rgba(255, 61, 0, 0.3);
+    transform: translateY(-2px);
+}
+
 
 .modal-subtitle {
     display: block;
