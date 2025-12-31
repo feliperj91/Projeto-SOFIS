@@ -273,6 +273,13 @@
                 return;
             }
 
+            // Client Validation
+            if (!fields.clientId) {
+                if (window.showToast) window.showToast('⚠️ Selecione um cliente válido da lista sugerida.', 'warning');
+                sofis_isSaving = false;
+                return;
+            }
+
             // Version Validation (Incomplete or Empty)
             if (!fields.ver || fields.ver.trim() === '') {
                 if (window.showToast) window.showToast('⚠️ O campo de versão é obrigatório.', 'warning');
@@ -552,6 +559,59 @@
                 }
                 e.target.value = result;
             });
+        }
+    };
+
+
+    let cachedClientsForVersion = [];
+    window.populateVersionClientSelect = async () => {
+        const dl = document.getElementById('versionClientList');
+        if (!dl) return;
+
+        // Se já temos cache e não está vazio, não busca de novo (ou busca se quiser refresh, mas vamos economizar)
+        if (cachedClientsForVersion.length === 0) {
+            try {
+                const { data, error } = await window.supabaseClient
+                    .from('clients')
+                    .select('id, name')
+                    .order('name');
+
+                if (!error && data) {
+                    cachedClientsForVersion = data;
+                }
+            } catch (e) {
+                console.error("Erro ao buscar clientes para select:", e);
+                return;
+            }
+        }
+
+        dl.innerHTML = '';
+        cachedClientsForVersion.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.name;
+            dl.appendChild(opt);
+        });
+
+        // Configurar listener para atualizar o ID oculto quando o usuário digitar/selecionar
+        const input = document.getElementById('versionClientInput');
+        const hidden = document.getElementById('versionClientSelect');
+
+        if (input && hidden) {
+            const updateHidden = () => {
+                const val = input.value;
+                // Busca exata (case sensitive ou não? nomes costumam ser exatos no datalist)
+                const match = cachedClientsForVersion.find(c => c.name === val);
+                if (match) {
+                    hidden.value = match.id;
+                    input.setCustomValidity(""); // Válido
+                } else {
+                    hidden.value = ''; // Inválido se não casar
+                    // Opcional: input.setCustomValidity("Selecione um cliente válido da lista");
+                }
+            };
+
+            input.oninput = updateHidden;
+            input.onchange = updateHidden; // Garantia extra
         }
     };
 
