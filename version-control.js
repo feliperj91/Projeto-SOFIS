@@ -716,8 +716,8 @@
 
         // ===== FILTRAR APENAS PRODUÇÃO =====
         const data = allData.filter(d => {
-            const env = (d.environment || '').toLowerCase();
-            return env.includes('prod');
+            const env = (d.environment || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            return env.includes('produ');
         });
 
         console.log(`📊 [Pulse] Processing ${data.length} production records (${allData.length} total)`);
