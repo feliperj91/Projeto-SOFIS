@@ -158,14 +158,37 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+
+    // Search functionality with clear button
+    const clearUserSearchBtn = document.getElementById('clearUserSearch');
+
     userSearchInput?.addEventListener('input', (e) => {
         const query = e.target.value.toLowerCase();
+
+        // Show/hide clear button
+        if (clearUserSearchBtn) {
+            if (query) {
+                clearUserSearchBtn.classList.remove('hidden');
+            } else {
+                clearUserSearchBtn.classList.add('hidden');
+            }
+        }
+
         const filtered = usersList.filter(u =>
             u.full_name?.toLowerCase().includes(query) ||
             u.username?.toLowerCase().includes(query)
         );
         renderUsers(filtered);
     });
+
+    // Clear search button
+    clearUserSearchBtn?.addEventListener('click', () => {
+        userSearchInput.value = '';
+        clearUserSearchBtn.classList.add('hidden');
+        renderUsers(usersList);
+        userSearchInput.focus();
+    });
+
 
     // Modal Handlers
     window.editUser = function (id) {

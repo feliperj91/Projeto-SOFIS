@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="server-styles.css?v=2.5">
     <link rel="stylesheet" href="credential-styles.css?v=2.5">
     <link rel="stylesheet" href="version-control-styles.css?v=6.2">
-    <link rel="stylesheet" href="user-management-styles.css?v=1.0">
+    <link rel="stylesheet" href="user-management-styles.css?v=1.2">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -146,25 +146,28 @@
 
         <!-- User Management Tab Content -->
         <main id="managementTab" class="tab-content">
-            <!-- Header for Management -->
-            <div class="management-controls-header">
+            <!-- Search Bar & Add Button (matching other tabs) -->
+            <div id="user-search-bar" style="display: flex; gap: 10px; align-items: center;">
+                <div style="position: relative; flex: 1;">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" id="userSearchInput" placeholder="Pesquisar por nome ou usuário...">
+                    <button id="clearUserSearch" class="btn-clear hidden" title="Limpar pesquisa" tabindex="-1">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <button id="addNewUserBtn" class="btn-primary">
+                    <i class="fa-solid fa-plus"></i> Novo Usuário
+                </button>
+            </div>
+
+            <!-- Sub-tabs for Users and Permissions (similar to filter chips in other tabs) -->
+            <div class="filter-chips-container">
                 <div class="management-subtabs">
                     <button class="mng-tab-btn active" data-mng-tab="users">
                         <i class="fa-solid fa-users"></i> Usuários
                     </button>
                     <button class="mng-tab-btn" data-mng-tab="permissions">
                         <i class="fa-solid fa-shield-halved"></i> Permissões
-                    </button>
-                </div>
-
-                <!-- Users Search & Add (Only visible in users tab) -->
-                <div id="users-mng-controls" class="mng-controls-group">
-                    <div class="mng-search-wrapper">
-                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                        <input type="text" id="userSearchInput" placeholder="Pesquisar por nome ou usuário...">
-                    </div>
-                    <button id="addNewUserBtn" class="btn-primary btn-gold">
-                        <i class="fa-solid fa-user-plus"></i> Novo Usuário
                     </button>
                 </div>
 
