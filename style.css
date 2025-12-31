@@ -233,6 +233,7 @@ button {
 
 .search-input-group {
     position: relative;
+    flex: 1;
 }
 
 .search-container .search-icon {
