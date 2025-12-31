@@ -240,6 +240,18 @@ button {
     background: rgba(239, 68, 68, 0.1);
 }
 
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.modal-actions button {
+    min-width: 140px;
+    /* Standardize button width for better presence */
+}
+
 /* Search */
 /* Search Bar Container Standard */
 .search-container {
