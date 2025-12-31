@@ -1013,18 +1013,28 @@
 
 
     // ===== Lista de Versões por Sistema (Cards) =====
+
+    // ===== Lista de Versões por Sistema (Cards) =====
     function renderVersionsChart(data) {
         const container = document.getElementById('versionsListContainer');
         if (!container) return;
 
         container.innerHTML = '';
 
-        // 1. Agrupar dados: Sistema -> Versão -> Count Clientes Únicos
+        // 1. Agrupar dados: Sistema -> Versão -> Set de {id, name}
         const systemVersions = {};
 
         data.forEach(d => {
             const sys = d.system || 'Desconhecido';
             const ver = d.version || 'S/V';
+
+            // Tenta obter nome do cliente do join, ou usa ID
+            let clientName = d.client_id;
+            if (d.clients && d.clients.name) {
+                clientName = d.clients.name;
+            } else if (d.client_name) { // Fallback se vier flattened
+                clientName = d.client_name;
+            }
 
             if (!systemVersions[sys]) {
                 systemVersions[sys] = {};
@@ -1032,7 +1042,7 @@
             if (!systemVersions[sys][ver]) {
                 systemVersions[sys][ver] = new Set();
             }
-            systemVersions[sys][ver].add(d.client_id);
+            systemVersions[sys][ver].add(clientName);
         });
 
         // CSS Inline para garantir layout dos cards
@@ -1040,7 +1050,7 @@
         style.innerHTML = `
             .versions-grid {
                 display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+                grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
                 gap: 16px;
                 padding: 4px;
                 max-height: 450px;
@@ -1071,31 +1081,50 @@
             .v-list {
                 display: flex;
                 flex-direction: column;
-                gap: 6px;
+                gap: 8px;
             }
             .v-item {
                 display: flex;
-                justify-content: space-between;
-                align-items: center;
+                flex-direction: column; /* Coluna para caber clientes em baixo */
+                align-items: flex-start;
                 font-size: 0.85rem;
                 color: #4b5563;
-                padding: 4px 0;
+                padding: 6px 0;
+                border-bottom: 1px dashed #f3f4f6;
+            }
+            .v-item:last-child {
+                border-bottom: none;
+            }
+            .v-row-main {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                width: 100%;
             }
             .v-version-text {
                 font-family: monospace;
-                color: #6b7280;
+                font-weight: 600;
+                color: #374151;
             }
             .v-badge {
                 background: #8b5cf6;
                 color: white;
                 font-weight: 600;
                 font-size: 0.75rem;
-                min-width: 24px;
-                height: 24px;
+                min-width: 20px;
+                height: 20px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 border-radius: 6px;
+                padding: 0 6px;
+            }
+            .v-clients-list {
+                font-size: 0.75rem;
+                color: #9ca3af;
+                margin-top: 4px;
+                line-height: 1.2;
+                word-break: break-word;
             }
         `;
         container.appendChild(style);
@@ -1114,9 +1143,13 @@
 
         sortedSystems.forEach(sys => {
             const versionsObj = systemVersions[sys];
-            // Lista de versões ordenadas por contagem (decrescente) e depois por nome (decrescente/recente)
+            // Lista de versões ordenadas por contagem (decrescente) e depois por nome
             const versionsList = Object.entries(versionsObj)
-                .map(([v, set]) => ({ version: v, count: set.size }))
+                .map(([v, clientSet]) => ({
+                    version: v,
+                    count: clientSet.size,
+                    clients: Array.from(clientSet).sort().join(', ')
+                }))
                 .sort((a, b) => b.count - a.count || b.version.localeCompare(a.version));
 
             const sysColor = getSystemColor(sys);
@@ -1125,8 +1158,14 @@
             versionsList.forEach(item => {
                 listHtml += `
                     <div class="v-item">
-                        <span class="v-version-text">${item.version}</span>
-                        <span class="v-badge" style="background-color: ${sysColor}">${item.count}</span>
+                        <div class="v-row-main">
+                            <span class="v-version-text">${item.version}</span>
+                            <span class="v-badge" style="background-color: ${sysColor}">${item.count}</span>
+                        </div>
+                        <div class="v-clients-list">
+                            <i class="fa-regular fa-user" style="font-size: 10px; margin-right: 4px;"></i>
+                            ${item.clients}
+                        </div>
                     </div>
                  `;
             });
