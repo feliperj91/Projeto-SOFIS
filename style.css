@@ -226,7 +226,8 @@ button {
     display: flex;
     gap: 10px;
     align-items: center;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
+    /* Reduzido de 24px */
     width: 100%;
 }
 
@@ -304,7 +305,8 @@ button {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    margin-top: 20px;
+    margin-top: 0;
+    /* A margem vem do filter-chips-container agora */
 }
 
 /* Grid Mode Styles */
@@ -1639,7 +1641,8 @@ button:hover .vpn-icon-img {
     justify-content: space-between;
     align-items: center;
     gap: 12px;
-    margin: 24px 0;
+    margin: 0 0 20px 0;
+    /* Removido margem superior para não somar com a busca */
     padding: 0;
     flex-wrap: wrap;
 }
