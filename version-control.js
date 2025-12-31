@@ -733,13 +733,20 @@
         const uniqueClients = new Set(data.map(d => d.client_id)).size;
         document.getElementById('kpiTotalClients').innerText = uniqueClients;
 
-        // ===== KPI 2: Todos os Sistemas com Quantidades =====
-        const systemCounts = {};
+        // ===== KPI 2: Todos os Sistemas com Quantidades (Clientes Únicos) =====
+        const systemClientSets = {};
         data.forEach(d => {
             const sys = d.system || 'Desconhecido';
-            systemCounts[sys] = (systemCounts[sys] || 0) + 1;
+            if (!systemClientSets[sys]) {
+                systemClientSets[sys] = new Set();
+            }
+            systemClientSets[sys].add(d.client_id);
         });
-        const sortedSystems = Object.entries(systemCounts).sort((a, b) => b[1] - a[1]);
+
+        // Converter Sets para contagens e ordenar
+        const sortedSystems = Object.entries(systemClientSets)
+            .map(([sys, clientSet]) => [sys, clientSet.size])
+            .sort((a, b) => b[1] - a[1]);
 
         // Renderizar lista de sistemas com quantidades
         const kpiElement = document.getElementById('kpiMostPopularSystem');
@@ -751,6 +758,12 @@
         } else {
             kpiElement.innerText = '-';
         }
+
+        // Preparar systemCounts para os gráficos
+        const systemCounts = {};
+        sortedSystems.forEach(([sys, count]) => {
+            systemCounts[sys] = count;
+        });
 
         // ===== Renderizar Gráficos =====
         if (typeof Chart === 'undefined') {
