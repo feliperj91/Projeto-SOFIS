@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="style.css?v=9.5">
     <link rel="stylesheet" href="server-styles.css?v=2.6">
     <link rel="stylesheet" href="credential-styles.css?v=2.5">
-    <link rel="stylesheet" href="version-control-styles.css?v=6.4">
+    <link rel="stylesheet" href="version-control-styles.css?v=6.5">
     <link rel="stylesheet" href="user-management-styles.css?v=1.7">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -114,9 +114,15 @@
                         <i class="fa-solid fa-xmark"></i>
                     </button>
                 </div>
-                <button id="addVersionBtn" class="btn-primary" onclick="window.editVersion()">
-                    <i class="fa-solid fa-plus"></i> Nova Versão
-                </button>
+                <div style="display: flex; gap: 10px;">
+                    <button id="pulseDashboardBtn" class="btn-primary btn-pulse" onclick="window.openPulseDashboard()"
+                        title="Abrir Dashboard Inteligente">
+                        <i class="fa-solid fa-chart-line"></i> Dashboard
+                    </button>
+                    <button id="addVersionBtn" class="btn-primary" onclick="window.editVersion()">
+                        <i class="fa-solid fa-plus"></i> Nova Versão
+                    </button>
+                </div>
             </div>
 
 
@@ -1025,6 +1031,92 @@
         </div>
     </div>
 
+    <!-- Pulse Dashboard Modal -->
+    <div id="pulseDashboardModal" class="dashboard-overlay hidden">
+        <div class="dashboard-container">
+            <div class="dashboard-header">
+                <div class="pulse-title">
+                    <i class="fa-solid fa-chart-line" style="color: #b388ff; font-size: 1.5rem;"></i>
+                    <div style="display: flex; flex-direction: column; line-height: 1;">
+                        <h2
+                            style="margin: 0; font-size: 1.8rem; background: linear-gradient(135deg, #fff, #b388ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                            Pulse</h2>
+                        <span style="font-weight: 400; font-size: 0.8rem; opacity: 0.7; letter-spacing: 1px;">Visão
+                            Geral Inteligente</span>
+                    </div>
+                </div>
+                <button class="btn-icon-large" onclick="window.closePulseDashboard()">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="dashboard-grid">
+                <!-- KPI Cards -->
+                <div class="kpi-card card-clients">
+                    <div class="kpi-icon"><i class="fa-solid fa-users"></i></div>
+                    <div class="kpi-info">
+                        <h4>Total de Clientes</h4>
+                        <h2 id="kpiTotalClients">0</h2>
+                    </div>
+                </div>
+
+                <div class="kpi-card card-systems">
+                    <div class="kpi-icon"><i class="fa-solid fa-server"></i></div>
+                    <div class="kpi-info">
+                        <h4>Sistemas Monitorados</h4>
+                        <h2 id="kpiActiveSystems">0</h2>
+                    </div>
+                </div>
+
+                <div class="kpi-card card-popular">
+                    <div class="kpi-icon"><i class="fa-solid fa-trophy"></i></div>
+                    <div class="kpi-info">
+                        <h4>Sistema + Utilizado</h4>
+                        <h2 id="kpiMostPopularSystem" style="font-size: 1.4rem;">-</h2>
+                    </div>
+                </div>
+
+                <div class="kpi-card card-health">
+                    <div class="kpi-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+                    <div class="kpi-info">
+                        <h4>Atualizados (30d)</h4>
+                        <h2 id="kpiUpToDate">0%</h2>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="chart-card wide-chart">
+                    <div class="chart-header">
+                        <h3>Distribuição de Versões por Sistema</h3>
+                        <div class="chart-badge">Versões ativas</div>
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="versionsChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>Ambientes</h3>
+                        <div class="chart-badge">Prod vs Homolog</div>
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="envChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>Clientes por Sistema</h3>
+                        <div class="chart-badge">Participação</div>
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="systemDistChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <script src="supabase-client.js?v=3.9"></script>
     <script>
         // Update Build Number Dynamically
@@ -1036,7 +1128,7 @@
         }
     </script>
     <script src="app.js?v=4.0"></script>
-    <script src="version-control.js?v=10.2"></script>
+    <script src="version-control.js?v=10.3"></script>
     <script src="user-management.js?v=1.1"></script>
 </body>
 

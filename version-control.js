@@ -663,4 +663,237 @@
 
 
 
+    // ==========================================
+    // PULSE DASHBOARD LOGIC
+    // ==========================================
+    let pulseCharts = {};
+
+    window.openPulseDashboard = function () {
+        const modal = document.getElementById('pulseDashboardModal');
+        if (!modal) return;
+
+        modal.classList.remove('hidden');
+        // Add animation class
+        const container = modal.querySelector('.dashboard-container');
+        container.style.opacity = '0';
+        container.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+            container.style.transition = 'all 0.4s ease-out';
+            container.style.opacity = '1';
+            container.style.transform = 'scale(1)';
+        }, 50);
+
+        calculateAndRenderPulse();
+    };
+
+    window.closePulseDashboard = function () {
+        const modal = document.getElementById('pulseDashboardModal');
+        if (modal) modal.classList.add('hidden');
+    };
+
+    function calculateAndRenderPulse() {
+        if (!window.versionControls || window.versionControls.length === 0) {
+            console.warn("No data for Pulse Dashboard");
+            return;
+        }
+
+        const data = window.versionControls; // This contains the list of version items
+
+        // 1. KPI Calculations
+        // Unique clients defined by client_id
+        const uniqueClients = new Set(data.map(d => d.client_id)).size;
+        document.getElementById('kpiTotalClients').innerText = uniqueClients;
+
+        // Active systems (unique system names)
+        const uniqueSystems = [...new Set(data.map(d => d.system_name))];
+        document.getElementById('kpiActiveSystems').innerText = uniqueSystems.length;
+
+        // System Popularity
+        const systemCounts = {};
+        data.forEach(d => {
+            const sys = d.system_name || 'Desconhecido';
+            systemCounts[sys] = (systemCounts[sys] || 0) + 1;
+        });
+        const sortedSystems = Object.entries(systemCounts).sort((a, b) => b[1] - a[1]);
+        if (sortedSystems.length > 0) {
+            document.getElementById('kpiMostPopularSystem').innerText = sortedSystems[0][0];
+        } else {
+            document.getElementById('kpiMostPopularSystem').innerText = '-';
+        }
+
+        // Health (Up to date)
+        const recentCount = data.filter(d => utils.getStatus(d.updated_at) === 'recent').length;
+        const healthPercent = data.length > 0 ? Math.round((recentCount / data.length) * 100) : 0;
+        document.getElementById('kpiUpToDate').innerText = `${healthPercent}%`;
+
+        // 2. Charts
+        // We need to wait for chart.js to be ready if it was lazily loaded, but here it's likely ready as script is in head/bottom
+        if (typeof Chart === 'undefined') {
+            console.error("Chart.js not loaded");
+            return;
+        }
+
+        renderEnvironmentChart(data);
+        renderSystemDistributionChart(data, systemCounts);
+        renderVersionsChart(data);
+    }
+
+    // Chart Configuration Helpers
+    const chartColors = {
+        purple: '#a855f7',
+        purpleLight: 'rgba(168, 85, 247, 0.2)',
+        blue: '#38bdf8',
+        blueLight: 'rgba(56, 189, 248, 0.2)',
+        green: '#10b981',
+        greenLight: 'rgba(16, 185, 129, 0.2)',
+        orange: '#f59e0b',
+        text: '#94a3b8',
+        grid: 'rgba(255,255,255,0.05)'
+    };
+
+    function destroyChart(id) {
+        if (pulseCharts[id]) {
+            pulseCharts[id].destroy();
+        }
+    }
+
+    function renderEnvironmentChart(data) {
+        const ctx = document.getElementById('envChart').getContext('2d');
+        destroyChart('envChart');
+
+        let prod = 0, homolog = 0;
+        data.forEach(d => {
+            const env = (d.environment || '').toLowerCase();
+            if (env.includes('prod')) prod++;
+            else if (env.includes('homolog') || env.includes('test')) homolog++;
+        });
+
+        pulseCharts['envChart'] = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Produção', 'Homologação'],
+                datasets: [{
+                    data: [prod, homolog],
+                    backgroundColor: [chartColors.blue, chartColors.orange],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { color: chartColors.text, usePointStyle: true, padding: 20 } }
+                }
+            }
+        });
+    }
+
+    function renderSystemDistributionChart(data, counts) {
+        const ctx = document.getElementById('systemDistChart').getContext('2d');
+        destroyChart('systemDistChart');
+
+        const labels = Object.keys(counts);
+        const values = Object.values(counts);
+
+        // Generate colors
+        const bgColors = labels.map((_, i) => {
+            const colors = ['#38bdf8', '#a855f7', '#10b981', '#f59e0b', '#ec4899', '#6366f1'];
+            return colors[i % colors.length];
+        });
+
+        pulseCharts['systemDistChart'] = new Chart(ctx, {
+            type: 'polarArea',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: bgColors.map(c => c + 'AA'), // Add transparency
+                    borderWidth: 1,
+                    borderColor: 'rgba(255,255,255,0.1)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        ticks: { display: false, backdropColor: 'transparent' }
+                    }
+                },
+                plugins: {
+                    legend: { position: 'right', labels: { color: chartColors.text, usePointStyle: true, font: { size: 11 } } }
+                }
+            }
+        });
+    }
+
+    function renderVersionsChart(data) {
+        const ctx = document.getElementById('versionsChart').getContext('2d');
+        destroyChart('versionsChart');
+
+        const systemCounts = {};
+        data.forEach(d => {
+            const sys = d.system_name || 'Outros';
+            if (!systemCounts[sys]) systemCounts[sys] = { recent: 0, warning: 0, outdated: 0 };
+
+            const status = utils.getStatus(d.updated_at);
+            systemCounts[sys][status]++;
+        });
+
+        const systems = Object.keys(systemCounts).sort();
+
+        pulseCharts['versionsChart'] = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: systems,
+                datasets: [
+                    {
+                        label: 'Atualizado',
+                        data: systems.map(s => systemCounts[s].recent),
+                        backgroundColor: chartColors.green,
+                        borderRadius: 4,
+                        stack: 'Stack 0',
+                    },
+                    {
+                        label: 'Atenção',
+                        data: systems.map(s => systemCounts[s].warning),
+                        backgroundColor: chartColors.orange,
+                        borderRadius: 4,
+                        stack: 'Stack 0',
+                    },
+                    {
+                        label: 'Desatualizado',
+                        data: systems.map(s => systemCounts[s].outdated),
+                        backgroundColor: '#ef4444',
+                        borderRadius: 4,
+                        stack: 'Stack 0',
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                categories: systems,
+                indexAxis: 'x',
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: chartColors.text }
+                    },
+                    y: {
+                        grid: { color: chartColors.grid },
+                        ticks: { color: chartColors.text, precision: 0 },
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: { position: 'top', align: 'end', labels: { color: chartColors.text, usePointStyle: true, padding: 15 } }
+                }
+            }
+        });
+    }
+
 })();

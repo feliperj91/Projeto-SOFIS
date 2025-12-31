@@ -1088,3 +1088,261 @@
     text-shadow: 0 0 10px rgba(255, 193, 7, 0.3);
     text-underline-offset: 4px;
 }
+
+/* =========================================
+   PULSE DASHBOARD STYLES (Smart Overview) 
+   ========================================= */
+
+/* Pulse Button */
+.btn-pulse {
+    background: linear-gradient(135deg, #7c4dff, #b388ff) !important;
+    border: none !important;
+    box-shadow: 0 4px 15px rgba(124, 77, 255, 0.4) !important;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.btn-pulse:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(124, 77, 255, 0.6) !important;
+}
+
+.btn-pulse:active {
+    transform: scale(0.98);
+}
+
+/* Dashboard Overlay */
+.dashboard-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.95);
+    /* Deep dark blue */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.dashboard-overlay:not(.hidden) {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.dashboard-container {
+    width: 90%;
+    max-width: 1200px;
+    height: 85vh;
+    background: linear-gradient(145deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 24px;
+    padding: 30px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Header */
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.pulse-title {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.btn-icon-large {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-icon-large:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Grid Layout */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: auto auto;
+    /* KPI row, Chart row */
+    gap: 20px;
+    padding-bottom: 20px;
+}
+
+/* KPI Cards */
+.kpi-card {
+    background: rgba(30, 41, 59, 0.4);
+    border-radius: 20px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: default;
+}
+
+.kpi-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(30, 41, 59, 0.6);
+}
+
+.kpi-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.card-clients .kpi-icon {
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.15);
+}
+
+.card-systems .kpi-icon {
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.15);
+}
+
+.card-popular .kpi-icon {
+    color: #a855f7;
+    background: rgba(168, 85, 247, 0.15);
+}
+
+.card-health .kpi-icon {
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.15);
+}
+
+.kpi-info h4 {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.kpi-info h2 {
+    margin: 5px 0 0 0;
+    font-size: 1.8rem;
+    color: white;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+/* Chart Cards */
+.chart-card {
+    background: rgba(30, 41, 59, 0.4);
+    border-radius: 20px;
+    padding: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    flex-direction: column;
+    min-height: 350px;
+}
+
+.wide-chart {
+    grid-column: span 2;
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.chart-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.chart-badge {
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.chart-body {
+    flex: 1;
+    position: relative;
+    width: 100%;
+    min-height: 0;
+    /* Important for flex child canvas */
+}
+
+/* Responsiveness */
+@media (max-width: 1200px) {
+    .dashboard-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .wide-chart {
+        grid-column: span 2;
+        /* Full width on smaller screens */
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .wide-chart {
+        grid-column: span 1;
+    }
+
+    .dashboard-container {
+        padding: 15px;
+        width: 95%;
+        height: 95vh;
+    }
+
+    .kpi-card {
+        padding: 15px;
+    }
+
+    .kpi-info h2 {
+        font-size: 1.5rem;
+    }
+}
