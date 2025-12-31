@@ -1011,112 +1011,139 @@
         });
     }
 
-    // ===== Gráfico 3: Distribuição de Versões =====
+
+    // ===== Lista de Versões por Sistema (Cards) =====
     function renderVersionsChart(data) {
-        const ctx = document.getElementById('versionsChart').getContext('2d');
-        destroyChart('versionsChart');
+        const container = document.getElementById('versionsListContainer');
+        if (!container) return;
 
+        container.innerHTML = '';
 
-        // Agrupar por VERSÃO (sem sistema) e contar CLIENTES ÚNICOS
-        console.log(`📊 [Versions Chart] Recebendo ${data.length} registros de produção`);
-        console.log(`📊 [Versions Chart] Detalhes dos registros:`);
-        data.forEach((d, idx) => {
-            console.log(`  ${idx + 1}. Cliente: ${d.client_id}, Sistema: ${d.system}, Versão: ${d.version}, Ambiente: ${d.environment}`);
-        });
+        // 1. Agrupar dados: Sistema -> Versão -> Count Clientes Únicos
+        const systemVersions = {};
 
-        const versionClientSets = {};
         data.forEach(d => {
+            const sys = d.system || 'Desconhecido';
             const ver = d.version || 'S/V';
 
-            if (!versionClientSets[ver]) {
-                versionClientSets[ver] = new Set();
+            if (!systemVersions[sys]) {
+                systemVersions[sys] = {};
             }
-            versionClientSets[ver].add(d.client_id);
+            if (!systemVersions[sys][ver]) {
+                systemVersions[sys][ver] = new Set();
+            }
+            systemVersions[sys][ver].add(d.client_id);
         });
 
-        // Converter para array com contagens e ordenar por quantidade (maior para menor)
-        const sortedVersions = Object.entries(versionClientSets)
-            .map(([version, clientSet]) => ({
-                version: version,
-                count: clientSet.size
-            }))
-            .sort((a, b) => b.count - a.count);
-
-        console.log(`📊 [Versions Chart] ${sortedVersions.length} versões únicas encontradas`);
-        console.table(sortedVersions);
-
-        const labels = sortedVersions.map(v => v.version);
-        const values = sortedVersions.map(v => v.count);
-
-        // Cores vibrantes diferentes para cada barra
-        const colors = [
-            '#8b5cf6', // purple
-            '#6366f1', // indigo
-            '#ec4899', // pink
-            '#f59e0b', // orange
-            '#10b981', // green
-            '#14b8a6', // teal
-            '#3b82f6', // blue
-            '#f97316', // orange-red
-            '#a855f7', // purple-light
-            '#06b6d4', // cyan
-            '#ef4444', // red
-            '#84cc16'  // lime
-        ];
-
-
-
-
-        const bgColors = labels.map((_, i) => colors[i % colors.length]);
-
-        pulseCharts['versionsChart'] = new Chart(ctx, {
-            type: 'pie',
-            data: {
-                labels: labels,
-                datasets: [{
-                    data: values,
-                    backgroundColor: bgColors,
-                    borderColor: '#ffffff',
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                layout: {
-                    padding: 20
-                },
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'right',
-                        labels: {
-                            color: chartColors.text,
-                            font: { size: 11 },
-                            boxWidth: 12,
-                            padding: 10
-                        }
-                    },
-                    tooltip: {
-                        backgroundColor: 'rgba(17, 24, 39, 0.95)',
-                        titleColor: '#fff',
-                        bodyColor: '#e5e7eb',
-                        borderColor: 'rgba(255, 255, 255, 0.1)',
-                        borderWidth: 1,
-                        padding: 12,
-                        titleFont: { size: 13, weight: 'bold' },
-                        bodyFont: { size: 12 },
-                        callbacks: {
-                            label: function (context) {
-                                const count = context.parsed;
-                                const total = context.chart._metasets[context.datasetIndex].total;
-                                const percentage = ((count / total) * 100).toFixed(1) + '%';
-                                return ` ${count} cliente${count !== 1 ? 's' : ''} (${percentage})`;
-                            }
-                        }
-                    }
-                }
+        // CSS Inline para garantir layout dos cards
+        const style = document.createElement('style');
+        style.innerHTML = `
+            .versions-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+                gap: 16px;
+                padding: 4px;
+                max-height: 450px;
+                overflow-y: auto;
             }
+            .version-card {
+                background: white;
+                border-radius: 12px;
+                padding: 16px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                border: 1px solid #f3f4f6;
+                display: flex;
+                flex-direction: column;
+            }
+            .v-card-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 12px;
+                padding-bottom: 8px;
+                border-bottom: 1px solid #f9fafb;
+            }
+            .v-card-title {
+                font-weight: 700;
+                color: #111827;
+                font-size: 0.95rem;
+            }
+            .v-list {
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+            }
+            .v-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-size: 0.85rem;
+                color: #4b5563;
+                padding: 4px 0;
+            }
+            .v-version-text {
+                font-family: monospace;
+                color: #6b7280;
+            }
+            .v-badge {
+                background: #8b5cf6;
+                color: white;
+                font-weight: 600;
+                font-size: 0.75rem;
+                min-width: 24px;
+                height: 24px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 6px;
+            }
+        `;
+        container.appendChild(style);
+
+        // Helper de cores
+        function getSystemColor(sysName) {
+            if (sysName.includes('Hemote Plus')) return '#8b5cf6'; // Purple
+            if (sysName.includes('Hemote Web')) return '#6366f1'; // Indigo
+            if (sysName.includes('CellVida')) return '#10b981'; // Green
+            if (sysName.includes('Monetário')) return '#f59e0b'; // Amber
+            return '#6b7280'; // Gray
+        }
+
+        // 2. Gerar HTML dos Cards
+        const sortedSystems = Object.keys(systemVersions).sort();
+
+        sortedSystems.forEach(sys => {
+            const versionsObj = systemVersions[sys];
+            // Lista de versões ordenadas por contagem (decrescente) e depois por nome (decrescente/recente)
+            const versionsList = Object.entries(versionsObj)
+                .map(([v, set]) => ({ version: v, count: set.size }))
+                .sort((a, b) => b.count - a.count || b.version.localeCompare(a.version));
+
+            const sysColor = getSystemColor(sys);
+
+            let listHtml = '';
+            versionsList.forEach(item => {
+                listHtml += `
+                    <div class="v-item">
+                        <span class="v-version-text">${item.version}</span>
+                        <span class="v-badge" style="background-color: ${sysColor}">${item.count}</span>
+                    </div>
+                 `;
+            });
+
+            const cardHtml = `
+                <div class="version-card">
+                    <div class="v-card-header">
+                        <div class="v-card-title" style="color: ${sysColor}">${sys}</div>
+                        <i class="fa-solid fa-layer-group" style="color: ${sysColor} opacity: 0.5;"></i>
+                    </div>
+                    <div class="v-list">
+                        ${listHtml}
+                    </div>
+                </div>
+             `;
+
+            container.insertAdjacentHTML('beforeend', cardHtml);
         });
     }
 
