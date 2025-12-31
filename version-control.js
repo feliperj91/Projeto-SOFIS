@@ -948,17 +948,29 @@
         destroyChart('versionsChart');
 
 
-        // Agrupar por versão completa (sistema + versão) - APENAS VERSÕES ÚNICAS
-        const versionSet = new Set();
+        // Agrupar por versão completa (sistema + versão) e contar CLIENTES ÚNICOS
+        const versionClientSets = {};
         data.forEach(d => {
             const sys = d.system || 'Sem Sistema';
             const ver = d.version || 'S/V';
             const key = `${sys} ${ver}`;
-            versionSet.add(key);
+
+            if (!versionClientSets[key]) {
+                versionClientSets[key] = new Set();
+            }
+            versionClientSets[key].add(d.client_id);
         });
 
-        // Converter para array e ordenar alfabeticamente
-        const sortedVersions = Array.from(versionSet).sort();
+        // Converter para array com contagens e ordenar por quantidade
+        const sortedVersions = Object.entries(versionClientSets)
+            .map(([version, clientSet]) => ({
+                version: version,
+                count: clientSet.size
+            }))
+            .sort((a, b) => b.count - a.count);
+
+        const labels = sortedVersions.map(v => v.version);
+        const values = sortedVersions.map(v => v.count);
 
         // Cores vibrantes diferentes para cada barra
         const colors = [
@@ -976,14 +988,14 @@
             '#84cc16'  // lime
         ];
 
-        const bgColors = sortedVersions.map((_, i) => colors[i % colors.length]);
+        const bgColors = labels.map((_, i) => colors[i % colors.length]);
 
         pulseCharts['versionsChart'] = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: sortedVersions,
+                labels: labels,
                 datasets: [{
-                    data: sortedVersions.map(() => 1), // Cada versão única = 1
+                    data: values,
                     backgroundColor: bgColors,
                     borderRadius: 8,
                     borderSkipped: false,
@@ -1005,7 +1017,8 @@
                         bodyFont: { size: 12 },
                         callbacks: {
                             label: function (context) {
-                                return context.label; // Apenas o nome da versão
+                                const count = context.parsed.y;
+                                return `${count} cliente${count !== 1 ? 's' : ''}`;
                             }
                         }
                     }
