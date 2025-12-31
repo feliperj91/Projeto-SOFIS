@@ -712,14 +712,28 @@
             return;
         }
 
-        const data = window.versionControls;
-        console.log(`📊 [Pulse] Processing ${data.length} version records`);
+        const allData = window.versionControls;
 
-        // ===== KPI 1: Total de Clientes Únicos =====
+        // ===== FILTRAR APENAS PRODUÇÃO =====
+        const data = allData.filter(d => {
+            const env = (d.environment || '').toLowerCase();
+            return env.includes('prod');
+        });
+
+        console.log(`📊 [Pulse] Processing ${data.length} production records (${allData.length} total)`);
+
+        if (data.length === 0) {
+            console.warn("📊 [Pulse] No production data available");
+            document.getElementById('kpiTotalClients').innerText = '0';
+            document.getElementById('kpiMostPopularSystem').innerText = '-';
+            return;
+        }
+
+        // ===== KPI 1: Total de Clientes Únicos (Produção) =====
         const uniqueClients = new Set(data.map(d => d.client_id)).size;
         document.getElementById('kpiTotalClients').innerText = uniqueClients;
 
-        // ===== KPI 2: Sistema Mais Utilizado =====
+        // ===== KPI 2: Sistema Mais Utilizado (campo system_name) =====
         const systemCounts = {};
         data.forEach(d => {
             const sys = d.system_name || 'Desconhecido';
@@ -732,20 +746,15 @@
             document.getElementById('kpiMostPopularSystem').innerText = '-';
         }
 
-        // ===== KPI 4: Percentual Atualizado (últimos 30 dias) =====
-        const recentCount = data.filter(d => utils.getStatus(d.updated_at) === 'recent').length;
-        const healthPercent = data.length > 0 ? Math.round((recentCount / data.length) * 100) : 0;
-        document.getElementById('kpiUpToDate').innerText = `${healthPercent}%`;
-
         // ===== Renderizar Gráficos =====
         if (typeof Chart === 'undefined') {
             console.error("❌ [Pulse] Chart.js not loaded");
             return;
         }
 
-        renderEnvironmentChart(data);
-        renderSystemDistributionChart(data, systemCounts);
-        renderVersionsChart(data);
+        renderEnvironmentChart(allData); // Este pode mostrar todos os ambientes
+        renderSystemDistributionChart(data, systemCounts); // Apenas produção
+        renderVersionsChart(data); // Apenas produção
     }
 
     // Chart Configuration - Modern Vibrant Colors
