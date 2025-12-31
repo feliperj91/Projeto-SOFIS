@@ -663,4 +663,293 @@
 
 
 
+    // ==========================================
+    // PULSE DASHBOARD LOGIC (Real-time Analytics)
+    // ==========================================
+    let pulseCharts = {};
+    let pulseRefreshInterval = null;
+
+    window.openPulseDashboard = function () {
+        const modal = document.getElementById('pulseDashboardModal');
+        if (!modal) return;
+
+        modal.classList.remove('hidden');
+
+        // Smooth entrance animation
+        const container = modal.querySelector('.dashboard-container');
+        container.style.opacity = '0';
+        container.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+            container.style.transition = 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
+            container.style.opacity = '1';
+            container.style.transform = 'scale(1)';
+        }, 50);
+
+        // Initial render
+        calculateAndRenderPulse();
+
+        // Auto-refresh every 5 seconds for real-time data
+        if (pulseRefreshInterval) clearInterval(pulseRefreshInterval);
+        pulseRefreshInterval = setInterval(() => {
+            calculateAndRenderPulse();
+        }, 5000);
+    };
+
+    window.closePulseDashboard = function () {
+        const modal = document.getElementById('pulseDashboardModal');
+        if (modal) modal.classList.add('hidden');
+
+        // Stop auto-refresh
+        if (pulseRefreshInterval) {
+            clearInterval(pulseRefreshInterval);
+            pulseRefreshInterval = null;
+        }
+    };
+
+    function calculateAndRenderPulse() {
+        if (!window.versionControls || window.versionControls.length === 0) {
+            console.warn("📊 [Pulse] No data available");
+            return;
+        }
+
+        const data = window.versionControls;
+        console.log(`📊 [Pulse] Processing ${data.length} version records`);
+
+        // ===== KPI 1: Total de Clientes Únicos =====
+        const uniqueClients = new Set(data.map(d => d.client_id)).size;
+        document.getElementById('kpiTotalClients').innerText = uniqueClients;
+
+        // ===== KPI 2: Sistemas Monitorados =====
+        const uniqueSystems = [...new Set(data.map(d => d.system_name))];
+        document.getElementById('kpiActiveSystems').innerText = uniqueSystems.length;
+
+        // ===== KPI 3: Sistema Mais Utilizado =====
+        const systemCounts = {};
+        data.forEach(d => {
+            const sys = d.system_name || 'Desconhecido';
+            systemCounts[sys] = (systemCounts[sys] || 0) + 1;
+        });
+        const sortedSystems = Object.entries(systemCounts).sort((a, b) => b[1] - a[1]);
+        if (sortedSystems.length > 0) {
+            document.getElementById('kpiMostPopularSystem').innerText = sortedSystems[0][0];
+        } else {
+            document.getElementById('kpiMostPopularSystem').innerText = '-';
+        }
+
+        // ===== KPI 4: Percentual Atualizado (últimos 30 dias) =====
+        const recentCount = data.filter(d => utils.getStatus(d.updated_at) === 'recent').length;
+        const healthPercent = data.length > 0 ? Math.round((recentCount / data.length) * 100) : 0;
+        document.getElementById('kpiUpToDate').innerText = `${healthPercent}%`;
+
+        // ===== Renderizar Gráficos =====
+        if (typeof Chart === 'undefined') {
+            console.error("❌ [Pulse] Chart.js not loaded");
+            return;
+        }
+
+        renderEnvironmentChart(data);
+        renderSystemDistributionChart(data, systemCounts);
+        renderVersionsChart(data);
+    }
+
+    // Chart Configuration
+    const chartColors = {
+        purple: '#a855f7',
+        purpleLight: 'rgba(168, 85, 247, 0.2)',
+        blue: '#38bdf8',
+        blueLight: 'rgba(56, 189, 248, 0.2)',
+        green: '#10b981',
+        greenLight: 'rgba(16, 185, 129, 0.2)',
+        orange: '#f59e0b',
+        text: '#94a3b8',
+        grid: 'rgba(255,255,255,0.05)'
+    };
+
+    function destroyChart(id) {
+        if (pulseCharts[id]) {
+            pulseCharts[id].destroy();
+        }
+    }
+
+    // ===== Gráfico 1: Ambientes (Produção vs Homologação) =====
+    function renderEnvironmentChart(data) {
+        const ctx = document.getElementById('envChart').getContext('2d');
+        destroyChart('envChart');
+
+        let prod = 0, homolog = 0;
+        data.forEach(d => {
+            const env = (d.environment || '').toLowerCase();
+            if (env.includes('prod')) prod++;
+            else if (env.includes('homolog') || env.includes('test')) homolog++;
+        });
+
+        pulseCharts['envChart'] = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Produção', 'Homologação'],
+                datasets: [{
+                    data: [prod, homolog],
+                    backgroundColor: [chartColors.blue, chartColors.orange],
+                    borderWidth: 0,
+                    hoverOffset: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: chartColors.text,
+                            usePointStyle: true,
+                            padding: 20,
+                            font: { size: 12 }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12,
+                        titleFont: { size: 14 },
+                        bodyFont: { size: 13 }
+                    }
+                }
+            }
+        });
+    }
+
+    // ===== Gráfico 2: Distribuição de Clientes por Sistema =====
+    function renderSystemDistributionChart(data, counts) {
+        const ctx = document.getElementById('systemDistChart').getContext('2d');
+        destroyChart('systemDistChart');
+
+        const labels = Object.keys(counts);
+        const values = Object.values(counts);
+
+        const bgColors = labels.map((_, i) => {
+            const colors = ['#38bdf8', '#a855f7', '#10b981', '#f59e0b', '#ec4899', '#6366f1'];
+            return colors[i % colors.length];
+        });
+
+        pulseCharts['systemDistChart'] = new Chart(ctx, {
+            type: 'polarArea',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: bgColors.map(c => c + 'AA'),
+                    borderWidth: 1,
+                    borderColor: 'rgba(255,255,255,0.1)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        ticks: { display: false, backdropColor: 'transparent' }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            color: chartColors.text,
+                            usePointStyle: true,
+                            font: { size: 11 }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12
+                    }
+                }
+            }
+        });
+    }
+
+    // ===== Gráfico 3: Distribuição de Versões por Sistema =====
+    function renderVersionsChart(data) {
+        const ctx = document.getElementById('versionsChart').getContext('2d');
+        destroyChart('versionsChart');
+
+        // Agrupar por sistema e status
+        const systemCounts = {};
+        data.forEach(d => {
+            const sys = d.system_name || 'Outros';
+            if (!systemCounts[sys]) systemCounts[sys] = { recent: 0, warning: 0, outdated: 0 };
+
+            const status = utils.getStatus(d.updated_at);
+            systemCounts[sys][status]++;
+        });
+
+        const systems = Object.keys(systemCounts).sort();
+
+        pulseCharts['versionsChart'] = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: systems,
+                datasets: [
+                    {
+                        label: 'Atualizado (≤30d)',
+                        data: systems.map(s => systemCounts[s].recent),
+                        backgroundColor: chartColors.green,
+                        borderRadius: 6,
+                        stack: 'Stack 0',
+                    },
+                    {
+                        label: 'Atenção (30-90d)',
+                        data: systems.map(s => systemCounts[s].warning),
+                        backgroundColor: chartColors.orange,
+                        borderRadius: 6,
+                        stack: 'Stack 0',
+                    },
+                    {
+                        label: 'Desatualizado (>90d)',
+                        data: systems.map(s => systemCounts[s].outdated),
+                        backgroundColor: '#ef4444',
+                        borderRadius: 6,
+                        stack: 'Stack 0',
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'x',
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: chartColors.text, font: { size: 11 } }
+                    },
+                    y: {
+                        grid: { color: chartColors.grid },
+                        ticks: { color: chartColors.text, precision: 0 },
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        align: 'end',
+                        labels: {
+                            color: chartColors.text,
+                            usePointStyle: true,
+                            padding: 15,
+                            font: { size: 11 }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12,
+                        titleFont: { size: 13 },
+                        bodyFont: { size: 12 }
+                    }
+                }
+            }
+        });
+    }
+
 })();
