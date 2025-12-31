@@ -157,21 +157,18 @@
         <!-- User Management Tab Content -->
         <main id="managementTab" class="tab-content">
             <!-- Search Bar & Add Button (matching other tabs) -->
-            <div id="user-search-bar" class="search-container">
-                <div class="search-input-group">
+            <!-- Unified Management Toolbar -->
+            <div class="management-toolbar">
+                <!-- 1. Search -->
+                <div class="search-input-group mng-search">
                     <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                    <input type="text" id="userSearchInput" placeholder="Pesquisar por nome ou usuário...">
+                    <input type="text" id="userSearchInput" placeholder="Pesquisar...">
                     <button id="clearUserSearch" class="btn-clear hidden" title="Limpar pesquisa" tabindex="-1">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
                 </div>
-                <button id="addNewUserBtn" class="btn-primary">
-                    <i class="fa-solid fa-plus"></i><span>Novo Usuário</span>
-                </button>
-            </div>
 
-            <!-- Sub-tabs for Users and Permissions (similar to filter chips in other tabs) -->
-            <div class="filter-chips-container">
+                <!-- 2. Tabs -->
                 <div class="management-subtabs">
                     <button class="mng-tab-btn active" data-mng-tab="users">
                         <i class="fa-solid fa-users"></i><span>Usuários</span>
@@ -181,20 +178,20 @@
                     </button>
                 </div>
 
-                <!-- Permissions Controls (Only visible in permissions tab) -->
-                <!-- Shared Controls (Visible on both) -->
-                <div id="shared-mng-controls" class="mng-controls-group">
-                    <div class="role-selector-pill">
-                        <button class="role-pill-btn active" data-role="ADMINISTRADOR">Administrador</button>
-                        <button class="role-pill-btn" data-role="ANALISTA">Analista</button>
-                        <button class="role-pill-btn" data-role="TECNICO">Técnico</button>
-                    </div>
+                <!-- 3. Role Selector (Text Style) -->
+                <div id="shared-mng-controls" class="role-selector-text">
+                    <button class="role-text-btn active" data-role="ADMINISTRADOR">Administrador</button>
+                    <button class="role-text-btn" data-role="ANALISTA">Analista</button>
+                    <button class="role-text-btn" data-role="TECNICO">Técnico</button>
                 </div>
 
-                <!-- Permissions Controls (Only visible in permissions tab) -->
-                <div id="permissions-mng-controls" class="mng-controls-group hidden">
-                    <button id="savePermissionsBtn" class="btn-primary btn-green">
-                        <i class="fa-solid fa-floppy-disk"></i> Salvar Alterações
+                <!-- 4. Actions -->
+                <div class="toolbar-actions">
+                    <button id="savePermissionsBtn" class="btn-flat-green hidden" disabled>
+                        <i class="fa-regular fa-floppy-disk"></i> SALVAR
+                    </button>
+                    <button id="addNewUserBtn" class="btn-primary">
+                        <i class="fa-solid fa-plus"></i> NOVO USUÁRIO
                     </button>
                 </div>
             </div>
