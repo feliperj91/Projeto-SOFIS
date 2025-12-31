@@ -58,13 +58,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (window.supabaseClient) {
             try {
+                let cName = (newVal && newVal.name) || (oldVal && oldVal.name);
+
+                // If not found in objects, try to extract from details string (format: "Cliente: NAME, ...")
+                if (!cName && details && details.includes('Cliente: ')) {
+                    const match = details.match(/Cliente:\s*([^,]+)/);
+                    if (match && match[1]) {
+                        cName = match[1].trim();
+                    }
+                }
+
                 await window.supabaseClient.from('audit_logs').insert([{
                     username: username,
                     operation_type: opType,
                     action: action,
                     details: details,
                     old_value: sanitize(oldVal),
-                    new_value: sanitize(newVal)
+                    new_value: sanitize(newVal),
+                    client_name: cName || null
                 }]);
                 // Refresh activity feed if sidebar is open or after an action
                 await fetchRecentActivities();
@@ -282,6 +293,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     clients = await Promise.all(dbClients.map(async c => ({
                         id: c.id,
                         name: c.name,
+                        seqId: c.seq_id,
                         updatedAt: c.updated_at,
                         isFavorite: c.is_favorite,
                         notes: c.notes,
@@ -912,7 +924,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </button>
                     <div class="client-name-container" style="display: flex; flex-direction: column; justify-content: flex-start;">
                         <div class="client-name-row" title="Nome do Cliente" style="display: flex; align-items: center;">
-                            <span>${escapeHtml(client.name)}</span>
+                            <span style="font-weight: 600;">${escapeHtml(client.name)}</span>
                             ${client.notes ? `<i class="fa-solid fa-bell client-note-indicator" title="Possui observações importantes" style="margin-left: 15px; cursor: pointer;" onclick="window.openClientGeneralNotes('${client.id}'); event.stopPropagation();"></i>` : ''}
                         </div>
                         ${client.updatedAt ? `
@@ -1044,8 +1056,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             return `
                     <div class="contact-group-display" style="max-width: 100%; flex: 1 1 300px;">
                         <div class="contact-header-display">
-                            <div class="contact-name-display clickable" onclick="editContact('${client.id}', ${originalIndex});" title="Ver/Editar Contato">
-                                ${escapeHtml(contact.name || 'Sem nome')}
+                            <div style="display: flex; flex-direction: column; gap: 4px;">
+                                <div class="contact-name-display clickable" onclick="editContact('${client.id}', ${originalIndex});" title="Ver/Editar Contato">
+                                    ${escapeHtml(contact.name || 'Sem nome')}
+                                </div>
+                                <span class="server-client-badge" style="align-self: flex-start; margin-left: 0; font-size: 0.65rem; padding: 2px 6px;">${escapeHtml(client.name)}</span>
                             </div>
                             <button class="btn-icon-small" onclick="editContact('${client.id}', ${originalIndex});" title="Editar Contato">
                                 <i class="fa-solid fa-pen"></i>
@@ -1103,8 +1118,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // New client or old localStorage ID
                 result = await window.supabaseClient.from('clients').insert(clientData).select().single();
                 if (result.data) {
-                    // Update local ID to the new UUID
+                    // Update local ID to the new UUID and capture seqId
                     client.id = result.data.id;
+                    client.seqId = result.data.seq_id;
                     clientId = result.data.id;
                     localStorage.setItem('sofis_clients', JSON.stringify(clients));
                 }
@@ -1115,6 +1131,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Update local updatedAt with the value from Supabase
             if (result.data && result.data.updated_at) {
                 client.updatedAt = result.data.updated_at;
+                client.seqId = result.data.seq_id;
             }
 
             // Sync related tables - Delete and Re-insert for simplicity
@@ -1122,6 +1139,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (client.contacts?.length > 0) {
                 await window.supabaseClient.from('contacts').insert(client.contacts.map(c => ({
                     client_id: clientId,
+                    client_name: client.name,
                     name: c.name,
                     phones: c.phones || [],
                     emails: c.emails || []
@@ -1132,6 +1150,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (client.servers?.length > 0) {
                 const encryptedServers = await Promise.all(client.servers.map(async s => ({
                     client_id: clientId,
+                    client_name: client.name,
                     environment: s.environment,
                     sql_server: s.sqlServer,
                     notes: s.notes || '',
@@ -1147,6 +1166,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (client.vpns?.length > 0) {
                 const encryptedVpns = await Promise.all(client.vpns.map(async v => ({
                     client_id: clientId,
+                    client_name: client.name,
                     username: v.user,
                     password: await Security.encrypt(v.password),
                     notes: v.notes || ''
@@ -1158,11 +1178,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (client.urls?.length > 0) {
                 await window.supabaseClient.from('urls').insert(client.urls.map(u => ({
                     client_id: clientId,
+                    client_name: client.name,
                     environment: u.environment,
                     system: u.system,
                     bridge_data_access: u.bridgeDataAccess,
                     bootstrap: u.bootstrap || '',
-                    exec_update: u.execUpdate || '',
+                    exec_update: u.exec_update || '',
                     notes: u.notes || ''
                 })));
             }
@@ -2063,7 +2084,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             return `
                 <div class="server-card">
                     <div class="server-card-header">
-                        <span class="server-environment ${environmentClass}">${environmentLabel}</span>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <span class="server-environment ${environmentClass}">${environmentLabel}</span>
+                            <span class="server-client-badge">${escapeHtml(client.name)}</span>
+                        </div>
                         <div class="server-card-actions">
                             <button class="btn-icon" onclick="editServerRecord('${client.id}', ${originalIndex})" title="Editar">
                                 <i class="fa-solid fa-pen"></i>
@@ -2267,7 +2291,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             return `
                 <div class="server-card">
                     <div class="server-card-header">
-                        <span class="server-environment producao">VPN</span>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <span class="server-environment producao">VPN</span>
+                            <span class="server-client-badge">${escapeHtml(client.name)}</span>
+                        </div>
                         <div class="server-card-actions">
                             <button class="btn-icon" onclick="editVpnRecord('${client.id}', ${index})" title="Editar">
                                 <i class="fa-solid fa-pen"></i>
@@ -2579,7 +2606,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             return `
                 <div class="server-card">
                     <div class="server-card-header">
-                        <span class="server-environment ${environmentClass}">${environmentLabel}</span>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <span class="server-environment ${environmentClass}">${environmentLabel}</span>
+                            <span class="server-client-badge">${escapeHtml(client.name)}</span>
+                        </div>
                         <div class="server-card-actions">
                             <button class="btn-icon" onclick="editUrlRecord('${client.id}', ${originalIndex})" title="Editar">
                                 <i class="fa-solid fa-pen"></i>
@@ -2837,7 +2867,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </div>
                 <div class="activity-action">
                     <span class="activity-op-badge ${opClass}">${opLabel}</span>
-                    ${escapeHtml(activity.action)}
+                    <div style="display: flex; flex-direction: column; gap: 4px; flex: 1;">
+                        <span style="font-weight: 500;">${escapeHtml(activity.action)}</span>
+                        ${activity.client_name ? `
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <span class="server-client-badge" style="font-size: 0.65rem; padding: 2px 6px;">
+                                    ${escapeHtml(activity.client_name)}
+                                </span>
+                            </div>
+                        ` : ''}
+                    </div>
                 </div>
                 ${activity.details ? `<div class="activity-details">${escapeHtml(activity.details)}</div>` : ''}
             `;
