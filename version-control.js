@@ -733,20 +733,48 @@
         console.log(`📊 [Pulse] Filtrados (homologação): ${allData.length - data.length}`);
         console.log(`📊 [Pulse] Produção: ${data.length} registros`);
 
-        if (data.length === 0) {
-            console.warn("📊 [Pulse] No production data available");
+
+        // ===== REMOVER REGISTROS ANTIGOS (Manter apenas o mais recente por Cliente + Sistema) =====
+        const latestRecordsMap = new Map();
+
+        data.forEach(d => {
+            // Chave única: Cliente + Sistema (ex: "GHC-Hemote Plus")
+            const key = `${d.client_id}-${d.system}`;
+
+            if (!latestRecordsMap.has(key)) {
+                latestRecordsMap.set(key, d);
+            } else {
+                // Se já existe, compara as datas para manter o mais novo
+                const existing = latestRecordsMap.get(key);
+                const existingDate = new Date(existing.updated_at || 0);
+                const newDate = new Date(d.updated_at || 0);
+
+                if (newDate > existingDate) {
+                    latestRecordsMap.set(key, d);
+                }
+            }
+        });
+
+        // Usar APENAS os registros mais recentes para o dashboard
+        const cleanData = Array.from(latestRecordsMap.values());
+
+        console.log(`📊 [Pulse] Dados Brutos (Produção): ${data.length}`);
+        console.log(`📊 [Pulse] Dados Limpos (Apenas Recentes): ${cleanData.length}`);
+
+        if (cleanData.length === 0) {
+            console.warn("📊 [Pulse] No clean data available");
             document.getElementById('kpiTotalClients').innerText = '0';
             document.getElementById('kpiMostPopularSystem').innerText = '-';
             return;
         }
 
         // ===== KPI 1: Total de Clientes Únicos (Produção) =====
-        const uniqueClients = new Set(data.map(d => d.client_id)).size;
+        const uniqueClients = new Set(cleanData.map(d => d.client_id)).size;
         document.getElementById('kpiTotalClients').innerText = uniqueClients;
 
         // ===== KPI 2: Todos os Sistemas com Quantidades (Clientes Únicos) =====
         const systemClientSets = {};
-        data.forEach(d => {
+        cleanData.forEach(d => {
             const sys = d.system || 'Desconhecido';
             if (!systemClientSets[sys]) {
                 systemClientSets[sys] = new Set();
@@ -783,8 +811,8 @@
         }
 
         renderEnvironmentChart(allData); // Este pode mostrar todos os ambientes
-        renderSystemDistributionChart(data, systemCounts); // Apenas produção
-        renderVersionsChart(data); // Apenas produção
+        renderSystemDistributionChart(cleanData, systemCounts); // Apenas produção (limpo)
+        renderVersionsChart(cleanData); // Apenas produção (limpo)
     }
 
     // Chart Configuration - Modern Vibrant Colors
