@@ -356,37 +356,42 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+    max-width: 500px;
+    width: 100%;
 }
 
 #userModal .modal-header {
-    padding: 25px 30px 15px 30px;
-    border-bottom: none;
+    padding: 30px 35px 20px 35px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 #userModal .modal-header h2 {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     font-weight: 700;
+    margin: 0;
 }
 
 #userForm {
-    padding: 0 30px 30px 30px;
+    padding: 30px 35px 35px 35px;
 }
 
 #userForm .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 24px;
 }
 
 #userForm label {
     display: block;
     text-align: left;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     color: var(--text-secondary);
-    margin-bottom: 10px;
+    margin-bottom: 12px;
+    font-weight: 500;
 }
 
 #userForm label i {
-    margin-right: 8px;
-    font-size: 0.85rem;
+    margin-right: 10px;
+    font-size: 0.9rem;
+    color: var(--accent);
 }
 
 #userForm label .required {
@@ -399,9 +404,9 @@
     background: #161b22;
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: white;
-    padding: 12px 15px;
+    padding: 14px 16px;
     border-radius: 8px;
-    font-size: 1rem;
+    font-size: 1.05rem;
     width: 100%;
     transition: all 0.3s;
 }
@@ -411,25 +416,33 @@
     border-color: var(--accent);
     background: #1c2229;
     outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 160, 0, 0.1);
 }
 
 #userForm .modal-actions {
-    margin-top: 30px;
-    padding-top: 0;
+    margin-top: 35px;
+    padding-top: 25px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
     justify-content: flex-end;
     gap: 15px;
+    display: flex;
 }
 
 #userForm .btn-secondary {
     background: transparent;
     border: 1px solid rgba(255, 255, 255, 0.2);
     color: var(--text-secondary);
-    padding: 10px 25px;
+    padding: 12px 28px;
+    font-size: 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
 }
 
 #userForm .btn-secondary:hover {
     background: rgba(255, 255, 255, 0.05);
     color: white;
+    border-color: rgba(255, 255, 255, 0.3);
 }
 
 #userForm .btn-primary {
@@ -437,8 +450,12 @@
     border: none;
     color: #1e242b;
     font-weight: 700;
-    padding: 12px 30px;
+    padding: 12px 32px;
+    font-size: 1rem;
+    border-radius: 8px;
+    cursor: pointer;
     box-shadow: 0 4px 15px rgba(243, 156, 18, 0.2);
+    transition: all 0.3s;
 }
 
 #userForm .btn-primary:hover {
