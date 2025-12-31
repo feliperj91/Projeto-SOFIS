@@ -1690,8 +1690,8 @@ button:hover .vpn-icon-img {
     justify-content: space-between;
     align-items: center;
     gap: 12px;
-    margin: 0 0 12px 0 !important;
-    /* Espaço curto após os filtros */
+    margin: 0 0 24px 0 !important;
+    /* Espaço aumentado conforme solicitado */
     padding: 0;
     flex-wrap: wrap;
     min-height: 40px;
