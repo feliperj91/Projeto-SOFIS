@@ -64,6 +64,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             if (versionsTabBtn) {
                 versionsTabBtn.style.display = this.can('Controle de Versões', 'can_view') ? '' : 'none';
+
+                // Fine-grained buttons in Version Control Tab
+                const pulseBtn = document.getElementById('pulseDashboardBtn');
+                const addVersionBtn = document.getElementById('addVersionBtn');
+
+                if (pulseBtn) {
+                    pulseBtn.style.display = this.can('Controle de Versões - Dashboard', 'can_view') ? '' : 'none';
+                }
+                if (addVersionBtn) {
+                    addVersionBtn.style.display = this.can('Controle de Versões - Registrar atualização', 'can_create') ? '' : 'none';
+                }
             }
             if (managementTabBtn) {
                 managementTabBtn.style.display = this.can('Gestão de Usuários', 'can_view') ? '' : 'none';
@@ -2661,8 +2672,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Permissions
         const canCreate = window.Permissions.can('URLs', 'can_create');
-        const canEdit = P ? P.can('URLs', 'can_edit') : false;
-        const canDelete = P ? P.can('URLs', 'can_delete') : false;
         if (addUrlEntryBtn) {
             addUrlEntryBtn.style.display = canCreate ? 'flex' : 'none';
         }

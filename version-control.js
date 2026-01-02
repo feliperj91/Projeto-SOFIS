@@ -151,6 +151,13 @@
         const card = document.createElement('div');
         card.className = 'client-version-group-card';
 
+        // Permissions
+        const P = window.Permissions;
+        const canEditHistory = P ? P.can('Controle de Versões - Histórico', 'can_view') : true;
+        const canEditVersion = P ? P.can('Controle de Versões - Registrar atualização', 'can_edit') : true;
+        const canCreateVersion = P ? P.can('Controle de Versões - Registrar atualização', 'can_create') : true;
+        const canEditClient = P ? P.can('Gestão de Clientes', 'can_edit') : true;
+
         // General status of the card based on items
         let overallStatus = 'recent';
         group.versions.forEach(v => {
@@ -197,10 +204,10 @@
                                 </div>
                                 <!-- Actions Group: Icons (Aligned Right) -->
                                 <div class="version-actions-group">
-
+                                    ${canEditVersion ? `
                                     <button class="btn-edit-version-small" onclick="window.editVersion('${v.id}')" title="Editar">
                                         <i class="fa-solid fa-pencil"></i>
-                                    </button>
+                                    </button>` : ''}
                                 </div>
                             </div>
                         </div>
@@ -215,15 +222,20 @@
                         <h3 style="cursor:default" title="Nome do Cliente">${utils.escapeHtml(group.name)}</h3>
                     </div>
                 <div class="client-header-actions">
+                    ${canEditClient ? `
                     <button class="btn-card-action" onclick="window.openClientInteraction('${group.id}', '${utils.escapeHtml(group.name)}')" title="Editar Cliente">
                         <i class="fa-solid fa-pencil"></i>
-                    </button>
+                    </button>` : ''}
+                    
+                    ${canEditHistory ? `
                     <button class="btn-card-action" onclick="window.openClientVersionsHistory('${group.id}')" title="Ver Histórico">
                         <i class="fa-solid fa-rotate"></i>
-                    </button>
+                    </button>` : ''}
+                    
+                    ${canCreateVersion ? `
                     <button class="btn-card-action" onclick="window.prefillClientVersion('${group.id}', '${utils.escapeHtml(group.name)}')" title="Adicionar Sistema">
                         <i class="fa-solid fa-plus-circle"></i>
-                    </button>
+                    </button>` : ''}
                     
                     <!-- Card Level Filter -->
                     <div class="card-filter-dropdown">
@@ -364,6 +376,20 @@
     window.handleVersionSubmit = handleVersionSubmit;
 
     window.editVersion = (id) => {
+        // Permission Check
+        const P = window.Permissions;
+        if (id) {
+            if (P && !P.can('Controle de Versões - Registrar atualização', 'can_edit')) {
+                if (window.showToast) window.showToast('🚫 Sem permissão para editar atualizações.', 'error');
+                return;
+            }
+        } else {
+            if (P && !P.can('Controle de Versões - Registrar atualização', 'can_create')) {
+                if (window.showToast) window.showToast('🚫 Sem permissão para registrar novas atualizações.', 'error');
+                return;
+            }
+        }
+
         // Refresh client list if adding new version control to ensure we filter out existing ones
         if (!id && window.populateVersionClientSelect) {
             window.populateVersionClientSelect();
@@ -617,6 +643,12 @@
 
     let currentHistoryData = [];
     window.openClientVersionsHistory = async (clientId) => {
+        const P = window.Permissions;
+        if (P && !P.can('Controle de Versões - Histórico', 'can_view')) {
+            if (window.showToast) window.showToast('🚫 Sem permissão para visualizar o histórico de versões.', 'error');
+            return;
+        }
+
         const modal = document.getElementById('versionHistoryModal');
         if (!modal) return;
 
