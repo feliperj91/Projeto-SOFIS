@@ -106,42 +106,86 @@ document.addEventListener('DOMContentLoaded', async () => {
         },
 
         can(moduleName, action) {
-            // Bypass para Administrador
-            if (this.userRole === 'ADMINISTRADOR') {
-                // Opcional: logar apenas em dev, mas aqui ajuda a entender por que tudo está liberado
-                // console.debug(`🔓 Admin Bypass: ${moduleName} - ${action}`);
-                return true;
-            }
-
+            if (this.userRole === 'ADMINISTRADOR') return true;
             const mod = this.rules[moduleName];
-            if (!mod) {
-                // Se não houver regra para o módulo, negamos por padrão
-                return false;
-            }
-            return !!mod[action];
+            return mod ? !!mod[action] : false;
         }
     };
+
+    // --- Global Permission Enforcement ---
+    window.applyPermissions = () => {
+        const P = window.Permissions;
+        if (!P) return;
+
+        // 1. Logs e Atividades
+        const btnActivity = document.getElementById('toggleActivityBtn');
+        if (btnActivity) {
+            btnActivity.style.display = P.can('Logs e Atividades', 'can_view') ? '' : 'none';
+        }
+
+        // 2. Clientes e Contatos - Create
+        const btnAddClient = document.getElementById('addClientBtn');
+        if (btnAddClient) {
+            btnAddClient.style.display = P.can('Gestão de Clientes', 'can_create') ? '' : 'none';
+        }
+
+        // 3. Controle de Versões - View Tab
+        const versionTabBtn = document.querySelector('.tab-btn[data-tab="versions"]');
+        if (versionTabBtn) {
+            versionTabBtn.style.display = P.can('Controle de Versões', 'can_view') ? '' : 'none';
+        }
+
+        // 4. Controle de Versões - Buttons
+        const pulseBtn = document.getElementById('pulseDashboardBtn');
+        const addVersionBtn = document.getElementById('addVersionBtn');
+        if (pulseBtn) pulseBtn.style.display = P.can('Controle de Versões - Dashboard', 'can_view') ? '' : 'none';
+        if (addVersionBtn) addVersionBtn.style.display = P.can('Controle de Versões - Registrar atualização', 'can_create') ? '' : 'none';
+
+        // 5. User Management - Tab Button
+        const userMngBtn = document.getElementById('btnUserManagement');
+        if (userMngBtn) {
+            userMngBtn.style.display = P.can('Gestão de Usuários', 'can_view') ? '' : 'none';
+        }
+
+        // 6. SQL/VPN/URL - Create
+        const btnAddServer = document.getElementById('addServerEntryBtn');
+        if (btnAddServer) btnAddServer.style.display = P.can('Banco de Dados', 'can_create') ? '' : 'none';
+
+        const btnAddVPN = document.getElementById('addVpnEntryBtn');
+        if (btnAddVPN) btnAddVPN.style.display = P.can('VPN', 'can_create') ? '' : 'none';
+
+        const btnAddURL = document.getElementById('addUrlEntryBtn');
+        if (btnAddURL) btnAddURL.style.display = P.can('URLs', 'can_create') ? '' : 'none';
+    };
+
+    // Re-update display when permissions are loaded/changed
+    document.addEventListener('permissions-loaded', () => {
+        console.log("🔒 Permissions Loaded Event: Applying Visibility...");
+        if (window.updateUserDisplay) window.updateUserDisplay();
+        window.applyPermissions();
+    });
 
     // Load permissions immediately
     await window.Permissions.load();
 
     // State
-    let clients = JSON.parse(localStorage.getItem('sofis_clients') || '[]');
-    window.clients = clients;
+    let clientsRaw = JSON.parse(localStorage.getItem('sofis_clients') || '[]');
+    window.clients = [];
 
     // Remove duplicates based on ID
     const uniqueClients = [];
     const seenIds = new Set();
-    clients.forEach(client => {
+    clientsRaw.forEach(client => {
         if (!seenIds.has(client.id)) {
             seenIds.add(client.id);
             uniqueClients.push(client);
         }
     });
-    clients = uniqueClients;
+    let clients = uniqueClients;
+    window.clients = clients;
 
     // Save cleaned data back to localStorage
-    if (uniqueClients.length !== JSON.parse(localStorage.getItem('sofis_clients') || '[]').length) {
+    if (uniqueClients.length !== clientsRaw.length) {
         localStorage.setItem('sofis_clients', JSON.stringify(clients));
         console.log('Removed duplicate clients');
     }
@@ -3529,68 +3573,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             showToast(`Erro: Cliente não encontrado (ID: ${id})`, 'error');
         }
     };
-    // --- Global Permission Enforcement ---
-    window.applyPermissions = () => {
-        const P = window.Permissions;
-        if (!P) return;
-
-        // 1. Logs e Atividades
-        const btnActivity = document.getElementById('toggleActivityBtn');
-        if (btnActivity) {
-            btnActivity.style.display = P.can('Logs e Atividades', 'can_view') ? '' : 'none';
-        }
-
-        // 2. Clientes e Contatos - Create
-        const btnAddClient = document.getElementById('addClientBtn');
-        if (btnAddClient) {
-            btnAddClient.style.display = P.can('Gestão de Clientes', 'can_create') ? '' : 'none';
-        }
-
-        // 3. Controle de Versões - View Tab
-        const versionTabBtn = document.querySelector('.tab-btn[data-tab="versions"]');
-        if (versionTabBtn) {
-            versionTabBtn.style.display = P.can('Controle de Versões', 'can_view') ? '' : 'none';
-        }
-
-        // 4. Controle de Versões - Create (inside tab)
-        const btnAddVersion = document.getElementById('addVersionBtn');
-        if (btnAddVersion) {
-            btnAddVersion.style.display = P.can('Controle de Versões - Registrar atualização', 'can_create') ? '' : 'none';
-        }
-
-        // 4.1 Controle de Versões - Dashboard
-        const pulseDashboardBtn = document.getElementById('pulseDashboardBtn');
-        if (pulseDashboardBtn) {
-            pulseDashboardBtn.style.display = P.can('Controle de Versões - Dashboard', 'can_view') ? '' : 'none';
-        }
-
-        // 5. User Management - Tab Button
-        const userMngBtn = document.getElementById('btnUserManagement');
-        if (userMngBtn) {
-            userMngBtn.style.display = P.can('Gestão de Usuários', 'can_view') ? '' : 'none';
-        }
-
-        // 6. Dados de SQL - Create
-        const btnAddServer = document.getElementById('addServerEntryBtn');
-        if (btnAddServer) {
-            btnAddServer.style.display = P.can('Banco de Dados', 'can_create') ? '' : 'none';
-        }
-
-        // 7. Dados de VPN - Create
-        const btnAddVPN = document.getElementById('addVpnEntryBtn');
-        if (btnAddVPN) {
-            btnAddVPN.style.display = P.can('VPN', 'can_create') ? '' : 'none';
-        }
-
-        // 8. Dados de URL - Create
-        const btnAddURL = document.getElementById('addUrlEntryBtn');
-        if (btnAddURL) {
-            btnAddURL.style.display = P.can('URLs', 'can_create') ? '' : 'none';
-        }
-    };
-
-    // Apply initially
-    window.applyPermissions();
-    document.dispatchEvent(new CustomEvent('permissions-loaded'));
-
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            if (confirm('Deseja realmente sair do sistema?')) {
+                localStorage.removeItem('sofis_user');
+                window.location.href = 'login.html';
+            }
+        });
+    }
 });
