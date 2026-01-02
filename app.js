@@ -1100,6 +1100,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (contactModalClientName) contactModalClientName.textContent = client.name;
         if (contactModalSearch) contactModalSearch.value = '';
 
+        // Permission Check for Add Button
+        if (addContactModalBtn) {
+            addContactModalBtn.style.display = window.Permissions.can('Contatos', 'can_create') ? '' : 'none';
+        }
+
         renderContactModalList(client);
         contactModal.classList.remove('hidden');
     };
