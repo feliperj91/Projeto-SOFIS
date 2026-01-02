@@ -122,7 +122,10 @@
             const grouped = {};
             filtered.forEach(v => {
                 const name = v.clients?.name || 'Desconhecido';
-                if (!grouped[name]) grouped[name] = { id: v.client_id, name, versionsMap: {} };
+                // Use clients.id as fallback if client_id is missing/null, ensuring we have a valid reference
+                const cId = v.client_id || v.clients?.id;
+
+                if (!grouped[name]) grouped[name] = { id: cId, name, versionsMap: {} };
 
                 // Keep only the most recent version for each [system + environment] combination
                 // Note: filtered array is already sorted by updated_at desc.
@@ -133,7 +136,6 @@
                 if (!existing) {
                     grouped[name].versionsMap[key] = v;
                 }
-                // If existing is present, since we iterate desc, we don't replace it unless we want to handle out-of-order array (which shouldn't happen with sort)
             });
 
             // Sort by client name
@@ -290,8 +292,8 @@
                 }
             }
 
-            if (!fields.clientId) {
-                if (window.showToast) window.showToast('⚠️ Selecione um cliente', 'warning');
+            if (!fields.clientId || fields.clientId === 'undefined') {
+                if (window.showToast) window.showToast('⚠️ Selecione um cliente válido.', 'warning');
                 sofis_isSaving = false;
                 return;
             }
@@ -391,17 +393,21 @@
         const P = window.Permissions;
         if (id) {
             if (P && !P.can('Controle de Versões', 'can_edit')) {
-                if (window.showToast) window.showToast('🚫 Sem permissão para editar atualizações.', 'error');
+                if (window.showToast) window.showToast('🚫 Sem permissão para editar versões.', 'error');
                 return;
             }
         } else {
             if (P && !P.can('Controle de Versões', 'can_create')) {
-                if (window.showToast) window.showToast('🚫 Sem permissão para registrar novas atualizações.', 'error');
+                if (window.showToast) window.showToast('🚫 Sem permissão para registrar novas versões.', 'error');
                 return;
             }
         }
 
-        // Refresh client list if adding new version control to ensure we filter out existing ones
+        // Explicitly clear hidden ID to avoid any state leakage or 'undefined' string
+        const hiddenIdField = document.getElementById('versionClientSelect');
+        if (hiddenIdField) hiddenIdField.value = '';
+
+        // Refresh client list if adding new version control
         if (!id && window.populateVersionClientSelect) {
             window.populateVersionClientSelect();
         }
@@ -412,10 +418,14 @@
 
         const modal = document.getElementById('versionModal');
         if (!modal) return;
-        document.getElementById('versionForm').reset();
-        document.getElementById('versionId').value = id;
 
-        const v = versionControls.find(x => x.id === id);
+        const form = document.getElementById('versionForm');
+        if (form) form.reset();
+
+        document.getElementById('versionId').value = id || '';
+
+        const v = id ? versionControls.find(x => x.id === id) : null;
+
         if (v) {
             document.getElementById('versionClientSelect').value = v.client_id;
             document.getElementById('versionClientInput').value = v.clients?.name || '';
@@ -431,7 +441,13 @@
             notes.value = v.notes || '';
             notes.disabled = !check.checked;
         } else {
-            document.getElementById('versionClientInput').disabled = false;
+            // New Entry Mode
+            const clientInput = document.getElementById('versionClientInput');
+            if (clientInput) {
+                clientInput.disabled = false;
+                clientInput.value = '';
+            }
+            if (hiddenIdField) hiddenIdField.value = '';
         }
 
         // Auto-select current user in responsible list if new
@@ -439,12 +455,10 @@
             const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username;
             if (currentUser) {
                 const respSelect = document.getElementById('versionResponsibleSelect');
-                for (let i = 0; i < respSelect.options.length; i++) {
-                    if (respSelect.options[i].value === currentUser) {
-                        respSelect.selectedIndex = i;
-                        break;
-                    }
-                }
+                // Wait small tick for populate to finish if needed, though usually cached
+                setTimeout(() => {
+                    if (respSelect) respSelect.value = currentUser;
+                }, 100);
             }
         }
 
