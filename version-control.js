@@ -261,10 +261,9 @@
                             </div>
                         </div>
                     </div>
-                    </div>
 
                     ${canCreateVersion ? `
-                    <button class="btn-register-version" onclick="window.prefillClientVersion('${group.id}', '${utils.escapeHtml(group.name)}')" title="Registrar Atualização">
+                    <button class="btn-card-action" onclick="window.prefillClientVersion('${group.id}', '${utils.escapeHtml(group.name)}')" title="Registrar Atualização">
                         <i class="fa-solid fa-plus"></i>
                     </button>` : ''}
                 </div>

@@ -515,7 +515,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Add Listeners for Changes
         document.querySelectorAll('.perm-checkbox').forEach(chk => {
-            chk.addEventListener('change', () => {
+            chk.addEventListener('change', (e) => {
+                const checkbox = e.target;
+                const prop = checkbox.dataset.prop;
+
+                // If unchecking "can_view", also uncheck create, edit, delete
+                if (prop === 'can_view' && !checkbox.checked) {
+                    const row = checkbox.closest('tr');
+                    const mod = checkbox.dataset.mod;
+
+                    // Uncheck all other permissions in the same row
+                    row.querySelectorAll('.perm-checkbox').forEach(cb => {
+                        if (cb.dataset.mod === mod && cb.dataset.prop !== 'can_view') {
+                            cb.checked = false;
+                        }
+                    });
+                }
+
                 const saveBtn = document.getElementById('savePermissionsBtn');
                 if (saveBtn) {
                     saveBtn.disabled = false;
