@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 if (session && session.user) {
                     this.userRole = session.user.user_metadata.role || 'TECNICO';
-                    console.log('🔑 Logado via Supabase Auth:', session.user.email, '| Cargo:', this.userRole);
+                    console.log('🔑 Permissions: Logado via Supabase Auth. Role:', this.userRole);
                 } else {
                     // 2. Fallback Seguro: Busca o cargo no Banco de Dados pelo username do localStorage
                     const user = JSON.parse(localStorage.getItem('sofis_user') || '{}');
@@ -29,13 +29,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                         if (!userError && userData) {
                             this.userRole = userData.role;
+                            // Sincronizar localStorage para evitar persistência de cargo antigo/errado
+                            if (user.role !== this.userRole) {
+                                console.log('🔄 Sincronizando cargo no localStorage:', user.role, '->', this.userRole);
+                                user.role = this.userRole;
+                                localStorage.setItem('sofis_user', JSON.stringify(user));
+                            }
                         } else {
+                            // Se falhar a busca no DB, usamos o que está no localStorage mas logamos o alerta
                             this.userRole = user.role || 'TECNICO';
+                            console.warn('⚠️ Falha ao validar cargo no DB. Usando cache (localStorage):', this.userRole);
                         }
                     } else {
                         this.userRole = 'TECNICO';
                     }
-                    console.warn('⚠️ Usando login customizado (Legado). Cargo identificado:', this.userRole);
                 }
 
                 // 3. Normalização Crítica: Remover acentos e converter para maiúsculas (ex: TÉCNICO -> TECNICO)
@@ -52,20 +59,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (error) throw error;
 
                 this.rules = {};
-                if (data) {
+                if (data && data.length > 0) {
                     data.forEach(r => {
                         this.rules[r.module] = r;
                     });
                 }
-                console.log('🔒 Permissões carregadas para:', this.userRole, '| Regras:', Object.keys(this.rules).length);
+                console.log(`🔒 Permissions: Loaded ${Object.keys(this.rules).length} rules for role: ${this.userRole}`);
 
                 // Trigger event for other modules
                 document.dispatchEvent(new CustomEvent('permissions-loaded'));
 
-                // Apply Tab Visibility
-                this.applyTabPermissions();
+                // Apply Global Visibility
+                if (window.applyPermissions) window.applyPermissions();
             } catch (e) {
-                console.error('❌ Erro crítico ao carregar permissões:', e);
+                console.error('❌ Permissions Error:', e);
             }
         },
 
@@ -99,10 +106,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         can(moduleName, action) {
             // Bypass para Administrador
-            if (this.userRole === 'ADMINISTRADOR') return true;
+            if (this.userRole === 'ADMINISTRADOR') {
+                // Opcional: logar apenas em dev, mas aqui ajuda a entender por que tudo está liberado
+                // console.debug(`🔓 Admin Bypass: ${moduleName} - ${action}`);
+                return true;
+            }
 
             const mod = this.rules[moduleName];
-            if (!mod) return false; // Default deny para outros cargos se a regra não existir
+            if (!mod) {
+                // Se não houver regra para o módulo, negamos por padrão
+                return false;
+            }
             return !!mod[action];
         }
     };
@@ -236,11 +250,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.updateUserDisplay = () => {
         const userDisplay = document.getElementById('currentUserDisplay');
         const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}');
+        const P = window.Permissions;
+
         if (userDisplay && currentUser.username) {
-            userDisplay.innerHTML = `<i class="fa-solid fa-user"></i> ${currentUser.username}`;
+            const roleInfo = P ? `[${P.userRole} | ${Object.keys(P.rules).length} regras]` : '';
+            userDisplay.innerHTML = `
+                <div class="user-info-badge">
+                    <i class="fa-solid fa-user"></i> <span>${currentUser.username}</span>
+                    <small style="opacity: 0.7; font-size: 0.75rem; margin-left: 5px;">${roleInfo}</small>
+                </div>`;
         }
     };
     window.updateUserDisplay();
+
+    // Re-update display when permissions are loaded/changed
+    document.addEventListener('permissions-loaded', () => {
+        window.updateUserDisplay();
+        if (window.applyPermissions) window.applyPermissions();
+    });
 
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
