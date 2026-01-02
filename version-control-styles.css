@@ -1097,46 +1097,25 @@
     padding: 0 !important;
     border-radius: 8px !important;
     font-size: 0.7rem !important;
-    font-weight: 700 !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.5px !important;
     cursor: pointer !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     gap: 0 !important;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    transition: all 0.2s ease !important;
     height: 32px !important;
     width: 32px !important;
     min-width: 32px !important;
-    white-space: nowrap !important;
     margin-left: 4px !important;
-    overflow: hidden !important;
-}
-
-.btn-register-version .btn-text {
-    max-width: 0;
-    opacity: 0;
-    transition: all 0.3s ease;
-    white-space: nowrap;
 }
 
 .btn-register-version:hover {
-    width: auto !important;
-    padding: 0 10px !important;
-    gap: 6px !important;
-    transform: none !important;
-    box-shadow: 0 0 10px rgba(255, 193, 7, 0.3) !important;
+    transform: scale(1.05) !important;
+    box-shadow: 0 0 10px rgba(255, 193, 7, 0.4) !important;
     filter: brightness(1.1);
 }
 
-.btn-register-version:hover .btn-text {
-    max-width: 200px;
-    opacity: 1;
-}
-
 .btn-register-version i {
-    font-size: 0.9rem !important;
+    font-size: 1rem !important;
     color: #1a1a1a !important;
-    flex-shrink: 0;
 }

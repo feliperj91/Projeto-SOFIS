@@ -247,7 +247,7 @@
 
                     ${canCreateVersion ? `
                     <button class="btn-register-version" onclick="window.prefillClientVersion('${group.id}', '${utils.escapeHtml(group.name)}')" title="Registrar serviço para este cliente">
-                        <i class="fa-solid fa-plus"></i> <span class="btn-text">Registrar Atualização</span>
+                        <i class="fa-solid fa-plus"></i>
                     </button>` : ''}
                 </div>
             </div>
