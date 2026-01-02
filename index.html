@@ -799,10 +799,9 @@
                             <i class="fa-solid fa-building" style="color: var(--accent);"></i> Cliente<span
                                 class="required">*</span>
                         </label>
-                        <input type="text" id="versionClientInput" list="versionClientList"
-                            placeholder="Busque o cliente..." required autocomplete="off">
-                        <datalist id="versionClientList"></datalist>
-                        <input type="hidden" id="versionClientSelect">
+                        <select id="versionClientSelect" required>
+                            <option value="">Selecione o cliente...</option>
+                        </select>
                     </div>
                     <div class="version-form-row">
                         <div class="form-group">

@@ -232,19 +232,18 @@
                     
                     <!-- Card Level Filter -->
                     <div class="card-filter-dropdown">
-                        <button class="btn-sm card-env-toggle" onclick="window.toggleCardFilterMenu(this)">
+                        <button class="btn-card-action" onclick="window.toggleCardFilterMenu(this)" title="Filtrar Ambiente">
                             <i class="fa-solid fa-filter"></i>
                         </button>
                         <div class="card-filter-menu hidden">
-                            <div class="filter-menu-item active" data-env="producao" onclick="window.setCardEnvFilter('${group.id}', 'producao')">
-                                <i class="fa-solid fa-server" style="color: var(--success);"></i>
-                                <span>Produção</span>
+                            <div class="filter-menu-item" onclick="window.applyCardEnvFilter(this, 'producao')">
+                                <i class="fa-solid fa-server"></i> Produção
                             </div>
-                            <div class="filter-menu-item" data-env="homologacao" onclick="window.setCardEnvFilter('${group.id}', 'homologacao')">
-                                <i class="fa-solid fa-vial" style="color: var(--warning);"></i>
-                                <span>Homologação</span>
+                            <div class="filter-menu-item" onclick="window.applyCardEnvFilter(this, 'homologacao')">
+                                <i class="fa-solid fa-flask"></i> Homologação
                             </div>
                         </div>
+                    </div>
                     </div>
 
                     ${canCreateVersion ? `
@@ -427,9 +426,10 @@
         const v = id ? versionControls.find(x => x.id === id) : null;
 
         if (v) {
-            document.getElementById('versionClientSelect').value = v.client_id;
-            document.getElementById('versionClientInput').value = v.clients?.name || '';
-            document.getElementById('versionClientInput').disabled = true; // Lock client on edit
+            if (document.getElementById('versionClientSelect')) {
+                document.getElementById('versionClientSelect').value = v.client_id;
+                document.getElementById('versionClientSelect').disabled = true; // Lock client on edit
+            }
             document.getElementById('versionEnvironmentSelect').value = v.environment;
             document.getElementById('versionSystemSelect').value = v.system;
             document.getElementById('versionNumberInput').value = v.version;
@@ -442,12 +442,11 @@
             notes.disabled = !check.checked;
         } else {
             // New Entry Mode
-            const clientInput = document.getElementById('versionClientInput');
-            if (clientInput) {
-                clientInput.disabled = false;
-                clientInput.value = '';
+            const clientSelect = document.getElementById('versionClientSelect');
+            if (clientSelect) {
+                clientSelect.disabled = false;
+                clientSelect.value = '';
             }
-            if (hiddenIdField) hiddenIdField.value = '';
         }
 
         // Auto-select current user in responsible list if new
@@ -466,25 +465,56 @@
     };
 
     window.prefillClientVersion = (clientId, clientName) => {
-        // reuse editVersion logic for a new entry but with pre-filled client
         const P = window.Permissions;
         if (P && !P.can('Controle de Versões', 'can_create')) {
             if (window.showToast) window.showToast('🚫 Sem permissão para registrar novas atualizações.', 'error');
             return;
         }
 
-        window.editVersion(''); // Open empty
+        const modal = document.getElementById('versionModal');
+        if (!modal) return;
+        document.getElementById('versionForm').reset();
+        document.getElementById('versionId').value = '';
+
+        // Ensure we populate dropdown first if not already done
+        // Check if options > 1 (meaning more than just default "Selecione...")
+        const select = document.getElementById('versionClientSelect');
+        if (select && select.options.length <= 1) {
+            if (window.populateVersionClientSelect) window.populateVersionClientSelect();
+        }
+
+        // Validate ID
+        let safeClientId = clientId;
+        // logic to find by name removed as we strictly use ID now for select values
+        if (clientName && (!safeClientId || safeClientId === 'undefined')) {
+            // fallback: try to find ID from global clients list if we only have name
+            if (window.clients) {
+                const f = window.clients.find(c => c.name === clientName);
+                if (f) safeClientId = f.id;
+            }
+        }
 
         // Override client fields
-        const select = document.getElementById('versionClientSelect');
-        const input = document.getElementById('versionClientInput');
-
-        if (select) select.value = clientId;
-        if (input) {
-            input.value = clientName || '';
-            // We lock it so user creates version for the specific client card they clicked
-            input.disabled = true;
+        if (select) {
+            // We need to wait a tiny bit if populate is async, but usually populate is awaited or fast if cached.
+            // Force value set
+            setTimeout(() => {
+                select.value = safeClientId || '';
+                if (safeClientId) select.disabled = true;
+            }, 50);
         }
+
+        // Auto-select current user in responsible list
+        const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username;
+        if (currentUser) {
+            const respSelect = document.getElementById('versionResponsibleSelect');
+            // Wait small tick for populate to finish if needed, though usually cached
+            setTimeout(() => {
+                if (respSelect) respSelect.value = currentUser;
+            }, 100);
+        }
+
+        modal.classList.remove('hidden');
     };
 
     window.closeVersionModal = () => {
@@ -499,32 +529,6 @@
         } else if (f) {
             f.reportValidity();
         }
-    };
-
-    window.prefillClientVersion = (id, name) => {
-        const modal = document.getElementById('versionModal');
-        if (!modal) return;
-        document.getElementById('versionForm').reset();
-        document.getElementById('versionId').value = '';
-        setTimeout(() => {
-            document.getElementById('versionClientSelect').value = id;
-            document.getElementById('versionClientInput').value = name;
-            document.getElementById('versionClientInput').disabled = true; // Lock client when prefilling
-
-            // Auto-select current user in responsible list
-            const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username;
-            if (currentUser) {
-                const respSelect = document.getElementById('versionResponsibleSelect');
-                for (let i = 0; i < respSelect.options.length; i++) {
-                    if (respSelect.options[i].value === currentUser) {
-                        respSelect.selectedIndex = i;
-                        break;
-                    }
-                }
-            }
-
-            modal.classList.remove('hidden');
-        }, 50);
     };
 
     window.openVersionNotes = (id) => {
@@ -676,8 +680,8 @@
 
     let cachedClientsForVersion = [];
     window.populateVersionClientSelect = async () => {
-        const dl = document.getElementById('versionClientList');
-        if (!dl) return;
+        const select = document.getElementById('versionClientSelect');
+        if (!select) return;
 
         // Use global window.clients if available (source of truth), otherwise fetch
         let clientsToUse = [];
@@ -703,35 +707,21 @@
             }
         }
 
-        dl.innerHTML = '';
+        // Preserve current selection if any
+        const currentVal = select.value;
+        const isDisabled = select.disabled;
+
+        select.innerHTML = '<option value="">Selecione o cliente...</option>';
         // Sort explicitly just in case
         clientsToUse.sort((a, b) => a.name.localeCompare(b.name)).forEach(c => {
             const opt = document.createElement('option');
-            opt.value = c.name;
-            dl.appendChild(opt);
+            opt.value = c.id; // Use ID as value
+            opt.textContent = c.name;
+            select.appendChild(opt);
         });
 
-        // Configurar listener para atualizar o ID oculto quando o usuário digitar/selecionar
-        const input = document.getElementById('versionClientInput');
-        const hidden = document.getElementById('versionClientSelect');
-
-        if (input && hidden) {
-            const updateHidden = () => {
-                const val = input.value;
-                // Busca exata (case sensitive ou não? nomes costumam ser exatos no datalist)
-                const match = clientsToUse.find(c => c.name === val);
-                if (match) {
-                    hidden.value = match.id;
-                    input.setCustomValidity(""); // Válido
-                } else {
-                    hidden.value = ''; // Inválido se não casar
-                    // Opcional: input.setCustomValidity("Selecione um cliente válido da lista");
-                }
-            };
-
-            input.oninput = updateHidden;
-            input.onchange = updateHidden; // Garantia extra
-        }
+        if (currentVal) select.value = currentVal;
+        select.disabled = isDisabled;
     };
 
     let cachedUsersForResponsible = [];
@@ -745,7 +735,7 @@
             try {
                 const { data, error } = await window.supabaseClient
                     .from('users')
-                    .select('username') // Assuming 'username' is the display name or we have 'name'
+                    .select('username, name') // Assuming 'username' is the display name or we have 'name'
                     .order('username');
 
                 if (!error && data) {
@@ -765,7 +755,7 @@
         cachedUsersForResponsible.forEach(u => {
             const opt = document.createElement('option');
             opt.value = u.username;
-            opt.textContent = u.username;
+            opt.textContent = u.name || u.username;
             select.appendChild(opt);
         });
 
