@@ -950,10 +950,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Permissions
         const P = window.Permissions;
-        const canEdit = P ? P.can('Clientes e Contatos', 'can_edit') : false;
-        const canDelete = P ? P.can('Clientes e Contatos', 'can_delete') : false;
-        const canViewInfra = P ? P.can('Infraestruturas', 'can_view') : false;
-        const canViewContacts = P ? P.can('Clientes e Contatos', 'can_view') : false; // Assumed true if here
+        const canEdit = P ? P.can('Gestão de Clientes', 'can_edit') : false;
+        const canDelete = P ? P.can('Gestão de Clientes', 'can_delete') : false;
+
+        // Granular Permissions
+        const canViewContactsButton = P ? P.can('Dados de Contato', 'can_view') : false;
+        const canViewSQL = P ? P.can('Dados de SQL', 'can_view') : false;
+        const canViewVPN = P ? P.can('Dados de VPN', 'can_view') : false;
+        const canViewURL = P ? P.can('Dados de URL', 'can_view') : false;
 
         const hasServers = client.servers && client.servers.length > 0;
         const hasVpns = client.vpns && client.vpns.length > 0;
@@ -989,22 +993,30 @@ document.addEventListener('DOMContentLoaded', async () => {
                 
                 <div class="header-right">
                      <div class="row-actions">
+                          ${canViewContactsButton ? `
                           <button class="${contactBtnClass} btn-with-badge" onclick="event.stopPropagation(); openContactData('${client.id}');" title="Ver Contatos">
                              <img src="contact-icon.png" class="contact-icon-img ${hasContacts ? 'vpn-icon-success' : ''}" alt="Contatos">
                              ${hasContacts ? `<span class="btn-badge">${client.contacts.length}</span>` : ''}
                          </button>
+                         ` : ''}
                          
-                         <!-- Infra Permissions Check -->
-                         ${canViewInfra ? `
-                          <button class="${serverBtnClass} btn-with-badge perm-infra" onclick="openServerData('${client.id}'); event.stopPropagation();" title="Dados de acesso ao SQL">
+                         <!-- Granular Infra Buttons -->
+                         ${canViewSQL ? `
+                          <button class="${serverBtnClass} btn-with-badge perm-infra-sql" onclick="openServerData('${client.id}'); event.stopPropagation();" title="Dados de acesso ao SQL">
                               <i class="fa-solid fa-database"></i>
                               ${hasServers ? `<span class="btn-badge">${client.servers.length}</span>` : ''}
                           </button>
-                          <button class="${vpnBtnClass} btn-with-badge perm-infra" onclick="openVpnData('${client.id}'); event.stopPropagation();" title="Dados de Acesso VPN">
+                          ` : ''}
+
+                          ${canViewVPN ? `
+                          <button class="${vpnBtnClass} btn-with-badge perm-infra-vpn" onclick="openVpnData('${client.id}'); event.stopPropagation();" title="Dados de Acesso VPN">
                              <img src="vpn-icon.png" class="${vpnIconClass}" alt="VPN">
                              ${hasVpns ? `<span class="btn-badge">${client.vpns.length}</span>` : ''}
                          </button>
-                          <button class="${urlBtnClass} btn-with-badge perm-infra" onclick="event.stopPropagation(); openUrlData('${client.id}');" title="URL">
+                         ` : ''}
+
+                         ${canViewURL ? `
+                          <button class="${urlBtnClass} btn-with-badge perm-infra-url" onclick="event.stopPropagation(); openUrlData('${client.id}');" title="URL">
                              <i class="fa-solid fa-link"></i>
                              ${hasUrls ? `<span class="btn-badge">${urlCount}</span>` : ''}
                          </button>
@@ -3293,7 +3305,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // 2. Clientes e Contatos - Create
         const btnAddClient = document.getElementById('addClientBtn');
         if (btnAddClient) {
-            btnAddClient.style.display = P.can('Clientes e Contatos', 'can_create') ? '' : 'none';
+            btnAddClient.style.display = P.can('Gestão de Clientes', 'can_create') ? '' : 'none';
         }
 
         // 3. Controle de Versões - View Tab

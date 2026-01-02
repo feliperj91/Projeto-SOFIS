@@ -25,8 +25,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const modules = [
         'Logs e Atividades',
-        'Clientes e Contatos',
-        'Infraestruturas',
+        'Gestão de Clientes', // Renamed from 'Clientes e Contatos' for clarity of main actions (create/edit/delete client)
+        'Dados de Contato',    // New specific
+        'Dados de SQL',        // New specific
+        'Dados de VPN',        // New specific
+        'Dados de URL',        // New specific
         'Gestão de Usuários',
         'Controle de Versões'
     ];
