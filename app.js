@@ -254,7 +254,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const P = window.Permissions;
 
         if (userDisplay && currentUser.username) {
-            const roleInfo = P ? `[${P.userRole} | ${Object.keys(P.rules).length} regras]` : '';
+            const roleInfo = P ? `[${P.userRole}]` : '';
             userDisplay.innerHTML = `
                 <div class="user-info-badge">
                     <i class="fa-solid fa-user"></i> <span>${currentUser.username}</span>
@@ -2745,15 +2745,37 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     function updateWebLaudoDisplay(client) {
+        const P = window.Permissions;
+        const canEdit = P ? P.can('URLs', 'can_edit') : false;
+        const canDelete = P ? P.can('URLs', 'can_delete') : false;
+        const canCreate = P ? P.can('URLs', 'can_create') : false;
+
+        const editBtn = document.getElementById('editWebLaudoBtn');
+        const deleteBtn = document.getElementById('deleteWebLaudoBtn');
+        const saveBtn = document.getElementById('saveWebLaudoBtn');
+
         if (client.webLaudo) {
             webLaudoText.textContent = client.webLaudo;
             webLaudoDisplay.style.display = 'flex';
             webLaudoForm.style.display = 'none';
             webLaudoInput.value = client.webLaudo;
+
+            // Visibility of action buttons
+            if (editBtn) editBtn.style.display = canEdit ? '' : 'none';
+            if (deleteBtn) deleteBtn.style.display = canDelete ? '' : 'none';
         } else {
             webLaudoDisplay.style.display = 'none';
-            webLaudoForm.style.display = 'flex';
+            // Show form ONLY if has create permission
+            webLaudoForm.style.display = canCreate ? 'flex' : 'none';
             webLaudoInput.value = '';
+
+            // If no permission and no value, maybe show a message?
+            if (!canCreate) {
+                webLaudoText.textContent = 'WebLaudo não configurado.';
+                webLaudoDisplay.style.display = 'flex';
+                if (editBtn) editBtn.style.display = 'none';
+                if (deleteBtn) deleteBtn.style.display = 'none';
+            }
         }
     }
 
@@ -3040,14 +3062,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function handleWebLaudoSave() {
-        // Permission Check (WebLaudo is considered part of URLs for simplicity)
-        if (window.Permissions && !window.Permissions.can('URLs', 'can_edit')) {
-            showToast('🚫 Sem permissão para editar WebLaudo.', 'error');
-            return;
-        }
         const id = urlClientIdInput.value;
         const client = clients.find(c => c.id === id);
         if (!client) return;
+
+        const isNew = !client.webLaudo;
+        const P = window.Permissions;
+
+        // Dynamic Permission Check
+        if (isNew) {
+            if (P && !P.can('URLs', 'can_create')) {
+                showToast('🚫 Sem permissão para cadastrar WebLaudo.', 'error');
+                return;
+            }
+        } else {
+            if (P && !P.can('URLs', 'can_edit')) {
+                showToast('🚫 Sem permissão para editar WebLaudo.', 'error');
+                return;
+            }
+        }
 
         const webLaudoBefore = client.webLaudo || '';
         client.webLaudo = webLaudoInput.value.trim();
