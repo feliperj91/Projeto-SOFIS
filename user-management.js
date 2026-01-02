@@ -42,8 +42,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             items: [
                 { module: 'Controle de Versões', isHeader: true },
                 { module: 'Controle de Versões - Dashboard', label: 'Dashboard' },
-                { module: 'Controle de Versões - Histórico', label: 'Histórico' },
-                { module: 'Controle de Versões - Registrar atualização', label: 'Registrar atualização' }
+                { module: 'Controle de Versões - Histórico', label: 'Histórico' }
             ]
         },
         {

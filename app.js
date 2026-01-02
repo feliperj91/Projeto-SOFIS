@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     pulseBtn.style.display = P.can('Controle de Versões - Dashboard', 'can_view') ? '' : 'none';
                 }
                 if (addVersionBtn) {
-                    addVersionBtn.style.display = P.can('Controle de Versões - Registrar atualização', 'can_create') ? '' : 'none';
+                    addVersionBtn.style.display = P.can('Controle de Versões', 'can_create') ? '' : 'none';
                 }
             }
             if (managementTabBtn) {
@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const pulseBtn = document.getElementById('pulseDashboardBtn');
         const addVersionBtn = document.getElementById('addVersionBtn');
         if (pulseBtn) pulseBtn.style.display = P.can('Controle de Versões - Dashboard', 'can_view') ? '' : 'none';
-        if (addVersionBtn) addVersionBtn.style.display = P.can('Controle de Versões - Registrar atualização', 'can_create') ? '' : 'none';
+        if (addVersionBtn) addVersionBtn.style.display = P.can('Controle de Versões', 'can_create') ? '' : 'none';
 
         // 5. User Management - Tab Button
         const userMngBtn = document.getElementById('btnUserManagement');

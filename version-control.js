@@ -154,9 +154,9 @@
         // Permissions
         const P = window.Permissions;
         const canEditHistory = P ? P.can('Controle de Versões - Histórico', 'can_view') : false;
-        const canEditVersion = P ? P.can('Controle de Versões - Registrar atualização', 'can_edit') : false;
-        const canCreateVersion = P ? P.can('Controle de Versões - Registrar atualização', 'can_create') : false;
-        const canDeleteVersion = P ? P.can('Controle de Versões - Registrar atualização', 'can_delete') : false;
+        const canEditVersion = P ? P.can('Controle de Versões', 'can_edit') : false;
+        const canCreateVersion = P ? P.can('Controle de Versões', 'can_create') : false;
+        const canDeleteVersion = P ? P.can('Controle de Versões', 'can_delete') : false;
         const canEditClient = P ? P.can('Gestão de Clientes', 'can_edit') : false;
 
         // General status of the card based on items
@@ -287,14 +287,14 @@
             // Permissions Check
             const P = window.Permissions;
             if (fields.id) {
-                if (P && !P.can('Controle de Versões - Registrar atualização', 'can_edit')) {
-                    if (window.showToast) window.showToast('🚫 Sem permissão para editar atualizações.', 'error');
+                if (P && !P.can('Controle de Versões', 'can_edit')) {
+                    if (window.showToast) window.showToast('🚫 Sem permissão para editar versões.', 'error');
                     sofis_isSaving = false;
                     return;
                 }
             } else {
-                if (P && !P.can('Controle de Versões - Registrar atualização', 'can_create')) {
-                    if (window.showToast) window.showToast('🚫 Sem permissão para registrar novas atualizações.', 'error');
+                if (P && !P.can('Controle de Versões', 'can_create')) {
+                    if (window.showToast) window.showToast('🚫 Sem permissão para registrar novas versões.', 'error');
                     sofis_isSaving = false;
                     return;
                 }
@@ -400,12 +400,12 @@
         // Permission Check
         const P = window.Permissions;
         if (id) {
-            if (P && !P.can('Controle de Versões - Registrar atualização', 'can_edit')) {
+            if (P && !P.can('Controle de Versões', 'can_edit')) {
                 if (window.showToast) window.showToast('🚫 Sem permissão para editar atualizações.', 'error');
                 return;
             }
         } else {
-            if (P && !P.can('Controle de Versões - Registrar atualização', 'can_create')) {
+            if (P && !P.can('Controle de Versões', 'can_create')) {
                 if (window.showToast) window.showToast('🚫 Sem permissão para registrar novas atualizações.', 'error');
                 return;
             }
@@ -522,7 +522,7 @@
     window.deleteVersionControl = async (id, system, clientName) => {
         // Permission Check
         const P = window.Permissions;
-        if (P && !P.can('Controle de Versões - Registrar atualização', 'can_delete')) {
+        if (P && !P.can('Controle de Versões', 'can_delete')) {
             if (window.showToast) window.showToast('🚫 Sem permissão para excluir atualizações.', 'error');
             return;
         }
