@@ -138,8 +138,15 @@
                 }
             });
 
-            // Sort by client name
-            Object.values(grouped).sort((a, b) => a.name.localeCompare(b.name)).forEach(group => {
+            // Sort by Favorite then Client Name
+            Object.values(grouped).sort((a, b) => {
+                const isFavA = window.userFavorites && window.userFavorites.has(a.id);
+                const isFavB = window.userFavorites && window.userFavorites.has(b.id);
+
+                if (isFavA && !isFavB) return -1;
+                if (!isFavA && isFavB) return 1;
+                return a.name.localeCompare(b.name);
+            }).forEach(group => {
                 // Convert Map back to array for rendering
                 group.versions = Object.values(group.versionsMap);
                 list.appendChild(createClientGroupCard(group));

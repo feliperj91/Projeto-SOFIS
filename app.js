@@ -895,7 +895,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 favoritesHeader = document.createElement('div');
                 favoritesHeader.className = `clients-section-header favorites-header ${favoritesCollapsed ? 'section-collapsed' : ''}`;
                 favoritesHeader.onclick = toggleFavoritesSection;
-                clientList.appendChild(favoritesHeader);
+                // Prepend to ensure it's at the top
+                clientList.prepend(favoritesHeader);
+            } else {
+                // Ensure it is visually at the top if it already exists
+                clientList.prepend(favoritesHeader);
             }
             favoritesHeader.innerHTML = `
                 <div class="section-header-content">
@@ -909,22 +913,30 @@ document.addEventListener('DOMContentLoaded', async () => {
             favoritesHeader.style.display = 'flex';
 
             if (!favoritesCollapsed) {
+                let lastNode = favoritesHeader;
                 favoriteClients.forEach(client => {
                     let row = existingRows[client.id];
                     if (!row) {
                         row = createClientRow(client);
-                        clientList.appendChild(row);
+                        clientList.appendChild(row); // Temporarily append, will move
                         existingRows[client.id] = row;
                     } else {
-                        // Update existing row content
                         updateClientRow(row, client);
                     }
                     row.style.display = 'block';
-                    // Move after favorites header
-                    favoritesHeader.after(row);
+                    // Move specifically after the last node to maintain order [C1, C2, C3]
+                    // insertBefore(newNode, referenceNode) -> referenceNode should be lastNode.nextSibling
+                    if (clientList.contains(row)) {
+                        // If render is clean, nextSibling works well.
+                        if (lastNode.nextSibling !== row) {
+                            clientList.insertBefore(row, lastNode.nextSibling);
+                        }
+                    } else {
+                        clientList.insertBefore(row, lastNode.nextSibling);
+                    }
+                    lastNode = row;
                 });
             } else {
-                // Hide favorite clients when collapsed
                 favoriteClients.forEach(client => {
                     if (existingRows[client.id]) {
                         existingRows[client.id].style.display = 'none';
@@ -943,7 +955,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 regularHeader.className = `clients-section-header regular-header ${regularCollapsed ? 'section-collapsed' : ''}`;
                 regularHeader.onclick = toggleRegularSection;
                 clientList.appendChild(regularHeader);
+            } else {
+                // Move to end (after favorites)
+                clientList.appendChild(regularHeader);
             }
+
             regularHeader.innerHTML = `
                 <div class="section-header-content">
                     <i class="fa-solid fa-chevron-down section-chevron"></i>
@@ -956,6 +972,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             regularHeader.style.display = 'flex';
 
             if (!regularCollapsed) {
+                let lastNode = regularHeader;
                 regularClients.forEach(client => {
                     let row = existingRows[client.id];
                     if (!row) {
@@ -963,15 +980,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                         clientList.appendChild(row);
                         existingRows[client.id] = row;
                     } else {
-                        // Update existing row content
                         updateClientRow(row, client);
                     }
                     row.style.display = 'block';
-                    // Move after regular header
-                    regularHeader.after(row);
+
+                    if (clientList.contains(row)) {
+                        if (lastNode.nextSibling !== row) {
+                            clientList.insertBefore(row, lastNode.nextSibling);
+                        }
+                    } else {
+                        clientList.insertBefore(row, lastNode.nextSibling);
+                    }
+                    lastNode = row;
                 });
             } else {
-                // Hide regular clients when collapsed
                 regularClients.forEach(client => {
                     if (existingRows[client.id]) {
                         existingRows[client.id].style.display = 'none';

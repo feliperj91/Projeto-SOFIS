@@ -219,54 +219,54 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         list.forEach(u => {
             const card = document.createElement('div');
-            card.className = 'user-card-item';
+            card.className = 'user-card'; // Restaurado de user-card-item para user-card
 
-            // Format Role
-            const roleBadge = `<span class="badge-role badge-${u.role.toLowerCase()}">${u.role}</span>`;
+            const roleClass = `badge-${u.role?.toLowerCase() || 'tecnico'}`;
+            const creationDate = u.created_at ? new Date(u.created_at).toLocaleDateString('pt-BR') : 'N/A';
 
-            // Format dates
-            const dateStr = u.created_at ? new Date(u.created_at).toLocaleDateString('pt-BR') : '-';
+            // Get Initials
+            const initials = (u.full_name || u.username)
+                .split(' ')
+                .map(n => n[0])
+                .join('')
+                .toUpperCase()
+                .substring(0, 2);
 
-            // Actions - Check specific permissions
             let actionsHtml = '';
 
-            if (canEdit || u.username === user.username) { // Always allow user to edit self? Usually yes, or restricted. Let's stick to permissions but maybe allow self edit of basic info if desired. For now, strict permissions.
-                // Actually, usually users can update their own profile. But let's respect 'can_edit' strictly for user management list.
-                if (canEdit) {
-                    actionsHtml += `
-                    <button class="btn-icon btn-edit" onclick="window.editUser('${u.id}')" title="Editar">
-                        <i class="fa-solid fa-pen"></i>
-                    </button>`;
-                }
-            }
-
-            if (canDelete) {
+            // Edit Button (Permission Check)
+            if (canEdit) {
                 actionsHtml += `
-                <button class="btn-icon btn-danger" onclick="window.deleteUser('${u.id}')" title="Excluir">
-                    <i class="fa-solid fa-trash"></i>
-                </button>`;
+                    <button class="btn-icon" onclick="window.editUser('${u.id}')" title="Editar">
+                        <i class="fa-solid fa-pencil"></i>
+                    </button>`;
             }
 
+            // Delete Button (Permission Check + Admin Protection)
+            if (canDelete && u.username !== 'admin') {
+                actionsHtml += `
+                    <button class="btn-icon" onclick="window.deleteUser('${u.id}')" title="Excluir" style="color: var(--danger)">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>`;
+            }
 
+            // Restaurada a estrutura original
             card.innerHTML = `
-                <div class="user-card-profile">
-                    <div class="user-avatar-placeholder">${u.username.substring(0, 2).toUpperCase()}</div>
-                    <div class="user-info">
-                        <div class="user-info-name">${u.full_name || u.username}</div>
-                        <div class="user-info-email">@${u.username}</div>
+                <div class="user-info-top">
+                    <div class="user-card-header">
+                        <div class="user-avatar">${initials}</div>
+                        <div class="user-name-group">
+                            <h3>${u.full_name || 'N/A'}</h3>
+                            <span class="user-handle">@${u.username}</span>
+                        </div>
+                    </div>
+                    <div class="user-card-actions">
+                        ${actionsHtml}
                     </div>
                 </div>
-                
-                <div class="user-card-role">
-                    ${roleBadge}
-                </div>
-
-                <div class="user-card-date">
-                    <i class="fa-regular fa-calendar" style="margin-right:5px; opacity:0.6;"></i> ${dateStr}
-                </div>
-
-                <div class="user-card-actions">
-                    ${actionsHtml}
+                <div class="user-info-bottom">
+                    <span class="badge-role ${roleClass}">${u.role || 'TÉCNICO'}</span>
+                    <span class="user-date"><i class="fa-solid fa-calendar-days" style="color: var(--accent);"></i> ${creationDate}</span>
                 </div>
             `;
             usersListEl.appendChild(card);
