@@ -487,14 +487,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         permissionsTableBody.innerHTML = '';
 
         permissionSchema.forEach(guide => {
-            // Render Guide Row
-            const guideTr = document.createElement('tr');
-            guideTr.className = 'permission-guide-row';
-            guideTr.innerHTML = `
-                <td colspan="6" class="permission-guide-header">${guide.title}</td>
-            `;
-            permissionsTableBody.appendChild(guideTr);
-
+            // Guide Row Removed as per user request
+            // We just render the items directly now
             guide.items.forEach(item => {
                 const mod = item.module;
                 const label = item.label || mod;
