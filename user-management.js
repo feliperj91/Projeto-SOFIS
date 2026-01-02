@@ -23,15 +23,38 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentSelectedRole = 'ADMINISTRADOR';
     let editingUserId = null;
 
-    const modules = [
-        'Logs e Atividades',
-        'Gestão de Clientes', // Renamed from 'Clientes e Contatos' for clarity of main actions (create/edit/delete client)
-        'Dados de Contato',    // New specific
-        'Dados de SQL',        // New specific
-        'Dados de VPN',        // New specific
-        'Dados de URL',        // New specific
-        'Gestão de Usuários',
-        'Controle de Versões'
+    const permissionSchema = [
+        {
+            type: 'guide',
+            title: 'Guia Contatos e Conexões',
+            items: [
+                { module: 'Gestão de Clientes', isHeader: true },
+                { module: 'Logs e Atividades' },
+                { module: 'Contatos' },
+                { module: 'Banco de Dados' },
+                { module: 'VPN' },
+                { module: 'URLs' }
+            ]
+        },
+        {
+            type: 'guide',
+            title: 'Guia Controle de Versões',
+            items: [
+                { module: 'Controle de Versões', isHeader: true },
+                { module: 'Controle de Versões - Dashboard', label: 'Dashboard' },
+                { module: 'Controle de Versões - Histórico', label: 'Histórico' },
+                { module: 'Controle de Versões - Registrar atualização', label: 'Registrar atualização' }
+            ]
+        },
+        {
+            type: 'guide',
+            title: 'Guia Gerenciamento de Usuários',
+            items: [
+                { module: 'Gestão de Usuários', isHeader: true },
+                { module: 'Gestão de Usuários - Usuários', label: 'Usuários' },
+                { module: 'Gestão de Usuários - Permissões', label: 'Permissões' }
+            ]
+        }
     ];
 
     // --- DOM Elements ---
@@ -424,23 +447,37 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!permissionsTableBody) return;
         permissionsTableBody.innerHTML = '';
 
-        modules.forEach(mod => {
-            const p = permData.find(x => x.module === mod) || {
-                can_view: false, can_create: false, can_edit: false, can_delete: false
-            };
-
-            const roleClass = `badge-${role.toLowerCase()}`;
-
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${mod}</td>
-                <td><span class="badge-role ${roleClass}">${role}</span></td>
-                <td><input type="checkbox" class="perm-checkbox" data-mod="${mod}" data-prop="can_view" ${p.can_view ? 'checked' : ''}></td>
-                <td><input type="checkbox" class="perm-checkbox" data-mod="${mod}" data-prop="can_create" ${p.can_create ? 'checked' : ''}></td>
-                <td><input type="checkbox" class="perm-checkbox" data-mod="${mod}" data-prop="can_edit" ${p.can_edit ? 'checked' : ''}></td>
-                <td><input type="checkbox" class="perm-checkbox" data-mod="${mod}" data-prop="can_delete" ${p.can_delete ? 'checked' : ''}></td>
+        permissionSchema.forEach(guide => {
+            // Render Guide Row
+            const guideTr = document.createElement('tr');
+            guideTr.className = 'permission-guide-row';
+            guideTr.innerHTML = `
+                <td colspan="6" class="permission-guide-header">${guide.title}</td>
             `;
-            permissionsTableBody.appendChild(tr);
+            permissionsTableBody.appendChild(guideTr);
+
+            guide.items.forEach(item => {
+                const mod = item.module;
+                const label = item.label || mod;
+                const p = permData.find(x => x.module === mod) || {
+                    can_view: false, can_create: false, can_edit: false, can_delete: false
+                };
+
+                const roleClass = `badge-${role.toLowerCase()}`;
+                const indentClass = item.isHeader ? 'permission-header-item' : 'permission-sub-item';
+
+                const tr = document.createElement('tr');
+                tr.className = item.isHeader ? 'permission-header-row' : 'permission-row';
+                tr.innerHTML = `
+                    <td class="${indentClass}">${label}</td>
+                    <td><span class="badge-role ${roleClass}">${role}</span></td>
+                    <td><input type="checkbox" class="perm-checkbox" data-mod="${mod}" data-prop="can_view" ${p.can_view ? 'checked' : ''}></td>
+                    <td><input type="checkbox" class="perm-checkbox" data-mod="${mod}" data-prop="can_create" ${p.can_create ? 'checked' : ''}></td>
+                    <td><input type="checkbox" class="perm-checkbox" data-mod="${mod}" data-prop="can_edit" ${p.can_edit ? 'checked' : ''}></td>
+                    <td><input type="checkbox" class="perm-checkbox" data-mod="${mod}" data-prop="can_delete" ${p.can_delete ? 'checked' : ''}></td>
+                `;
+                permissionsTableBody.appendChild(tr);
+            });
         });
 
         // Add Listeners for Changes
@@ -463,7 +500,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         const updateData = [];
 
         rows.forEach(row => {
-            const mod = row.querySelector('td:first-child').innerText;
+            const chk = row.querySelector('.perm-checkbox');
+            if (!chk) return; // Skip guide rows
+
+            const mod = chk.dataset.mod;
             const checkboxes = row.querySelectorAll('.perm-checkbox');
             const rowObj = { role_name: currentSelectedRole, module: mod };
             checkboxes.forEach(cb => {

@@ -7,13 +7,30 @@ document.addEventListener('DOMContentLoaded', async () => {
         async load() {
             if (!window.supabaseClient) return;
             const user = JSON.parse(localStorage.getItem('sofis_user') || '{}');
-            this.userRole = user.role || 'TECNICO';
 
             // Special Case: admin username always gets full access if role is missing or fallback
             // But if role exists, we respect DB. 
             // Actually, let's just fetch from DB. 
 
             try {
+                // SECURITY: Fetch role directly from DB to prevent localStorage manipulation
+                const { data: userData, error: userError } = await window.supabaseClient
+                    .from('users')
+                    .select('role')
+                    .eq('username', user.username)
+                    .single();
+
+                if (!userError && userData) {
+                    this.userRole = userData.role;
+                    // Sync localStorage (non-critical, for UI display only)
+                    if (user.role !== userData.role) {
+                        user.role = userData.role;
+                        localStorage.setItem('sofis_user', JSON.stringify(user));
+                    }
+                } else {
+                    this.userRole = user.role || 'TECNICO';
+                }
+
                 const { data, error } = await window.supabaseClient
                     .from('role_permissions')
                     .select('*')
@@ -26,8 +43,30 @@ document.addEventListener('DOMContentLoaded', async () => {
                     });
                 }
                 console.log('🔒 Permissões carregadas:', this.userRole, this.rules);
+
+                // Trigger event for other modules (like user-management)
+                document.dispatchEvent(new CustomEvent('permissions-loaded'));
+
+                // Apply Tab Visibility
+                this.applyTabPermissions();
             } catch (e) {
                 console.error('Erro ao carregar permissões:', e);
+            }
+        },
+
+        applyTabPermissions() {
+            const contactsTabBtn = document.querySelector('.tab-btn[data-tab="contacts"]');
+            const versionsTabBtn = document.querySelector('.tab-btn[data-tab="versions"]');
+            const managementTabBtn = document.getElementById('btnUserManagement');
+
+            if (contactsTabBtn) {
+                contactsTabBtn.style.display = this.can('Gestão de Clientes', 'can_view') ? '' : 'none';
+            }
+            if (versionsTabBtn) {
+                versionsTabBtn.style.display = this.can('Controle de Versões', 'can_view') ? '' : 'none';
+            }
+            if (managementTabBtn) {
+                managementTabBtn.style.display = this.can('Gestão de Usuários', 'can_view') ? '' : 'none';
             }
         },
 
@@ -963,10 +1002,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         const canDelete = P ? P.can('Gestão de Clientes', 'can_delete') : false;
 
         // Granular Permissions
-        const canViewContactsButton = P ? P.can('Dados de Contato', 'can_view') : false;
-        const canViewSQL = P ? P.can('Dados de SQL', 'can_view') : false;
-        const canViewVPN = P ? P.can('Dados de VPN', 'can_view') : false;
-        const canViewURL = P ? P.can('Dados de URL', 'can_view') : false;
+        const canViewContactsButton = P ? P.can('Contatos', 'can_view') : false;
+        const canViewSQL = P ? P.can('Banco de Dados', 'can_view') : false;
+        const canViewVPN = P ? P.can('VPN', 'can_view') : false;
+        const canViewURL = P ? P.can('URLs', 'can_view') : false;
         const canViewLogs = P ? P.can('Logs e Atividades', 'can_view') : false;
 
         const hasServers = client.servers && client.servers.length > 0;
@@ -1111,7 +1150,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Reuse the logic from createClientRow for generating contact cards
         const P = window.Permissions;
-        const canEditContact = P ? P.can('Dados de Contato', 'can_edit') : false;
+        const canEditContact = P ? P.can('Contatos', 'can_edit') : false;
+        const canDeleteContact = P ? P.can('Contatos', 'can_delete') : false; // Added mapping
 
         const contactsHTML = filteredContacts.map((contact) => {
             // We need to find the original index for editing
@@ -2052,7 +2092,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         serverClientIdInput.value = clientId;
 
         // Permissions
-        const canCreate = window.Permissions.can('Dados de SQL', 'can_create');
+        const canCreate = window.Permissions.can('Banco de Dados', 'can_create');
         if (addServerEntryBtn) {
             addServerEntryBtn.style.display = canCreate ? 'flex' : 'none';
         }
@@ -2119,8 +2159,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!serversList) return;
 
         const P = window.Permissions;
-        const canEditSQL = P ? P.can('Dados de SQL', 'can_edit') : false;
-        const canDeleteSQL = P ? P.can('Dados de SQL', 'can_delete') : false;
+        const canEditSQL = P ? P.can('Banco de Dados', 'can_edit') : false;
+        const canDeleteSQL = P ? P.can('Banco de Dados', 'can_delete') : false;
 
         const filterValue = currentServerFilter;
         let filteredServers = client.servers || [];
@@ -2387,8 +2427,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Permissions
         const P = window.Permissions;
-        const canEdit = P ? P.can('Dados de VPN', 'can_edit') : false;
-        const canDelete = P ? P.can('Dados de VPN', 'can_delete') : false;
+        const canEdit = P ? P.can('VPN', 'can_edit') : false;
+        const canDelete = P ? P.can('VPN', 'can_delete') : false;
 
         if (!client.vpns || client.vpns.length === 0) {
             listContainer.innerHTML = `
@@ -2508,7 +2548,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         vpnClientIdInput.value = clientId;
 
         // Permissions
-        const canCreate = window.Permissions.can('Dados de VPN', 'can_create');
+        const canCreate = window.Permissions.can('VPN', 'can_create');
         if (addVpnEntryBtn) {
             addVpnEntryBtn.style.display = canCreate ? 'flex' : 'none';
         }
@@ -2615,7 +2655,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         urlClientIdInput.value = clientId;
 
         // Permissions
-        const canCreate = window.Permissions.can('Dados de URL', 'can_create');
+        const canCreate = window.Permissions.can('URLs', 'can_create');
+        const canEdit = P ? P.can('URLs', 'can_edit') : false;
+        const canDelete = P ? P.can('URLs', 'can_delete') : false;
         if (addUrlEntryBtn) {
             addUrlEntryBtn.style.display = canCreate ? 'flex' : 'none';
         }
@@ -2716,8 +2758,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Permissions
         const P = window.Permissions;
-        const canEdit = P ? P.can('Dados de URL', 'can_edit') : false;
-        const canDelete = P ? P.can('Dados de URL', 'can_delete') : false;
+        const canEdit = P ? P.can('URLs', 'can_edit') : false;
+        const canDelete = P ? P.can('URLs', 'can_delete') : false;
 
         const filterValue = currentUrlFilter;
         let filteredUrls = client.urls || [];

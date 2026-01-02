@@ -514,6 +514,47 @@
     letter-spacing: 0.5px;
 }
 
+/* Nested Hierarchy Styles */
+.permission-guide-header {
+    background: rgba(255, 160, 0, 0.1) !important;
+    color: var(--accent) !important;
+    font-size: 0.85rem !important;
+    font-weight: 800 !important;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding: 12px 20px !important;
+    border-top: 1px solid rgba(255, 160, 0, 0.2);
+    border-bottom: 1px solid rgba(255, 160, 0, 0.2);
+}
+
+.permission-header-item {
+    padding-left: 20px !important;
+    color: #fff !important;
+    font-weight: 700 !important;
+}
+
+.permission-sub-item {
+    padding-left: 45px !important;
+    color: var(--text-secondary) !important;
+    font-weight: 400 !important;
+    position: relative;
+}
+
+.permission-sub-item::before {
+    content: '└─';
+    position: absolute;
+    left: 25px;
+    opacity: 0.3;
+}
+
+.permission-header-row {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.permission-row:hover td {
+    background: rgba(255, 255, 255, 0.03) !important;
+}
+
 /* Custom Checkbox as seen in Screenshot */
 .perm-checkbox {
     appearance: none;
