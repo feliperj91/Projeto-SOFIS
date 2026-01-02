@@ -153,11 +153,11 @@
 
         // Permissions
         const P = window.Permissions;
-        const canEditHistory = P ? P.can('Controle de Versões - Histórico', 'can_view') : true;
-        const canEditVersion = P ? P.can('Controle de Versões - Registrar atualização', 'can_edit') : true;
-        const canCreateVersion = P ? P.can('Controle de Versões - Registrar atualização', 'can_create') : true;
-        const canDeleteVersion = P ? P.can('Controle de Versões - Registrar atualização', 'can_delete') : true;
-        const canEditClient = P ? P.can('Gestão de Clientes', 'can_edit') : true;
+        const canEditHistory = P ? P.can('Controle de Versões - Histórico', 'can_view') : false;
+        const canEditVersion = P ? P.can('Controle de Versões - Registrar atualização', 'can_edit') : false;
+        const canCreateVersion = P ? P.can('Controle de Versões - Registrar atualização', 'can_create') : false;
+        const canDeleteVersion = P ? P.can('Controle de Versões - Registrar atualização', 'can_delete') : false;
+        const canEditClient = P ? P.can('Gestão de Clientes', 'can_edit') : false;
 
         // General status of the card based on items
         let overallStatus = 'recent';
