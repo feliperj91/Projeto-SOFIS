@@ -1123,10 +1123,10 @@
 
 .btn-register-version:hover {
     width: auto !important;
-    padding: 0 14px !important;
-    gap: 8px !important;
-    transform: scale(1.05) !important;
-    box-shadow: 0 0 15px rgba(255, 193, 7, 0.4) !important;
+    padding: 0 10px !important;
+    gap: 6px !important;
+    transform: none !important;
+    box-shadow: 0 0 10px rgba(255, 193, 7, 0.3) !important;
     filter: brightness(1.1);
 }
 
