@@ -5,11 +5,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Auth Guard for Management Tab
     function checkUserManagementAccess() {
         if (managementTabBtn && window.Permissions) {
-            if (window.Permissions.can('Gestão de Usuários', 'can_view')) {
-                managementTabBtn.style.display = 'block';
-            } else {
-                managementTabBtn.style.display = 'none';
-            }
+            // Main tab access
+            const canAccess = window.Permissions.can('Gestão de Usuários', 'can_view');
+            managementTabBtn.style.display = canAccess ? 'block' : 'none';
         }
     }
 
@@ -70,12 +68,34 @@ document.addEventListener('DOMContentLoaded', async () => {
     const addNewUserBtn = document.getElementById('addNewUserBtn');
 
     // --- Initialization ---
+    // --- Initialization ---
     async function initUserManagement() {
-        const canCreate = window.Permissions.can('Gestão de Usuários', 'can_create');
-        if (addNewUserBtn) addNewUserBtn.style.display = canCreate ? 'flex' : 'none';
+        // Now checks specific sub-module for user creation
+        const canCreateUsers = window.Permissions.can('Gestão de Usuários - Usuários', 'can_create');
+        if (addNewUserBtn) addNewUserBtn.style.display = canCreateUsers ? 'flex' : 'none';
 
-        await loadUsers();
-        await loadPermissions('ADMINISTRADOR');
+        // Check sub-tab visibility
+        const canViewUsers = window.Permissions.can('Gestão de Usuários - Usuários', 'can_view');
+        const canViewPerms = window.Permissions.can('Gestão de Usuários - Permissões', 'can_view');
+
+        const tabUsers = document.querySelector('[data-mng-tab="users"]');
+        const tabPerms = document.querySelector('[data-mng-tab="permissions"]');
+
+        if (tabUsers) {
+            tabUsers.style.display = canViewUsers ? '' : 'none';
+            if (!canViewUsers && currentMngTab === 'users') {
+                // If cannot view users, switch to permissions if allowed, or hide container
+                if (canViewPerms) tabPerms.click();
+                else usersContainer.classList.add('hidden');
+            }
+        }
+
+        if (tabPerms) {
+            tabPerms.style.display = canViewPerms ? '' : 'none';
+        }
+
+        if (canViewUsers) await loadUsers();
+        if (canViewPerms) await loadPermissions('ADMINISTRADOR');
     }
 
     // --- Tab Logic ---
@@ -183,56 +203,70 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         console.log('🎨 Renderizando usuários:', list.length);
 
+        const P = window.Permissions;
+        // Use granular permissions
+        const canEdit = P && P.can('Gestão de Usuários - Usuários', 'can_edit');
+        const canDelete = P && P.can('Gestão de Usuários - Usuários', 'can_delete');
+
         if (list.length === 0) {
-            usersListEl.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-secondary);">Nenhum usuário encontrado.</div>';
+            usersListEl.innerHTML = `
+                <div class="empty-state">
+                    <i class="fa-solid fa-users-slash"></i>
+                    <p>Nenhum usuário encontrado.</p>
+                </div>`;
             return;
         }
 
-        const P = window.Permissions;
-        const canEdit = P ? P.can('Gestão de Usuários', 'can_edit') : false;
-        const canDelete = P ? P.can('Gestão de Usuários', 'can_delete') : false;
-
         list.forEach(u => {
-            const roleClass = `badge-${u.role?.toLowerCase() || 'tecnico'}`;
-            const creationDate = u.created_at ? new Date(u.created_at).toLocaleDateString('pt-BR') : 'N/A';
-
-            // Get Initials
-            const initials = (u.full_name || u.username)
-                .split(' ')
-                .map(n => n[0])
-                .join('')
-                .toUpperCase()
-                .substring(0, 2);
-
-            const editButton = canEdit ? `
-                        <button class="btn-icon" onclick="window.editUser('${u.id}')" title="Editar">
-                            <i class="fa-solid fa-pencil"></i>
-                        </button>` : '';
-
-            const deleteButton = (canDelete && u.username !== 'admin') ? `
-                            <button class="btn-icon" onclick="window.deleteUser('${u.id}')" title="Excluir" style="color: var(--danger)">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>` : '';
-
             const card = document.createElement('div');
-            card.className = 'user-card';
+            card.className = 'user-card-item';
+
+            // Format Role
+            const roleBadge = `<span class="badge-role badge-${u.role.toLowerCase()}">${u.role}</span>`;
+
+            // Format dates
+            const dateStr = u.created_at ? new Date(u.created_at).toLocaleDateString('pt-BR') : '-';
+
+            // Actions - Check specific permissions
+            let actionsHtml = '';
+
+            if (canEdit || u.username === user.username) { // Always allow user to edit self? Usually yes, or restricted. Let's stick to permissions but maybe allow self edit of basic info if desired. For now, strict permissions.
+                // Actually, usually users can update their own profile. But let's respect 'can_edit' strictly for user management list.
+                if (canEdit) {
+                    actionsHtml += `
+                    <button class="btn-icon btn-edit" onclick="window.editUser('${u.id}')" title="Editar">
+                        <i class="fa-solid fa-pen"></i>
+                    </button>`;
+                }
+            }
+
+            if (canDelete) {
+                actionsHtml += `
+                <button class="btn-icon btn-danger" onclick="window.deleteUser('${u.id}')" title="Excluir">
+                    <i class="fa-solid fa-trash"></i>
+                </button>`;
+            }
+
+
             card.innerHTML = `
-                <div class="user-info-top">
-                    <div class="user-card-header">
-                        <div class="user-avatar">${initials}</div>
-                        <div class="user-name-group">
-                            <h3>${u.full_name || 'N/A'}</h3>
-                            <span class="user-handle">@${u.username}</span>
-                        </div>
-                    </div>
-                    <div class="user-card-actions">
-                        ${editButton}
-                        ${deleteButton}
+                <div class="user-card-profile">
+                    <div class="user-avatar-placeholder">${u.username.substring(0, 2).toUpperCase()}</div>
+                    <div class="user-info">
+                        <div class="user-info-name">${u.full_name || u.username}</div>
+                        <div class="user-info-email">@${u.username}</div>
                     </div>
                 </div>
-                <div class="user-info-bottom">
-                    <span class="badge-role ${roleClass}">${u.role || 'TÉCNICO'}</span>
-                    <span class="user-date"><i class="fa-solid fa-calendar-days" style="color: var(--accent);"></i> ${creationDate}</span>
+                
+                <div class="user-card-role">
+                    ${roleBadge}
+                </div>
+
+                <div class="user-card-date">
+                    <i class="fa-regular fa-calendar" style="margin-right:5px; opacity:0.6;"></i> ${dateStr}
+                </div>
+
+                <div class="user-card-actions">
+                    ${actionsHtml}
                 </div>
             `;
             usersListEl.appendChild(card);
