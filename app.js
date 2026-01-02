@@ -6,49 +6,49 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         async load() {
             if (!window.supabaseClient) {
-                console.error('❌ Supabase Client não encontrado ao carregar permissões.');
+                console.error('❌ Permissions: Supabase Client not found.');
                 return;
             }
 
             try {
-                // 1. Tentar obter sessão real do Supabase Auth
-                const { data: { session }, error: sessionError } = await window.supabaseClient.auth.getSession();
+                let foundRole = null;
+                let source = 'DEFAULT';
 
-                if (session && session.user) {
-                    this.userRole = session.user.user_metadata.role || 'TECNICO';
-                    console.log('🔑 Permissions: Logado via Supabase Auth. Role:', this.userRole);
-                } else {
-                    // 2. Fallback Seguro: Busca o cargo no Banco de Dados pelo username do localStorage
-                    const user = JSON.parse(localStorage.getItem('sofis_user') || '{}');
-                    if (user.username) {
-                        const { data: userData, error: userError } = await window.supabaseClient
-                            .from('users')
-                            .select('role')
-                            .eq('username', user.username)
-                            .maybeSingle();
+                // 1. Prioridade: Usuário Logado via Formulário (Legacy/Custom)
+                const localUser = JSON.parse(localStorage.getItem('sofis_user') || '{}');
+                if (localUser.username) {
+                    const { data: userData } = await window.supabaseClient
+                        .from('users')
+                        .select('role')
+                        .eq('username', localUser.username)
+                        .maybeSingle();
 
-                        if (!userError && userData) {
-                            this.userRole = userData.role;
-                            // Sincronizar localStorage para evitar persistência de cargo antigo/errado
-                            if (user.role !== this.userRole) {
-                                console.log('🔄 Sincronizando cargo no localStorage:', user.role, '->', this.userRole);
-                                user.role = this.userRole;
-                                localStorage.setItem('sofis_user', JSON.stringify(user));
-                            }
-                        } else {
-                            // Se falhar a busca no DB, usamos o que está no localStorage mas logamos o alerta
-                            this.userRole = user.role || 'TECNICO';
-                            console.warn('⚠️ Falha ao validar cargo no DB. Usando cache (localStorage):', this.userRole);
+                    if (userData) {
+                        foundRole = userData.role;
+                        source = 'DATABASE (users table)';
+
+                        // Sync localStorage
+                        if (localUser.role !== foundRole) {
+                            console.log(`🔄 Syncing role for ${localUser.username}: ${localUser.role} -> ${foundRole}`);
+                            localUser.role = foundRole;
+                            localStorage.setItem('sofis_user', JSON.stringify(localUser));
                         }
                     } else {
-                        this.userRole = 'TECNICO';
+                        foundRole = localUser.role;
+                        source = 'LOCALSTORAGE (cache)';
                     }
                 }
 
-                // 3. Normalização Crítica: Remover acentos e converter para maiúsculas (ex: TÉCNICO -> TECNICO)
-                if (this.userRole) {
-                    this.userRole = this.userRole.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
+                // 2. Secundário: Sessão do Supabase Auth (se não houver login local)
+                if (!foundRole) {
+                    const { data: { session } } = await window.supabaseClient.auth.getSession();
+                    if (session && session.user) {
+                        foundRole = session.user.user_metadata.role;
+                        source = 'SUPABASE AUTH SESSION';
+                    }
                 }
+
+                this.userRole = (foundRole || 'TECNICO').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
 
                 // 4. Carregar regras de permissão para o cargo identificado
                 const { data, error } = await window.supabaseClient
@@ -64,7 +64,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                         this.rules[r.module] = r;
                     });
                 }
-                console.log(`🔒 Permissions: Loaded ${Object.keys(this.rules).length} rules for role: ${this.userRole}`);
+
+                console.log(`🔒 Permissions: [${this.userRole}] detected via ${source}. Rules loaded: ${Object.keys(this.rules).length}`);
 
                 // Trigger event for other modules
                 document.dispatchEvent(new CustomEvent('permissions-loaded'));
@@ -72,7 +73,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Apply Global Visibility
                 if (window.applyPermissions) window.applyPermissions();
             } catch (e) {
-                console.error('❌ Permissions Error:', e);
+                console.error('❌ Permissions: Error during load:', e);
             }
         },
 
