@@ -205,10 +205,6 @@
                                 </div>
                                 <!-- Actions Group: Icons (Aligned Right) -->
                                 <div class="version-actions-group">
-                                    ${canEditVersion ? `
-                                    <button class="btn-edit-version-small" onclick="window.editVersion('${v.id}')" title="Editar">
-                                        <i class="fa-solid fa-pencil"></i>
-                                    </button>` : ''}
                                     ${canDeleteVersion ? `
                                     <button class="btn-edit-version-small btn-danger" onclick="window.deleteVersionControl('${v.id}', '${v.system}', '${group.name}')" title="Excluir" style="margin-left:5px;">
                                         <i class="fa-solid fa-trash"></i>
@@ -227,19 +223,9 @@
                         <h3 style="cursor:default" title="Nome do Cliente">${utils.escapeHtml(group.name)}</h3>
                     </div>
                 <div class="client-header-actions">
-                    ${canEditClient ? `
-                    <button class="btn-card-action" onclick="window.openClientInteraction('${group.id}', '${utils.escapeHtml(group.name)}')" title="Editar Cliente">
-                        <i class="fa-solid fa-pencil"></i>
-                    </button>` : ''}
-                    
                     ${canEditHistory ? `
                     <button class="btn-card-action" onclick="window.openClientVersionsHistory('${group.id}')" title="Ver Histórico">
                         <i class="fa-solid fa-rotate"></i>
-                    </button>` : ''}
-                    
-                    ${canCreateVersion ? `
-                    <button class="btn-card-action" onclick="window.prefillClientVersion('${group.id}', '${utils.escapeHtml(group.name)}')" title="Adicionar Sistema">
-                        <i class="fa-solid fa-plus-circle"></i>
                     </button>` : ''}
                     
                     <!-- Card Level Filter -->
@@ -248,17 +234,21 @@
                             <i class="fa-solid fa-filter"></i>
                         </button>
                         <div class="card-filter-menu hidden">
-                            <div class="filter-menu-item" onclick="window.applyCardEnvFilter(this, 'all')">
-                                <i class="fa-solid fa-layer-group"></i> <span>Todos</span>
+                            <div class="filter-menu-item active" data-env="producao" onclick="window.setCardEnvFilter('${group.id}', 'producao')">
+                                <i class="fa-solid fa-server" style="color: var(--success);"></i>
+                                <span>Produção</span>
                             </div>
-                            <div class="filter-menu-item active" onclick="window.applyCardEnvFilter(this, 'producao')">
-                                <i class="fa-solid fa-server"></i> <span>Produção</span>
-                            </div>
-                            <div class="filter-menu-item" onclick="window.applyCardEnvFilter(this, 'homologacao')">
-                                <i class="fa-solid fa-vial"></i> <span>Homologação</span>
+                            <div class="filter-menu-item" data-env="homologacao" onclick="window.setCardEnvFilter('${group.id}', 'homologacao')">
+                                <i class="fa-solid fa-vial" style="color: var(--warning);"></i>
+                                <span>Homologação</span>
                             </div>
                         </div>
                     </div>
+
+                    ${canCreateVersion ? `
+                    <button class="btn-register-version" onclick="window.prefillClientVersion('${group.id}', '${utils.escapeHtml(group.name)}')" title="Registrar serviço para este cliente">
+                        <i class="fa-solid fa-plus"></i> Registrar Atualização
+                    </button>` : ''}
                 </div>
             </div>
             <div class="client-group-body">${versionsHtml}</div>
@@ -455,6 +445,28 @@
         }
 
         modal.classList.remove('hidden');
+    };
+
+    window.prefillClientVersion = (clientId, clientName) => {
+        // reuse editVersion logic for a new entry but with pre-filled client
+        const P = window.Permissions;
+        if (P && !P.can('Controle de Versões', 'can_create')) {
+            if (window.showToast) window.showToast('🚫 Sem permissão para registrar novas atualizações.', 'error');
+            return;
+        }
+
+        window.editVersion(''); // Open empty
+
+        // Override client fields
+        const select = document.getElementById('versionClientSelect');
+        const input = document.getElementById('versionClientInput');
+
+        if (select) select.value = clientId;
+        if (input) {
+            input.value = clientName || '';
+            // We lock it so user creates version for the specific client card they clicked
+            input.disabled = true;
+        }
     };
 
     window.closeVersionModal = () => {

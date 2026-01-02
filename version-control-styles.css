@@ -1088,3 +1088,35 @@
     text-shadow: 0 0 10px rgba(255, 193, 7, 0.3);
     text-underline-offset: 4px;
 }
+
+/* New Specific Style for Registrar Atualização Button in Cards */
+.btn-register-version {
+    background: var(--accent) !important;
+    color: #1a1a1a !important;
+    border: none !important;
+    padding: 6px 14px !important;
+    border-radius: 8px !important;
+    font-size: 0.7rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    transition: all 0.2s ease !important;
+    height: 32px !important;
+    white-space: nowrap !important;
+    margin-left: 4px !important;
+}
+
+.btn-register-version:hover {
+    transform: scale(1.05) !important;
+    box-shadow: 0 0 15px rgba(255, 193, 7, 0.4) !important;
+    filter: brightness(1.1);
+}
+
+.btn-register-version i {
+    font-size: 0.8rem !important;
+    color: #1a1a1a !important;
+}
