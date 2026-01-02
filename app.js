@@ -666,6 +666,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     function renderClients(clientsToRender) {
         if (!clientList) return;
 
+        // Permissions Check
+        const P = window.Permissions;
+        const canViewClients = P ? P.can('Gestão de Clientes', 'can_view') : true;
+
+        if (!canViewClients) {
+            clientList.innerHTML = `<div class="empty-state" style="padding: 40px; text-align: center; color: var(--text-secondary);"><i class="fa-solid fa-lock" style="font-size: 3rem; margin-bottom: 20px;"></i><p>Você não tem permissão para visualizar clientes.</p></div>`;
+            return;
+        }
+
         // Remove skeleton loaders if they exist
         clientList.querySelectorAll('.skeleton-row').forEach(skeleton => skeleton.remove());
 
@@ -958,6 +967,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const canViewSQL = P ? P.can('Dados de SQL', 'can_view') : false;
         const canViewVPN = P ? P.can('Dados de VPN', 'can_view') : false;
         const canViewURL = P ? P.can('Dados de URL', 'can_view') : false;
+        const canViewLogs = P ? P.can('Logs e Atividades', 'can_view') : false;
 
         const hasServers = client.servers && client.servers.length > 0;
         const hasVpns = client.vpns && client.vpns.length > 0;
@@ -982,7 +992,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <span style="font-weight: 600;">${escapeHtml(client.name)}</span>
                             ${client.notes ? `<i class="fa-solid fa-bell client-note-indicator" title="Possui observações importantes" style="margin-left: 15px; cursor: pointer;" onclick="window.openClientGeneralNotes('${client.id}'); event.stopPropagation();"></i>` : ''}
                         </div>
-                        ${client.updatedAt ? `
+                        ${client.updatedAt && canViewLogs ? `
                             <div class="client-updated-info clickable" onclick="openClientHistory('${client.id}'); event.stopPropagation();" title="Ver Histórico de Alterações" style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 2px; font-weight: normal; display: flex; align-items: center; gap: 4px; cursor: pointer; width: fit-content;">
                                 <i class="fa-solid fa-clock-rotate-left" style="font-size: 0.65rem; color: var(--accent);"></i>
                                 <span class="hover-underline">Atualizado: ${new Date(client.updatedAt).toLocaleDateString('pt-BR')} ${new Date(client.updatedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
@@ -1100,6 +1110,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         // Reuse the logic from createClientRow for generating contact cards
+        const P = window.Permissions;
+        const canEditContact = P ? P.can('Dados de Contato', 'can_edit') : false;
+
         const contactsHTML = filteredContacts.map((contact) => {
             // We need to find the original index for editing
             const originalIndex = client.contacts.indexOf(contact);
@@ -1128,18 +1141,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                     `).join('')
                 : '';
 
+            const nameClickAction = canEditContact ? `onclick="editContact('${client.id}', ${originalIndex});" title="Ver/Editar Contato" class="contact-name-display clickable"` : `class="contact-name-display"`;
+            const editButton = canEditContact ? `
+                            <button class="btn-icon-small" onclick="editContact('${client.id}', ${originalIndex});" title="Editar Contato">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>` : '';
+
             return `
                     <div class="contact-group-display" style="max-width: 100%; flex: 1 1 300px;">
                         <div class="contact-header-display">
                             <div style="display: flex; flex-direction: column; gap: 4px;">
-                                <div class="contact-name-display clickable" onclick="editContact('${client.id}', ${originalIndex});" title="Ver/Editar Contato">
+                                <div ${nameClickAction}>
                                     ${escapeHtml(contact.name || 'Sem nome')}
                                 </div>
                                 <span class="server-client-badge" style="align-self: flex-start; margin-left: 0; font-size: 0.65rem; padding: 2px 6px;">${escapeHtml(client.name)}</span>
                             </div>
-                            <button class="btn-icon-small" onclick="editContact('${client.id}', ${originalIndex});" title="Editar Contato">
-                                <i class="fa-solid fa-pen"></i>
-                            </button>
+                            ${editButton}
                         </div>
                         ${phonesHTML}
                         ${emailsHTML}
@@ -2095,6 +2112,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         const serversList = document.getElementById('serversList');
         if (!serversList) return;
 
+        const P = window.Permissions;
+        const canEditSQL = P ? P.can('Dados de SQL', 'can_edit') : false;
+        const canDeleteSQL = P ? P.can('Dados de SQL', 'can_delete') : false;
+
         const filterValue = currentServerFilter;
         let filteredServers = client.servers || [];
 
@@ -2156,6 +2177,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                    </div>`
                 : '';
 
+            const editButton = canEditSQL ? `
+                            <button class="btn-icon" onclick="editServerRecord('${client.id}', ${originalIndex})" title="Editar">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>` : '';
+
+            const deleteButton = canDeleteSQL ? `
+                            <button class="btn-icon btn-danger" onclick="deleteServerRecord('${client.id}', ${originalIndex})" title="Excluir">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>` : '';
+
             return `
                 <div class="server-card">
                     <div class="server-card-header">
@@ -2164,12 +2195,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <span class="server-client-badge">${escapeHtml(client.name)}</span>
                         </div>
                         <div class="server-card-actions">
-                            <button class="btn-icon" onclick="editServerRecord('${client.id}', ${originalIndex})" title="Editar">
-                                <i class="fa-solid fa-pen"></i>
-                            </button>
-                            <button class="btn-icon btn-danger" onclick="deleteServerRecord('${client.id}', ${originalIndex})" title="Excluir">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
+                            ${editButton}
+                            ${deleteButton}
                         </div>
                     </div>
                     <div class="server-info">
@@ -3324,6 +3351,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         const userMngBtn = document.getElementById('btnUserManagement');
         if (userMngBtn && !P.can('Gestão de Usuários', 'can_view')) {
             userMngBtn.style.setProperty('display', 'none', 'important');
+        }
+
+        // 6. Dados de SQL - Create
+        const btnAddServer = document.getElementById('addServerEntryBtn');
+        if (btnAddServer) {
+            btnAddServer.style.display = P.can('Dados de SQL', 'can_create') ? '' : 'none';
+        }
+
+        // 7. Dados de VPN - Create
+        const btnAddVPN = document.getElementById('addVpnEntryBtn');
+        if (btnAddVPN) {
+            btnAddVPN.style.display = P.can('Dados de VPN', 'can_create') ? '' : 'none';
+        }
+
+        // 8. Dados de URL - Create
+        const btnAddURL = document.getElementById('addUrlEntryBtn');
+        if (btnAddURL) {
+            btnAddURL.style.display = P.can('Dados de URL', 'can_create') ? '' : 'none';
         }
     };
 
