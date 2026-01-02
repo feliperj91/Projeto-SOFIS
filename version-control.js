@@ -156,6 +156,7 @@
         const canEditHistory = P ? P.can('Controle de Versões - Histórico', 'can_view') : true;
         const canEditVersion = P ? P.can('Controle de Versões - Registrar atualização', 'can_edit') : true;
         const canCreateVersion = P ? P.can('Controle de Versões - Registrar atualização', 'can_create') : true;
+        const canDeleteVersion = P ? P.can('Controle de Versões - Registrar atualização', 'can_delete') : true;
         const canEditClient = P ? P.can('Gestão de Clientes', 'can_edit') : true;
 
         // General status of the card based on items
@@ -207,6 +208,10 @@
                                     ${canEditVersion ? `
                                     <button class="btn-edit-version-small" onclick="window.editVersion('${v.id}')" title="Editar">
                                         <i class="fa-solid fa-pencil"></i>
+                                    </button>` : ''}
+                                    ${canDeleteVersion ? `
+                                    <button class="btn-edit-version-small btn-danger" onclick="window.deleteVersionControl('${v.id}', '${v.system}', '${group.name}')" title="Excluir" style="margin-left:5px;">
+                                        <i class="fa-solid fa-trash"></i>
                                     </button>` : ''}
                                 </div>
                             </div>
@@ -278,6 +283,22 @@
                 notes: document.getElementById('versionNotesInput').value,
                 responsible: document.getElementById('versionResponsibleSelect').value
             };
+
+            // Permissions Check
+            const P = window.Permissions;
+            if (fields.id) {
+                if (P && !P.can('Controle de Versões - Registrar atualização', 'can_edit')) {
+                    if (window.showToast) window.showToast('🚫 Sem permissão para editar atualizações.', 'error');
+                    sofis_isSaving = false;
+                    return;
+                }
+            } else {
+                if (P && !P.can('Controle de Versões - Registrar atualização', 'can_create')) {
+                    if (window.showToast) window.showToast('🚫 Sem permissão para registrar novas atualizações.', 'error');
+                    sofis_isSaving = false;
+                    return;
+                }
+            }
 
             if (!fields.clientId) {
                 if (window.showToast) window.showToast('⚠️ Selecione um cliente', 'warning');
@@ -496,6 +517,40 @@
     window.closeVersionNotesModal = () => {
         const m = document.getElementById('versionNotesModal');
         if (m) m.classList.add('hidden');
+    };
+
+    window.deleteVersionControl = async (id, system, clientName) => {
+        // Permission Check
+        const P = window.Permissions;
+        if (P && !P.can('Controle de Versões - Registrar atualização', 'can_delete')) {
+            if (window.showToast) window.showToast('🚫 Sem permissão para excluir atualizações.', 'error');
+            return;
+        }
+
+        if (!confirm(`Tem certeza que deseja excluir o registro do sistema "${system}" para o cliente "${clientName}"?`)) return;
+
+        try {
+            if (window.showToast) window.showToast('⏳ Excluindo registro...', 'info');
+
+            const { error } = await window.supabaseClient
+                .from('version_controls')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+
+            if (window.showToast) window.showToast('🗑️ Registro excluído com sucesso!', 'success');
+
+            // Log de Auditoria (Opcional, se existir a função globalmente)
+            if (window.registerAuditLog) {
+                await window.registerAuditLog('EXCLUSÃO', 'Exclusão de Controle de Versão', `Cliente: ${clientName}, Sistema: ${system}`, { id, system, clientName }, null);
+            }
+
+            loadVersionControls(); // Refresh list
+        } catch (err) {
+            console.error('Erro ao excluir versão:', err);
+            if (window.showToast) window.showToast('❌ Erro ao excluir registro.', 'error');
+        }
     };
 
     // Filter Menu Logic
