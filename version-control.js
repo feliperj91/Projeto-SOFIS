@@ -1334,4 +1334,10 @@
     }
 
 
+    // Listen for permissions loaded to re-render UI with correct access levels
+    document.addEventListener('permissions-loaded', () => {
+        console.log("🔄 Re-rendering Version Controls due to permissions update...");
+        renderVersionControls();
+    });
+
 })();

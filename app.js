@@ -5,7 +5,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         rules: {},
 
         async load() {
-            if (!window.supabaseClient) return;
+            if (!window.supabaseClient) {
+                console.error('❌ Supabase Client não encontrado ao carregar permissões.');
+                return;
+            }
 
             try {
                 // 1. Tentar obter sessão real do Supabase Auth
@@ -22,7 +25,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             .from('users')
                             .select('role')
                             .eq('username', user.username)
-                            .single();
+                            .maybeSingle();
 
                         if (!userError && userData) {
                             this.userRole = userData.role;
@@ -32,64 +35,74 @@ document.addEventListener('DOMContentLoaded', async () => {
                     } else {
                         this.userRole = 'TECNICO';
                     }
-                    console.warn('⚠️ Usando login customizado (Legado). Cargo validado no DB:', this.userRole);
+                    console.warn('⚠️ Usando login customizado (Legado). Cargo identificado:', this.userRole);
                 }
 
-                // 3. Carregar regras de permissão para o cargo identificado
+                // 3. Normalização Crítica: Remover acentos e converter para maiúsculas (ex: TÉCNICO -> TECNICO)
+                if (this.userRole) {
+                    this.userRole = this.userRole.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
+                }
+
+                // 4. Carregar regras de permissão para o cargo identificado
                 const { data, error } = await window.supabaseClient
                     .from('role_permissions')
                     .select('*')
                     .eq('role_name', this.userRole);
 
-                if (!error && data) {
-                    this.rules = {};
+                if (error) throw error;
+
+                this.rules = {};
+                if (data) {
                     data.forEach(r => {
                         this.rules[r.module] = r;
                     });
                 }
-                console.log('🔒 Permissões carregadas:', this.userRole, this.rules);
+                console.log('🔒 Permissões carregadas para:', this.userRole, '| Regras:', Object.keys(this.rules).length);
 
-                // Trigger event for other modules (like user-management)
+                // Trigger event for other modules
                 document.dispatchEvent(new CustomEvent('permissions-loaded'));
 
                 // Apply Tab Visibility
                 this.applyTabPermissions();
             } catch (e) {
-                console.error('Erro ao carregar permissões:', e);
+                console.error('❌ Erro crítico ao carregar permissões:', e);
             }
         },
 
         applyTabPermissions() {
+            const P = this;
             const contactsTabBtn = document.querySelector('.tab-btn[data-tab="contacts"]');
             const versionsTabBtn = document.querySelector('.tab-btn[data-tab="versions"]');
             const managementTabBtn = document.getElementById('btnUserManagement');
 
             if (contactsTabBtn) {
-                contactsTabBtn.style.display = this.can('Gestão de Clientes', 'can_view') ? '' : 'none';
+                contactsTabBtn.style.display = P.can('Gestão de Clientes', 'can_view') ? '' : 'none';
             }
             if (versionsTabBtn) {
-                versionsTabBtn.style.display = this.can('Controle de Versões', 'can_view') ? '' : 'none';
+                versionsTabBtn.style.display = P.can('Controle de Versões', 'can_view') ? '' : 'none';
 
                 // Fine-grained buttons in Version Control Tab
                 const pulseBtn = document.getElementById('pulseDashboardBtn');
                 const addVersionBtn = document.getElementById('addVersionBtn');
 
                 if (pulseBtn) {
-                    pulseBtn.style.display = this.can('Controle de Versões - Dashboard', 'can_view') ? '' : 'none';
+                    pulseBtn.style.display = P.can('Controle de Versões - Dashboard', 'can_view') ? '' : 'none';
                 }
                 if (addVersionBtn) {
-                    addVersionBtn.style.display = this.can('Controle de Versões - Registrar atualização', 'can_create') ? '' : 'none';
+                    addVersionBtn.style.display = P.can('Controle de Versões - Registrar atualização', 'can_create') ? '' : 'none';
                 }
             }
             if (managementTabBtn) {
-                managementTabBtn.style.display = this.can('Gestão de Usuários', 'can_view') ? '' : 'none';
+                managementTabBtn.style.display = P.can('Gestão de Usuários', 'can_view') ? '' : 'none';
             }
         },
 
         can(moduleName, action) {
-            // action: 'can_view', 'can_create', 'can_edit', 'can_delete'
+            // Bypass para Administrador
+            if (this.userRole === 'ADMINISTRADOR') return true;
+
             const mod = this.rules[moduleName];
-            if (!mod) return false; // Default deny
+            if (!mod) return false; // Default deny para outros cargos se a regra não existir
             return !!mod[action];
         }
     };
@@ -3481,31 +3494,37 @@ document.addEventListener('DOMContentLoaded', async () => {
         // 4. Controle de Versões - Create (inside tab)
         const btnAddVersion = document.getElementById('addVersionBtn');
         if (btnAddVersion) {
-            btnAddVersion.style.display = P.can('Controle de Versões', 'can_create') ? '' : 'none';
+            btnAddVersion.style.display = P.can('Controle de Versões - Registrar atualização', 'can_create') ? '' : 'none';
         }
 
-        // 5. User Management - handled separately, but let's reinforce hiding tab button
+        // 4.1 Controle de Versões - Dashboard
+        const pulseDashboardBtn = document.getElementById('pulseDashboardBtn');
+        if (pulseDashboardBtn) {
+            pulseDashboardBtn.style.display = P.can('Controle de Versões - Dashboard', 'can_view') ? '' : 'none';
+        }
+
+        // 5. User Management - Tab Button
         const userMngBtn = document.getElementById('btnUserManagement');
-        if (userMngBtn && !P.can('Gestão de Usuários', 'can_view')) {
-            userMngBtn.style.setProperty('display', 'none', 'important');
+        if (userMngBtn) {
+            userMngBtn.style.display = P.can('Gestão de Usuários', 'can_view') ? '' : 'none';
         }
 
         // 6. Dados de SQL - Create
         const btnAddServer = document.getElementById('addServerEntryBtn');
         if (btnAddServer) {
-            btnAddServer.style.display = P.can('Dados de SQL', 'can_create') ? '' : 'none';
+            btnAddServer.style.display = P.can('Banco de Dados', 'can_create') ? '' : 'none';
         }
 
         // 7. Dados de VPN - Create
         const btnAddVPN = document.getElementById('addVpnEntryBtn');
         if (btnAddVPN) {
-            btnAddVPN.style.display = P.can('Dados de VPN', 'can_create') ? '' : 'none';
+            btnAddVPN.style.display = P.can('VPN', 'can_create') ? '' : 'none';
         }
 
         // 8. Dados de URL - Create
         const btnAddURL = document.getElementById('addUrlEntryBtn');
         if (btnAddURL) {
-            btnAddURL.style.display = P.can('Dados de URL', 'can_create') ? '' : 'none';
+            btnAddURL.style.display = P.can('URLs', 'can_create') ? '' : 'none';
         }
     };
 
