@@ -2051,6 +2051,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         serverClientIdInput.value = clientId;
 
+        // Permissions
+        const canCreate = window.Permissions.can('Dados de SQL', 'can_create');
+        if (addServerEntryBtn) {
+            addServerEntryBtn.style.display = canCreate ? 'flex' : 'none';
+        }
+
         // Initialize servers array if it doesn't exist
         if (!client.servers) {
             client.servers = [];
@@ -2379,6 +2385,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         const listContainer = document.getElementById('vpnList');
         if (!listContainer) return;
 
+        // Permissions
+        const P = window.Permissions;
+        const canEdit = P ? P.can('Dados de VPN', 'can_edit') : false;
+        const canDelete = P ? P.can('Dados de VPN', 'can_delete') : false;
+
         if (!client.vpns || client.vpns.length === 0) {
             listContainer.innerHTML = `
                 <div class="servers-grid-empty">
@@ -2390,6 +2401,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         listContainer.innerHTML = client.vpns.map((vpn, index) => {
+            const editButton = canEdit ? `
+                            <button class="btn-icon" onclick="editVpnRecord('${client.id}', ${index})" title="Editar">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>` : '';
+
+            const deleteButton = canDelete ? `
+                            <button class="btn-icon btn-danger" onclick="deleteVpnRecord('${client.id}', ${index})" title="Excluir">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>` : '';
+
             return `
                 <div class="server-card">
                     <div class="server-card-header">
@@ -2398,12 +2419,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <span class="server-client-badge">${escapeHtml(client.name)}</span>
                         </div>
                         <div class="server-card-actions">
-                            <button class="btn-icon" onclick="editVpnRecord('${client.id}', ${index})" title="Editar">
-                                <i class="fa-solid fa-pen"></i>
-                            </button>
-                            <button class="btn-icon btn-danger" onclick="deleteVpnRecord('${client.id}', ${index})" title="Excluir">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
+                            ${editButton}
+                            ${deleteButton}
                         </div>
                     </div>
                     <div class="credential-item">
@@ -2489,6 +2506,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!client) return;
 
         vpnClientIdInput.value = clientId;
+
+        // Permissions
+        const canCreate = window.Permissions.can('Dados de VPN', 'can_create');
+        if (addVpnEntryBtn) {
+            addVpnEntryBtn.style.display = canCreate ? 'flex' : 'none';
+        }
+
         if (!client.vpns) client.vpns = [];
 
         // Set client name in subtitle
@@ -2589,6 +2613,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!client) return;
 
         urlClientIdInput.value = clientId;
+
+        // Permissions
+        const canCreate = window.Permissions.can('Dados de URL', 'can_create');
+        if (addUrlEntryBtn) {
+            addUrlEntryBtn.style.display = canCreate ? 'flex' : 'none';
+        }
+
         if (!client.urls) client.urls = [];
 
         const urlModalClientName = document.getElementById('urlModalClientName');
@@ -2683,6 +2714,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         const listContainer = document.getElementById('urlsList');
         if (!listContainer) return;
 
+        // Permissions
+        const P = window.Permissions;
+        const canEdit = P ? P.can('Dados de URL', 'can_edit') : false;
+        const canDelete = P ? P.can('Dados de URL', 'can_delete') : false;
+
         const filterValue = currentUrlFilter;
         let filteredUrls = client.urls || [];
 
@@ -2705,6 +2741,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             const environmentClass = url.environment === 'producao' ? 'producao' : 'homologacao';
             const environmentLabel = url.environment === 'producao' ? 'Produção' : 'Homologação';
 
+            const editButton = canEdit ? `
+                            <button class="btn-icon" onclick="editUrlRecord('${client.id}', ${originalIndex})" title="Editar">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>` : '';
+
+            const deleteButton = canDelete ? `
+                            <button class="btn-icon btn-danger" onclick="deleteUrlRecord('${client.id}', ${originalIndex})" title="Excluir">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>` : '';
+
             return `
                 <div class="server-card">
                     <div class="server-card-header">
@@ -2713,12 +2759,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <span class="server-client-badge">${escapeHtml(client.name)}</span>
                         </div>
                         <div class="server-card-actions">
-                            <button class="btn-icon" onclick="editUrlRecord('${client.id}', ${originalIndex})" title="Editar">
-                                <i class="fa-solid fa-pen"></i>
-                            </button>
-                            <button class="btn-icon btn-danger" onclick="deleteUrlRecord('${client.id}', ${originalIndex})" title="Excluir">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
+                            ${editButton}
+                            ${deleteButton}
                         </div>
                     </div>
                     <div class="server-info">

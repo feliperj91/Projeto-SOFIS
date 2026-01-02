@@ -45,9 +45,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const permissionsTableBody = document.getElementById('permissionsTableBody');
     const userSearchInput = document.getElementById('userSearchInput');
     const savePermissionsBtn = document.getElementById('savePermissionsBtn');
+    const addNewUserBtn = document.getElementById('addNewUserBtn');
 
     // --- Initialization ---
     async function initUserManagement() {
+        const canCreate = window.Permissions.can('Gestão de Usuários', 'can_create');
+        if (addNewUserBtn) addNewUserBtn.style.display = canCreate ? 'flex' : 'none';
+
         await loadUsers();
         await loadPermissions('ADMINISTRADOR');
     }
@@ -162,6 +166,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
+        const P = window.Permissions;
+        const canEdit = P ? P.can('Gestão de Usuários', 'can_edit') : false;
+        const canDelete = P ? P.can('Gestão de Usuários', 'can_delete') : false;
+
         list.forEach(u => {
             const roleClass = `badge-${u.role?.toLowerCase() || 'tecnico'}`;
             const creationDate = u.created_at ? new Date(u.created_at).toLocaleDateString('pt-BR') : 'N/A';
@@ -173,6 +181,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 .join('')
                 .toUpperCase()
                 .substring(0, 2);
+
+            const editButton = canEdit ? `
+                        <button class="btn-icon" onclick="window.editUser('${u.id}')" title="Editar">
+                            <i class="fa-solid fa-pencil"></i>
+                        </button>` : '';
+
+            const deleteButton = (canDelete && u.username !== 'admin') ? `
+                            <button class="btn-icon" onclick="window.deleteUser('${u.id}')" title="Excluir" style="color: var(--danger)">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>` : '';
 
             const card = document.createElement('div');
             card.className = 'user-card';
@@ -186,14 +204,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </div>
                     </div>
                     <div class="user-card-actions">
-                        <button class="btn-icon" onclick="window.editUser('${u.id}')" title="Editar">
-                            <i class="fa-solid fa-pencil"></i>
-                        </button>
-                        ${u.username !== 'admin' ? `
-                            <button class="btn-icon" onclick="window.deleteUser('${u.id}')" title="Excluir" style="color: var(--danger)">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        ` : ''}
+                        ${editButton}
+                        ${deleteButton}
                     </div>
                 </div>
                 <div class="user-info-bottom">
