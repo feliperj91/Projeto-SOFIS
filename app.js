@@ -168,33 +168,34 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Load permissions immediately
     await window.Permissions.load();
 
-    // State
-    let clientsRaw = JSON.parse(localStorage.getItem('sofis_clients') || '[]');
-    window.clients = [];
-
-    // Remove duplicates based on ID
-    const uniqueClients = [];
-    const seenIds = new Set();
-    clientsRaw.forEach(client => {
-        if (!seenIds.has(client.id)) {
-            seenIds.add(client.id);
-            uniqueClients.push(client);
-        }
-    });
-    let clients = uniqueClients;
-    window.clients = clients;
-
-    // Save cleaned data back to localStorage
-    if (uniqueClients.length !== clientsRaw.length) {
-        localStorage.setItem('sofis_clients', JSON.stringify(clients));
-        console.log('Removed duplicate clients');
-    }
-
+    // State Variables
+    let clients = [];
+    window.clients = clients; // Ensure window.clients is always the current array
     let editingId = null;
-    let currentClientFilter = 'all'; // 'all', 'favorites', 'regular'
-    let isModalFavorite = false;
+    let currentClientFilter = 'all';
     let favoritesCollapsed = JSON.parse(localStorage.getItem('sofis_favorites_collapsed')) || false;
     let regularCollapsed = JSON.parse(localStorage.getItem('sofis_regular_collapsed')) || false;
+
+    // User Favorites State
+    window.userFavorites = new Set();
+
+    async function loadUserFavorites() {
+        const user = JSON.parse(localStorage.getItem('sofis_user') || '{}');
+        if (!user.username || !window.supabaseClient) return;
+
+        try {
+            const { data, error } = await window.supabaseClient
+                .from('user_favorites')
+                .select('client_id')
+                .eq('username', user.username);
+
+            if (data) {
+                window.userFavorites = new Set(data.map(f => f.client_id));
+            }
+        } catch (e) {
+            console.error('Error loading favorites:', e);
+        }
+    }
     let currentView = localStorage.getItem('sofis_view_mode') || 'list'; // 'list' or 'grid'
 
     // --- Audit Log Helper ---
@@ -509,6 +510,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                             notes: u.notes
                         }))
                     })));
+
+                    // Load user favorites and apply
+                    await loadUserFavorites();
+                    clients.forEach(c => {
+                        c.isFavorite = window.userFavorites.has(c.id);
+                    });
+
                 } else {
                     clients = JSON.parse(localStorage.getItem('sofis_clients')) || [];
                 }
@@ -2017,12 +2025,46 @@ document.addEventListener('DOMContentLoaded', async () => {
         openModal();
     };
 
-    window.toggleFavorite = (id) => {
+    window.toggleFavorite = async (id) => {
         const client = clients.find(c => c.id === id);
-        if (client) {
-            client.isFavorite = !client.isFavorite;
-            saveToLocal();
-            applyClientFilter(); // Use the unified filter system
+        if (!client) return;
+
+        const user = JSON.parse(localStorage.getItem('sofis_user') || '{}');
+        if (!user.username) {
+            showToast('⚠️ Erro ao identificar usuário.', 'warning');
+            return;
+        }
+
+        const isFav = window.userFavorites.has(id);
+
+        try {
+            if (isFav) {
+                // Remove
+                const { error } = await window.supabaseClient
+                    .from('user_favorites')
+                    .delete()
+                    .eq('username', user.username)
+                    .eq('client_id', id);
+
+                if (!error) {
+                    window.userFavorites.delete(id);
+                    client.isFavorite = false;
+                }
+            } else {
+                // Add
+                const { error } = await window.supabaseClient
+                    .from('user_favorites')
+                    .insert([{ username: user.username, client_id: id }]);
+
+                if (!error) {
+                    window.userFavorites.add(id);
+                    client.isFavorite = true;
+                }
+            }
+            applyClientFilter();
+        } catch (e) {
+            console.error("Error toggling favorite:", e);
+            showToast('❌ Erro ao atualizar favorito.', 'error');
         }
     };
 

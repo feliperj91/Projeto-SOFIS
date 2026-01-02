@@ -169,13 +169,23 @@
             else if (s === 'warning' && overallStatus !== 'outdated') overallStatus = 'warning';
         });
 
+        // Check availabilities for auto-filter
+        const hasProd = group.versions.some(v => v.environment === 'producao');
+        const hasHomol = group.versions.some(v => v.environment === 'homologacao');
+
+        // Default to production unless only homologation exists
+        let activeFilter = 'producao';
+        if (!hasProd && hasHomol) {
+            activeFilter = 'homologacao';
+        }
+
         // Building row HTML precisely as the reference image
         const versionsHtml = group.versions.map(v => {
             const status = utils.getStatus(v.updated_at);
             const timeInfo = utils.getTimeInfo(v.updated_at);
 
             return `
-                <div class="version-item-row status-${status}" data-environment="${v.environment}" style="${v.environment !== 'producao' ? 'display:none;' : ''}">
+                <div class="version-item-row status-${status}" data-environment="${v.environment}" style="${v.environment !== activeFilter ? 'display:none;' : ''}">
                     <div class="version-row-main">
                         <!-- Left section: System and Badge -->
                         <div class="version-left-info">
@@ -236,10 +246,10 @@
                             <i class="fa-solid fa-filter"></i>
                         </button>
                         <div class="card-filter-menu hidden">
-                            <div class="filter-menu-item" onclick="window.applyCardEnvFilter(this, 'producao')">
+                            <div class="filter-menu-item ${activeFilter === 'producao' ? 'active' : ''}" onclick="window.applyCardEnvFilter(this, 'producao')">
                                 <i class="fa-solid fa-server"></i> Produção
                             </div>
-                            <div class="filter-menu-item" onclick="window.applyCardEnvFilter(this, 'homologacao')">
+                            <div class="filter-menu-item ${activeFilter === 'homologacao' ? 'active' : ''}" onclick="window.applyCardEnvFilter(this, 'homologacao')">
                                 <i class="fa-solid fa-flask"></i> Homologação
                             </div>
                         </div>
