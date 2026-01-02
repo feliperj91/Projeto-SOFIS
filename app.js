@@ -6,31 +6,36 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         async load() {
             if (!window.supabaseClient) return;
-            const user = JSON.parse(localStorage.getItem('sofis_user') || '{}');
-
-            // Special Case: admin username always gets full access if role is missing or fallback
-            // But if role exists, we respect DB. 
-            // Actually, let's just fetch from DB. 
 
             try {
-                // SECURITY: Fetch role directly from DB to prevent localStorage manipulation
-                const { data: userData, error: userError } = await window.supabaseClient
-                    .from('users')
-                    .select('role')
-                    .eq('username', user.username)
-                    .single();
+                // 1. Tentar obter sessão real do Supabase Auth
+                const { data: { session }, error: sessionError } = await window.supabaseClient.auth.getSession();
 
-                if (!userError && userData) {
-                    this.userRole = userData.role;
-                    // Sync localStorage (non-critical, for UI display only)
-                    if (user.role !== userData.role) {
-                        user.role = userData.role;
-                        localStorage.setItem('sofis_user', JSON.stringify(user));
-                    }
+                if (session && session.user) {
+                    this.userRole = session.user.user_metadata.role || 'TECNICO';
+                    console.log('🔑 Logado via Supabase Auth:', session.user.email, '| Cargo:', this.userRole);
                 } else {
-                    this.userRole = user.role || 'TECNICO';
+                    // 2. Fallback Seguro: Busca o cargo no Banco de Dados pelo username do localStorage
+                    const user = JSON.parse(localStorage.getItem('sofis_user') || '{}');
+                    if (user.username) {
+                        const { data: userData, error: userError } = await window.supabaseClient
+                            .from('users')
+                            .select('role')
+                            .eq('username', user.username)
+                            .single();
+
+                        if (!userError && userData) {
+                            this.userRole = userData.role;
+                        } else {
+                            this.userRole = user.role || 'TECNICO';
+                        }
+                    } else {
+                        this.userRole = 'TECNICO';
+                    }
+                    console.warn('⚠️ Usando login customizado (Legado). Cargo validado no DB:', this.userRole);
                 }
 
+                // 3. Carregar regras de permissão para o cargo identificado
                 const { data, error } = await window.supabaseClient
                     .from('role_permissions')
                     .select('*')
@@ -2712,6 +2717,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function handleDeleteWebLaudo() {
+        // Permission Check
+        if (window.Permissions && !window.Permissions.can('URLs', 'can_delete')) {
+            showToast('🚫 Sem permissão para excluir WebLaudo.', 'error');
+            return;
+        }
         if (!confirm('Tem certeza que deseja excluir o WebLaudo?')) return;
         const id = urlClientIdInput.value;
         const client = clients.find(c => c.id === id);
@@ -2883,9 +2893,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         const client = clients.find(c => c.id === id);
         if (!client) return;
 
+        // Permissions
+        const editingIndex = document.getElementById('editingUrlIndex').value;
+        const P = window.Permissions;
+        if (editingIndex !== '') {
+            if (P && !P.can('URLs', 'can_edit')) {
+                showToast('🚫 Sem permissão para editar URLs.', 'error');
+                return;
+            }
+        } else {
+            if (P && !P.can('URLs', 'can_create')) {
+                showToast('🚫 Sem permissão para criar URLs.', 'error');
+                return;
+            }
+        }
+
         if (!client.urls) client.urls = [];
 
-        const editingIndex = document.getElementById('editingUrlIndex').value;
         const urlBefore = (editingIndex !== '') ? JSON.parse(JSON.stringify(client.urls[parseInt(editingIndex)])) : null;
 
         if (!urlEnvironmentSelect.value) {
@@ -2931,6 +2955,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     window.editUrlRecord = (clientId, index) => {
+        // Permission Check
+        if (window.Permissions && !window.Permissions.can('URLs', 'can_edit')) {
+            showToast('🚫 Sem permissão para editar URLs.', 'error');
+            return;
+        }
         const client = clients.find(c => c.id === clientId);
         if (!client || !client.urls || !client.urls[index]) return;
 
@@ -2951,6 +2980,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     window.deleteUrlRecord = async (clientId, index) => {
+        // Permission Check
+        if (window.Permissions && !window.Permissions.can('URLs', 'can_delete')) {
+            showToast('🚫 Sem permissão para excluir URLs.', 'error');
+            return;
+        }
         if (!confirm('Tem certeza que deseja excluir este sistema?')) return;
         const client = clients.find(c => c.id === clientId);
         if (!client || !client.urls) return;
@@ -2965,6 +2999,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function handleWebLaudoSave() {
+        // Permission Check (WebLaudo is considered part of URLs for simplicity)
+        if (window.Permissions && !window.Permissions.can('URLs', 'can_edit')) {
+            showToast('🚫 Sem permissão para editar WebLaudo.', 'error');
+            return;
+        }
         const id = urlClientIdInput.value;
         const client = clients.find(c => c.id === id);
         if (!client) return;
