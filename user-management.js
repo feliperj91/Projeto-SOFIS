@@ -428,6 +428,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     window.deleteUser = async (id) => {
+        // Security Check
+        if (!window.Permissions.can('Gestão de Usuários - Usuários', 'can_delete')) {
+            window.showToast('🚫 Acesso negado: Você não tem permissão para excluir usuários.', 'error');
+            return;
+        }
+
         const u = usersList.find(x => x.id === id);
         if (!u) return;
         if (u.username === 'admin') {
