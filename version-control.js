@@ -246,7 +246,7 @@
                     </div>
 
                     ${canCreateVersion ? `
-                    <button class="btn-register-version" onclick="window.prefillClientVersion('${group.id}', '${utils.escapeHtml(group.name)}')" title="Registrar serviço para este cliente">
+                    <button class="btn-register-version" onclick="window.prefillClientVersion('${group.id}', '${utils.escapeHtml(group.name)}')" title="Registrar Atualização">
                         <i class="fa-solid fa-plus"></i>
                     </button>` : ''}
                 </div>
@@ -404,6 +404,10 @@
         // Refresh client list if adding new version control to ensure we filter out existing ones
         if (!id && window.populateVersionClientSelect) {
             window.populateVersionClientSelect();
+        }
+
+        if (window.populateResponsibleSelect) {
+            window.populateResponsibleSelect();
         }
 
         const modal = document.getElementById('versionModal');
@@ -661,8 +665,14 @@
         const dl = document.getElementById('versionClientList');
         if (!dl) return;
 
-        // Se já temos cache e não está vazio, não busca de novo (ou busca se quiser refresh, mas vamos economizar)
-        if (cachedClientsForVersion.length === 0) {
+        // Use global window.clients if available (source of truth), otherwise fetch
+        let clientsToUse = [];
+
+        if (window.clients && window.clients.length > 0) {
+            clientsToUse = window.clients;
+        } else if (cachedClientsForVersion.length > 0) {
+            clientsToUse = cachedClientsForVersion;
+        } else {
             try {
                 const { data, error } = await window.supabaseClient
                     .from('clients')
@@ -671,6 +681,7 @@
 
                 if (!error && data) {
                     cachedClientsForVersion = data;
+                    clientsToUse = data;
                 }
             } catch (e) {
                 console.error("Erro ao buscar clientes para select:", e);
@@ -679,7 +690,8 @@
         }
 
         dl.innerHTML = '';
-        cachedClientsForVersion.forEach(c => {
+        // Sort explicitly just in case
+        clientsToUse.sort((a, b) => a.name.localeCompare(b.name)).forEach(c => {
             const opt = document.createElement('option');
             opt.value = c.name;
             dl.appendChild(opt);
@@ -693,7 +705,7 @@
             const updateHidden = () => {
                 const val = input.value;
                 // Busca exata (case sensitive ou não? nomes costumam ser exatos no datalist)
-                const match = cachedClientsForVersion.find(c => c.name === val);
+                const match = clientsToUse.find(c => c.name === val);
                 if (match) {
                     hidden.value = match.id;
                     input.setCustomValidity(""); // Válido
@@ -705,6 +717,47 @@
 
             input.oninput = updateHidden;
             input.onchange = updateHidden; // Garantia extra
+        }
+    };
+
+    let cachedUsersForResponsible = [];
+    window.populateResponsibleSelect = async () => {
+        const select = document.getElementById('versionResponsibleSelect');
+        if (!select) return;
+
+        // If we have cached users, verify if select is already populated (check length > 1 because of default option)
+        // However, to be safe, we can rebuild if cache exists.
+        if (cachedUsersForResponsible.length === 0) {
+            try {
+                const { data, error } = await window.supabaseClient
+                    .from('users')
+                    .select('username') // Assuming 'username' is the display name or we have 'name'
+                    .order('username');
+
+                if (!error && data) {
+                    cachedUsersForResponsible = data;
+                }
+            } catch (e) {
+                console.error("Erro ao buscar usuários para responsável:", e);
+            }
+        }
+
+        // Save current selection if any (mostly relevant for edit or re-renders)
+        const currentVal = select.value;
+
+        // Clear and add default
+        select.innerHTML = '<option value="">Selecione...</option>';
+
+        cachedUsersForResponsible.forEach(u => {
+            const opt = document.createElement('option');
+            opt.value = u.username;
+            opt.textContent = u.username;
+            select.appendChild(opt);
+        });
+
+        if (currentVal) {
+            // Try to restore selection if it still exists
+            select.value = currentVal;
         }
     };
 
