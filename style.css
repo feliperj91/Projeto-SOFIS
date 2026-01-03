@@ -2360,3 +2360,15 @@ button:hover .vpn-icon-img {
     align-items: center;
     opacity: 0.8;
 }
+
+/* Modern Confirmation Modal Animation */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}

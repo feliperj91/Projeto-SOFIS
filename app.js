@@ -315,9 +315,71 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (window.applyPermissions) window.applyPermissions();
     });
 
+    // Modern Confirmation Modal
+    window.showConfirm = function (message, title = 'Confirmação', icon = 'fa-question') {
+        return new Promise((resolve) => {
+            const confirmModal = document.getElementById('confirmModal');
+            const confirmTitle = document.getElementById('confirmTitle');
+            const confirmMessage = document.getElementById('confirmMessage');
+            const confirmIcon = document.getElementById('confirmIcon');
+            const confirmOkBtn = document.getElementById('confirmOkBtn');
+            const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+
+            if (!confirmModal) {
+                // Fallback to native confirm if modal not found
+                resolve(confirm(message));
+                return;
+            }
+
+            // Set content
+            confirmTitle.textContent = title;
+            confirmMessage.textContent = message;
+            confirmIcon.className = `fa-solid ${icon}`;
+
+            // Show modal
+            confirmModal.classList.remove('hidden');
+
+            // Handle buttons
+            const handleOk = () => {
+                confirmModal.classList.add('hidden');
+                cleanup();
+                resolve(true);
+            };
+
+            const handleCancel = () => {
+                confirmModal.classList.add('hidden');
+                cleanup();
+                resolve(false);
+            };
+
+            const cleanup = () => {
+                confirmOkBtn.removeEventListener('click', handleOk);
+                confirmCancelBtn.removeEventListener('click', handleCancel);
+            };
+
+            confirmOkBtn.addEventListener('click', handleOk);
+            confirmCancelBtn.addEventListener('click', handleCancel);
+
+            // ESC key to cancel
+            const handleEsc = (e) => {
+                if (e.key === 'Escape') {
+                    handleCancel();
+                    document.removeEventListener('keydown', handleEsc);
+                }
+            };
+            document.addEventListener('keydown', handleEsc);
+        });
+    };
+
     if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
-            if (confirm('Deseja realmente sair do sistema?')) {
+        logoutBtn.addEventListener('click', async () => {
+            const confirmed = await window.showConfirm(
+                'Deseja realmente sair do sistema?',
+                'Confirmar Saída',
+                'fa-right-from-bracket'
+            );
+
+            if (confirmed) {
                 localStorage.removeItem('sofis_user');
                 window.location.href = 'login.html';
             }
@@ -3637,12 +3699,4 @@ document.addEventListener('DOMContentLoaded', async () => {
             showToast(`Erro: Cliente não encontrado (ID: ${id})`, 'error');
         }
     };
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
-            if (confirm('Deseja realmente sair do sistema?')) {
-                localStorage.removeItem('sofis_user');
-                window.location.href = 'login.html';
-            }
-        });
-    }
 });

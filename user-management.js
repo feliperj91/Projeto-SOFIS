@@ -67,6 +67,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     const savePermissionsBtn = document.getElementById('savePermissionsBtn');
     const addNewUserBtn = document.getElementById('addNewUserBtn');
 
+    // Toggle Password Visibility
+    const toggleUserPasswordBtn = document.getElementById('toggleUserPasswordBtn');
+    const userPasswordInput = document.getElementById('userPassword');
+
+    if (toggleUserPasswordBtn && userPasswordInput) {
+        toggleUserPasswordBtn.addEventListener('click', () => {
+            const type = userPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            userPasswordInput.setAttribute('type', type);
+
+            const icon = toggleUserPasswordBtn.querySelector('i');
+            if (type === 'text') {
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+    }
+
     // --- Initialization ---
     // --- Initialization ---
     async function initUserManagement() {
@@ -441,7 +461,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        if (!confirm(`Deseja realmente remover o usuário ${u.full_name} (@${u.username})?`)) return;
+        const confirmed = await window.showConfirm(
+            `Deseja realmente remover o usuário ${u.full_name} (@${u.username})?`,
+            'Confirmar Exclusão',
+            'fa-trash'
+        );
+
+        if (!confirmed) return;
 
         try {
             const { error } = await window.supabaseClient.from('users').delete().eq('id', id);
