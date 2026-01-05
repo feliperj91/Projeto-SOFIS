@@ -1690,8 +1690,8 @@ button:hover .vpn-icon-img {
     justify-content: space-between;
     align-items: center;
     gap: 12px;
-    margin: 0 0 24px 0 !important;
-    /* Espaço aumentado conforme solicitado */
+    margin: 0 0 50px 0 !important;
+    /* Espaço aumentado de 24px para 50px */
     padding: 0;
     flex-wrap: wrap;
     min-height: 40px;
@@ -2359,4 +2359,16 @@ button:hover .vpn-icon-img {
     display: flex;
     align-items: center;
     opacity: 0.8;
+}
+
+/* Modern Confirmation Modal Animation */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }

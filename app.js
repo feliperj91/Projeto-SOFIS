@@ -1,30 +1,201 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    // State
-    let clients = JSON.parse(localStorage.getItem('sofis_clients') || '[]');
-    window.clients = clients;
+    // --- Permissions System ---
+    window.Permissions = {
+        userRole: 'TECNICO',
+        rules: {},
 
-    // Remove duplicates based on ID
-    const uniqueClients = [];
-    const seenIds = new Set();
-    clients.forEach(client => {
-        if (!seenIds.has(client.id)) {
-            seenIds.add(client.id);
-            uniqueClients.push(client);
+        async load() {
+            if (!window.supabaseClient) {
+                console.error('❌ Permissions: Supabase Client not found.');
+                return;
+            }
+
+            try {
+                let foundRole = null;
+                let source = 'DEFAULT';
+
+                // 1. Prioridade: Usuário Logado via Formulário (Legacy/Custom)
+                const localUser = JSON.parse(localStorage.getItem('sofis_user') || '{}');
+                if (localUser.username) {
+                    const { data: userData } = await window.supabaseClient
+                        .from('users')
+                        .select('role')
+                        .eq('username', localUser.username)
+                        .maybeSingle();
+
+                    if (userData) {
+                        foundRole = userData.role;
+                        source = 'DATABASE (users table)';
+
+                        // Sync localStorage
+                        if (localUser.role !== foundRole) {
+                            console.log(`🔄 Syncing role for ${localUser.username}: ${localUser.role} -> ${foundRole}`);
+                            localUser.role = foundRole;
+                            localStorage.setItem('sofis_user', JSON.stringify(localUser));
+                        }
+                    } else {
+                        foundRole = localUser.role;
+                        source = 'LOCALSTORAGE (cache)';
+                    }
+                }
+
+                // 2. Secundário: Sessão do Supabase Auth (se não houver login local)
+                if (!foundRole) {
+                    const { data: { session } } = await window.supabaseClient.auth.getSession();
+                    if (session && session.user) {
+                        foundRole = session.user.user_metadata.role;
+                        source = 'SUPABASE AUTH SESSION';
+                    }
+                }
+
+                this.userRole = (foundRole || 'TECNICO').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
+
+                // 4. Carregar regras de permissão para o cargo identificado
+                const { data, error } = await window.supabaseClient
+                    .from('role_permissions')
+                    .select('*')
+                    .eq('role_name', this.userRole);
+
+                if (error) throw error;
+
+                this.rules = {};
+                if (data && data.length > 0) {
+                    data.forEach(r => {
+                        this.rules[r.module] = r;
+                    });
+                }
+
+                console.log(`🔒 Permissions: [${this.userRole}] detected via ${source}. Rules loaded: ${Object.keys(this.rules).length}`);
+
+                // Trigger event for other modules
+                document.dispatchEvent(new CustomEvent('permissions-loaded'));
+
+                // Apply Global Visibility
+                if (window.applyPermissions) window.applyPermissions();
+            } catch (e) {
+                console.error('❌ Permissions: Error during load:', e);
+            }
+        },
+
+        applyTabPermissions() {
+            const P = this;
+            const contactsTabBtn = document.querySelector('.tab-btn[data-tab="contacts"]');
+            const versionsTabBtn = document.querySelector('.tab-btn[data-tab="versions"]');
+            const managementTabBtn = document.getElementById('btnUserManagement');
+
+            if (contactsTabBtn) {
+                contactsTabBtn.style.display = P.can('Gestão de Clientes', 'can_view') ? '' : 'none';
+            }
+            if (versionsTabBtn) {
+                versionsTabBtn.style.display = P.can('Controle de Versões', 'can_view') ? '' : 'none';
+
+                // Fine-grained buttons in Version Control Tab
+                const pulseBtn = document.getElementById('pulseDashboardBtn');
+                const addVersionBtn = document.getElementById('addVersionBtn');
+
+                if (pulseBtn) {
+                    pulseBtn.style.display = P.can('Controle de Versões - Dashboard', 'can_view') ? '' : 'none';
+                }
+                if (addVersionBtn) {
+                    addVersionBtn.style.display = P.can('Controle de Versões', 'can_create') ? '' : 'none';
+                }
+            }
+            if (managementTabBtn) {
+                managementTabBtn.style.display = P.can('Gestão de Usuários', 'can_view') ? '' : 'none';
+            }
+        },
+
+        can(moduleName, action) {
+            if (this.userRole === 'ADMINISTRADOR') return true;
+            const mod = this.rules[moduleName];
+            return mod ? !!mod[action] : false;
         }
+    };
+
+    // --- Global Permission Enforcement ---
+    window.applyPermissions = () => {
+        const P = window.Permissions;
+        if (!P) return;
+
+        // 1. Logs e Atividades
+        const btnActivity = document.getElementById('toggleActivityBtn');
+        if (btnActivity) {
+            btnActivity.style.display = P.can('Logs e Atividades', 'can_view') ? '' : 'none';
+        }
+
+        // 2. Clientes e Contatos - Create
+        const btnAddClient = document.getElementById('addClientBtn');
+        if (btnAddClient) {
+            btnAddClient.style.display = P.can('Gestão de Clientes', 'can_create') ? '' : 'none';
+        }
+
+        // 3. Controle de Versões - View Tab
+        const versionTabBtn = document.querySelector('.tab-btn[data-tab="versions"]');
+        if (versionTabBtn) {
+            versionTabBtn.style.display = P.can('Controle de Versões', 'can_view') ? '' : 'none';
+        }
+
+        // 4. Controle de Versões - Buttons
+        const pulseBtn = document.getElementById('pulseDashboardBtn');
+        const addVersionBtn = document.getElementById('addVersionBtn');
+        if (pulseBtn) pulseBtn.style.display = P.can('Controle de Versões - Dashboard', 'can_view') ? '' : 'none';
+        if (addVersionBtn) addVersionBtn.style.display = P.can('Controle de Versões', 'can_create') ? '' : 'none';
+
+        // 5. User Management - Tab Button
+        const userMngBtn = document.getElementById('btnUserManagement');
+        if (userMngBtn) {
+            userMngBtn.style.display = P.can('Gestão de Usuários', 'can_view') ? '' : 'none';
+        }
+
+        // 6. SQL/VPN/URL - Create
+        const btnAddServer = document.getElementById('addServerEntryBtn');
+        if (btnAddServer) btnAddServer.style.display = P.can('Banco de Dados', 'can_create') ? '' : 'none';
+
+        const btnAddVPN = document.getElementById('addVpnEntryBtn');
+        if (btnAddVPN) btnAddVPN.style.display = P.can('VPN', 'can_create') ? '' : 'none';
+
+        const btnAddURL = document.getElementById('addUrlEntryBtn');
+        if (btnAddURL) btnAddURL.style.display = P.can('URLs', 'can_create') ? '' : 'none';
+    };
+
+    // Re-update display when permissions are loaded/changed
+    document.addEventListener('permissions-loaded', () => {
+        console.log("🔒 Permissions Loaded Event: Applying Visibility...");
+        if (window.updateUserDisplay) window.updateUserDisplay();
+        window.applyPermissions();
     });
-    clients = uniqueClients;
 
-    // Save cleaned data back to localStorage
-    if (uniqueClients.length !== JSON.parse(localStorage.getItem('sofis_clients') || '[]').length) {
-        localStorage.setItem('sofis_clients', JSON.stringify(clients));
-        console.log('Removed duplicate clients');
-    }
+    // Load permissions immediately
+    await window.Permissions.load();
 
+    // State Variables
+    let clients = [];
+    window.clients = clients; // Ensure window.clients is always the current array
     let editingId = null;
-    let currentClientFilter = 'all'; // 'all', 'favorites', 'regular'
-    let isModalFavorite = false;
+    let currentClientFilter = 'all';
     let favoritesCollapsed = JSON.parse(localStorage.getItem('sofis_favorites_collapsed')) || false;
     let regularCollapsed = JSON.parse(localStorage.getItem('sofis_regular_collapsed')) || false;
+
+    // User Favorites State
+    window.userFavorites = new Set();
+
+    async function loadUserFavorites() {
+        const user = JSON.parse(localStorage.getItem('sofis_user') || '{}');
+        if (!user.username || !window.supabaseClient) return;
+
+        try {
+            const { data, error } = await window.supabaseClient
+                .from('user_favorites')
+                .select('client_id')
+                .eq('username', user.username);
+
+            if (data) {
+                window.userFavorites = new Set(data.map(f => f.client_id));
+            }
+        } catch (e) {
+            console.error('Error loading favorites:', e);
+        }
+    }
     let currentView = localStorage.getItem('sofis_view_mode') || 'list'; // 'list' or 'grid'
 
     // --- Audit Log Helper ---
@@ -32,15 +203,50 @@ document.addEventListener('DOMContentLoaded', async () => {
         const user = JSON.parse(localStorage.getItem('sofis_user') || '{}');
         const username = user.username || 'Sistema';
 
+        // Helper to mask sensitive fields in objects
+        const sanitize = (obj) => {
+            if (!obj || typeof obj !== 'object') return obj;
+            try {
+                const s = JSON.parse(JSON.stringify(obj)); // Deep copy
+
+                const mask = (item) => {
+                    if (item.password) item.password = '********';
+                    if (item.credentials && Array.isArray(item.credentials)) {
+                        item.credentials.forEach(c => { if (c.password) c.password = '********'; });
+                    }
+                };
+
+                if (Array.isArray(s)) {
+                    s.forEach(mask);
+                } else {
+                    mask(s);
+                }
+                return s;
+            } catch (e) {
+                return obj;
+            }
+        };
+
         if (window.supabaseClient) {
             try {
+                let cName = (newVal && newVal.name) || (oldVal && oldVal.name);
+
+                // If not found in objects, try to extract from details string (format: "Cliente: NAME, ...")
+                if (!cName && details && details.includes('Cliente: ')) {
+                    const match = details.match(/Cliente:\s*([^,]+)/);
+                    if (match && match[1]) {
+                        cName = match[1].trim();
+                    }
+                }
+
                 await window.supabaseClient.from('audit_logs').insert([{
                     username: username,
                     operation_type: opType,
                     action: action,
                     details: details,
-                    old_value: oldVal,
-                    new_value: newVal
+                    old_value: sanitize(oldVal),
+                    new_value: sanitize(newVal),
+                    client_name: cName || null
                 }]);
                 // Refresh activity feed if sidebar is open or after an action
                 await fetchRecentActivities();
@@ -90,15 +296,90 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.updateUserDisplay = () => {
         const userDisplay = document.getElementById('currentUserDisplay');
         const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}');
+        const P = window.Permissions;
+
         if (userDisplay && currentUser.username) {
-            userDisplay.innerHTML = `<i class="fa-solid fa-user"></i> ${currentUser.username}`;
+            const roleInfo = P ? `[${P.userRole}]` : '';
+            userDisplay.innerHTML = `
+                <div class="user-info-badge">
+                    <i class="fa-solid fa-user"></i> <span>${currentUser.username}</span>
+                    <small style="opacity: 0.7; font-size: 0.75rem; margin-left: 5px;">${roleInfo}</small>
+                </div>`;
         }
     };
     window.updateUserDisplay();
 
+    // Re-update display when permissions are loaded/changed
+    document.addEventListener('permissions-loaded', () => {
+        window.updateUserDisplay();
+        if (window.applyPermissions) window.applyPermissions();
+    });
+
+    // Modern Confirmation Modal
+    window.showConfirm = function (message, title = 'Confirmação', icon = 'fa-question') {
+        return new Promise((resolve) => {
+            const confirmModal = document.getElementById('confirmModal');
+            const confirmTitle = document.getElementById('confirmTitle');
+            const confirmMessage = document.getElementById('confirmMessage');
+            const confirmIcon = document.getElementById('confirmIcon');
+            const confirmOkBtn = document.getElementById('confirmOkBtn');
+            const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+
+            if (!confirmModal) {
+                // Fallback to native confirm if modal not found
+                resolve(confirm(message));
+                return;
+            }
+
+            // Set content
+            confirmTitle.textContent = title;
+            confirmMessage.textContent = message;
+            confirmIcon.className = `fa-solid ${icon}`;
+
+            // Show modal
+            confirmModal.classList.remove('hidden');
+
+            // Handle buttons
+            const handleOk = () => {
+                confirmModal.classList.add('hidden');
+                cleanup();
+                resolve(true);
+            };
+
+            const handleCancel = () => {
+                confirmModal.classList.add('hidden');
+                cleanup();
+                resolve(false);
+            };
+
+            const cleanup = () => {
+                confirmOkBtn.removeEventListener('click', handleOk);
+                confirmCancelBtn.removeEventListener('click', handleCancel);
+            };
+
+            confirmOkBtn.addEventListener('click', handleOk);
+            confirmCancelBtn.addEventListener('click', handleCancel);
+
+            // ESC key to cancel
+            const handleEsc = (e) => {
+                if (e.key === 'Escape') {
+                    handleCancel();
+                    document.removeEventListener('keydown', handleEsc);
+                }
+            };
+            document.addEventListener('keydown', handleEsc);
+        });
+    };
+
     if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
-            if (confirm('Deseja realmente sair do sistema?')) {
+        logoutBtn.addEventListener('click', async () => {
+            const confirmed = await window.showConfirm(
+                'Deseja realmente sair do sistema?',
+                'Confirmar Saída',
+                'fa-right-from-bracket'
+            );
+
+            if (confirmed) {
                 localStorage.removeItem('sofis_user');
                 window.location.href = 'login.html';
             }
@@ -255,9 +536,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (error) throw error;
 
                 if (dbClients) {
-                    clients = dbClients.map(c => ({
+                    clients = await Promise.all(dbClients.map(async c => ({
                         id: c.id,
                         name: c.name,
+                        seqId: c.seq_id,
                         updatedAt: c.updated_at,
                         isFavorite: c.is_favorite,
                         notes: c.notes,
@@ -267,17 +549,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                             phones: con.phones,
                             emails: con.emails
                         })),
-                        servers: (c.servers || []).map(s => ({
+                        servers: await Promise.all((c.servers || []).map(async s => ({
                             environment: s.environment,
                             sqlServer: s.sql_server,
                             notes: s.notes,
-                            credentials: s.credentials
-                        })),
-                        vpns: (c.vpns || []).map(v => ({
+                            credentials: await Promise.all((s.credentials || []).map(async cred => ({
+                                user: cred.user,
+                                password: await Security.decrypt(cred.password)
+                            })))
+                        }))),
+                        vpns: await Promise.all((c.vpns || []).map(async v => ({
                             user: v.username,
-                            password: v.password,
+                            password: await Security.decrypt(v.password),
                             notes: v.notes
-                        })),
+                        }))),
                         urls: (c.urls || []).map(u => ({
                             environment: u.environment,
                             system: u.system,
@@ -286,7 +571,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                             execUpdate: u.exec_update,
                             notes: u.notes
                         }))
-                    }));
+                    })));
+
+                    // Load user favorites and apply
+                    await loadUserFavorites();
+                    clients.forEach(c => {
+                        c.isFavorite = window.userFavorites.has(c.id);
+                    });
+
                 } else {
                     clients = JSON.parse(localStorage.getItem('sofis_clients')) || [];
                 }
@@ -584,6 +876,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     function renderClients(clientsToRender) {
         if (!clientList) return;
 
+        // Permissions Check
+        const P = window.Permissions;
+        const canViewClients = P ? P.can('Gestão de Clientes', 'can_view') : true;
+
+        if (!canViewClients) {
+            clientList.innerHTML = `<div class="empty-state" style="padding: 40px; text-align: center; color: var(--text-secondary);"><i class="fa-solid fa-lock" style="font-size: 3rem; margin-bottom: 20px;"></i><p>Você não tem permissão para visualizar clientes.</p></div>`;
+            return;
+        }
+
         // Remove skeleton loaders if they exist
         clientList.querySelectorAll('.skeleton-row').forEach(skeleton => skeleton.remove());
 
@@ -656,7 +957,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 favoritesHeader = document.createElement('div');
                 favoritesHeader.className = `clients-section-header favorites-header ${favoritesCollapsed ? 'section-collapsed' : ''}`;
                 favoritesHeader.onclick = toggleFavoritesSection;
-                clientList.appendChild(favoritesHeader);
+                // Prepend to ensure it's at the top
+                clientList.prepend(favoritesHeader);
+            } else {
+                // Ensure it is visually at the top if it already exists
+                clientList.prepend(favoritesHeader);
             }
             favoritesHeader.innerHTML = `
                 <div class="section-header-content">
@@ -670,22 +975,30 @@ document.addEventListener('DOMContentLoaded', async () => {
             favoritesHeader.style.display = 'flex';
 
             if (!favoritesCollapsed) {
+                let lastNode = favoritesHeader;
                 favoriteClients.forEach(client => {
                     let row = existingRows[client.id];
                     if (!row) {
                         row = createClientRow(client);
-                        clientList.appendChild(row);
+                        clientList.appendChild(row); // Temporarily append, will move
                         existingRows[client.id] = row;
                     } else {
-                        // Update existing row content
                         updateClientRow(row, client);
                     }
                     row.style.display = 'block';
-                    // Move after favorites header
-                    favoritesHeader.after(row);
+                    // Move specifically after the last node to maintain order [C1, C2, C3]
+                    // insertBefore(newNode, referenceNode) -> referenceNode should be lastNode.nextSibling
+                    if (clientList.contains(row)) {
+                        // If render is clean, nextSibling works well.
+                        if (lastNode.nextSibling !== row) {
+                            clientList.insertBefore(row, lastNode.nextSibling);
+                        }
+                    } else {
+                        clientList.insertBefore(row, lastNode.nextSibling);
+                    }
+                    lastNode = row;
                 });
             } else {
-                // Hide favorite clients when collapsed
                 favoriteClients.forEach(client => {
                     if (existingRows[client.id]) {
                         existingRows[client.id].style.display = 'none';
@@ -704,7 +1017,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 regularHeader.className = `clients-section-header regular-header ${regularCollapsed ? 'section-collapsed' : ''}`;
                 regularHeader.onclick = toggleRegularSection;
                 clientList.appendChild(regularHeader);
+            } else {
+                // Move to end (after favorites)
+                clientList.appendChild(regularHeader);
             }
+
             regularHeader.innerHTML = `
                 <div class="section-header-content">
                     <i class="fa-solid fa-chevron-down section-chevron"></i>
@@ -717,6 +1034,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             regularHeader.style.display = 'flex';
 
             if (!regularCollapsed) {
+                let lastNode = regularHeader;
                 regularClients.forEach(client => {
                     let row = existingRows[client.id];
                     if (!row) {
@@ -724,15 +1042,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                         clientList.appendChild(row);
                         existingRows[client.id] = row;
                     } else {
-                        // Update existing row content
                         updateClientRow(row, client);
                     }
                     row.style.display = 'block';
-                    // Move after regular header
-                    regularHeader.after(row);
+
+                    if (clientList.contains(row)) {
+                        if (lastNode.nextSibling !== row) {
+                            clientList.insertBefore(row, lastNode.nextSibling);
+                        }
+                    } else {
+                        clientList.insertBefore(row, lastNode.nextSibling);
+                    }
+                    lastNode = row;
                 });
             } else {
-                // Hide regular clients when collapsed
                 regularClients.forEach(client => {
                     if (existingRows[client.id]) {
                         existingRows[client.id].style.display = 'none';
@@ -866,11 +1189,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         row.className = `client-row ${client.isFavorite ? 'favorite' : ''}`;
         row.id = `client-row-${client.id}`;
 
+        // Permissions
+        const P = window.Permissions;
+        const canEdit = P ? P.can('Gestão de Clientes', 'can_edit') : false;
+        const canDelete = P ? P.can('Gestão de Clientes', 'can_delete') : false;
+
+        // Granular Permissions
+        const canViewContactsButton = P ? P.can('Contatos', 'can_view') : false;
+        const canViewSQL = P ? P.can('Banco de Dados', 'can_view') : false;
+        const canViewVPN = P ? P.can('VPN', 'can_view') : false;
+        const canViewURL = P ? P.can('URLs', 'can_view') : false;
+        const canViewLogs = P ? P.can('Logs e Atividades', 'can_view') : false;
+
         const hasServers = client.servers && client.servers.length > 0;
         const hasVpns = client.vpns && client.vpns.length > 0;
         const urlCount = (client.urls ? client.urls.length : 0) + (client.webLaudo && client.webLaudo.trim() !== '' ? 1 : 0);
         const hasUrls = urlCount > 0;
         const hasContacts = client.contacts && client.contacts.length > 0;
+
         const serverBtnClass = hasServers ? 'btn-icon active-success' : 'btn-icon';
         const vpnBtnClass = hasVpns ? 'btn-icon active-success' : 'btn-icon';
         const urlBtnClass = hasUrls ? 'btn-icon active-success' : 'btn-icon';
@@ -885,10 +1221,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </button>
                     <div class="client-name-container" style="display: flex; flex-direction: column; justify-content: flex-start;">
                         <div class="client-name-row" title="Nome do Cliente" style="display: flex; align-items: center;">
-                            <span>${escapeHtml(client.name)}</span>
+                            <span style="font-weight: 600;">${escapeHtml(client.name)}</span>
                             ${client.notes ? `<i class="fa-solid fa-bell client-note-indicator" title="Possui observações importantes" style="margin-left: 15px; cursor: pointer;" onclick="window.openClientGeneralNotes('${client.id}'); event.stopPropagation();"></i>` : ''}
                         </div>
-                        ${client.updatedAt ? `
+                        ${client.updatedAt && canViewLogs ? `
                             <div class="client-updated-info clickable" onclick="openClientHistory('${client.id}'); event.stopPropagation();" title="Ver Histórico de Alterações" style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 2px; font-weight: normal; display: flex; align-items: center; gap: 4px; cursor: pointer; width: fit-content;">
                                 <i class="fa-solid fa-clock-rotate-left" style="font-size: 0.65rem; color: var(--accent);"></i>
                                 <span class="hover-underline">Atualizado: ${new Date(client.updatedAt).toLocaleDateString('pt-BR')} ${new Date(client.updatedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
@@ -899,28 +1235,48 @@ document.addEventListener('DOMContentLoaded', async () => {
                 
                 <div class="header-right">
                      <div class="row-actions">
+                          ${canViewContactsButton ? `
                           <button class="${contactBtnClass} btn-with-badge" onclick="event.stopPropagation(); openContactData('${client.id}');" title="Ver Contatos">
                              <img src="contact-icon.png" class="contact-icon-img ${hasContacts ? 'vpn-icon-success' : ''}" alt="Contatos">
                              ${hasContacts ? `<span class="btn-badge">${client.contacts.length}</span>` : ''}
                          </button>
-                          <button class="${serverBtnClass} btn-with-badge" onclick="openServerData('${client.id}'); event.stopPropagation();" title="Dados de acesso ao SQL">
+                         ` : ''}
+                         
+                         <!-- Granular Infra Buttons -->
+                         ${canViewSQL ? `
+                          <button class="${serverBtnClass} btn-with-badge perm-infra-sql" onclick="openServerData('${client.id}'); event.stopPropagation();" title="Dados de acesso ao SQL">
                               <i class="fa-solid fa-database"></i>
                               ${hasServers ? `<span class="btn-badge">${client.servers.length}</span>` : ''}
                           </button>
-                          <button class="${vpnBtnClass} btn-with-badge" onclick="openVpnData('${client.id}'); event.stopPropagation();" title="Dados de Acesso VPN">
+                          ` : ''}
+
+                          ${canViewVPN ? `
+                          <button class="${vpnBtnClass} btn-with-badge perm-infra-vpn" onclick="openVpnData('${client.id}'); event.stopPropagation();" title="Dados de Acesso VPN">
                              <img src="vpn-icon.png" class="${vpnIconClass}" alt="VPN">
                              ${hasVpns ? `<span class="btn-badge">${client.vpns.length}</span>` : ''}
                          </button>
-                          <button class="${urlBtnClass} btn-with-badge" onclick="event.stopPropagation(); openUrlData('${client.id}');" title="URL">
+                         ` : ''}
+
+                         ${canViewURL ? `
+                          <button class="${urlBtnClass} btn-with-badge perm-infra-url" onclick="event.stopPropagation(); openUrlData('${client.id}');" title="URL">
                              <i class="fa-solid fa-link"></i>
                              ${hasUrls ? `<span class="btn-badge">${urlCount}</span>` : ''}
                          </button>
-                         <button class="btn-icon btn-edit-client" onclick="window.openClientInteraction('${client.id}', '${escapeHtml(client.name)}'); event.stopPropagation();" title="Editar Cliente" style="color: var(--text-secondary);">
+                         ` : ''}
+
+                         <!-- Edit Permission Check -->
+                         ${canEdit ? `
+                         <button class="btn-icon btn-edit-client perm-edit" onclick="window.openClientInteraction('${client.id}', '${escapeHtml(client.name)}'); event.stopPropagation();" title="Editar Cliente" style="color: var(--text-secondary);">
                              <i class="fa-solid fa-pencil"></i>
                          </button>
-                         <button class="btn-icon btn-danger btn-delete-client" onclick="deleteClient('${client.id}'); event.stopPropagation();" title="Excluir">
+                         ` : ''}
+
+                         <!-- Delete Permission Check -->
+                         ${canDelete ? `
+                         <button class="btn-icon btn-danger btn-delete-client perm-delete" onclick="deleteClient('${client.id}'); event.stopPropagation();" title="Excluir">
                              <i class="fa-solid fa-trash"></i>
                          </button>
+                         ` : ''}
                      </div>
                 </div>
             </div>
@@ -936,6 +1292,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (contactModalClientId) contactModalClientId.value = clientId;
         if (contactModalClientName) contactModalClientName.textContent = client.name;
         if (contactModalSearch) contactModalSearch.value = '';
+
+        // Permission Check for Add Button
+        if (addContactModalBtn) {
+            addContactModalBtn.style.display = window.Permissions.can('Contatos', 'can_create') ? '' : 'none';
+        }
 
         renderContactModalList(client);
         contactModal.classList.remove('hidden');
@@ -986,6 +1347,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         // Reuse the logic from createClientRow for generating contact cards
+        const P = window.Permissions;
+        const canEditContact = P ? P.can('Contatos', 'can_edit') : false;
+        const canDeleteContact = P ? P.can('Contatos', 'can_delete') : false; // Added mapping
+
         const contactsHTML = filteredContacts.map((contact) => {
             // We need to find the original index for editing
             const originalIndex = client.contacts.indexOf(contact);
@@ -1014,15 +1379,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                     `).join('')
                 : '';
 
+            const nameClickAction = canEditContact ? `onclick="editContact('${client.id}', ${originalIndex});" title="Ver/Editar Contato" class="contact-name-display clickable"` : `class="contact-name-display"`;
+            const editButton = canEditContact ? `
+                            <button class="btn-icon-small" onclick="editContact('${client.id}', ${originalIndex});" title="Editar Contato">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>` : '';
+
             return `
                     <div class="contact-group-display" style="max-width: 100%; flex: 1 1 300px;">
                         <div class="contact-header-display">
-                            <div class="contact-name-display clickable" onclick="editContact('${client.id}', ${originalIndex});" title="Ver/Editar Contato">
-                                ${escapeHtml(contact.name || 'Sem nome')}
+                            <div style="display: flex; flex-direction: column; gap: 4px;">
+                                <div ${nameClickAction}>
+                                    ${escapeHtml(contact.name || 'Sem nome')}
+                                </div>
+                                <span class="server-client-badge" style="align-self: flex-start; margin-left: 0; font-size: 0.65rem; padding: 2px 6px;">${escapeHtml(client.name)}</span>
                             </div>
-                            <button class="btn-icon-small" onclick="editContact('${client.id}', ${originalIndex});" title="Editar Contato">
-                                <i class="fa-solid fa-pen"></i>
-                            </button>
+                            ${editButton}
                         </div>
                         ${phonesHTML}
                         ${emailsHTML}
@@ -1076,8 +1448,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // New client or old localStorage ID
                 result = await window.supabaseClient.from('clients').insert(clientData).select().single();
                 if (result.data) {
-                    // Update local ID to the new UUID
+                    // Update local ID to the new UUID and capture seqId
                     client.id = result.data.id;
+                    client.seqId = result.data.seq_id;
                     clientId = result.data.id;
                     localStorage.setItem('sofis_clients', JSON.stringify(clients));
                 }
@@ -1088,6 +1461,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Update local updatedAt with the value from Supabase
             if (result.data && result.data.updated_at) {
                 client.updatedAt = result.data.updated_at;
+                client.seqId = result.data.seq_id;
             }
 
             // Sync related tables - Delete and Re-insert for simplicity
@@ -1095,6 +1469,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (client.contacts?.length > 0) {
                 await window.supabaseClient.from('contacts').insert(client.contacts.map(c => ({
                     client_id: clientId,
+                    client_name: client.name,
                     name: c.name,
                     phones: c.phones || [],
                     emails: c.emails || []
@@ -1103,34 +1478,42 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             await window.supabaseClient.from('servers').delete().eq('client_id', clientId);
             if (client.servers?.length > 0) {
-                await window.supabaseClient.from('servers').insert(client.servers.map(s => ({
+                const encryptedServers = await Promise.all(client.servers.map(async s => ({
                     client_id: clientId,
+                    client_name: client.name,
                     environment: s.environment,
                     sql_server: s.sqlServer,
                     notes: s.notes || '',
-                    credentials: s.credentials || []
+                    credentials: await Promise.all((s.credentials || []).map(async cred => ({
+                        user: cred.user,
+                        password: await Security.encrypt(cred.password)
+                    })))
                 })));
+                await window.supabaseClient.from('servers').insert(encryptedServers);
             }
 
             await window.supabaseClient.from('vpns').delete().eq('client_id', clientId);
             if (client.vpns?.length > 0) {
-                await window.supabaseClient.from('vpns').insert(client.vpns.map(v => ({
+                const encryptedVpns = await Promise.all(client.vpns.map(async v => ({
                     client_id: clientId,
+                    client_name: client.name,
                     username: v.user,
-                    password: v.password,
+                    password: await Security.encrypt(v.password),
                     notes: v.notes || ''
                 })));
+                await window.supabaseClient.from('vpns').insert(encryptedVpns);
             }
 
             await window.supabaseClient.from('urls').delete().eq('client_id', clientId);
             if (client.urls?.length > 0) {
                 await window.supabaseClient.from('urls').insert(client.urls.map(u => ({
                     client_id: clientId,
+                    client_name: client.name,
                     environment: u.environment,
                     system: u.system,
                     bridge_data_access: u.bridgeDataAccess,
                     bootstrap: u.bootstrap || '',
-                    exec_update: u.execUpdate || '',
+                    exec_update: u.exec_update || '',
                     notes: u.notes || ''
                 })));
             }
@@ -1726,12 +2109,46 @@ document.addEventListener('DOMContentLoaded', async () => {
         openModal();
     };
 
-    window.toggleFavorite = (id) => {
+    window.toggleFavorite = async (id) => {
         const client = clients.find(c => c.id === id);
-        if (client) {
-            client.isFavorite = !client.isFavorite;
-            saveToLocal();
-            applyClientFilter(); // Use the unified filter system
+        if (!client) return;
+
+        const user = JSON.parse(localStorage.getItem('sofis_user') || '{}');
+        if (!user.username) {
+            showToast('⚠️ Erro ao identificar usuário.', 'warning');
+            return;
+        }
+
+        const isFav = window.userFavorites.has(id);
+
+        try {
+            if (isFav) {
+                // Remove
+                const { error } = await window.supabaseClient
+                    .from('user_favorites')
+                    .delete()
+                    .eq('username', user.username)
+                    .eq('client_id', id);
+
+                if (!error) {
+                    window.userFavorites.delete(id);
+                    client.isFavorite = false;
+                }
+            } else {
+                // Add
+                const { error } = await window.supabaseClient
+                    .from('user_favorites')
+                    .insert([{ username: user.username, client_id: id }]);
+
+                if (!error) {
+                    window.userFavorites.add(id);
+                    client.isFavorite = true;
+                }
+            }
+            applyClientFilter();
+        } catch (e) {
+            console.error("Error toggling favorite:", e);
+            showToast('❌ Erro ao atualizar favorito.', 'error');
         }
     };
 
@@ -1853,20 +2270,42 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    window.copyToClipboard = (text) => {
-        navigator.clipboard.writeText(text).then(() => {
-            showToast('📋 Copiado!', 'success');
-        });
+    window.copyToClipboard = async (text) => {
+        try {
+            const valueToCopy = Security.isEncrypted(text)
+                ? await Security.decrypt(text)
+                : text;
+
+            navigator.clipboard.writeText(valueToCopy).then(() => {
+                showToast('📋 Copiado!', 'success');
+            });
+        } catch (err) {
+            console.error('Erro ao copiar:', err);
+            // Fallback to copying whatever was passed if decryption fails
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('📋 Copiado!', 'success');
+            });
+        }
     };
 
-    window.togglePassword = (btn) => {
+    window.togglePassword = async (btn) => {
         const row = btn.closest('.credential-row') || btn.closest('.server-info');
         const valueSpan = row.querySelector('.credential-value') || row.querySelector('.pass-hidden');
         const icon = btn.querySelector('i');
         const isMasked = valueSpan.textContent === '••••••';
 
         if (isMasked) {
-            valueSpan.textContent = valueSpan.dataset.raw;
+            const rawValue = valueSpan.dataset.raw;
+            try {
+                const displayValue = Security.isEncrypted(rawValue)
+                    ? await Security.decrypt(rawValue)
+                    : rawValue;
+
+                valueSpan.textContent = displayValue;
+            } catch (err) {
+                console.error('Erro ao descriptografar:', err);
+                valueSpan.textContent = rawValue;
+            }
             icon.className = 'fa-solid fa-eye-slash';
             btn.title = 'Ocultar Senha';
         } else {
@@ -1883,6 +2322,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!client) return;
 
         serverClientIdInput.value = clientId;
+
+        // Permissions
+        const canCreate = window.Permissions.can('Banco de Dados', 'can_create');
+        if (addServerEntryBtn) {
+            addServerEntryBtn.style.display = canCreate ? 'flex' : 'none';
+        }
 
         // Initialize servers array if it doesn't exist
         if (!client.servers) {
@@ -1945,6 +2390,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         const serversList = document.getElementById('serversList');
         if (!serversList) return;
 
+        const P = window.Permissions;
+        const canEditSQL = P ? P.can('Banco de Dados', 'can_edit') : false;
+        const canDeleteSQL = P ? P.can('Banco de Dados', 'can_delete') : false;
+
         const filterValue = currentServerFilter;
         let filteredServers = client.servers || [];
 
@@ -2006,17 +2455,26 @@ document.addEventListener('DOMContentLoaded', async () => {
                    </div>`
                 : '';
 
+            const editButton = canEditSQL ? `
+                            <button class="btn-icon" onclick="editServerRecord('${client.id}', ${originalIndex})" title="Editar">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>` : '';
+
+            const deleteButton = canDeleteSQL ? `
+                            <button class="btn-icon btn-danger" onclick="deleteServerRecord('${client.id}', ${originalIndex})" title="Excluir">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>` : '';
+
             return `
                 <div class="server-card">
                     <div class="server-card-header">
-                        <span class="server-environment ${environmentClass}">${environmentLabel}</span>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <span class="server-environment ${environmentClass}">${environmentLabel}</span>
+                            <span class="server-client-badge">${escapeHtml(client.name)}</span>
+                        </div>
                         <div class="server-card-actions">
-                            <button class="btn-icon" onclick="editServerRecord('${client.id}', ${originalIndex})" title="Editar">
-                                <i class="fa-solid fa-pen"></i>
-                            </button>
-                            <button class="btn-icon btn-danger" onclick="deleteServerRecord('${client.id}', ${originalIndex})" title="Excluir">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
+                            ${editButton}
+                            ${deleteButton}
                         </div>
                     </div>
                     <div class="server-info">
@@ -2199,6 +2657,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         const listContainer = document.getElementById('vpnList');
         if (!listContainer) return;
 
+        // Permissions
+        const P = window.Permissions;
+        const canEdit = P ? P.can('VPN', 'can_edit') : false;
+        const canDelete = P ? P.can('VPN', 'can_delete') : false;
+
         if (!client.vpns || client.vpns.length === 0) {
             listContainer.innerHTML = `
                 <div class="servers-grid-empty">
@@ -2210,17 +2673,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         listContainer.innerHTML = client.vpns.map((vpn, index) => {
+            const editButton = canEdit ? `
+                            <button class="btn-icon" onclick="editVpnRecord('${client.id}', ${index})" title="Editar">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>` : '';
+
+            const deleteButton = canDelete ? `
+                            <button class="btn-icon btn-danger" onclick="deleteVpnRecord('${client.id}', ${index})" title="Excluir">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>` : '';
+
             return `
                 <div class="server-card">
                     <div class="server-card-header">
-                        <span class="server-environment producao">VPN</span>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <span class="server-environment producao">VPN</span>
+                            <span class="server-client-badge">${escapeHtml(client.name)}</span>
+                        </div>
                         <div class="server-card-actions">
-                            <button class="btn-icon" onclick="editVpnRecord('${client.id}', ${index})" title="Editar">
-                                <i class="fa-solid fa-pen"></i>
-                            </button>
-                            <button class="btn-icon btn-danger" onclick="deleteVpnRecord('${client.id}', ${index})" title="Excluir">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
+                            ${editButton}
+                            ${deleteButton}
                         </div>
                     </div>
                     <div class="credential-item">
@@ -2306,6 +2778,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!client) return;
 
         vpnClientIdInput.value = clientId;
+
+        // Permissions
+        const canCreate = window.Permissions.can('VPN', 'can_create');
+        if (addVpnEntryBtn) {
+            addVpnEntryBtn.style.display = canCreate ? 'flex' : 'none';
+        }
+
         if (!client.vpns) client.vpns = [];
 
         // Set client name in subtitle
@@ -2406,6 +2885,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!client) return;
 
         urlClientIdInput.value = clientId;
+
+        // Permissions
+        const canCreate = window.Permissions.can('URLs', 'can_create');
+        if (addUrlEntryBtn) {
+            addUrlEntryBtn.style.display = canCreate ? 'flex' : 'none';
+        }
+
         if (!client.urls) client.urls = [];
 
         const urlModalClientName = document.getElementById('urlModalClientName');
@@ -2429,19 +2915,46 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     function updateWebLaudoDisplay(client) {
+        const P = window.Permissions;
+        const canEdit = P ? P.can('URLs', 'can_edit') : false;
+        const canDelete = P ? P.can('URLs', 'can_delete') : false;
+        const canCreate = P ? P.can('URLs', 'can_create') : false;
+
+        const editBtn = document.getElementById('editWebLaudoBtn');
+        const deleteBtn = document.getElementById('deleteWebLaudoBtn');
+        const saveBtn = document.getElementById('saveWebLaudoBtn');
+
         if (client.webLaudo) {
             webLaudoText.textContent = client.webLaudo;
             webLaudoDisplay.style.display = 'flex';
             webLaudoForm.style.display = 'none';
             webLaudoInput.value = client.webLaudo;
+
+            // Visibility of action buttons
+            if (editBtn) editBtn.style.display = canEdit ? '' : 'none';
+            if (deleteBtn) deleteBtn.style.display = canDelete ? '' : 'none';
         } else {
             webLaudoDisplay.style.display = 'none';
-            webLaudoForm.style.display = 'flex';
+            // Show form ONLY if has create permission
+            webLaudoForm.style.display = canCreate ? 'flex' : 'none';
             webLaudoInput.value = '';
+
+            // If no permission and no value, maybe show a message?
+            if (!canCreate) {
+                webLaudoText.textContent = 'WebLaudo não configurado.';
+                webLaudoDisplay.style.display = 'flex';
+                if (editBtn) editBtn.style.display = 'none';
+                if (deleteBtn) deleteBtn.style.display = 'none';
+            }
         }
     }
 
     async function handleDeleteWebLaudo() {
+        // Permission Check
+        if (window.Permissions && !window.Permissions.can('URLs', 'can_delete')) {
+            showToast('🚫 Sem permissão para excluir WebLaudo.', 'error');
+            return;
+        }
         if (!confirm('Tem certeza que deseja excluir o WebLaudo?')) return;
         const id = urlClientIdInput.value;
         const client = clients.find(c => c.id === id);
@@ -2500,6 +3013,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         const listContainer = document.getElementById('urlsList');
         if (!listContainer) return;
 
+        // Permissions
+        const P = window.Permissions;
+        const canEdit = P ? P.can('URLs', 'can_edit') : false;
+        const canDelete = P ? P.can('URLs', 'can_delete') : false;
+
         const filterValue = currentUrlFilter;
         let filteredUrls = client.urls || [];
 
@@ -2522,17 +3040,26 @@ document.addEventListener('DOMContentLoaded', async () => {
             const environmentClass = url.environment === 'producao' ? 'producao' : 'homologacao';
             const environmentLabel = url.environment === 'producao' ? 'Produção' : 'Homologação';
 
+            const editButton = canEdit ? `
+                            <button class="btn-icon" onclick="editUrlRecord('${client.id}', ${originalIndex})" title="Editar">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>` : '';
+
+            const deleteButton = canDelete ? `
+                            <button class="btn-icon btn-danger" onclick="deleteUrlRecord('${client.id}', ${originalIndex})" title="Excluir">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>` : '';
+
             return `
                 <div class="server-card">
                     <div class="server-card-header">
-                        <span class="server-environment ${environmentClass}">${environmentLabel}</span>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <span class="server-environment ${environmentClass}">${environmentLabel}</span>
+                            <span class="server-client-badge">${escapeHtml(client.name)}</span>
+                        </div>
                         <div class="server-card-actions">
-                            <button class="btn-icon" onclick="editUrlRecord('${client.id}', ${originalIndex})" title="Editar">
-                                <i class="fa-solid fa-pen"></i>
-                            </button>
-                            <button class="btn-icon btn-danger" onclick="deleteUrlRecord('${client.id}', ${originalIndex})" title="Excluir">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
+                            ${editButton}
+                            ${deleteButton}
                         </div>
                     </div>
                     <div class="server-info">
@@ -2599,9 +3126,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         const client = clients.find(c => c.id === id);
         if (!client) return;
 
+        // Permissions
+        const editingIndex = document.getElementById('editingUrlIndex').value;
+        const P = window.Permissions;
+        if (editingIndex !== '') {
+            if (P && !P.can('URLs', 'can_edit')) {
+                showToast('🚫 Sem permissão para editar URLs.', 'error');
+                return;
+            }
+        } else {
+            if (P && !P.can('URLs', 'can_create')) {
+                showToast('🚫 Sem permissão para criar URLs.', 'error');
+                return;
+            }
+        }
+
         if (!client.urls) client.urls = [];
 
-        const editingIndex = document.getElementById('editingUrlIndex').value;
         const urlBefore = (editingIndex !== '') ? JSON.parse(JSON.stringify(client.urls[parseInt(editingIndex)])) : null;
 
         if (!urlEnvironmentSelect.value) {
@@ -2647,6 +3188,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     window.editUrlRecord = (clientId, index) => {
+        // Permission Check
+        if (window.Permissions && !window.Permissions.can('URLs', 'can_edit')) {
+            showToast('🚫 Sem permissão para editar URLs.', 'error');
+            return;
+        }
         const client = clients.find(c => c.id === clientId);
         if (!client || !client.urls || !client.urls[index]) return;
 
@@ -2667,6 +3213,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     window.deleteUrlRecord = async (clientId, index) => {
+        // Permission Check
+        if (window.Permissions && !window.Permissions.can('URLs', 'can_delete')) {
+            showToast('🚫 Sem permissão para excluir URLs.', 'error');
+            return;
+        }
         if (!confirm('Tem certeza que deseja excluir este sistema?')) return;
         const client = clients.find(c => c.id === clientId);
         if (!client || !client.urls) return;
@@ -2684,6 +3235,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         const id = urlClientIdInput.value;
         const client = clients.find(c => c.id === id);
         if (!client) return;
+
+        const isNew = !client.webLaudo;
+        const P = window.Permissions;
+
+        // Dynamic Permission Check
+        if (isNew) {
+            if (P && !P.can('URLs', 'can_create')) {
+                showToast('🚫 Sem permissão para cadastrar WebLaudo.', 'error');
+                return;
+            }
+        } else {
+            if (P && !P.can('URLs', 'can_edit')) {
+                showToast('🚫 Sem permissão para editar WebLaudo.', 'error');
+                return;
+            }
+        }
 
         const webLaudoBefore = client.webLaudo || '';
         client.webLaudo = webLaudoInput.value.trim();
@@ -2783,7 +3350,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </div>
                 <div class="activity-action">
                     <span class="activity-op-badge ${opClass}">${opLabel}</span>
-                    ${escapeHtml(activity.action)}
+                    <div style="display: flex; flex-direction: column; gap: 4px; flex: 1;">
+                        <span style="font-weight: 500;">${escapeHtml(activity.action)}</span>
+                        ${activity.client_name ? `
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <span class="server-client-badge" style="font-size: 0.65rem; padding: 2px 6px;">
+                                    ${escapeHtml(activity.client_name)}
+                                </span>
+                            </div>
+                        ` : ''}
+                    </div>
                 </div>
                 ${activity.details ? `<div class="activity-details">${escapeHtml(activity.details)}</div>` : ''}
             `;

@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login v1.3 - Gerenciador de Clientes SOFIS</title>
+    <title>Sofis - Login</title>
+    <link rel="icon" type="image/x-icon" href="sofis.com.br-favicon.ico">
     <link rel="stylesheet" href="style.css?v=1.4">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -132,6 +133,7 @@
 
     <div id="toast" class="toast hidden"></div>
 
+    <script src="security.js?v=1.0"></script>
     <script src="supabase-client.js?v=1.6"></script>
     <script>
         // Update Build Number Dynamically
@@ -172,11 +174,8 @@
 
             // Prevent spaces in username and validate
             usernameInput.addEventListener('input', (e) => {
-                // Regex: Allow letters, numbers, and special characters. NO spaces.
                 const regex = /^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]*$/;
-
                 if (!regex.test(e.target.value)) {
-                    // Remove the last character if it invalidates the pattern
                     e.target.value = e.target.value.replace(/[^a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/g, '');
                     showToast('Espaços e acentos não são permitidos no usuário.', 'error');
                 }
@@ -193,34 +192,46 @@
                 }
 
                 try {
-                    // Check if window.supabaseClient is ready
                     if (!window.supabaseClient) {
                         showToast('Erro: Cliente de banco de dados não inicializado.', 'error');
                         return;
                     }
 
+                    // 1. Fetch user by username ONLY
                     const { data, error } = await window.supabaseClient
                         .from('users')
                         .select('*')
                         .eq('username', username)
-                        .eq('password', password)
-                        .single();
+                        .maybeSingle();
 
-                    if (error || !data) {
+                    if (error) throw error;
+
+                    if (!data) {
                         showToast('Usuário ou senha incorretos.', 'error');
-                    } else {
-                        // Success! Store user info
-                        localStorage.setItem('sofis_user', JSON.stringify({
-                            id: data.id,
-                            username: data.username,
-                            fullName: data.full_name
-                        }));
-
-                        showToast('Login realizado com sucesso!');
-                        setTimeout(() => {
-                            window.location.href = 'index.html';
-                        }, 1000);
+                        return;
                     }
+
+                    // 2. Decrypt and compare
+                    const decryptedPassword = await Security.decrypt(data.password);
+
+                    if (decryptedPassword !== password) {
+                        showToast('Usuário ou senha incorretos.', 'error');
+                        return;
+                    }
+
+                    // Success! Store user info
+                    localStorage.setItem('sofis_user', JSON.stringify({
+                        id: data.id,
+                        username: data.username,
+                        fullName: data.full_name,
+                        role: data.role
+                    }));
+
+                    showToast('Login realizado com sucesso!');
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1000);
+
                 } catch (err) {
                     console.error('Erro no login:', err);
                     showToast('Erro ao tentar realizar login. Tente novamente.', 'error');
