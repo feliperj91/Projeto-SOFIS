@@ -2534,3 +2534,75 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
     background: rgba(255, 255, 255, 0.1);
     color: var(--accent);
 }
+
+/* Labels with Actions - Used in Version Modal */
+.label-with-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.label-actions {
+    display: flex;
+    gap: 8px;
+    margin-left: 10px;
+}
+
+.label-icon-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 0.85rem;
+    padding: 2px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.label-icon-btn:hover {
+    color: var(--accent);
+    transform: scale(1.1);
+}
+
+/* Product Management Modal Table */
+.products-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+    margin-top: 15px;
+}
+
+.products-table th {
+    text-align: left;
+    padding: 10px;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.products-table tr {
+    background: var(--bg-darker);
+    transition: transform 0.2s ease;
+}
+
+.products-table td {
+    padding: 12px 10px;
+}
+
+.products-table tr td:first-child {
+    border-radius: 8px 0 0 8px;
+}
+
+.products-table tr td:last-child {
+    border-radius: 0 8px 8px 0;
+}
+
+.products-table .action-cell {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}

@@ -496,6 +496,7 @@
 
         // Ensure Dropdowns are populated
         await window.populateVersionClientSelect();
+        await loadProducts(); // Load dynamic products
         if (window.populateResponsibleSelect) await window.populateResponsibleSelect();
 
         const v = id ? versionControls.find(x => x.id === id) : null;
@@ -1460,6 +1461,177 @@
     document.addEventListener('permissions-loaded', () => {
         console.log("🔄 Re-rendering Version Controls due to permissions update...");
         renderVersionControls();
+        loadProducts(); // Refresh products based on new permissions
+    });
+
+    // ==========================================
+    // PRODUCT MANAGEMENT LOGIC
+    // ==========================================
+    let productsList = [];
+    let editingProductId = null;
+
+    async function loadProducts() {
+        if (!window.supabaseClient) return;
+        try {
+            const { data, error } = await window.supabaseClient
+                .from('products')
+                .select('*')
+                .order('name', { ascending: true });
+            if (error) throw error;
+            productsList = data || [];
+
+            // Sync dropdown in version modal
+            const sysSelect = document.getElementById('versionSystemSelect');
+            if (sysSelect) {
+                const current = sysSelect.value;
+                sysSelect.innerHTML = '<option value="">Selecione o produto...</option>';
+                productsList.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p.name;
+                    opt.textContent = `${p.name} (${p.version_type})`;
+                    sysSelect.appendChild(opt);
+                });
+                if (current) sysSelect.value = current;
+            }
+
+            // Sync table in management modal
+            renderProductsTable();
+        } catch (err) {
+            console.error('❌ Error loadProducts:', err);
+        }
+    }
+
+    function renderProductsTable() {
+        const tbody = document.getElementById('productsTableBody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        const canEdit = window.Permissions?.can('Controle de Versões - Produtos', 'can_edit');
+        const canDelete = window.Permissions?.can('Controle de Versões - Produtos', 'can_delete');
+
+        if (productsList.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-secondary); padding: 20px;">Nenhum produto cadastrado.</td></tr>';
+            return;
+        }
+
+        productsList.forEach(p => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${utils.escapeHtml(p.name)}</td>
+                <td><span class="badge-role ${p.version_type === 'Pacote' ? 'badge-admin' : 'badge-tecnico'}" style="font-size: 0.75rem;">${p.version_type}</span></td>
+                <td class="action-cell">
+                    ${canEdit ? `
+                        <button class="btn-icon" onclick="window.editProduct('${p.id}')" title="Editar">
+                            <i class="fa-solid fa-pencil"></i>
+                        </button>
+                    ` : ''}
+                    ${canDelete ? `
+                        <button class="btn-icon btn-danger" onclick="window.deleteProduct('${p.id}')" title="Excluir">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    ` : ''}
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    window.openProductManagement = async () => {
+        if (window.Permissions && !window.Permissions.can('Controle de Versões - Produtos', 'can_view')) {
+            if (window.showToast) window.showToast('🚫 Sem permissão para gerenciar produtos.', 'error');
+            return;
+        }
+        await loadProducts();
+        document.getElementById('productManagementModal').classList.remove('hidden');
+    };
+
+    window.closeProductManagement = () => {
+        document.getElementById('productManagementModal').classList.add('hidden');
+        window.resetProductForm();
+    };
+
+    window.resetProductForm = () => {
+        const form = document.getElementById('productForm');
+        if (form) form.reset();
+        document.getElementById('productId').value = '';
+        document.getElementById('cancelProductEdit').classList.add('hidden');
+        editingProductId = null;
+    };
+
+    window.editProduct = (id) => {
+        const p = productsList.find(x => x.id === id);
+        if (!p) return;
+        editingProductId = id;
+        document.getElementById('productId').value = p.id;
+        document.getElementById('productName').value = p.name;
+        document.getElementById('productType').value = p.version_type;
+        document.getElementById('cancelProductEdit').classList.remove('hidden');
+        document.getElementById('productName').focus();
+    };
+
+    window.deleteProduct = async (id) => {
+        if (!window.Permissions?.can('Controle de Versões - Produtos', 'can_delete')) {
+            if (window.showToast) window.showToast('🚫 Sem permissão para excluir produtos.', 'error');
+            return;
+        }
+
+        const p = productsList.find(x => x.id === id);
+        if (!p) return;
+
+        const confirmed = await window.showConfirm(`Tem certeza que deseja excluir o produto "${p.name}"?`, 'Excluir Produto', 'fa-trash');
+        if (!confirmed) return;
+
+        try {
+            const { error } = await window.supabaseClient.from('products').delete().eq('id', id);
+            if (error) throw error;
+            if (window.showToast) window.showToast('Produto excluído com sucesso!', 'success');
+            await loadProducts();
+        } catch (err) {
+            console.error('❌ deleteProduct error:', err);
+            if (window.showToast) window.showToast('Falha ao excluir produto.', 'error');
+        }
+    };
+
+    document.getElementById('productForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const canCreate = window.Permissions?.can('Controle de Versões - Produtos', 'can_create');
+        const canEdit = window.Permissions?.can('Controle de Versões - Produtos', 'can_edit');
+
+        const id = document.getElementById('productId').value;
+        if (id && !canEdit) {
+            if (window.showToast) window.showToast('🚫 Sem permissão para editar produtos.', 'error');
+            return;
+        }
+        if (!id && !canCreate) {
+            if (window.showToast) window.showToast('🚫 Sem permissão para criar produtos.', 'error');
+            return;
+        }
+
+        const name = document.getElementById('productName').value.trim();
+        const version_type = document.getElementById('productType').value;
+
+        try {
+            if (id) {
+                const { error } = await window.supabaseClient.from('products').update({ name, version_type }).eq('id', id);
+                if (error) throw error;
+            } else {
+                const { error } = await window.supabaseClient.from('products').insert([{ name, version_type }]);
+                if (error) throw error;
+            }
+
+            if (window.showToast) window.showToast('Produto salvo com sucesso!', 'success');
+            window.resetProductForm();
+            await loadProducts();
+        } catch (err) {
+            console.error('❌ productForm error:', err);
+            if (window.showToast) window.showToast('Falha ao salvar produto.', 'error');
+        }
+    });
+
+    // Initial load
+    document.addEventListener('DOMContentLoaded', () => {
+        loadProducts();
     });
 
 })();

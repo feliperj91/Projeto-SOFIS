@@ -3,6 +3,16 @@
 
 window.SOFIS_CHANGELOG = [
     {
+        version: '1.9.73',
+        date: '2026-01-06',
+        title: 'Gestão Dinâmica de Produtos',
+        changes: [
+            { type: 'feat', text: 'Substituição do campo estático "Sistema" pelo novo módulo dinâmico "Produto".' },
+            { type: 'feat', text: 'Novo modal de gerenciamento de produtos com suporte a Tipos de Versão (Pacote/Build).' },
+            { type: 'feat', text: 'Implementação de permissões granulares para o módulo de Produtos.' }
+        ]
+    },
+    {
         version: '1.9.72',
         date: '2026-01-06',
         title: 'Padronização Premium de Alertas',
