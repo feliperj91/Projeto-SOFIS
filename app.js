@@ -618,6 +618,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         await handleFormSubmit(e);
     });
 
+    // Reset client name field when form is reset
+    form.addEventListener('reset', () => {
+        if (window.resetClientNameField) {
+            window.resetClientNameField();
+        }
+    });
+
     if (listViewBtn) {
         listViewBtn.addEventListener('click', () => {
             currentView = 'list';
@@ -2158,6 +2165,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         editingId = clientId;
         clientNameInput.value = client.name;
+        clientNameInput.readOnly = true; // Lock client name when editing contact
+        clientNameInput.style.backgroundColor = 'rgba(255, 255, 255, 0.05)'; // Visual feedback
+        clientNameInput.style.cursor = 'not-allowed';
 
         // Populate only the contact being edited
         contactList.innerHTML = '';
@@ -2172,7 +2182,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         openModal();
     };
 
-
+    // Helper function to reset client name field to editable state
+    window.resetClientNameField = () => {
+        if (clientNameInput) {
+            clientNameInput.readOnly = false;
+            clientNameInput.style.backgroundColor = '';
+            clientNameInput.style.cursor = '';
+        }
+    };
 
 
 
