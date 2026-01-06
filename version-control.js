@@ -286,7 +286,7 @@
                 sys: document.getElementById('versionSystemSelect').value,
                 ver: document.getElementById('versionNumberInput').value,
                 date: document.getElementById('versionDateInput').value,
-                alert: document.getElementById('versionAlertCheck').checked,
+                alert: false, // Checkbox removed from UI
                 notes: document.getElementById('versionNotesInput').value,
                 responsible: document.getElementById('versionResponsibleSelect').value
             };
@@ -451,11 +451,11 @@
             document.getElementById('versionNumberInput').value = v.version;
             document.getElementById('versionResponsibleSelect').value = v.responsible || '';
             if (v.updated_at) document.getElementById('versionDateInput').value = v.updated_at.split('T')[0];
-            const check = document.getElementById('versionAlertCheck');
-            check.checked = !!v.has_alert;
+            if (v.updated_at) document.getElementById('versionDateInput').value = v.updated_at.split('T')[0];
+            // Alert logic removed from UI, default handling
             const notes = document.getElementById('versionNotesInput');
             notes.value = v.notes || '';
-            notes.disabled = !check.checked;
+            notes.disabled = false;
         } else {
             // New Entry Mode
             const clientSelect = document.getElementById('versionClientSelect');
@@ -668,12 +668,7 @@
             };
         });
 
-        const alertCheck = document.getElementById('versionAlertCheck');
-        if (alertCheck) {
-            alertCheck.onchange = () => {
-                document.getElementById('versionNotesInput').disabled = !alertCheck.checked;
-            };
-        }
+
 
         // Mask for Version Number: YYYY.MM-DD
         const versionInput = document.getElementById('versionNumberInput');
@@ -751,7 +746,7 @@
             try {
                 const { data, error } = await window.supabaseClient
                     .from('users')
-                    .select('username, name') // Assuming 'username' is the display name or we have 'name'
+                    .select('username, full_name') // Correct column name
                     .order('username');
 
                 if (!error && data) {
@@ -771,7 +766,7 @@
         cachedUsersForResponsible.forEach(u => {
             const opt = document.createElement('option');
             opt.value = u.username;
-            opt.textContent = u.name || u.username;
+            opt.textContent = u.full_name || u.username;
             select.appendChild(opt);
         });
 
