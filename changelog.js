@@ -3,6 +3,16 @@
 
 window.SOFIS_CHANGELOG = [
     {
+        version: '1.9.76',
+        date: '2026-01-06',
+        title: 'Estabilização de Máscaras e UI',
+        changes: [
+            { type: 'fix', text: 'Remoção de máscara legada que impedia a digitação correta em produtos do tipo Build.' },
+            { type: 'style', text: 'Reorganização da sequência de ícones nos cards: Filtro, Histórico, Produto e Registro.' },
+            { type: 'fix', text: 'Ajuste na validação de comprimento de versão para aceitar Builds numéricas longas.' }
+        ]
+    },
+    {
         version: '1.9.75',
         date: '2026-01-06',
         title: 'Otimização e Segurança de Produtos',

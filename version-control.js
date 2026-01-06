@@ -242,11 +242,6 @@
                         <h3 style="cursor:default" title="Nome do Cliente">${utils.escapeHtml(group.name)}</h3>
                     </div>
                 <div class="client-header-actions">
-                    ${canEditHistory ? `
-                    <button class="btn-card-action" onclick="window.openClientVersionsHistory('${group.id}')" title="Ver Histórico">
-                        <i class="fa-solid fa-rotate"></i>
-                    </button>` : ''}
-                    
                     <!-- Card Level Filter -->
                     <div class="card-filter-dropdown">
                         <button class="btn-card-action" onclick="window.toggleCardFilterMenu(this)" title="Filtrar Ambiente">
@@ -262,14 +257,19 @@
                         </div>
                     </div>
 
-                    ${canCreateVersion ? `
-                    <button class="btn-card-action" onclick="window.prefillClientVersion('${group.id}', '${utils.escapeHtml(group.name)}')" title="Registrar Atualização">
-                        <i class="fa-solid fa-plus"></i>
+                    ${canEditHistory ? `
+                    <button class="btn-card-action" onclick="window.openClientVersionsHistory('${group.id}')" title="Ver Histórico">
+                        <i class="fa-solid fa-rotate"></i>
                     </button>` : ''}
                     
                     ${P && P.can('Controle de Versões - Produtos', 'can_view') ? `
                     <button class="btn-card-action" onclick="window.openProductManagement()" title="Gerenciar Produtos">
                         <i class="fa-solid fa-cube"></i>
+                    </button>` : ''}
+
+                    ${canCreateVersion ? `
+                    <button class="btn-card-action" onclick="window.prefillClientVersion('${group.id}', '${utils.escapeHtml(group.name)}')" title="Registrar Atualização">
+                        <i class="fa-solid fa-plus"></i>
                     </button>` : ''}
                 </div>
             </div>
@@ -325,15 +325,17 @@
                 return;
             }
 
-            // Version Validation (Incomplete or Empty)
+            // Version Validation
             if (!fields.ver || fields.ver.trim() === '') {
                 if (window.showToast) window.showToast('⚠️ O campo de versão é obrigatório.', 'warning');
                 sofis_isSaving = false;
                 return;
             }
 
-            if (fields.ver.length < 10) {
-                if (window.showToast) window.showToast('⚠️ Versão do sistema incompleta!', 'warning');
+            const productType = getSelectedProductType();
+            const minLength = productType === 'Build' ? 8 : 10;
+            if (fields.ver.length < minLength) {
+                if (window.showToast) window.showToast(`⚠️ Versão do sistema incompleta! (Mínimo ${minLength} caracteres)`, 'warning');
                 sofis_isSaving = false;
                 return;
             }
@@ -558,6 +560,7 @@
 
         // Wait for population
         await window.populateVersionClientSelect();
+        await loadProducts(); // Ensure products are loaded and mask logic is ready
         if (window.populateResponsibleSelect) await window.populateResponsibleSelect();
 
         const select = document.getElementById('versionClientSelect');
@@ -581,6 +584,9 @@
         const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username;
         const respSelect = document.getElementById('versionResponsibleSelect');
         if (currentUser && respSelect) respSelect.value = currentUser;
+
+        // Sync version mask
+        if (typeof updateVersionMask === 'function') updateVersionMask();
 
         modal.classList.remove('hidden');
     };
@@ -722,23 +728,8 @@
         });
 
 
+        // Removed legacy YYYY.MM-DD mask to use dynamic Product-based mask logic
 
-        // Mask for Version Number: YYYY.MM-DD
-        const versionInput = document.getElementById('versionNumberInput');
-        if (versionInput) {
-            versionInput.addEventListener('input', function (e) {
-                let value = e.target.value.replace(/\D/g, ''); // Remove all non-digits
-                if (value.length > 8) value = value.substring(0, 8); // Max 8 digits
-
-                let result = '';
-                for (let i = 0; i < value.length; i++) {
-                    if (i === 4) result += '.';
-                    if (i === 6) result += '-';
-                    result += value[i];
-                }
-                e.target.value = result;
-            });
-        }
     };
 
 
@@ -1701,6 +1692,19 @@
                 if (type === 'Build') {
                     // Numbers only
                     e.target.value = e.target.value.replace(/[^0-9]/g, '');
+                } else {
+                    // Standard Pacote mask: YYYY.MM-XX
+                    let v = e.target.value.replace(/\D/g, '');
+                    if (v.length > 8) v = v.substring(0, 8);
+
+                    let masked = v;
+                    if (v.length > 4) {
+                        masked = v.substring(0, 4) + '.' + v.substring(4);
+                    }
+                    if (v.length > 6) {
+                        masked = v.substring(0, 4) + '.' + v.substring(4, 6) + '-' + v.substring(6);
+                    }
+                    e.target.value = masked;
                 }
             });
         }
