@@ -2,19 +2,45 @@
    USER MANAGEMENT STYLES
    =================================== */
 
-/* Management Toolbar - Matching Other Tabs */
+/* Management Toolbar - Two Rows Layout */
 .management-toolbar {
     display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    gap: 12px;
+    flex-direction: column;
+    gap: 16px;
     margin: 0 0 50px 0 !important;
     padding: 0;
-    flex-wrap: nowrap;
-    min-height: 40px;
 }
 
-/* Tabs Section (Left) */
+/* Top Row: Search Bar + Button */
+.management-toolbar>.mng-search,
+.management-toolbar>.toolbar-actions {
+    display: flex;
+}
+
+.management-toolbar>.mng-search {
+    order: 1;
+}
+
+.management-toolbar>.toolbar-actions {
+    order: 2;
+}
+
+.management-toolbar>.management-subtabs {
+    order: 3;
+}
+
+.management-toolbar>.role-selector-text {
+    order: 4;
+}
+
+/* Create a wrapper for search + button */
+.management-toolbar::before {
+    content: '';
+    order: 0;
+    display: none;
+}
+
+/* Tabs Section (Below Search) */
 .management-subtabs {
     display: flex;
     gap: 8px;
@@ -53,7 +79,7 @@
     color: #1a1a1a;
 }
 
-/* Search Bar (Center) - Matching Standard Pattern */
+/* Search Bar (Full Width) */
 .mng-search {
     flex: 1;
     position: relative;

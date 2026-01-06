@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="server-styles.css?v=2.6">
     <link rel="stylesheet" href="credential-styles.css?v=2.5">
     <link rel="stylesheet" href="version-control-styles.css?v=6.4">
-    <link rel="stylesheet" href="user-management-styles.css?v=2.0">
+    <link rel="stylesheet" href="user-management-styles.css?v=2.1">
     <link rel="stylesheet" href="pulse-dashboard.css?v=2.0">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -157,42 +157,45 @@
 
         <!-- User Management Tab Content -->
         <main id="managementTab" class="tab-content">
-            <!-- Unified Management Toolbar (Matching Other Tabs) -->
+            <!-- Unified Management Toolbar (Two Rows) -->
             <div class="management-toolbar">
-                <!-- Tabs (Left) -->
-                <div class="management-subtabs">
-                    <button class="mng-tab-btn active" data-mng-tab="users">
-                        <i class="fa-solid fa-users"></i><span>Usuários</span>
-                    </button>
-                    <button class="mng-tab-btn" data-mng-tab="permissions">
-                        <i class="fa-solid fa-shield-halved"></i><span>Permissões</span>
-                    </button>
+                <!-- Row 1: Search Bar + Button -->
+                <div style="display: flex; gap: 12px; width: 100%;">
+                    <div class="mng-search">
+                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                        <input type="text" id="userSearchInput" placeholder="Pesquisar por nome ou usuário...">
+                        <button id="clearUserSearch" class="btn-clear hidden" title="Limpar pesquisa" tabindex="-1">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                    <div class="toolbar-actions">
+                        <button id="savePermissionsBtn" class="btn-flat-green hidden" disabled>
+                            <i class="fa-regular fa-floppy-disk"></i> SALVAR
+                        </button>
+                        <button id="addNewUserBtn" class="btn-primary">
+                            <i class="fa-solid fa-plus"></i> NOVO USUÁRIO
+                        </button>
+                    </div>
                 </div>
 
-                <!-- Search Bar (Center) -->
-                <div class="mng-search">
-                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                    <input type="text" id="userSearchInput" placeholder="Pesquisar por nome ou usuário...">
-                    <button id="clearUserSearch" class="btn-clear hidden" title="Limpar pesquisa" tabindex="-1">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-                </div>
+                <!-- Row 2: Tabs + Role Selector -->
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <div class="management-subtabs">
+                        <button class="mng-tab-btn active" data-mng-tab="users">
+                            <i class="fa-solid fa-users"></i><span>Usuários</span>
+                        </button>
+                        <button class="mng-tab-btn" data-mng-tab="permissions">
+                            <i class="fa-solid fa-shield-halved"></i><span>Permissões</span>
+                        </button>
+                    </div>
 
-                <!-- Role Selector (Center-Right) - Only visible in Permissions tab -->
-                <div id="shared-mng-controls" class="role-selector-text hidden">
-                    <button class="role-text-btn active" data-role="ADMINISTRADOR"><span>Administrador</span></button>
-                    <button class="role-text-btn" data-role="ANALISTA"><span>Analista</span></button>
-                    <button class="role-text-btn" data-role="TECNICO"><span>Técnico</span></button>
-                </div>
-
-                <!-- Actions (Right) -->
-                <div class="toolbar-actions">
-                    <button id="savePermissionsBtn" class="btn-flat-green hidden" disabled>
-                        <i class="fa-regular fa-floppy-disk"></i> SALVAR
-                    </button>
-                    <button id="addNewUserBtn" class="btn-primary">
-                        <i class="fa-solid fa-plus"></i> NOVO USUÁRIO
-                    </button>
+                    <!-- Role Selector (Only visible in Permissions tab) -->
+                    <div id="shared-mng-controls" class="role-selector-text hidden">
+                        <button class="role-text-btn active"
+                            data-role="ADMINISTRADOR"><span>Administrador</span></button>
+                        <button class="role-text-btn" data-role="ANALISTA"><span>Analista</span></button>
+                        <button class="role-text-btn" data-role="TECNICO"><span>Técnico</span></button>
+                    </div>
                 </div>
             </div>
 
