@@ -1163,19 +1163,18 @@
                 <!-- Product Form -->
                 <form id="productForm" class="product-form-row">
                     <input type="hidden" id="productId">
-                    <input type="text" id="productName" placeholder="Nome do Produto" required style="flex: 2;">
-                    <select id="productType" required style="flex: 1;">
+                    <input type="text" id="productName" placeholder="Nome do Produto" required
+                        class="product-input-modern">
+                    <select id="productType" required class="product-select-modern">
                         <option value="Pacote">Pacote</option>
                         <option value="Build">Build</option>
                     </select>
-                    <div style="display: flex; gap: 8px;">
-                        <button type="submit" id="saveProductBtn" class="btn-primary"
-                            style="height: 42px; min-width: 42px; display: flex; align-items: center; justify-content: center; padding: 0;"
-                            title="Salvar" disabled>
+                    <div class="product-form-actions">
+                        <button type="submit" id="saveProductBtn" class="btn-primary product-btn-save" title="Salvar"
+                            disabled>
                             <i class="fa-solid fa-save"></i>
                         </button>
-                        <button type="button" id="cancelProductEdit" class="btn-secondary hidden"
-                            style="height: 42px; min-width: 42px; display: flex; align-items: center; justify-content: center; padding: 0;"
+                        <button type="button" id="cancelProductEdit" class="btn-secondary product-btn-cancel hidden"
                             onclick="window.resetProductForm()" title="Cancelar">
                             <i class="fa-solid fa-xmark"></i>
                         </button>

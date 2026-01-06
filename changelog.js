@@ -3,6 +3,25 @@
 
 window.SOFIS_CHANGELOG = [
     {
+        version: '1.9.78',
+        date: '2026-01-06',
+        title: 'Correção de Persistência de Dados',
+        changes: [
+            { type: 'fix', text: 'Remoção de restrição legada (CHECK constraint) que impedia o registro de novos produtos no controle de versões.' },
+            { type: 'fix', text: 'Sincronização de validações do banco de dados com o novo sistema de produtos dinâmicos.' }
+        ]
+    },
+    {
+        version: '1.9.77',
+        date: '2026-01-06',
+        title: 'Modernização Estética de Produtos',
+        changes: [
+            { type: 'style', text: 'Refinação completa do visual dos campos de produtos (input/select) com design moderno e premium.' },
+            { type: 'style', text: 'Melhoria na interatividade do botão de salvamento com efeitos de glow e estados dinâmicos.' },
+            { type: 'style', text: 'Ajuste de espaçamentos e alinhamento no cabeçalho do modal de produtos.' }
+        ]
+    },
+    {
         version: '1.9.76',
         date: '2026-01-06',
         title: 'Estabilização de Máscaras e UI',

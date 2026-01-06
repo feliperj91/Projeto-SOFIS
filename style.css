@@ -2647,14 +2647,102 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
 
 .product-form-row {
     display: flex;
-    gap: 15px;
+    gap: 12px;
     align-items: center;
     padding: 0 20px 25px 20px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    margin-bottom: 20px;
 }
 
-.product-form-row input,
-.product-form-row select {
+.product-input-modern {
+    flex: 2;
+    background: rgba(15, 23, 42, 0.4) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    padding: 10px 15px !important;
+    border-radius: 10px !important;
+    color: var(--text-primary) !important;
+    font-size: 0.95rem !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     margin-bottom: 0 !important;
+}
+
+.product-input-modern:focus {
+    background: rgba(15, 23, 42, 0.6) !important;
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 3px rgba(255, 160, 0, 0.15) !important;
+    outline: none;
+}
+
+.product-select-modern {
+    flex: 1;
+    background: rgba(15, 23, 42, 0.4) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    padding: 10px 15px !important;
+    border-radius: 10px !important;
+    color: var(--text-primary) !important;
+    font-size: 0.95rem !important;
+    cursor: pointer;
+    transition: all 0.3s ease !important;
+    margin-bottom: 0 !important;
+}
+
+.product-select-modern:focus {
+    border-color: var(--accent) !important;
+    outline: none;
+}
+
+.product-form-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.product-btn-save {
+    height: 42px;
+    width: 42px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    background: linear-gradient(135deg, var(--accent), #FF8F00) !important;
+    box-shadow: 0 4px 15px rgba(255, 160, 0, 0.2) !important;
+}
+
+.product-btn-save:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 160, 0, 0.35) !important;
+}
+
+.product-btn-save:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: grayscale(0.8);
+    box-shadow: none !important;
+}
+
+.product-btn-cancel {
+    height: 42px;
+    width: 42px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.product-btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--danger);
+    border-color: rgba(255, 61, 0, 0.3);
+}
+
+/* Specific Badges for Product Types in Table */
+.products-table td .badge-product-type {
+    margin: 0 auto;
+    display: block;
+    width: fit-content;
 }
