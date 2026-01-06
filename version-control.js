@@ -742,7 +742,9 @@
     async function getClientsForDropdown() {
         // 1. Try Global Window Clients (fastest)
         if (window.clients && window.clients.length > 0) {
+            console.log("✅ [VersionControl] Usando lista de clientes global (window.clients).");
             return window.clients;
+
         }
         // 2. Try Local Cache
         if (cachedClientsForVersion && cachedClientsForVersion.length > 0) {

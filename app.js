@@ -600,12 +600,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
         clients = uniqueClients;
+        window.clients = clients; // Sync global variable
 
         renderClients(clients);
         updateFilterCounts();
         applyViewMode();
         fetchRecentActivities();
-        populateVersionClientSelect();
+        if (window.populateVersionClientSelect) {
+            window.populateVersionClientSelect();
+        }
     }
 
     await initialLoad();
