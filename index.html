@@ -1136,26 +1136,28 @@
                 </div>
             </div>
         </div>
-        <!-- Changelog Modal -->
-        <div id="changelogModal" class="modal hidden" style="z-index: 9999;">
-            <div class="modal-content"
-                style="max-width: 600px; max-height: 85vh; display: flex; flex-direction: column;">
-                <div class="modal-header">
-                    <h2>Histórico de Versões</h2>
-                    <button type="button" class="btn-icon"
-                        onclick="document.getElementById('changelogModal').classList.add('hidden')">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-                </div>
-                <div id="changelogBody" class="modal-body" style="overflow-y: auto; padding: 20px;">
-                    <!-- Content Injected via JS -->
-                </div>
-                <div class="modal-actions"
-                    style="margin-top: auto; padding-top: 15px; border-top: 1px solid var(--border);">
-                    <button type="button" class="btn-primary"
-                        onclick="document.getElementById('changelogModal').classList.add('hidden')">Fechar</button>
-                </div>
+        <!-- Changelog Sidebar -->
+        <div id="changelogSidebar" class="activity-sidebar hidden"
+            style="z-index: 10002; background: var(--bg-card); border-left: 1px solid var(--border);">
+            <div class="activity-header"
+                style="border-bottom: 1px solid var(--border); padding: 20px; display: flex; align-items: center; justify-content: space-between;">
+                <h3 style="margin: 0; color: var(--accent); display: flex; align-items: center; gap: 10px;">
+                    <i class="fa-solid fa-code-branch"></i> Histórico de Versões
+                </h3>
+                <button type="button" class="btn-icon"
+                    onclick="document.getElementById('changelogSidebar').classList.add('hidden'); document.getElementById('changelogOverlay').classList.add('hidden')">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
             </div>
+            <div id="changelogBody" style="flex: 1; overflow-y: auto; padding: 20px;">
+                <!-- Content Injected via JS -->
+            </div>
+            <div style="padding: 20px; border-top: 1px solid var(--border); text-align: center;">
+                <span style="font-size: 0.8rem; color: var(--text-secondary);">Projeto SOFIS © 2026</span>
+            </div>
+        </div>
+        <div id="changelogOverlay" class="activity-overlay hidden" style="z-index: 10001;"
+            onclick="document.getElementById('changelogSidebar').classList.add('hidden'); this.classList.add('hidden')">
         </div>
 
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -1175,23 +1177,15 @@
                 }
             });
 
-            // Event Delegation with Error Handling
+            // Event Delegation for Changelog Sidebar
             document.addEventListener('click', (e) => {
                 if (e.target && e.target.id === 'appBuildNumber') {
-                    console.log("🖱️ [DEBUG] Clique na Build detectado!");
-
-                    const modal = document.getElementById('changelogModal');
-                    if (!modal) {
-                        console.error("❌ [DEBUG] Modal 'changelogModal' NÃO encontrado no DOM!");
-                        return;
-                    }
-
-                    // Force visible FIRST
-                    modal.classList.remove('hidden');
-                    modal.style.display = 'flex';
-
-                    if (typeof renderChangelog === 'function') {
-                        renderChangelog();
+                    const sidebar = document.getElementById('changelogSidebar');
+                    const overlay = document.getElementById('changelogOverlay');
+                    if (sidebar && overlay) {
+                        if (typeof renderChangelog === 'function') renderChangelog();
+                        sidebar.classList.remove('hidden');
+                        overlay.classList.remove('hidden');
                     }
                 }
             });
