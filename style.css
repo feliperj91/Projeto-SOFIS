@@ -2648,8 +2648,13 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
 .product-form-row {
     display: flex;
     gap: 15px;
-    align-items: flex-end;
+    align-items: center;
     padding: 0 20px 25px 20px;
     border-bottom: 1px solid var(--border);
     margin-bottom: 15px;
+}
+
+.product-form-row input,
+.product-form-row select {
+    margin-bottom: 0 !important;
 }

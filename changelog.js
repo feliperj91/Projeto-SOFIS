@@ -3,6 +3,17 @@
 
 window.SOFIS_CHANGELOG = [
     {
+        version: '1.9.75',
+        date: '2026-01-06',
+        title: 'Otimização e Segurança de Produtos',
+        changes: [
+            { type: 'style', text: 'Formulário de produtos simplificado para linha única e interface compacta.' },
+            { type: 'feat', text: 'Botão de salvamento dinâmico (ativa apenas após alterações detectadas).' },
+            { type: 'fix', text: 'Bloqueio rigoroso de permissões e ocultação automática do formulário para usuários sem acesso.' },
+            { type: 'feat', text: 'Novo atalho de Gerenciamento de Produtos diretamente nos cards de controle de versões.' }
+        ]
+    },
+    {
         version: '1.9.74',
         date: '2026-01-06',
         title: 'Refinamento e Máscaras Inteligentes',

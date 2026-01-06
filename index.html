@@ -851,10 +851,6 @@
                                 <div class="label-actions" id="productActionButtons">
                                     <button type="button" class="label-icon-btn"
                                         onclick="window.openProductManagement()" title="Gerenciar Produtos">
-                                        <i class="fa-solid fa-plus"></i>
-                                    </button>
-                                    <button type="button" class="label-icon-btn"
-                                        onclick="window.openProductManagement()" title="Editar Produto">
                                         <i class="fa-solid fa-pencil"></i>
                                     </button>
                                 </div>
@@ -1165,35 +1161,25 @@
 
             <div class="modal-body" style="padding: 20px 0;">
                 <!-- Product Form -->
-                <form id="productForm" class="product-form-row"></form>
-                <input type="hidden" id="productId">
-                <div class="form-group" style="flex: 2; margin-bottom: 0;">
-                    <label for="productName" style="font-size: 0.8rem; margin-bottom: 5px;">
-                        <i class="fa-solid fa-tag" style="color: var(--accent); margin-right: 5px;"></i> Nome do Produto
-                    </label>
-                    <input type="text" id="productName" placeholder="Ex: CellVida" required style="width: 100%;">
-                </div>
-                <div class="form-group" style="flex: 1; margin-bottom: 0;">
-                    <label for="productType" style="font-size: 0.8rem; margin-bottom: 5px;">
-                        <i class="fa-solid fa-layer-group" style="color: var(--accent); margin-right: 5px;"></i> Tipo
-                    </label>
-                    <select id="productType" required style="width: 100%;">
+                <form id="productForm" class="product-form-row">
+                    <input type="hidden" id="productId">
+                    <input type="text" id="productName" placeholder="Nome do Produto" required style="flex: 2;">
+                    <select id="productType" required style="flex: 1;">
                         <option value="Pacote">Pacote</option>
                         <option value="Build">Build</option>
                     </select>
-                </div>
-                <div style="display: flex; gap: 8px;">
-                    <button type="submit" class="btn-primary"
-                        style="height: 42px; width: 42px; display: flex; align-items: center; justify-content: center; padding: 0;"
-                        title="Salvar">
-                        <i class="fa-solid fa-save"></i>
-                    </button>
-                    <button type="button" id="cancelProductEdit" class="btn-secondary hidden"
-                        style="height: 42px; width: 42px; display: flex; align-items: center; justify-content: center; padding: 0;"
-                        onclick="window.resetProductForm()" title="Cancelar">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-                </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button type="submit" id="saveProductBtn" class="btn-primary"
+                            style="height: 42px; min-width: 42px; display: flex; align-items: center; justify-content: center; padding: 0;"
+                            title="Salvar" disabled>
+                            <i class="fa-solid fa-save"></i>
+                        </button>
+                        <button type="button" id="cancelProductEdit" class="btn-secondary hidden"
+                            style="height: 42px; min-width: 42px; display: flex; align-items: center; justify-content: center; padding: 0;"
+                            onclick="window.resetProductForm()" title="Cancelar">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
                 </form>
 
                 <!-- Product List -->

@@ -266,6 +266,11 @@
                     <button class="btn-card-action" onclick="window.prefillClientVersion('${group.id}', '${utils.escapeHtml(group.name)}')" title="Registrar Atualização">
                         <i class="fa-solid fa-plus"></i>
                     </button>` : ''}
+                    
+                    ${P && P.can('Controle de Versões - Produtos', 'can_view') ? `
+                    <button class="btn-card-action" onclick="window.openProductManagement()" title="Gerenciar Produtos">
+                        <i class="fa-solid fa-cube"></i>
+                    </button>` : ''}
                 </div>
             </div>
             <div class="client-group-body">${versionsHtml}</div>
@@ -1548,6 +1553,15 @@
             return;
         }
         await loadProducts();
+
+        // Check if can create or edit to show/hide the form
+        const canCreate = window.Permissions?.can('Controle de Versões - Produtos', 'can_create');
+        const canEdit = window.Permissions?.can('Controle de Versões - Produtos', 'can_edit');
+        const form = document.getElementById('productForm');
+        if (form) {
+            form.style.display = (canCreate || canEdit) ? 'flex' : 'none';
+        }
+
         document.getElementById('productManagementModal').classList.remove('hidden');
     };
 
@@ -1561,10 +1575,34 @@
         if (form) form.reset();
         document.getElementById('productId').value = '';
         document.getElementById('cancelProductEdit').classList.add('hidden');
+        const saveBtn = document.getElementById('saveProductBtn');
+        if (saveBtn) saveBtn.disabled = true;
         editingProductId = null;
     };
 
+    function validateProductForm() {
+        const nameInput = document.getElementById('productName');
+        const typeSelect = document.getElementById('productType');
+        const saveBtn = document.getElementById('saveProductBtn');
+        if (!nameInput || !typeSelect || !saveBtn) return;
+
+        const nameValue = nameInput.value.trim();
+        const typeValue = typeSelect.value;
+
+        // Find current editing product to compare changes
+        const existing = editingProductId ? productsList.find(x => x.id === editingProductId) : null;
+
+        const isChanged = !existing || (existing.name !== nameValue || existing.version_type !== typeValue);
+        const isValid = nameValue.length > 0 && typeValue.length > 0;
+
+        saveBtn.disabled = !(isChanged && isValid);
+    }
+
     window.editProduct = (id) => {
+        if (window.Permissions && !window.Permissions.can('Controle de Versões - Produtos', 'can_edit')) {
+            if (window.showToast) window.showToast('🚫 Sem permissão para editar produtos.', 'error');
+            return;
+        }
         const p = productsList.find(x => x.id === id);
         if (!p) return;
         editingProductId = id;
@@ -1573,6 +1611,7 @@
         document.getElementById('productType').value = p.version_type;
         document.getElementById('cancelProductEdit').classList.remove('hidden');
         document.getElementById('productName').focus();
+        validateProductForm(); // Initial check
     };
 
     window.deleteProduct = async (id) => {
@@ -1639,7 +1678,16 @@
     document.addEventListener('DOMContentLoaded', () => {
         loadProducts();
         setupMaskLogic();
+        setupProductFormListeners();
     });
+
+    function setupProductFormListeners() {
+        const nameInput = document.getElementById('productName');
+        const typeSelect = document.getElementById('productType');
+
+        if (nameInput) nameInput.addEventListener('input', validateProductForm);
+        if (typeSelect) typeSelect.addEventListener('change', validateProductForm);
+    }
 
     function setupMaskLogic() {
         const sysSelect = document.getElementById('versionSystemSelect');
