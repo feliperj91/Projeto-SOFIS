@@ -1138,36 +1138,28 @@
         </div>
     </div> <!-- Closes pulseDashboardModal -->
 
-    <!-- Changelog Modal -->
-    <div id="changelogModal" class="modal hidden" style="z-index: 9999;">
-        <div class="modal-content"
-            style="max-width: 600px; max-height: 85vh; display: flex; flex-direction: column; padding: 0; overflow: hidden;">
-            <div class="modal-header" style="padding: 20px; border-bottom: 1px solid var(--border);">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <div
-                        style="width: 40px; height: 40px; border-radius: 10px; background: rgba(124, 77, 255, 0.1); display: flex; align-items: center; justify-content: center;">
-                        <i class="fa-solid fa-code-branch" style="color: var(--accent); font-size: 1.2rem;"></i>
-                    </div>
-                    <div>
-                        <h2 style="margin: 0; font-size: 1.25rem;">Histórico de Versões</h2>
-                        <div style="font-size: 0.8rem; color: var(--text-secondary);">Acompanhe as últimas atualizações
-                        </div>
-                    </div>
-                </div>
-                <button type="button" class="btn-icon"
-                    onclick="document.getElementById('changelogModal').classList.add('hidden')">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-            <div id="changelogBody" class="modal-body" style="flex: 1; overflow-y: auto; padding: 25px;">
-                <!-- Content Injected via JS -->
-            </div>
-            <div class="modal-actions"
-                style="padding: 15px 20px; border-top: 1px solid var(--border); background: rgba(0,0,0,0.1); display: flex; justify-content: flex-end;">
-                <button type="button" class="btn-primary"
-                    onclick="document.getElementById('changelogModal').classList.add('hidden')">Entendido</button>
-            </div>
+    <!-- Changelog Sidebar -->
+    <div id="changelogSidebar" class="activity-sidebar hidden"
+        style="z-index: 10002; background: var(--bg-card); border-left: 1px solid var(--border);">
+        <div class="activity-header"
+            style="border-bottom: 1px solid var(--border); padding: 20px; display: flex; align-items: center; justify-content: space-between;">
+            <h3 style="margin: 0; color: var(--accent); display: flex; align-items: center; gap: 10px;">
+                <i class="fa-solid fa-code-branch"></i> Histórico de Versões
+            </h3>
+            <button type="button" class="btn-icon"
+                onclick="document.getElementById('changelogSidebar').classList.add('hidden'); document.getElementById('changelogOverlay').classList.add('hidden')">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
         </div>
+        <div id="changelogBody" style="flex: 1; overflow-y: auto; padding: 20px;">
+            <!-- Content Injected via JS -->
+        </div>
+        <div style="padding: 20px; border-top: 1px solid var(--border); text-align: center;">
+            <span style="font-size: 0.8rem; color: var(--text-secondary);">Projeto SOFIS © 2026</span>
+        </div>
+    </div>
+    <div id="changelogOverlay" class="activity-overlay hidden" style="z-index: 10001;"
+        onclick="document.getElementById('changelogSidebar').classList.add('hidden'); this.classList.add('hidden')">
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -1187,13 +1179,15 @@
             }
         });
 
-        // Event Delegation for Changelog Modal
+        // Event Delegation for Changelog Sidebar
         document.addEventListener('click', (e) => {
             if (e.target && e.target.id === 'appBuildNumber') {
-                const modal = document.getElementById('changelogModal');
-                if (modal) {
+                const sidebar = document.getElementById('changelogSidebar');
+                const overlay = document.getElementById('changelogOverlay');
+                if (sidebar && overlay) {
                     if (typeof renderChangelog === 'function') renderChangelog();
-                    modal.classList.remove('hidden');
+                    sidebar.classList.remove('hidden');
+                    overlay.classList.remove('hidden');
                 }
             }
         });

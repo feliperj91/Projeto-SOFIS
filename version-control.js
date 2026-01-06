@@ -622,7 +622,8 @@
             return;
         }
 
-        if (!confirm(`Tem certeza que deseja excluir o registro do sistema "${system}" para o cliente "${clientName}"?`)) return;
+        const confirmed = await window.showConfirm(`Tem certeza que deseja excluir o registro do sistema "${system}" para o cliente "${clientName}"?`, 'Confirmar Exclusão', 'fa-trash');
+        if (!confirmed) return;
 
         try {
             if (window.showToast) window.showToast('⏳ Excluindo registro...', 'info');

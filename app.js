@@ -315,60 +315,72 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (window.applyPermissions) window.applyPermissions();
     });
 
-    // Modern Confirmation Modal
-    window.showConfirm = function (message, title = 'Confirmação', icon = 'fa-question') {
+    // Modern Confirmation & Alert System
+    window.showConfirm = function (message, title = 'Confirmação', icon = 'fa-question', isAlert = false) {
         return new Promise((resolve) => {
-            const confirmModal = document.getElementById('confirmModal');
-            const confirmTitle = document.getElementById('confirmTitle');
-            const confirmMessage = document.getElementById('confirmMessage');
-            const confirmIcon = document.getElementById('confirmIcon');
-            const confirmOkBtn = document.getElementById('confirmOkBtn');
-            const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+            const modal = document.getElementById('confirmModal');
+            const titleEl = document.getElementById('confirmTitle');
+            const msgEl = document.getElementById('confirmMessage');
+            const iconEl = document.getElementById('confirmIcon');
+            const okBtn = document.getElementById('confirmOkBtn');
+            const cancelBtn = document.getElementById('confirmCancelBtn');
 
-            if (!confirmModal) {
-                // Fallback to native confirm if modal not found
-                resolve(confirm(message));
+            if (!modal) {
+                if (isAlert) alert(message);
+                else resolve(confirm(message));
                 return;
             }
 
-            // Set content
-            confirmTitle.textContent = title;
-            confirmMessage.textContent = message;
-            confirmIcon.className = `fa-solid ${icon}`;
+            // UI Setup
+            titleEl.textContent = title;
+            msgEl.textContent = message;
+            iconEl.className = `fa-solid ${icon}`;
 
-            // Show modal
-            confirmModal.classList.remove('hidden');
+            // If it's just an alert, hide cancel button
+            if (isAlert) {
+                cancelBtn.style.display = 'none';
+                okBtn.style.flex = '1';
+                okBtn.innerHTML = '<i class="fa-solid fa-check"></i> OK';
+            } else {
+                cancelBtn.style.display = 'block';
+                okBtn.style.flex = '1';
+                okBtn.innerHTML = '<i class="fa-solid fa-check"></i> Confirmar';
+            }
 
-            // Handle buttons
+            modal.classList.remove('hidden');
+
             const handleOk = () => {
-                confirmModal.classList.add('hidden');
+                modal.classList.add('hidden');
                 cleanup();
                 resolve(true);
             };
 
             const handleCancel = () => {
-                confirmModal.classList.add('hidden');
+                modal.classList.add('hidden');
                 cleanup();
                 resolve(false);
             };
 
-            const cleanup = () => {
-                confirmOkBtn.removeEventListener('click', handleOk);
-                confirmCancelBtn.removeEventListener('click', handleCancel);
-            };
-
-            confirmOkBtn.addEventListener('click', handleOk);
-            confirmCancelBtn.addEventListener('click', handleCancel);
-
-            // ESC key to cancel
             const handleEsc = (e) => {
-                if (e.key === 'Escape') {
-                    handleCancel();
-                    document.removeEventListener('keydown', handleEsc);
-                }
+                if (e.key === 'Escape') handleCancel();
             };
+
+            const cleanup = () => {
+                okBtn.removeEventListener('click', handleOk);
+                cancelBtn.removeEventListener('click', handleCancel);
+                document.removeEventListener('keydown', handleEsc);
+                // Restore button visibility for next call
+                cancelBtn.style.display = 'block';
+            };
+
+            okBtn.addEventListener('click', handleOk);
+            cancelBtn.addEventListener('click', handleCancel);
             document.addEventListener('keydown', handleEsc);
         });
+    };
+
+    window.showAlert = function (message, title = 'Aviso', icon = 'fa-circle-info') {
+        return window.showConfirm(message, title, icon, true);
     };
 
     if (logoutBtn) {
@@ -1829,7 +1841,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const client = clients.find(c => c.id === id);
         if (!client) return;
 
-        if (confirm(`⚠️ EXCLUIR CLIENTE ⚠️\n\nTem certeza que deseja excluir "${client.name}"?`)) {
+        const confirmed = await window.showConfirm(`⚠️ EXCLUIR CLIENTE ⚠️\n\nTem certeza que deseja excluir "${client.name}"?`, 'Excluir Cliente', 'fa-triangle-exclamation');
+        if (confirmed) {
             const clientName = client.name;
             const clientSnapshot = JSON.parse(JSON.stringify(client));
 
@@ -2225,7 +2238,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             // We are editing a specific existing contact. The trash button should DELETE it.
-            if (confirm('Tem certeza que deseja excluir este contato?')) {
+            const confirmed = await window.showConfirm('Tem certeza que deseja excluir este contato?', 'Excluir Contato', 'fa-trash');
+            if (confirmed) {
                 if (client && client.contacts) {
                     const index = parseInt(editingContactIndex);
                     // Ensure the index is valid
@@ -2623,7 +2637,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     window.deleteServerRecord = async (clientId, index) => {
-        if (!confirm('Tem certeza que deseja excluir este servidor?')) return;
+        const confirmed = await window.showConfirm('Tem certeza que deseja excluir este servidor?', 'Excluir Servidor', 'fa-server');
+        if (!confirmed) return;
 
         const client = clients.find(c => c.id === clientId);
         if (!client || !client.servers) return;
@@ -2820,7 +2835,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function deleteVpnRecord(clientId, index) {
-        if (!confirm('Tem certeza que deseja excluir esta VPN?')) return;
+        const confirmed = await window.showConfirm('Tem certeza que deseja excluir esta VPN?', 'Excluir VPN', 'fa-shield-halved');
+        if (!confirmed) return;
         const client = clients.find(c => c.id === clientId);
         if (!client || !client.vpns) return;
 
@@ -2964,7 +2980,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             showToast('🚫 Sem permissão para excluir WebLaudo.', 'error');
             return;
         }
-        if (!confirm('Tem certeza que deseja excluir o WebLaudo?')) return;
+        const confirmed = await window.showConfirm('Tem certeza que deseja excluir o WebLaudo?', 'Excluir WebLaudo', 'fa-link-slash');
+        if (!confirmed) return;
         const id = urlClientIdInput.value;
         const client = clients.find(c => c.id === id);
         if (!client) return;
@@ -3227,7 +3244,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             showToast('🚫 Sem permissão para excluir URLs.', 'error');
             return;
         }
-        if (!confirm('Tem certeza que deseja excluir este sistema?')) return;
+        const confirmed = await window.showConfirm('Tem certeza que deseja excluir este sistema?', 'Excluir Sistema', 'fa-laptop-code');
+        if (!confirmed) return;
         const client = clients.find(c => c.id === clientId);
         if (!client || !client.urls) return;
 

@@ -3,6 +3,16 @@
 
 window.SOFIS_CHANGELOG = [
     {
+        version: '1.9.72',
+        date: '2026-01-06',
+        title: 'Padronização Premium de Alertas',
+        changes: [
+            { type: 'feat', text: 'Substituição completa de todos os "confirm" e "alert" nativos por modais modernos.' },
+            { type: 'style', text: 'Design unificado para diálogos de exclusão de clientes, contatos, SQL e VPN.' },
+            { type: 'style', text: 'Melhoria na experiência de usuário com fechamento via ESC e animações suaves.' }
+        ]
+    },
+    {
         version: '1.9.71',
         date: '2026-01-06',
         title: 'Nova Funcionalidade: Histórico de Versões',
