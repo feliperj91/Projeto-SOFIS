@@ -3,10 +3,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     const managementTabBtn = document.getElementById('btnUserManagement');
 
     // Auth Guard for Management Tab
-    // Using a list of admins or checking role if available
-    if (user && (user.username === 'admin' || (user.role && user.role === 'ADMINISTRADOR'))) {
-        if (managementTabBtn) managementTabBtn.style.display = 'block';
+    function checkUserManagementAccess() {
+        if (managementTabBtn && window.Permissions) {
+            // Main tab access
+            const canAccess = window.Permissions.can('Gestão de Usuários', 'can_view');
+            managementTabBtn.style.display = canAccess ? 'block' : 'none';
+        }
     }
+
+    document.addEventListener('permissions-loaded', checkUserManagementAccess);
+    // Check if already loaded
+    if (window.Permissions && window.Permissions.rules) checkUserManagementAccess();
 
     // --- State & Constants ---
     let usersList = [];
@@ -14,66 +21,172 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentSelectedRole = 'ADMINISTRADOR';
     let editingUserId = null;
 
-    const modules = [
-        'Logs e Atividades',
-        'Clientes e Contatos',
-        'Infraestruturas',
-        'Gestão de Usuários',
-        'Controle de Versões'
+    const permissionSchema = [
+        {
+            type: 'guide',
+            title: 'Guia Contatos e Conexões',
+            items: [
+                { module: 'Gestão de Clientes', isHeader: true },
+                { module: 'Logs e Atividades' },
+                { module: 'Contatos' },
+                { module: 'Banco de Dados' },
+                { module: 'VPN' },
+                { module: 'URLs' }
+            ]
+        },
+        {
+            type: 'guide',
+            title: 'Guia Controle de Versões',
+            items: [
+                { module: 'Controle de Versões', isHeader: true },
+                { module: 'Controle de Versões - Dashboard', label: 'Dashboard' },
+                { module: 'Controle de Versões - Histórico', label: 'Histórico' }
+            ]
+        },
+        {
+            type: 'guide',
+            title: 'Guia Gerenciamento de Usuários',
+            items: [
+                { module: 'Gestão de Usuários', isHeader: true },
+                { module: 'Gestão de Usuários - Usuários', label: 'Usuários' },
+                { module: 'Gestão de Usuários - Permissões', label: 'Permissões' }
+            ]
+        }
     ];
 
     // --- DOM Elements ---
     const usersContainer = document.getElementById('users-container');
     const permissionsContainer = document.getElementById('permissions-container');
     const mngSubTabBtns = document.querySelectorAll('.mng-tab-btn');
-    const mngControlsGroups = document.querySelectorAll('.mng-controls-group');
-    const rolePillBtns = document.querySelectorAll('.role-pill-btn');
+    // Note: mngControlsGroups are mostly gone in new layout using visibility toggles
+    const roleTextBtns = document.querySelectorAll('.role-text-btn'); // Renamed from pill
+    const roleSelector = document.getElementById('shared-mng-controls');
     const usersListEl = document.getElementById('usersList');
     const permissionsTableBody = document.getElementById('permissionsTableBody');
     const userSearchInput = document.getElementById('userSearchInput');
-    const userModal = document.getElementById('userModal');
-    const userForm = document.getElementById('userForm');
-    const userModalTitle = document.getElementById('userModalTitle');
+    const savePermissionsBtn = document.getElementById('savePermissionsBtn');
+    const addNewUserBtn = document.getElementById('addNewUserBtn');
+
+    // Toggle Password Visibility
+    const toggleUserPasswordBtn = document.getElementById('toggleUserPasswordBtn');
+    const userPasswordInput = document.getElementById('userPassword');
+
+    if (toggleUserPasswordBtn && userPasswordInput) {
+        toggleUserPasswordBtn.addEventListener('click', () => {
+            const type = userPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            userPasswordInput.setAttribute('type', type);
+
+            const icon = toggleUserPasswordBtn.querySelector('i');
+            if (type === 'text') {
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+    }
 
     // --- Initialization ---
+    // --- Initialization ---
     async function initUserManagement() {
-        await loadUsers();
-        await loadPermissions('ADMINISTRADOR');
+        // Now checks specific sub-module for user creation
+        const canCreateUsers = window.Permissions.can('Gestão de Usuários - Usuários', 'can_create');
+        if (addNewUserBtn) addNewUserBtn.style.display = canCreateUsers ? 'flex' : 'none';
+
+        // Check sub-tab visibility
+        const canViewUsers = window.Permissions.can('Gestão de Usuários - Usuários', 'can_view');
+        const canViewPerms = window.Permissions.can('Gestão de Usuários - Permissões', 'can_view');
+
+        const tabUsers = document.querySelector('[data-mng-tab="users"]');
+        const tabPerms = document.querySelector('[data-mng-tab="permissions"]');
+
+        if (tabUsers) {
+            tabUsers.style.display = canViewUsers ? '' : 'none';
+            if (!canViewUsers && currentMngTab === 'users') {
+                // If cannot view users, switch to permissions if allowed, or hide container
+                if (canViewPerms) tabPerms.click();
+                else usersContainer.classList.add('hidden');
+            }
+        }
+
+        if (tabPerms) {
+            tabPerms.style.display = canViewPerms ? '' : 'none';
+        }
+
+        if (canViewUsers) await loadUsers();
+        if (canViewPerms) await loadPermissions('ADMINISTRADOR');
     }
 
     // --- Tab Logic ---
     mngSubTabBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', (e) => {
             currentMngTab = btn.dataset.mngTab;
 
-            // Switch Buttons
+            // Switch Tab Buttons
             mngSubTabBtns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
 
-            // Switch Containers
             if (currentMngTab === 'users') {
                 usersContainer.classList.remove('hidden');
                 permissionsContainer.classList.add('hidden');
-                document.getElementById('users-mng-controls').classList.remove('hidden');
-                document.getElementById('permissions-mng-controls').classList.add('hidden');
+
+                // HIDE Save button on Users tab
+                if (savePermissionsBtn) savePermissionsBtn.classList.add('hidden');
+
+                // HIDE Role Selector on Users tab
+                if (roleSelector) roleSelector.classList.add('hidden');
+
+                // SHOW Search on Users tab
+                if (userSearchInput) userSearchInput.parentElement.classList.remove('hidden');
+
+                // Remove filter, show all users
+                renderUsers(usersList);
+
             } else {
                 usersContainer.classList.add('hidden');
                 permissionsContainer.classList.remove('hidden');
-                document.getElementById('users-mng-controls').classList.add('hidden');
-                document.getElementById('permissions-mng-controls').classList.remove('hidden');
+
+                // SHOW Save button on Permissions tab (disabled initially)
+                if (savePermissionsBtn) {
+                    savePermissionsBtn.classList.remove('hidden');
+                    savePermissionsBtn.disabled = true;
+                }
+
+                // SHOW Role Selector on Permissions tab
+                if (roleSelector) roleSelector.classList.remove('hidden');
+
+                // HIDE Search on Permissions tab
+                if (userSearchInput) userSearchInput.parentElement.classList.add('hidden');
+
+                loadPermissions(currentSelectedRole);
             }
         });
     });
 
-    // Role Plls Logic
-    rolePillBtns.forEach(btn => {
-        btn.addEventListener('click', async () => {
-            currentSelectedRole = btn.dataset.role;
-            rolePillBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            await loadPermissions(currentSelectedRole);
+    // Role Text Click Logic
+    if (roleTextBtns) {
+        roleTextBtns.forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                // Update active state
+                roleTextBtns.forEach(b => b.classList.remove('active'));
+                e.currentTarget.classList.add('active');
+
+                // Update role
+                const newRole = e.currentTarget.dataset.role;
+                currentSelectedRole = newRole;
+
+                if (currentMngTab === 'users') {
+                    const filtered = usersList.filter(u => u.role === newRole);
+                    renderUsers(filtered);
+                } else {
+                    await loadPermissions(currentSelectedRole);
+                    // Reset save button on role switch
+                    if (savePermissionsBtn) savePermissionsBtn.disabled = true;
+                }
+            });
         });
-    });
+    }
 
     // --- User CRUD ---
     function renderSkeletons() {
@@ -110,12 +223,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         console.log('🎨 Renderizando usuários:', list.length);
 
+        const P = window.Permissions;
+        // Use granular permissions
+        const canEdit = P && P.can('Gestão de Usuários - Usuários', 'can_edit');
+        const canDelete = P && P.can('Gestão de Usuários - Usuários', 'can_delete');
+
         if (list.length === 0) {
-            usersListEl.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-secondary);">Nenhum usuário encontrado.</div>';
+            usersListEl.innerHTML = `
+                <div class="empty-state">
+                    <i class="fa-solid fa-users-slash"></i>
+                    <p>Nenhum usuário encontrado.</p>
+                </div>`;
             return;
         }
 
         list.forEach(u => {
+            const card = document.createElement('div');
+            card.className = 'user-card'; // Restaurado de user-card-item para user-card
+
             const roleClass = `badge-${u.role?.toLowerCase() || 'tecnico'}`;
             const creationDate = u.created_at ? new Date(u.created_at).toLocaleDateString('pt-BR') : 'N/A';
 
@@ -127,8 +252,25 @@ document.addEventListener('DOMContentLoaded', async () => {
                 .toUpperCase()
                 .substring(0, 2);
 
-            const card = document.createElement('div');
-            card.className = 'user-card';
+            let actionsHtml = '';
+
+            // Edit Button (Permission Check)
+            if (canEdit) {
+                actionsHtml += `
+                    <button class="btn-icon" onclick="window.editUser('${u.id}')" title="Editar">
+                        <i class="fa-solid fa-pencil"></i>
+                    </button>`;
+            }
+
+            // Delete Button (Permission Check + Admin Protection)
+            if (canDelete && u.username !== 'admin') {
+                actionsHtml += `
+                    <button class="btn-icon" onclick="window.deleteUser('${u.id}')" title="Excluir" style="color: var(--danger)">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>`;
+            }
+
+            // Restaurada a estrutura original
             card.innerHTML = `
                 <div class="user-info-top">
                     <div class="user-card-header">
@@ -139,14 +281,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </div>
                     </div>
                     <div class="user-card-actions">
-                        <button class="btn-icon" onclick="window.editUser('${u.id}')" title="Editar">
-                            <i class="fa-solid fa-pencil"></i>
-                        </button>
-                        ${u.username !== 'admin' ? `
-                            <button class="btn-icon" onclick="window.deleteUser('${u.id}')" title="Excluir" style="color: var(--danger)">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        ` : ''}
+                        ${actionsHtml}
                     </div>
                 </div>
                 <div class="user-info-bottom">
@@ -191,7 +326,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     // Modal Handlers
-    window.editUser = function (id) {
+    window.editUser = async function (id) {
         console.log('Editando usuário ID:', id);
         const u = usersList.find(x => x.id === id);
         if (!u) {
@@ -204,7 +339,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (document.getElementById('userIdInput')) document.getElementById('userIdInput').value = u.id;
         if (document.getElementById('userFullName')) document.getElementById('userFullName').value = u.full_name || '';
         if (document.getElementById('userUsername')) document.getElementById('userUsername').value = u.username;
-        if (document.getElementById('userPassword')) document.getElementById('userPassword').value = u.password;
+
+        // Decrypt password for editing
+        const decryptedPass = await Security.decrypt(u.password);
+        if (document.getElementById('userPassword')) document.getElementById('userPassword').value = decryptedPass;
+
         if (document.getElementById('userRoleSelect')) document.getElementById('userRoleSelect').value = u.role || 'TECNICO';
 
         userModal.classList.remove('hidden');
@@ -242,7 +381,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const formData = {
             full_name: currentFullName,
             username: currentUsername,
-            password: currentPassword,
+            password: await Security.encrypt(currentPassword),
             role: currentRole
         };
 
@@ -309,6 +448,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     window.deleteUser = async (id) => {
+        // Security Check
+        if (!window.Permissions.can('Gestão de Usuários - Usuários', 'can_delete')) {
+            window.showToast('🚫 Acesso negado: Você não tem permissão para excluir usuários.', 'error');
+            return;
+        }
+
         const u = usersList.find(x => x.id === id);
         if (!u) return;
         if (u.username === 'admin') {
@@ -316,7 +461,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        if (!confirm(`Deseja realmente remover o usuário ${u.full_name} (@${u.username})?`)) return;
+        const confirmed = await window.showConfirm(
+            `Deseja realmente remover o usuário ${u.full_name} (@${u.username})?`,
+            'Confirmar Exclusão',
+            'fa-trash'
+        );
+
+        if (!confirmed) return;
 
         try {
             const { error } = await window.supabaseClient.from('users').delete().eq('id', id);
@@ -361,32 +512,73 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!permissionsTableBody) return;
         permissionsTableBody.innerHTML = '';
 
-        modules.forEach(mod => {
-            const p = permData.find(x => x.module === mod) || {
-                can_view: false, can_create: false, can_edit: false, can_delete: false
-            };
+        permissionSchema.forEach(guide => {
+            // Guide Row Removed as per user request
+            // We just render the items directly now
+            guide.items.forEach(item => {
+                const mod = item.module;
+                const label = item.label || mod;
+                const p = permData.find(x => x.module === mod) || {
+                    can_view: false, can_create: false, can_edit: false, can_delete: false
+                };
 
-            const roleClass = `badge-${role.toLowerCase()}`;
+                const roleClass = `badge-${role.toLowerCase()}`;
+                const indentClass = item.isHeader ? 'permission-header-item' : 'permission-sub-item';
 
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${mod}</td>
-                <td><span class="badge-role ${roleClass}">${role}</span></td>
-                <td><input type="checkbox" class="perm-checkbox" data-mod="${mod}" data-prop="can_view" ${p.can_view ? 'checked' : ''}></td>
-                <td><input type="checkbox" class="perm-checkbox" data-mod="${mod}" data-prop="can_create" ${p.can_create ? 'checked' : ''}></td>
-                <td><input type="checkbox" class="perm-checkbox" data-mod="${mod}" data-prop="can_edit" ${p.can_edit ? 'checked' : ''}></td>
-                <td><input type="checkbox" class="perm-checkbox" data-mod="${mod}" data-prop="can_delete" ${p.can_delete ? 'checked' : ''}></td>
-            `;
-            permissionsTableBody.appendChild(tr);
+                const tr = document.createElement('tr');
+                tr.className = item.isHeader ? 'permission-header-row' : 'permission-row';
+                tr.innerHTML = `
+                    <td class="${indentClass}">${label}</td>
+                    <td><span class="badge-role ${roleClass}">${role}</span></td>
+                    <td><input type="checkbox" class="perm-checkbox" data-mod="${mod}" data-prop="can_view" ${p.can_view ? 'checked' : ''}></td>
+                    <td><input type="checkbox" class="perm-checkbox" data-mod="${mod}" data-prop="can_create" ${p.can_create ? 'checked' : ''}></td>
+                    <td><input type="checkbox" class="perm-checkbox" data-mod="${mod}" data-prop="can_edit" ${p.can_edit ? 'checked' : ''}></td>
+                    <td><input type="checkbox" class="perm-checkbox" data-mod="${mod}" data-prop="can_delete" ${p.can_delete ? 'checked' : ''}></td>
+                `;
+                permissionsTableBody.appendChild(tr);
+            });
+        });
+
+        // Add Listeners for Changes
+        document.querySelectorAll('.perm-checkbox').forEach(chk => {
+            chk.addEventListener('change', (e) => {
+                const checkbox = e.target;
+                const prop = checkbox.dataset.prop;
+
+                // If unchecking "can_view", also uncheck create, edit, delete
+                if (prop === 'can_view' && !checkbox.checked) {
+                    const row = checkbox.closest('tr');
+                    const mod = checkbox.dataset.mod;
+
+                    // Uncheck all other permissions in the same row
+                    row.querySelectorAll('.perm-checkbox').forEach(cb => {
+                        if (cb.dataset.mod === mod && cb.dataset.prop !== 'can_view') {
+                            cb.checked = false;
+                        }
+                    });
+                }
+
+                const saveBtn = document.getElementById('savePermissionsBtn');
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.style.opacity = '1';
+                }
+            });
         });
     }
 
     document.getElementById('savePermissionsBtn')?.addEventListener('click', async () => {
+        const btn = document.getElementById('savePermissionsBtn');
+        if (btn) btn.disabled = true; // Prevent double click
+
         const rows = document.querySelectorAll('#permissionsTableBody tr');
         const updateData = [];
 
         rows.forEach(row => {
-            const mod = row.querySelector('td:first-child').innerText;
+            const chk = row.querySelector('.perm-checkbox');
+            if (!chk) return; // Skip guide rows
+
+            const mod = chk.dataset.mod;
             const checkboxes = row.querySelectorAll('.perm-checkbox');
             const rowObj = { role_name: currentSelectedRole, module: mod };
             checkboxes.forEach(cb => {
@@ -401,6 +593,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 .upsert(updateData, { onConflict: 'role_name,module' });
 
             if (error) throw error;
+            window.showToast('Permissões atualizadas!', 'success');
+            if (btn) btn.disabled = true; // Keep disabled until next change
             window.showToast('Permissões atualizadas!', 'success');
         } catch (err) {
             console.error('Erro ao salvar permissões:', err.message);

@@ -122,7 +122,10 @@
             const grouped = {};
             filtered.forEach(v => {
                 const name = v.clients?.name || 'Desconhecido';
-                if (!grouped[name]) grouped[name] = { id: v.client_id, name, versionsMap: {} };
+                // Use clients.id as fallback if client_id is missing/null, ensuring we have a valid reference
+                const cId = v.client_id || v.clients?.id;
+
+                if (!grouped[name]) grouped[name] = { id: cId, name, versionsMap: {} };
 
                 // Keep only the most recent version for each [system + environment] combination
                 // Note: filtered array is already sorted by updated_at desc.
@@ -133,11 +136,17 @@
                 if (!existing) {
                     grouped[name].versionsMap[key] = v;
                 }
-                // If existing is present, since we iterate desc, we don't replace it unless we want to handle out-of-order array (which shouldn't happen with sort)
             });
 
-            // Sort by client name
-            Object.values(grouped).sort((a, b) => a.name.localeCompare(b.name)).forEach(group => {
+            // Sort by Favorite then Client Name
+            Object.values(grouped).sort((a, b) => {
+                const isFavA = window.userFavorites && window.userFavorites.has(a.id);
+                const isFavB = window.userFavorites && window.userFavorites.has(b.id);
+
+                if (isFavA && !isFavB) return -1;
+                if (!isFavA && isFavB) return 1;
+                return a.name.localeCompare(b.name);
+            }).forEach(group => {
                 // Convert Map back to array for rendering
                 group.versions = Object.values(group.versionsMap);
                 list.appendChild(createClientGroupCard(group));
@@ -151,6 +160,14 @@
         const card = document.createElement('div');
         card.className = 'client-version-group-card';
 
+        // Permissions
+        const P = window.Permissions;
+        const canEditHistory = P ? P.can('Controle de Versões - Histórico', 'can_view') : false;
+        const canEditVersion = P ? P.can('Controle de Versões', 'can_edit') : false;
+        const canCreateVersion = P ? P.can('Controle de Versões', 'can_create') : false;
+        const canDeleteVersion = P ? P.can('Controle de Versões', 'can_delete') : false;
+        const canEditClient = P ? P.can('Gestão de Clientes', 'can_edit') : false;
+
         // General status of the card based on items
         let overallStatus = 'recent';
         group.versions.forEach(v => {
@@ -159,13 +176,23 @@
             else if (s === 'warning' && overallStatus !== 'outdated') overallStatus = 'warning';
         });
 
+        // Check availabilities for auto-filter
+        const hasProd = group.versions.some(v => v.environment === 'producao');
+        const hasHomol = group.versions.some(v => v.environment === 'homologacao');
+
+        // Default to production unless only homologation exists
+        let activeFilter = 'producao';
+        if (!hasProd && hasHomol) {
+            activeFilter = 'homologacao';
+        }
+
         // Building row HTML precisely as the reference image
         const versionsHtml = group.versions.map(v => {
             const status = utils.getStatus(v.updated_at);
             const timeInfo = utils.getTimeInfo(v.updated_at);
 
             return `
-                <div class="version-item-row status-${status}" data-environment="${v.environment}" style="${v.environment !== 'producao' ? 'display:none;' : ''}">
+                <div class="version-item-row status-${status}" data-environment="${v.environment}" style="${v.environment !== activeFilter ? 'display:none;' : ''}">
                     <div class="version-row-main">
                         <!-- Left section: System and Badge -->
                         <div class="version-left-info">
@@ -197,10 +224,10 @@
                                 </div>
                                 <!-- Actions Group: Icons (Aligned Right) -->
                                 <div class="version-actions-group">
-
-                                    <button class="btn-edit-version-small" onclick="window.editVersion('${v.id}')" title="Editar">
-                                        <i class="fa-solid fa-pencil"></i>
-                                    </button>
+                                    ${canDeleteVersion ? `
+                                    <button class="btn-edit-version-small btn-danger" onclick="window.deleteVersionControl('${v.id}', '${v.system}', '${group.name}')" title="Excluir" style="margin-left:5px;">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>` : ''}
                                 </div>
                             </div>
                         </div>
@@ -215,33 +242,30 @@
                         <h3 style="cursor:default" title="Nome do Cliente">${utils.escapeHtml(group.name)}</h3>
                     </div>
                 <div class="client-header-actions">
-                    <button class="btn-card-action" onclick="window.openClientInteraction('${group.id}', '${utils.escapeHtml(group.name)}')" title="Editar Cliente">
-                        <i class="fa-solid fa-pencil"></i>
-                    </button>
+                    ${canEditHistory ? `
                     <button class="btn-card-action" onclick="window.openClientVersionsHistory('${group.id}')" title="Ver Histórico">
                         <i class="fa-solid fa-rotate"></i>
-                    </button>
-                    <button class="btn-card-action" onclick="window.prefillClientVersion('${group.id}', '${utils.escapeHtml(group.name)}')" title="Adicionar Sistema">
-                        <i class="fa-solid fa-plus-circle"></i>
-                    </button>
+                    </button>` : ''}
                     
                     <!-- Card Level Filter -->
                     <div class="card-filter-dropdown">
-                        <button class="btn-sm card-env-toggle" onclick="window.toggleCardFilterMenu(this)">
+                        <button class="btn-card-action" onclick="window.toggleCardFilterMenu(this)" title="Filtrar Ambiente">
                             <i class="fa-solid fa-filter"></i>
                         </button>
                         <div class="card-filter-menu hidden">
-                            <div class="filter-menu-item" onclick="window.applyCardEnvFilter(this, 'all')">
-                                <i class="fa-solid fa-layer-group"></i> <span>Todos</span>
+                            <div class="filter-menu-item ${activeFilter === 'producao' ? 'active' : ''}" onclick="window.applyCardEnvFilter(this, 'producao')">
+                                <i class="fa-solid fa-server"></i> Produção
                             </div>
-                            <div class="filter-menu-item active" onclick="window.applyCardEnvFilter(this, 'producao')">
-                                <i class="fa-solid fa-server"></i> <span>Produção</span>
-                            </div>
-                            <div class="filter-menu-item" onclick="window.applyCardEnvFilter(this, 'homologacao')">
-                                <i class="fa-solid fa-vial"></i> <span>Homologação</span>
+                            <div class="filter-menu-item ${activeFilter === 'homologacao' ? 'active' : ''}" onclick="window.applyCardEnvFilter(this, 'homologacao')">
+                                <i class="fa-solid fa-flask"></i> Homologação
                             </div>
                         </div>
                     </div>
+
+                    ${canCreateVersion ? `
+                    <button class="btn-card-action" onclick="window.prefillClientVersion('${group.id}', '${utils.escapeHtml(group.name)}')" title="Registrar Atualização">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>` : ''}
                 </div>
             </div>
             <div class="client-group-body">${versionsHtml}</div>
@@ -267,8 +291,24 @@
                 responsible: document.getElementById('versionResponsibleSelect').value
             };
 
-            if (!fields.clientId) {
-                if (window.showToast) window.showToast('⚠️ Selecione um cliente', 'warning');
+            // Permissions Check
+            const P = window.Permissions;
+            if (fields.id) {
+                if (P && !P.can('Controle de Versões', 'can_edit')) {
+                    if (window.showToast) window.showToast('🚫 Sem permissão para editar versões.', 'error');
+                    sofis_isSaving = false;
+                    return;
+                }
+            } else {
+                if (P && !P.can('Controle de Versões', 'can_create')) {
+                    if (window.showToast) window.showToast('🚫 Sem permissão para registrar novas versões.', 'error');
+                    sofis_isSaving = false;
+                    return;
+                }
+            }
+
+            if (!fields.clientId || fields.clientId === 'undefined') {
+                if (window.showToast) window.showToast('⚠️ Selecione um cliente válido.', 'warning');
                 sofis_isSaving = false;
                 return;
             }
@@ -364,21 +404,48 @@
     window.handleVersionSubmit = handleVersionSubmit;
 
     window.editVersion = (id) => {
-        // Refresh client list if adding new version control to ensure we filter out existing ones
+        // Permission Check
+        const P = window.Permissions;
+        if (id) {
+            if (P && !P.can('Controle de Versões', 'can_edit')) {
+                if (window.showToast) window.showToast('🚫 Sem permissão para editar versões.', 'error');
+                return;
+            }
+        } else {
+            if (P && !P.can('Controle de Versões', 'can_create')) {
+                if (window.showToast) window.showToast('🚫 Sem permissão para registrar novas versões.', 'error');
+                return;
+            }
+        }
+
+        // Explicitly clear hidden ID to avoid any state leakage or 'undefined' string
+        const hiddenIdField = document.getElementById('versionClientSelect');
+        if (hiddenIdField) hiddenIdField.value = '';
+
+        // Refresh client list if adding new version control
         if (!id && window.populateVersionClientSelect) {
             window.populateVersionClientSelect();
         }
 
+        if (window.populateResponsibleSelect) {
+            window.populateResponsibleSelect();
+        }
+
         const modal = document.getElementById('versionModal');
         if (!modal) return;
-        document.getElementById('versionForm').reset();
-        document.getElementById('versionId').value = id;
 
-        const v = versionControls.find(x => x.id === id);
+        const form = document.getElementById('versionForm');
+        if (form) form.reset();
+
+        document.getElementById('versionId').value = id || '';
+
+        const v = id ? versionControls.find(x => x.id === id) : null;
+
         if (v) {
-            document.getElementById('versionClientSelect').value = v.client_id;
-            document.getElementById('versionClientInput').value = v.clients?.name || '';
-            document.getElementById('versionClientInput').disabled = true; // Lock client on edit
+            if (document.getElementById('versionClientSelect')) {
+                document.getElementById('versionClientSelect').value = v.client_id;
+                document.getElementById('versionClientSelect').disabled = true; // Lock client on edit
+            }
             document.getElementById('versionEnvironmentSelect').value = v.environment;
             document.getElementById('versionSystemSelect').value = v.system;
             document.getElementById('versionNumberInput').value = v.version;
@@ -390,7 +457,12 @@
             notes.value = v.notes || '';
             notes.disabled = !check.checked;
         } else {
-            document.getElementById('versionClientInput').disabled = false;
+            // New Entry Mode
+            const clientSelect = document.getElementById('versionClientSelect');
+            if (clientSelect) {
+                clientSelect.disabled = false;
+                clientSelect.value = '';
+            }
         }
 
         // Auto-select current user in responsible list if new
@@ -398,13 +470,64 @@
             const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username;
             if (currentUser) {
                 const respSelect = document.getElementById('versionResponsibleSelect');
-                for (let i = 0; i < respSelect.options.length; i++) {
-                    if (respSelect.options[i].value === currentUser) {
-                        respSelect.selectedIndex = i;
-                        break;
-                    }
-                }
+                // Wait small tick for populate to finish if needed, though usually cached
+                setTimeout(() => {
+                    if (respSelect) respSelect.value = currentUser;
+                }, 100);
             }
+        }
+
+        modal.classList.remove('hidden');
+    };
+
+    window.prefillClientVersion = (clientId, clientName) => {
+        const P = window.Permissions;
+        if (P && !P.can('Controle de Versões', 'can_create')) {
+            if (window.showToast) window.showToast('🚫 Sem permissão para registrar novas atualizações.', 'error');
+            return;
+        }
+
+        const modal = document.getElementById('versionModal');
+        if (!modal) return;
+        document.getElementById('versionForm').reset();
+        document.getElementById('versionId').value = '';
+
+        // Ensure we populate dropdown first if not already done
+        // Check if options > 1 (meaning more than just default "Selecione...")
+        const select = document.getElementById('versionClientSelect');
+        if (select && select.options.length <= 1) {
+            if (window.populateVersionClientSelect) window.populateVersionClientSelect();
+        }
+
+        // Validate ID
+        let safeClientId = clientId;
+        // logic to find by name removed as we strictly use ID now for select values
+        if (clientName && (!safeClientId || safeClientId === 'undefined')) {
+            // fallback: try to find ID from global clients list if we only have name
+            if (window.clients) {
+                const f = window.clients.find(c => c.name === clientName);
+                if (f) safeClientId = f.id;
+            }
+        }
+
+        // Override client fields
+        if (select) {
+            // We need to wait a tiny bit if populate is async, but usually populate is awaited or fast if cached.
+            // Force value set
+            setTimeout(() => {
+                select.value = safeClientId || '';
+                if (safeClientId) select.disabled = true;
+            }, 50);
+        }
+
+        // Auto-select current user in responsible list
+        const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username;
+        if (currentUser) {
+            const respSelect = document.getElementById('versionResponsibleSelect');
+            // Wait small tick for populate to finish if needed, though usually cached
+            setTimeout(() => {
+                if (respSelect) respSelect.value = currentUser;
+            }, 100);
         }
 
         modal.classList.remove('hidden');
@@ -422,32 +545,6 @@
         } else if (f) {
             f.reportValidity();
         }
-    };
-
-    window.prefillClientVersion = (id, name) => {
-        const modal = document.getElementById('versionModal');
-        if (!modal) return;
-        document.getElementById('versionForm').reset();
-        document.getElementById('versionId').value = '';
-        setTimeout(() => {
-            document.getElementById('versionClientSelect').value = id;
-            document.getElementById('versionClientInput').value = name;
-            document.getElementById('versionClientInput').disabled = true; // Lock client when prefilling
-
-            // Auto-select current user in responsible list
-            const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username;
-            if (currentUser) {
-                const respSelect = document.getElementById('versionResponsibleSelect');
-                for (let i = 0; i < respSelect.options.length; i++) {
-                    if (respSelect.options[i].value === currentUser) {
-                        respSelect.selectedIndex = i;
-                        break;
-                    }
-                }
-            }
-
-            modal.classList.remove('hidden');
-        }, 50);
     };
 
     window.openVersionNotes = (id) => {
@@ -470,6 +567,40 @@
     window.closeVersionNotesModal = () => {
         const m = document.getElementById('versionNotesModal');
         if (m) m.classList.add('hidden');
+    };
+
+    window.deleteVersionControl = async (id, system, clientName) => {
+        // Permission Check
+        const P = window.Permissions;
+        if (P && !P.can('Controle de Versões', 'can_delete')) {
+            if (window.showToast) window.showToast('🚫 Sem permissão para excluir atualizações.', 'error');
+            return;
+        }
+
+        if (!confirm(`Tem certeza que deseja excluir o registro do sistema "${system}" para o cliente "${clientName}"?`)) return;
+
+        try {
+            if (window.showToast) window.showToast('⏳ Excluindo registro...', 'info');
+
+            const { error } = await window.supabaseClient
+                .from('version_controls')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+
+            if (window.showToast) window.showToast('🗑️ Registro excluído com sucesso!', 'success');
+
+            // Log de Auditoria (Opcional, se existir a função globalmente)
+            if (window.registerAuditLog) {
+                await window.registerAuditLog('EXCLUSÃO', 'Exclusão de Controle de Versão', `Cliente: ${clientName}, Sistema: ${system}`, { id, system, clientName }, null);
+            }
+
+            loadVersionControls(); // Refresh list
+        } catch (err) {
+            console.error('Erro ao excluir versão:', err);
+            if (window.showToast) window.showToast('❌ Erro ao excluir registro.', 'error');
+        }
     };
 
     // Filter Menu Logic
@@ -565,11 +696,17 @@
 
     let cachedClientsForVersion = [];
     window.populateVersionClientSelect = async () => {
-        const dl = document.getElementById('versionClientList');
-        if (!dl) return;
+        const select = document.getElementById('versionClientSelect');
+        if (!select) return;
 
-        // Se já temos cache e não está vazio, não busca de novo (ou busca se quiser refresh, mas vamos economizar)
-        if (cachedClientsForVersion.length === 0) {
+        // Use global window.clients if available (source of truth), otherwise fetch
+        let clientsToUse = [];
+
+        if (window.clients && window.clients.length > 0) {
+            clientsToUse = window.clients;
+        } else if (cachedClientsForVersion.length > 0) {
+            clientsToUse = cachedClientsForVersion;
+        } else {
             try {
                 const { data, error } = await window.supabaseClient
                     .from('clients')
@@ -578,6 +715,7 @@
 
                 if (!error && data) {
                     cachedClientsForVersion = data;
+                    clientsToUse = data;
                 }
             } catch (e) {
                 console.error("Erro ao buscar clientes para select:", e);
@@ -585,38 +723,72 @@
             }
         }
 
-        dl.innerHTML = '';
-        cachedClientsForVersion.forEach(c => {
+        // Preserve current selection if any
+        const currentVal = select.value;
+        const isDisabled = select.disabled;
+
+        select.innerHTML = '<option value="">Selecione o cliente...</option>';
+        // Sort explicitly just in case
+        clientsToUse.sort((a, b) => a.name.localeCompare(b.name)).forEach(c => {
             const opt = document.createElement('option');
-            opt.value = c.name;
-            dl.appendChild(opt);
+            opt.value = c.id; // Use ID as value
+            opt.textContent = c.name;
+            select.appendChild(opt);
         });
 
-        // Configurar listener para atualizar o ID oculto quando o usuário digitar/selecionar
-        const input = document.getElementById('versionClientInput');
-        const hidden = document.getElementById('versionClientSelect');
+        if (currentVal) select.value = currentVal;
+        select.disabled = isDisabled;
+    };
 
-        if (input && hidden) {
-            const updateHidden = () => {
-                const val = input.value;
-                // Busca exata (case sensitive ou não? nomes costumam ser exatos no datalist)
-                const match = cachedClientsForVersion.find(c => c.name === val);
-                if (match) {
-                    hidden.value = match.id;
-                    input.setCustomValidity(""); // Válido
-                } else {
-                    hidden.value = ''; // Inválido se não casar
-                    // Opcional: input.setCustomValidity("Selecione um cliente válido da lista");
+    let cachedUsersForResponsible = [];
+    window.populateResponsibleSelect = async () => {
+        const select = document.getElementById('versionResponsibleSelect');
+        if (!select) return;
+
+        // If we have cached users, verify if select is already populated (check length > 1 because of default option)
+        // However, to be safe, we can rebuild if cache exists.
+        if (cachedUsersForResponsible.length === 0) {
+            try {
+                const { data, error } = await window.supabaseClient
+                    .from('users')
+                    .select('username, name') // Assuming 'username' is the display name or we have 'name'
+                    .order('username');
+
+                if (!error && data) {
+                    cachedUsersForResponsible = data;
                 }
-            };
+            } catch (e) {
+                console.error("Erro ao buscar usuários para responsável:", e);
+            }
+        }
 
-            input.oninput = updateHidden;
-            input.onchange = updateHidden; // Garantia extra
+        // Save current selection if any (mostly relevant for edit or re-renders)
+        const currentVal = select.value;
+
+        // Clear and add default
+        select.innerHTML = '<option value="">Selecione...</option>';
+
+        cachedUsersForResponsible.forEach(u => {
+            const opt = document.createElement('option');
+            opt.value = u.username;
+            opt.textContent = u.name || u.username;
+            select.appendChild(opt);
+        });
+
+        if (currentVal) {
+            // Try to restore selection if it still exists
+            select.value = currentVal;
         }
     };
 
     let currentHistoryData = [];
     window.openClientVersionsHistory = async (clientId) => {
+        const P = window.Permissions;
+        if (P && !P.can('Controle de Versões - Histórico', 'can_view')) {
+            if (window.showToast) window.showToast('🚫 Sem permissão para visualizar o histórico de versões.', 'error');
+            return;
+        }
+
         const modal = document.getElementById('versionHistoryModal');
         if (!modal) return;
 
@@ -1246,5 +1418,11 @@
         });
     }
 
+
+    // Listen for permissions loaded to re-render UI with correct access levels
+    document.addEventListener('permissions-loaded', () => {
+        console.log("🔄 Re-rendering Version Controls due to permissions update...");
+        renderVersionControls();
+    });
 
 })();
