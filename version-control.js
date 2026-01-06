@@ -396,12 +396,21 @@
     async function logHistory(vcId, oldV, newV, notes, responsible = null) {
         try {
             const userObj = JSON.parse(localStorage.getItem('sofis_user') || '{}');
-            const user = responsible || userObj.full_name || userObj.username || 'Sistema';
+            let displayName = 'Sistema';
+
+            if (responsible) {
+                // Look up full name from cache if it's a username
+                const found = cachedUsersForResponsible.find(u => u.username === responsible || u.full_name === responsible);
+                displayName = found ? (found.full_name || found.username) : responsible;
+            } else {
+                displayName = userObj.full_name || userObj.username || 'Sistema';
+            }
+
             await window.supabaseClient.from('version_history').insert([{
                 version_control_id: vcId,
                 previous_version: oldV,
                 new_version: newV,
-                updated_by: user,
+                updated_by: displayName,
                 notes: notes || ''
             }]);
         } catch (e) {
@@ -810,7 +819,7 @@
 
         cachedUsersForResponsible.forEach(u => {
             const opt = document.createElement('option');
-            opt.value = u.full_name || u.username;
+            opt.value = u.username;
             opt.textContent = u.full_name || u.username;
             select.appendChild(opt);
         });

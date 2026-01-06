@@ -1276,10 +1276,19 @@
                 return;
             }
 
+            const typeMap = {
+                'fix': 'CORREÇÃO',
+                'feat': 'NOVIDADE',
+                'style': 'DESIGN',
+                'perf': 'MELHORIA',
+                'docs': 'DOCS',
+                'refactor': 'REFACTOR'
+            };
+
             const html = history.map(entry => {
                 const items = entry.changes.map(c => `
                         <li class="changelog-item">
-                            <span class="change-badge ${c.type}">${c.type}</span>
+                            <span class="change-badge ${c.type}">${typeMap[c.type] || c.type.toUpperCase()}</span>
                             <span>${c.text}</span>
                         </li>
                     `).join('');

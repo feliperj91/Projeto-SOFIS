@@ -1,7 +1,7 @@
 // Centralized Build Version Configuration
 // This file is the single source of truth for the application version
 window.SOFIS_BUILD = {
-    version: '1.9.81',
+    version: '1.9.82',
     date: '2026-01-06',
-    time: '20:30'
+    time: '21:05'
 };

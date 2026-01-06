@@ -3,6 +3,16 @@
 
 window.SOFIS_CHANGELOG = [
     {
+        version: '1.9.82',
+        date: '2026-01-06',
+        title: 'Ajustes de Identificação e Localização',
+        changes: [
+            { type: 'fix', text: 'Correção: O campo de responsável no histórico agora exibe obrigatoriamente o Nome Completo do usuário.' },
+            { type: 'style', text: 'Tradução das etiquetas do histórico (Badges) para termos em Português-BR (NOVIDADE, CORREÇÃO, DESIGN).' },
+            { type: 'fix', text: 'Consistência técnica: Retorno do uso de logins como identificadores internos para garantir seleção automática correta em formulários.' }
+        ]
+    },
+    {
         version: '1.9.81',
         date: '2026-01-06',
         title: 'Humanização e Localização de Histórico',
