@@ -1136,80 +1136,82 @@
                 </div>
             </div>
         </div>
-        <!-- Changelog Sidebar -->
-        <div id="changelogSidebar" class="activity-sidebar hidden"
-            style="z-index: 10002; background: var(--bg-card); border-left: 1px solid var(--border);">
-            <div class="activity-header"
-                style="border-bottom: 1px solid var(--border); padding: 20px; display: flex; align-items: center; justify-content: space-between;">
-                <h3 style="margin: 0; color: var(--accent); display: flex; align-items: center; gap: 10px;">
-                    <i class="fa-solid fa-code-branch"></i> Histórico de Versões
-                </h3>
-                <button type="button" class="btn-icon"
-                    onclick="document.getElementById('changelogSidebar').classList.add('hidden'); document.getElementById('changelogOverlay').classList.add('hidden')">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-            <div id="changelogBody" style="flex: 1; overflow-y: auto; padding: 20px;">
-                <!-- Content Injected via JS -->
-            </div>
-            <div style="padding: 20px; border-top: 1px solid var(--border); text-align: center;">
-                <span style="font-size: 0.8rem; color: var(--text-secondary);">Projeto SOFIS © 2026</span>
-            </div>
+    </div> <!-- Closes pulseDashboardModal -->
+
+    <!-- Changelog Sidebar -->
+    <div id="changelogSidebar" class="activity-sidebar hidden"
+        style="z-index: 10002; background: var(--bg-card); border-left: 1px solid var(--border);">
+        <div class="activity-header"
+            style="border-bottom: 1px solid var(--border); padding: 20px; display: flex; align-items: center; justify-content: space-between;">
+            <h3 style="margin: 0; color: var(--accent); display: flex; align-items: center; gap: 10px;">
+                <i class="fa-solid fa-code-branch"></i> Histórico de Versões
+            </h3>
+            <button type="button" class="btn-icon"
+                onclick="document.getElementById('changelogSidebar').classList.add('hidden'); document.getElementById('changelogOverlay').classList.add('hidden')">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
         </div>
-        <div id="changelogOverlay" class="activity-overlay hidden" style="z-index: 10001;"
-            onclick="document.getElementById('changelogSidebar').classList.add('hidden'); this.classList.add('hidden')">
+        <div id="changelogBody" style="flex: 1; overflow-y: auto; padding: 20px;">
+            <!-- Content Injected via JS -->
         </div>
+        <div style="padding: 20px; border-top: 1px solid var(--border); text-align: center;">
+            <span style="font-size: 0.8rem; color: var(--text-secondary);">Projeto SOFIS © 2026</span>
+        </div>
+    </div>
+    <div id="changelogOverlay" class="activity-overlay hidden" style="z-index: 10001;"
+        onclick="document.getElementById('changelogSidebar').classList.add('hidden'); this.classList.add('hidden')">
+    </div>
 
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <script src="build-config.js?v=2.0"></script>
-        <script src="supabase-client.js?v=3.9"></script>
-        <script src="changelog.js?v=1.0"></script>
-        <script>
-            // Init Changelog & Build Number
-            document.addEventListener('DOMContentLoaded', () => {
-                if (window.SOFIS_BUILD) {
-                    const buildEl = document.getElementById('appBuildNumber');
-                    if (buildEl) {
-                        buildEl.textContent = `Build: ${window.SOFIS_BUILD.version}`;
-                        buildEl.title = "Clique para ver o histórico de versões";
-                        buildEl.style.cursor = "pointer";
-                    }
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="build-config.js?v=2.0"></script>
+    <script src="supabase-client.js?v=3.9"></script>
+    <script src="changelog.js?v=1.0"></script>
+    <script>
+        // Init Changelog & Build Number
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.SOFIS_BUILD) {
+                const buildEl = document.getElementById('appBuildNumber');
+                if (buildEl) {
+                    buildEl.textContent = `Build: ${window.SOFIS_BUILD.version}`;
+                    buildEl.title = "Clique para ver o histórico de versões";
+                    buildEl.style.cursor = "pointer";
                 }
-            });
+            }
+        });
 
-            // Event Delegation for Changelog Sidebar
-            document.addEventListener('click', (e) => {
-                if (e.target && e.target.id === 'appBuildNumber') {
-                    const sidebar = document.getElementById('changelogSidebar');
-                    const overlay = document.getElementById('changelogOverlay');
-                    if (sidebar && overlay) {
-                        if (typeof renderChangelog === 'function') renderChangelog();
-                        sidebar.classList.remove('hidden');
-                        overlay.classList.remove('hidden');
-                    }
+        // Event Delegation for Changelog Sidebar
+        document.addEventListener('click', (e) => {
+            if (e.target && e.target.id === 'appBuildNumber') {
+                const sidebar = document.getElementById('changelogSidebar');
+                const overlay = document.getElementById('changelogOverlay');
+                if (sidebar && overlay) {
+                    if (typeof renderChangelog === 'function') renderChangelog();
+                    sidebar.classList.remove('hidden');
+                    overlay.classList.remove('hidden');
                 }
-            });
+            }
+        });
 
-            function renderChangelog() {
-                const body = document.getElementById('changelogBody');
-                if (!body) return;
+        function renderChangelog() {
+            const body = document.getElementById('changelogBody');
+            if (!body) return;
 
-                const history = window.SOFIS_CHANGELOG || [];
+            const history = window.SOFIS_CHANGELOG || [];
 
-                if (history.length === 0) {
-                    body.innerHTML = '<p style="text-align:center; color: var(--text-secondary);">Nenhum histórico disponível.</p>';
-                    return;
-                }
+            if (history.length === 0) {
+                body.innerHTML = '<p style="text-align:center; color: var(--text-secondary);">Nenhum histórico disponível.</p>';
+                return;
+            }
 
-                const html = history.map(entry => {
-                    const items = entry.changes.map(c => `
+            const html = history.map(entry => {
+                const items = entry.changes.map(c => `
                         <li class="changelog-item">
                             <span class="change-badge ${c.type}">${c.type}</span>
                             <span>${c.text}</span>
                         </li>
                     `).join('');
 
-                    return `
+                return `
                         <div class="changelog-entry">
                             <div class="changelog-header">
                                 <span class="changelog-version">v${entry.version}</span>
@@ -1221,15 +1223,15 @@
                             </ul>
                         </div>
                     `;
-                }).join('');
+            }).join('');
 
-                body.innerHTML = `<div class="changelog-timeline">${html}</div>`;
-            }
-        </script>
-        <script src="security.js?v=1.0"></script>
-        <script src="app.js?v=4.2"></script>
-        <script src="version-control.js?v=10.6"></script>
-        <script src="user-management.js?v=1.2"></script>
+            body.innerHTML = `<div class="changelog-timeline">${html}</div>`;
+        }
+    </script>
+    <script src="security.js?v=1.0"></script>
+    <script src="app.js?v=4.2"></script>
+    <script src="version-control.js?v=10.6"></script>
+    <script src="user-management.js?v=1.2"></script>
 </body>
 
 </html>
