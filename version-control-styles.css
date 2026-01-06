@@ -843,6 +843,18 @@
     background: rgba(255, 255, 255, 0.08);
 }
 
+/* Delete Button (Danger) Style */
+.btn-edit-version-small.btn-danger {
+    color: rgba(255, 82, 82, 0.6);
+}
+
+.btn-edit-version-small.btn-danger:hover {
+    color: #ff5252;
+    background: rgba(255, 82, 82, 0.1);
+    transform: scale(1.15);
+    border: 1px solid rgba(255, 82, 82, 0.2);
+}
+
 .environment-badge-small {
     font-size: 0.55rem;
     padding: 1px 6px;
