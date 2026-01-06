@@ -1532,294 +1532,302 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function handleFormSubmit(e) {
         e.preventDefault();
-        const mode = form.dataset.mode;
-        const editingContactIndex = contactList.dataset.editingContactIndex;
+        console.log('handleFormSubmit called');
+        try {
+            const mode = form.dataset.mode;
+            console.log('Mode:', mode, 'EditingId:', editingId);
+            const editingContactIndex = contactList.dataset.editingContactIndex;
 
-        // Validate Client Name
-        const nameValue = clientNameInput.value.trim();
-        if (!nameValue) {
-            showToast('⚠️ O nome do cliente é obrigatório.', 'error');
-            clientNameInput.focus();
-            return;
-        }
-
-        // Check for duplicate client name
-        // Don't check strictly if we are just adding a contact to an existing client (mode === 'addContact')
-        // But wait, if mode is addContact, clientNameInput is disabled or readonly usually? 
-        // Logic: if we are creating a new client (!editingId) or updating a client name (editingId && mode !== 'addContact')
-
-        if (mode !== 'addContact') {
-            const duplicateClient = clients.find(c => c.name.toLowerCase() === nameValue.toLowerCase() && c.id !== editingId);
-            if (duplicateClient) {
-                showToast('⚠️ Já existe um cliente cadastrado com este nome.', 'error');
+            // Validate Client Name
+            const nameValue = clientNameInput.value.trim();
+            if (!nameValue) {
+                showToast('⚠️ O nome do cliente é obrigatório.', 'error');
                 clientNameInput.focus();
                 return;
             }
-        }
+
+            // Check for duplicate client name
+            // Don't check strictly if we are just adding a contact to an existing client (mode === 'addContact')
+            // But wait, if mode is addContact, clientNameInput is disabled or readonly usually? 
+            // Logic: if we are creating a new client (!editingId) or updating a client name (editingId && mode !== 'addContact')
+
+            if (mode !== 'addContact') {
+                const duplicateClient = clients.find(c => c.name.toLowerCase() === nameValue.toLowerCase() && c.id !== editingId);
+                if (duplicateClient) {
+                    showToast('⚠️ Já existe um cliente cadastrado com este nome.', 'error');
+                    clientNameInput.focus();
+                    return;
+                }
+            }
 
 
-        // --- MODE: EDITING A SINGLE CONTACT ---
-        if (editingContactIndex !== undefined) {
+            // --- MODE: EDITING A SINGLE CONTACT ---
+            if (editingContactIndex !== undefined) {
+                const contactGroups = contactList.querySelectorAll('.contact-group');
+                if (contactGroups.length !== 1) {
+                    showToast('⚠️ Erro ao salvar contato.', 'error');
+                    return;
+                }
+
+                const group = contactGroups[0];
+                const name = group.querySelector('.contact-name-input').value.trim();
+                const phones = Array.from(group.querySelectorAll('.phone-input'))
+                    .map(input => input.value.trim())
+                    .filter(val => val !== '');
+                const emails = Array.from(group.querySelectorAll('.email-input'))
+                    .map(input => input.value.trim())
+                    .filter(val => val !== '');
+
+                if (!name || phones.length === 0) {
+                    showToast('⚠️ Nome e pelo menos um telefone são obrigatórios.', 'error');
+                    return;
+                }
+
+                const client = clients.find(c => c.id === editingId);
+                if (!client) return;
+
+                const currentIndex = parseInt(editingContactIndex);
+
+                // Duplicate checks
+                if (client.contacts) {
+                    for (let i = 0; i < client.contacts.length; i++) {
+                        if (i === currentIndex) continue;
+                        const existing = client.contacts[i];
+                        for (const phone of phones) {
+                            if (existing.phones && existing.phones.includes(phone)) {
+                                showToast(`❌ Telefone ${phone} já cadastrado em outro contato.`, 'error');
+                                return;
+                            }
+                        }
+                    }
+                }
+
+                client.contacts[currentIndex] = { name, phones, emails };
+                saveToLocal();
+                renderClients(clients);
+
+                // Re-render contact modal if visible for this client
+                if (!contactModal.classList.contains('hidden') && contactModalClientId.value === editingId) {
+                    renderContactModalList(client);
+                }
+
+                closeModal();
+                delete contactList.dataset.editingContactIndex;
+                showToast(`✅ Contato "${name}" do cliente "${client.name}" atualizado com sucesso!`, 'success');
+                return;
+            }
+
+            // Collect contacts
             const contactGroups = contactList.querySelectorAll('.contact-group');
-            if (contactGroups.length !== 1) {
-                showToast('⚠️ Erro ao salvar contato.', 'error');
+            const contacts = Array.from(contactGroups).map(group => {
+                const name = group.querySelector('.contact-name-input').value.trim();
+
+                const phoneInputs = group.querySelectorAll('.phone-input');
+                const phones = Array.from(phoneInputs)
+                    .map(input => input.value.trim())
+                    .filter(val => val !== '');
+
+                const emailInputs = group.querySelectorAll('.email-input');
+                const emails = Array.from(emailInputs)
+                    .map(input => input.value.trim())
+                    .filter(val => val !== '');
+
+                return { name, phones, emails };
+            }).filter(contact => contact.phones.length > 0 || contact.emails.length > 0);
+
+
+            if (contacts.length === 0) {
+                showToast('⚠️ Preencha pelo menos um telefone ou e-mail.', 'error');
                 return;
             }
 
-            const group = contactGroups[0];
-            const name = group.querySelector('.contact-name-input').value.trim();
-            const phones = Array.from(group.querySelectorAll('.phone-input'))
-                .map(input => input.value.trim())
-                .filter(val => val !== '');
-            const emails = Array.from(group.querySelectorAll('.email-input'))
-                .map(input => input.value.trim())
-                .filter(val => val !== '');
+            // Validate Contact Name and Phone (required for new contacts)
+            for (let i = 0; i < contacts.length; i++) {
+                if (!contacts[i].name) {
+                    showToast('⚠️ O nome do contato é obrigatório.', 'error');
+                    if (contactGroups[i]) {
+                        const input = contactGroups[i].querySelector('.contact-name-input');
+                        if (input) {
+                            input.focus();
+                            input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    }
+                    return;
+                }
+                if (contacts[i].phones.length === 0) {
+                    showToast('⚠️ Pelo menos um telefone é obrigatório.', 'error');
+                    if (contactGroups[i]) {
+                        const btn = contactGroups[i].querySelector('.btn-add-phone');
+                        if (btn) {
+                            btn.focus();
+                            btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    }
+                    return;
+                }
+            }
 
-            if (!name || phones.length === 0) {
-                showToast('⚠️ Nome e pelo menos um telefone são obrigatórios.', 'error');
+            // Check for duplicate contact names within the same client
+            const contactNames = contacts.map(c => c.name.toLowerCase());
+            const nameDuplicates = contactNames.filter((name, index) => contactNames.indexOf(name) !== index);
+            if (nameDuplicates.length > 0) {
+                showToast(`⚠️ Nome de contato duplicado: ${contacts.find(c => c.name.toLowerCase() === nameDuplicates[0]).name}`, 'error');
                 return;
             }
 
-            const client = clients.find(c => c.id === editingId);
-            if (!client) return;
-
-            const currentIndex = parseInt(editingContactIndex);
-
-            // Duplicate checks
-            if (client.contacts) {
-                for (let i = 0; i < client.contacts.length; i++) {
-                    if (i === currentIndex) continue;
-                    const existing = client.contacts[i];
-                    for (const phone of phones) {
-                        if (existing.phones && existing.phones.includes(phone)) {
-                            showToast(`❌ Telefone ${phone} já cadastrado em outro contato.`, 'error');
-                            return;
+            // If editing or adding contact to existing client, check against existing contacts
+            // Only do this check when adding a new contact, not when editing the entire client
+            if (editingId && mode === 'addContact') {
+                const currentClient = clients.find(c => c.id === editingId);
+                if (currentClient && currentClient.contacts) {
+                    for (const newContact of contacts) {
+                        for (const existingContact of currentClient.contacts) {
+                            if (existingContact.name.toLowerCase() === newContact.name.toLowerCase()) {
+                                showToast(`⚠️ O nome "${newContact.name}" já está cadastrado para este cliente.`, 'error');
+                                return;
+                            }
                         }
                     }
                 }
             }
 
-            client.contacts[currentIndex] = { name, phones, emails };
-            saveToLocal();
+
+            // Check for duplicate phones
+            const allPhones = contacts.flatMap(c => c.phones);
+            const phoneDuplicates = allPhones.filter((phone, index) => allPhones.indexOf(phone) !== index);
+            if (phoneDuplicates.length > 0) {
+                showToast(`❌ Telefone duplicado: ${phoneDuplicates[0]}`, 'error');
+                return;
+            }
+
+            // Check for duplicates across other clients (only phones)
+            const otherClients = clients.filter(c => c.id !== editingId);
+
+            for (const phone of allPhones) {
+                for (const client of otherClients) {
+                    if (client.contacts) {
+                        for (const contact of client.contacts) {
+                            if (contact.phones && contact.phones.includes(phone)) {
+                                showToast(`❌ Telefone ${phone} já cadastrado para ${client.name}`, 'error');
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // If in addContact mode, also check against existing contacts of the SAME client
+            if (mode === 'addContact' && editingId) {
+                const currentClient = clients.find(c => c.id === editingId);
+                if (currentClient && currentClient.contacts) {
+                    for (const phone of allPhones) {
+                        for (const existingContact of currentClient.contacts) {
+                            if (existingContact.phones && existingContact.phones.includes(phone)) {
+                                showToast(`❌ Telefone ${phone} já cadastrado neste cliente`, 'error');
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+
+            const clientBefore = editingId ? JSON.parse(JSON.stringify(clients.find(c => c.id === editingId) || {})) : null;
+
+            const newClient = {
+                id: editingId || Date.now().toString(),
+                name: clientNameInput.value,
+                contacts: contacts,
+                isFavorite: isModalFavorite
+            };
+
+            // ... updates to clients array ...
+            // ... updates to clients array ...
+            let addedContactNames = '';
+            if (editingId && mode !== 'addContact') {
+                const clientToUpdate = clients.find(c => c.id === editingId);
+
+                // Check if only name changed
+                const nameChanged = clientToUpdate.name !== newClient.name;
+                const contactsChanged = JSON.stringify(clientToUpdate.contacts) !== JSON.stringify(newClient.contacts);
+                const favoriteChanged = !!clientToUpdate.isFavorite !== !!newClient.isFavorite;
+
+                // Only update timestamp if contacts or favorite status changed (per user request: excluding name changes from updating "Atualizado")
+                if (contactsChanged || favoriteChanged) {
+                    newClient.updatedAt = new Date().toISOString();
+                } else {
+                    newClient.updatedAt = clientToUpdate.updatedAt;
+                }
+
+                clients = clients.map(c => c.id === editingId ? newClient : c);
+                showToast(`✅ Cliente "${newClient.name}" atualizado com sucesso!`, 'success');
+            } else if (editingId && mode === 'addContact') {
+                const clientToUpdate = clients.find(c => c.id === editingId);
+                if (clientToUpdate) {
+                    if (!clientToUpdate.contacts) clientToUpdate.contacts = [];
+                    clientToUpdate.contacts.push(...contacts);
+                    clientToUpdate.updatedAt = new Date().toISOString();
+                    const contactNames = contacts.map(c => c.name).join(', ');
+                    addedContactNames = contactNames;
+                    showToast(`✅ Contato "${contactNames}" adicionado ao cliente "${clientToUpdate.name}"!`, 'success');
+                }
+            } else {
+                newClient.updatedAt = new Date().toISOString();
+                clients.push(newClient);
+                showToast(`✅ Cliente "${newClient.name}" adicionado com sucesso!`, 'success');
+            }
+
+            await saveToLocal(newClient.id);
             renderClients(clients);
 
-            // Re-render contact modal if visible for this client
             if (!contactModal.classList.contains('hidden') && contactModalClientId.value === editingId) {
-                renderContactModalList(client);
+                const clientToRefresh = clients.find(c => c.id === editingId);
+                if (clientToRefresh) {
+                    renderContactModalList(clientToRefresh);
+                }
             }
 
             closeModal();
-            delete contactList.dataset.editingContactIndex;
-            showToast(`✅ Contato "${name}" do cliente "${client.name}" atualizado com sucesso!`, 'success');
-            return;
-        }
+            if (typeof populateVersionClientSelect === 'function') {
+                populateVersionClientSelect();
+            }
+            const opType = editingId ? 'EDIÇÃO' : 'CRIAÇÃO';
+            const actionLabel = editingId ? (mode === 'addContact' ? 'Adição de Contato' : 'Edição de Cliente') : 'Novo Cliente';
+            const clientAfter = JSON.parse(JSON.stringify(clients.find(c => c.id === newClient.id) || newClient));
 
-        // Collect contacts
-        const contactGroups = contactList.querySelectorAll('.contact-group');
-        const contacts = Array.from(contactGroups).map(group => {
-            const name = group.querySelector('.contact-name-input').value.trim();
+            let details = `Cliente: ${newClient.name}`;
+            if (addedContactNames) details += `, Contato: ${addedContactNames}`;
 
-            const phoneInputs = group.querySelectorAll('.phone-input');
-            const phones = Array.from(phoneInputs)
-                .map(input => input.value.trim())
-                .filter(val => val !== '');
+            // Detect edited contacts if in Edit mode (not Add Contact mode)
+            if (editingId && mode !== 'addContact' && clientBefore && clientBefore.contacts) {
+                const changedContacts = [];
+                newClient.contacts.forEach((curr, i) => {
+                    const prev = clientBefore.contacts[i] || {};
 
-            const emailInputs = group.querySelectorAll('.email-input');
-            const emails = Array.from(emailInputs)
-                .map(input => input.value.trim())
-                .filter(val => val !== '');
+                    const pName = prev.name || '';
+                    const cName = curr.name || '';
+                    const pPhones = JSON.stringify((prev.phones || []).slice().sort()); // slice before sort to immutable copy
+                    const cPhones = JSON.stringify((curr.phones || []).slice().sort());
+                    const pEmails = JSON.stringify((prev.emails || []).slice().sort());
+                    const cEmails = JSON.stringify((curr.emails || []).slice().sort());
 
-            return { name, phones, emails };
-        }).filter(contact => contact.phones.length > 0 || contact.emails.length > 0);
-
-
-        if (contacts.length === 0) {
-            showToast('⚠️ Preencha pelo menos um telefone ou e-mail.', 'error');
-            return;
-        }
-
-        // Validate Contact Name and Phone (required for new contacts)
-        for (let i = 0; i < contacts.length; i++) {
-            if (!contacts[i].name) {
-                showToast('⚠️ O nome do contato é obrigatório.', 'error');
-                if (contactGroups[i]) {
-                    const input = contactGroups[i].querySelector('.contact-name-input');
-                    if (input) {
-                        input.focus();
-                        input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    if (pName !== cName || pPhones !== cPhones || pEmails !== cEmails) {
+                        changedContacts.push(cName);
                     }
-                }
-                return;
-            }
-            if (contacts[i].phones.length === 0) {
-                showToast('⚠️ Pelo menos um telefone é obrigatório.', 'error');
-                if (contactGroups[i]) {
-                    const btn = contactGroups[i].querySelector('.btn-add-phone');
-                    if (btn) {
-                        btn.focus();
-                        btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                }
-                return;
-            }
-        }
+                });
 
-        // Check for duplicate contact names within the same client
-        const contactNames = contacts.map(c => c.name.toLowerCase());
-        const nameDuplicates = contactNames.filter((name, index) => contactNames.indexOf(name) !== index);
-        if (nameDuplicates.length > 0) {
-            showToast(`⚠️ Nome de contato duplicado: ${contacts.find(c => c.name.toLowerCase() === nameDuplicates[0]).name}`, 'error');
-            return;
-        }
-
-        // If editing or adding contact to existing client, check against existing contacts
-        // Only do this check when adding a new contact, not when editing the entire client
-        if (editingId && mode === 'addContact') {
-            const currentClient = clients.find(c => c.id === editingId);
-            if (currentClient && currentClient.contacts) {
-                for (const newContact of contacts) {
-                    for (const existingContact of currentClient.contacts) {
-                        if (existingContact.name.toLowerCase() === newContact.name.toLowerCase()) {
-                            showToast(`⚠️ O nome "${newContact.name}" já está cadastrado para este cliente.`, 'error');
-                            return;
-                        }
-                    }
+                if (changedContacts.length > 0) {
+                    // Avoid duplicating if already added via addedContactNames (unlikely overlap but safe)
+                    const unique = [...new Set(changedContacts)].filter(name => !addedContactNames.includes(name));
+                    if (unique.length > 0) details += `, Contato: ${unique.join(', ')}`;
                 }
             }
+
+            await registerAuditLog(opType, actionLabel, details, clientBefore, clientAfter);
+
+        } catch (error) {
+            console.error('Erro crítico ao salvar formulário:', error);
+            showToast(`❌ Erro ao salvar: ${error.message || 'Erro desconhecido'}`, 'error');
         }
-
-
-        // Check for duplicate phones
-        const allPhones = contacts.flatMap(c => c.phones);
-        const phoneDuplicates = allPhones.filter((phone, index) => allPhones.indexOf(phone) !== index);
-        if (phoneDuplicates.length > 0) {
-            showToast(`❌ Telefone duplicado: ${phoneDuplicates[0]}`, 'error');
-            return;
-        }
-
-        // Check for duplicates across other clients (only phones)
-        const otherClients = clients.filter(c => c.id !== editingId);
-
-        for (const phone of allPhones) {
-            for (const client of otherClients) {
-                if (client.contacts) {
-                    for (const contact of client.contacts) {
-                        if (contact.phones && contact.phones.includes(phone)) {
-                            showToast(`❌ Telefone ${phone} já cadastrado para ${client.name}`, 'error');
-                            return;
-                        }
-                    }
-                }
-            }
-        }
-
-        // If in addContact mode, also check against existing contacts of the SAME client
-        if (mode === 'addContact' && editingId) {
-            const currentClient = clients.find(c => c.id === editingId);
-            if (currentClient && currentClient.contacts) {
-                for (const phone of allPhones) {
-                    for (const existingContact of currentClient.contacts) {
-                        if (existingContact.phones && existingContact.phones.includes(phone)) {
-                            showToast(`❌ Telefone ${phone} já cadastrado neste cliente`, 'error');
-                            return;
-                        }
-                    }
-                }
-            }
-        }
-
-        const clientBefore = editingId ? JSON.parse(JSON.stringify(clients.find(c => c.id === editingId) || {})) : null;
-
-        const newClient = {
-            id: editingId || Date.now().toString(),
-            name: clientNameInput.value,
-            contacts: contacts,
-            isFavorite: isModalFavorite
-        };
-
-        // ... updates to clients array ...
-        // ... updates to clients array ...
-        let addedContactNames = '';
-        if (editingId && mode !== 'addContact') {
-            const clientToUpdate = clients.find(c => c.id === editingId);
-
-            // Check if only name changed
-            const nameChanged = clientToUpdate.name !== newClient.name;
-            const contactsChanged = JSON.stringify(clientToUpdate.contacts) !== JSON.stringify(newClient.contacts);
-            const favoriteChanged = !!clientToUpdate.isFavorite !== !!newClient.isFavorite;
-
-            // Only update timestamp if contacts or favorite status changed (per user request: excluding name changes from updating "Atualizado")
-            if (contactsChanged || favoriteChanged) {
-                newClient.updatedAt = new Date().toISOString();
-            } else {
-                newClient.updatedAt = clientToUpdate.updatedAt;
-            }
-
-            clients = clients.map(c => c.id === editingId ? newClient : c);
-            showToast(`✅ Cliente "${newClient.name}" atualizado com sucesso!`, 'success');
-        } else if (editingId && mode === 'addContact') {
-            const clientToUpdate = clients.find(c => c.id === editingId);
-            if (clientToUpdate) {
-                if (!clientToUpdate.contacts) clientToUpdate.contacts = [];
-                clientToUpdate.contacts.push(...contacts);
-                clientToUpdate.updatedAt = new Date().toISOString();
-                const contactNames = contacts.map(c => c.name).join(', ');
-                addedContactNames = contactNames;
-                showToast(`✅ Contato "${contactNames}" adicionado ao cliente "${clientToUpdate.name}"!`, 'success');
-            }
-        } else {
-            newClient.updatedAt = new Date().toISOString();
-            clients.push(newClient);
-            showToast(`✅ Cliente "${newClient.name}" adicionado com sucesso!`, 'success');
-        }
-
-        await saveToLocal(newClient.id);
-        renderClients(clients);
-
-        if (!contactModal.classList.contains('hidden') && contactModalClientId.value === editingId) {
-            const clientToRefresh = clients.find(c => c.id === editingId);
-            if (clientToRefresh) {
-                renderContactModalList(clientToRefresh);
-            }
-        }
-
-        closeModal();
-        if (typeof populateVersionClientSelect === 'function') {
-            populateVersionClientSelect();
-        }
-        const opType = editingId ? 'EDIÇÃO' : 'CRIAÇÃO';
-        const actionLabel = editingId ? (mode === 'addContact' ? 'Adição de Contato' : 'Edição de Cliente') : 'Novo Cliente';
-        const clientAfter = JSON.parse(JSON.stringify(clients.find(c => c.id === newClient.id) || newClient));
-
-        let details = `Cliente: ${newClient.name}`;
-        if (addedContactNames) details += `, Contato: ${addedContactNames}`;
-
-        // Detect edited contacts if in Edit mode (not Add Contact mode)
-        if (editingId && mode !== 'addContact' && clientBefore && clientBefore.contacts) {
-            const changedContacts = [];
-            newClient.contacts.forEach((curr, i) => {
-                const prev = clientBefore.contacts[i] || {};
-
-                const pName = prev.name || '';
-                const cName = curr.name || '';
-                const pPhones = JSON.stringify((prev.phones || []).slice().sort()); // slice before sort to immutable copy
-                const cPhones = JSON.stringify((curr.phones || []).slice().sort());
-                const pEmails = JSON.stringify((prev.emails || []).slice().sort());
-                const cEmails = JSON.stringify((curr.emails || []).slice().sort());
-
-                if (pName !== cName || pPhones !== cPhones || pEmails !== cEmails) {
-                    changedContacts.push(cName);
-                }
-            });
-
-            if (changedContacts.length > 0) {
-                // Avoid duplicating if already added via addedContactNames (unlikely overlap but safe)
-                const unique = [...new Set(changedContacts)].filter(name => !addedContactNames.includes(name));
-                if (unique.length > 0) details += `, Contato: ${unique.join(', ')}`;
-            }
-        }
-
-        await registerAuditLog(opType, actionLabel, details, clientBefore, clientAfter);
     };
 
     async function deleteClient(id) {
