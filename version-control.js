@@ -364,10 +364,13 @@
             let result;
             if (fields.id) {
                 result = await window.supabaseClient.from('version_controls').update(payload).eq('id', fields.id);
+                if (!result.error) {
+                    await logHistory(fields.id, null, fields.ver, fields.notes, fields.responsible);
+                }
             } else {
                 result = await window.supabaseClient.from('version_controls').insert([payload]).select();
                 if (result.data && result.data[0]) {
-                    await logHistory(result.data[0].id, null, fields.ver, 'Registro Inicial', fields.responsible);
+                    await logHistory(result.data[0].id, null, fields.ver, 'Registro de nova versão', fields.responsible);
                 }
             }
 
@@ -392,7 +395,8 @@
 
     async function logHistory(vcId, oldV, newV, notes, responsible = null) {
         try {
-            const user = responsible || JSON.parse(localStorage.getItem('sofis_user') || '{}').username || 'Sistema';
+            const userObj = JSON.parse(localStorage.getItem('sofis_user') || '{}');
+            const user = responsible || userObj.full_name || userObj.username || 'Sistema';
             await window.supabaseClient.from('version_history').insert([{
                 version_control_id: vcId,
                 previous_version: oldV,
@@ -806,7 +810,7 @@
 
         cachedUsersForResponsible.forEach(u => {
             const opt = document.createElement('option');
-            opt.value = u.username;
+            opt.value = u.full_name || u.username;
             opt.textContent = u.full_name || u.username;
             select.appendChild(opt);
         });
@@ -834,8 +838,22 @@
         modal.classList.remove('hidden');
 
         // Reset filters
-        // Reset filters
-        document.getElementById('historySystemFilter').value = 'all';
+        const sysFilter = document.getElementById('historySystemFilter');
+        const envFilter = document.getElementById('historyEnvFilter');
+        if (sysFilter) sysFilter.value = 'all';
+        if (envFilter) envFilter.value = 'all';
+
+        // Populate System Filter dynamically
+        if (sysFilter) {
+            sysFilter.innerHTML = '<option value="all">Todos os Produtos</option>';
+            const uniqueSystems = [...new Set(versionControls.filter(v => v.client_id === clientId).map(v => v.system))].sort();
+            uniqueSystems.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s;
+                opt.textContent = s;
+                sysFilter.appendChild(opt);
+            });
+        }
 
         renderHistoryLoading();
 
@@ -859,38 +877,54 @@
     };
 
     function renderHistoryLoading() {
-        document.getElementById('versionHistoryList').innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-secondary)">Carregando...</div>';
+        document.getElementById('versionHistoryList').innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-secondary)">Buscando histórico...</div>';
     }
 
     function renderHistoryList(data) {
         const list = document.getElementById('versionHistoryList');
-        list.innerHTML = data.map(h => `
-            <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:10px; margin-bottom:12px; border-left:4px solid var(--accent); border: 1px solid rgba(255,255,255,0.05); border-left-width: 4px;">
-                <div style="display:flex; justify-content:space-between; margin-bottom:8px; align-items: flex-start;">
-                    <div>
-                        <strong style="color:#ffffff; font-size:1.1rem; display:block;">${h.version_controls?.system}</strong>
-                        <span class="environment-badge-small ${h.version_controls?.environment}" style="font-size: 0.6rem; padding: 1px 6px;">${h.version_controls?.environment?.toUpperCase()}</span>
+
+        const envLabels = {
+            'producao': 'PRODUÇÃO',
+            'homologacao': 'HOMOLOGAÇÃO'
+        };
+
+        list.innerHTML = data.map(h => {
+            const envDisplay = envLabels[h.version_controls?.environment] || h.version_controls?.environment?.toUpperCase() || 'N/A';
+
+            return `
+                <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:10px; margin-bottom:12px; border-left:4px solid var(--accent); border: 1px solid rgba(255,255,255,0.05); border-left-width: 4px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:8px; align-items: flex-start;">
+                        <div>
+                            <strong style="color:#ffffff; font-size:1.1rem; display:block;">${h.version_controls?.system}</strong>
+                            <span class="environment-badge-small ${h.version_controls?.environment}" style="font-size: 0.6rem; padding: 1px 6px;">${envDisplay}</span>
+                        </div>
+                        <small style="opacity:0.6; text-align:right;">${new Date(h.created_at).toLocaleDateString('pt-BR')} ${new Date(h.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</small>
                     </div>
-                    <small style="opacity:0.6; text-align:right;">${new Date(h.created_at).toLocaleDateString('pt-BR')} ${new Date(h.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</small>
+                    <div style="font-size:0.9rem; margin:5px 0; color:#fff; font-family:'Outfit', sans-serif;">
+                        <span style="font-weight: 400;">Identificação da Versão:</span> <span style="color:var(--success); font-weight:600;">${h.new_version}</span>
+                    </div>
+                    <div style="font-size:0.9rem; color:#fff; font-family:'Outfit', sans-serif;">
+                        <span style="font-weight: 400;">Responsável:</span> <span>${h.updated_by}</span>
+                    </div>
+                    ${h.notes && h.notes !== 'Versão inicial cadastrada' && h.notes !== 'Registro Inicial' && h.notes !== 'Registro de nova versão' ? `<div style="font-size:0.85rem; margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.05); color:#cfd8dc; border-radius:0;">${utils.escapeHtml(h.notes)}</div>` : ''}
                 </div>
-                <div style="font-size:0.9rem; margin:5px 0; color:#fff; font-family:'Outfit', sans-serif;">
-                    <span style="font-weight: 400;">Versão:</span> <span style="color:var(--success); font-weight:600;">${h.new_version}</span>
-                </div>
-                <div style="font-size:0.9rem; color:#fff; font-family:'Outfit', sans-serif;">
-                    <span style="font-weight: 400;">Atualizado por:</span> <span>${h.updated_by}</span>
-                </div>
-                ${h.notes && h.notes !== 'Versão inicial cadastrada' && h.notes !== 'Registro Inicial' ? `<div style="font-size:0.85rem; margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.05); color:#cfd8dc; border-radius:0;">${utils.escapeHtml(h.notes)}</div>` : ''}
-            </div>
-        `).join('') || '<div style="text-align:center; opacity:0.5; padding:30px;">Nenhum registro encontrado para os filtros selecionados.</div>';
+            `;
+        }).join('') || '<div style="text-align:center; opacity:0.5; padding:30px;">Nenhum registro encontrado para os filtros selecionados.</div>';
     }
 
     window.filterHistory = () => {
         const sys = document.getElementById('historySystemFilter').value;
+        const envFilter = document.getElementById('historyEnvFilter').value;
 
         // Base filter by system if selected
         let filtered = currentHistoryData;
         if (sys !== 'all') {
             filtered = filtered.filter(h => h.version_controls?.system === sys);
+        }
+
+        // Filter by environment if selected
+        if (envFilter !== 'all') {
+            filtered = filtered.filter(h => h.version_controls?.environment === envFilter);
         }
 
         // Apply Logic: Top 3 latest updates per System per Environment

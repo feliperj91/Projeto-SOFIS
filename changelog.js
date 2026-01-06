@@ -3,6 +3,37 @@
 
 window.SOFIS_CHANGELOG = [
     {
+        version: '1.9.81',
+        date: '2026-01-06',
+        title: 'Humanização e Localização de Histórico',
+        changes: [
+            { type: 'style', text: 'Localização dos nomes de ambientes para Português-BR com acentuação correta (Produção/Homologação).' },
+            { type: 'style', text: 'Substituição de termos técnicos por descrições amigáveis no histórico de versões.' },
+            { type: 'feat', text: 'Ajuste de labels internos para maior clareza, como "Identificação da Versão" e "Responsável".' }
+        ]
+    },
+    {
+        version: '1.9.80',
+        date: '2026-01-06',
+        title: 'Refinação de Histórico e Responsáveis',
+        changes: [
+            { type: 'style', text: 'Atualização dos rótulos de filtros no histórico para "Filtrar Produtos" e "Todos os Produtos".' },
+            { type: 'feat', text: 'Inclusão de filtro de ambiente (Produção/Homologação) na consulta de histórico.' },
+            { type: 'fix', text: 'Correção: O campo "Atualizado por" agora exibe o nome completo do usuário em vez do login.' },
+            { type: 'feat', text: 'Implementação de registro automático no histórico ao editar versões existentes.' }
+        ]
+    },
+    {
+        version: '1.9.79',
+        date: '2026-01-06',
+        title: 'Reforço de Segurança e Permissões',
+        changes: [
+            { type: 'fix', text: 'Remoção do bypass de superusuário para o cargo ADMINISTRADOR, garantindo que todas as ações respeitem as permissões configuradas.' },
+            { type: 'fix', text: 'Implementação de controle granular de visibilidade para o módulo de gerenciamento de produtos.' },
+            { type: 'fix', text: 'Sincronização global do sistema de permissões com os módulos dinâmicos de versão.' }
+        ]
+    },
+    {
         version: '1.9.78',
         date: '2026-01-06',
         title: 'Correção de Persistência de Dados',

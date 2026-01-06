@@ -106,7 +106,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         },
 
         can(moduleName, action) {
-            if (this.userRole === 'ADMINISTRADOR') return true;
             const mod = this.rules[moduleName];
             return mod ? !!mod[action] : false;
         }
@@ -156,6 +155,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const btnAddURL = document.getElementById('addUrlEntryBtn');
         if (btnAddURL) btnAddURL.style.display = P.can('URLs', 'can_create') ? '' : 'none';
+
+        // 7. Controle de Versões - Produtos
+        const btnMngProducts = document.getElementById('productActionButtons');
+        if (btnMngProducts) {
+            btnMngProducts.style.display = P.can('Controle de Versões - Produtos', 'can_view') ? '' : 'none';
+        }
     };
 
     // Re-update display when permissions are loaded/changed
