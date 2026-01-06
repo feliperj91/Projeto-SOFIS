@@ -2,69 +2,130 @@
    USER MANAGEMENT STYLES
    =================================== */
 
-/* Search Bar Styling (matching other tabs) */
-/* Management Toolbar (Unified Row) */
+/* Management Toolbar - Matching Other Tabs */
 .management-toolbar {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 20px;
-    margin-bottom: 50px;
-    background: transparent;
+    gap: 12px;
+    margin: 0 0 50px 0 !important;
+    padding: 0;
+    flex-wrap: wrap;
+    min-height: 40px;
 }
 
-/* 1. Search Bar inside Toolbar */
+/* Tabs Section (Left) */
+.management-subtabs {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.mng-tab-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mng-tab-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary);
+}
+
+.mng-tab-btn.active {
+    background: var(--accent);
+    color: #1a1a1a;
+    border-color: var(--accent);
+    font-weight: 600;
+}
+
+.mng-tab-btn.active i {
+    color: #1a1a1a;
+}
+
+/* Search Bar (Center) - Matching Standard Pattern */
 .mng-search {
     flex: 1;
-    max-width: 400px;
-    margin: 0 auto;
-    /* Reduced width */
+    max-width: 500px;
     position: relative;
 }
 
 .mng-search input {
     width: 100%;
-    padding: 10px 40px;
-    background: rgba(0, 0, 0, 0.25);
+    padding: 14px 45px 14px 45px;
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
+    border-radius: 10px;
     color: var(--text-primary);
-    font-size: 0.95rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
     outline: none;
-    transition: all 0.2s ease;
 }
 
 .mng-search input:focus {
+    background: rgba(255, 255, 255, 0.05);
     border-color: var(--accent);
-    background: rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0 0 3px rgba(255, 160, 0, 0.1);
+}
+
+.mng-search input::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.6;
 }
 
 .mng-search .search-icon {
     position: absolute;
-    left: 12px;
+    left: 16px;
     top: 50%;
     transform: translateY(-50%);
     color: var(--text-secondary);
-    font-size: 0.9rem;
+    font-size: 1rem;
+    pointer-events: none;
+    z-index: 1;
 }
 
 .mng-search .btn-clear {
     position: absolute;
-    right: 10px;
+    right: 12px;
     top: 50%;
     transform: translateY(-50%);
     background: transparent;
     border: none;
     color: var(--text-secondary);
     cursor: pointer;
+    padding: 6px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
 }
 
-/* 3. Role Selector (Text Style) */
-/* 3. Role Selector (Pill Style Match) */
+.mng-search .btn-clear:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+.mng-search .btn-clear.hidden {
+    display: none;
+}
+
+/* Role Selector (Center-Right) */
 .role-selector-text {
     display: flex;
-    gap: 10px;
-    margin-left: auto;
-    margin-right: auto;
+    gap: 8px;
 }
 
 .role-text-btn {
@@ -72,114 +133,64 @@
     align-items: center;
     justify-content: center;
     gap: 6px;
-    padding: 7px 18px;
-    background: var(--card-bg);
-    border: 2px solid var(--border);
-    border-radius: 20px;
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
     color: var(--text-secondary);
     font-size: 0.85rem;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-    text-transform: capitalize;
+    transition: all 0.2s ease;
 }
 
-.role-text-btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg, var(--accent), var(--accent-hover));
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    z-index: 0;
-}
-
-.role-text-btn>span {
-    position: relative;
-    z-index: 1;
-}
-
-.role-text-btn:hover:not(.active) {
-    border-color: var(--accent);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(255, 160, 0, 0.2);
-    color: white;
+.role-text-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary);
 }
 
 .role-text-btn.active {
-    background: linear-gradient(135deg, var(--accent), var(--accent-hover));
-    border-color: var(--accent);
-    color: var(--bg-color);
-    /* Dark text on orange bg usually looks best, or white if contrast is enough */
+    background: var(--accent);
     color: #1a1a1a;
-    font-weight: 700;
-    box-shadow: 0 4px 12px rgba(255, 160, 0, 0.3);
+    border-color: var(--accent);
+    font-weight: 600;
 }
 
-.role-text-btn.active::before {
-    opacity: 1;
-}
-
-/* 4. Toolbar Actions */
+/* Toolbar Actions (Right) */
 .toolbar-actions {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-left: auto;
 }
 
 .btn-flat-green {
-    background: #2ebd66;
-    /* Green */
+    background: #27ae60;
     color: white;
     border: none;
-    border-radius: 6px;
-    padding: 8px 16px;
-    font-size: 0.85rem;
-    font-weight: 700;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
     cursor: pointer;
-    text-transform: uppercase;
     display: flex;
     align-items: center;
     gap: 8px;
-    transition: opacity 0.2s;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(39, 174, 96, 0.25);
 }
 
 .btn-flat-green:hover {
-    opacity: 0.9;
+    background: #2ecc71;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(39, 174, 96, 0.35);
 }
 
 .btn-flat-green:disabled {
-    background: #36443d;
-    color: #888;
+    background: rgba(39, 174, 96, 0.3);
+    color: rgba(255, 255, 255, 0.5);
     cursor: not-allowed;
-    opacity: 0.7;
-}
-
-/* Adjust Tab Buttons to match pill shape in image */
-.mng-tab-btn {
-    background: #21262d;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: var(--text-secondary);
-    border-radius: 6px;
-    /* Slightly squater */
-    padding: 8px 16px;
-}
-
-.mng-tab-btn.active {
-    background: var(--accent);
-    color: #000;
-    border-color: var(--accent);
+    transform: none;
     box-shadow: none;
-}
-
-.mng-tab-btn.active i {
-    color: #000;
 }
 
 
