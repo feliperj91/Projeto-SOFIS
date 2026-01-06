@@ -747,7 +747,58 @@ document.addEventListener('DOMContentLoaded', async () => {
         urlSystemSelect.addEventListener('change', handleUrlSystemChange);
     }
 
-    // Custom Filters Listeners
+    // --- Changelog Logic ---
+    window.openChangelogModal = function () {
+        renderChangelog();
+        document.getElementById('changelogModal').classList.remove('hidden');
+    };
+
+    function renderChangelog() {
+        const body = document.getElementById('changelogBody');
+        if (!body) return;
+
+        const history = window.SOFIS_CHANGELOG || [];
+
+        if (history.length === 0) {
+            body.innerHTML = '<p style="text-align:center; color: var(--text-secondary);">Nenhum histórico disponível.</p>';
+            return;
+        }
+
+        const html = history.map(entry => {
+            const items = entry.changes.map(c => `
+                <li class="changelog-item">
+                    <span class="change-badge ${c.type}">${c.type}</span>
+                    <span>${c.text}</span>
+                </li>
+            `).join('');
+
+            return `
+                <div class="changelog-entry">
+                    <div class="changelog-header">
+                        <span class="changelog-version">v${entry.version}</span>
+                        <span class="changelog-date"><i class="fa-regular fa-calendar"></i> ${entry.date}</span>
+                    </div>
+                    <div class="changelog-title">${entry.title}</div>
+                    <ul class="changelog-list">
+                        ${items}
+                    </ul>
+                </div>
+            `;
+        }).join('');
+
+        body.innerHTML = `<div class="changelog-timeline">${html}</div>`;
+    }
+
+    // Attach Click Listener to Build Number
+    const buildEl = document.getElementById('appBuildNumber');
+    if (buildEl) {
+        buildEl.addEventListener('click', () => {
+            window.openChangelogModal();
+        });
+        buildEl.title = "Clique para ver o histórico de versões";
+    }
+
+    // --- End Changelog Logic ---
     if (serverFilterBtn) {
         serverFilterBtn.addEventListener('click', (e) => {
             e.stopPropagation();

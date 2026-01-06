@@ -2389,3 +2389,132 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
     width: 0;
     margin: 0;
 }
+
+/* =========================================
+   CHANGELOG TIMELINE STYLES
+   ========================================= */
+.changelog-timeline {
+    position: relative;
+    padding-left: 20px;
+}
+
+/* Vertical Line Connector */
+.changelog-timeline::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 6px;
+    width: 2px;
+    background: var(--border);
+    border-radius: 2px;
+}
+
+.changelog-entry {
+    position: relative;
+    margin-bottom: 30px;
+    padding-left: 25px;
+}
+
+/* Dot on Timeline */
+.changelog-entry::before {
+    content: '';
+    position: absolute;
+    left: -19px;
+    top: 5px;
+    width: 12px;
+    height: 12px;
+    background: var(--bg-card);
+    border: 2px solid var(--accent);
+    border-radius: 50%;
+    z-index: 1;
+}
+
+.changelog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.changelog-version {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.changelog-date {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.changelog-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+}
+
+.changelog-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.changelog-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+/* Type Badges */
+.change-badge {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.change-badge.feat {
+    background: rgba(46, 204, 113, 0.15);
+    color: #2ecc71;
+    border: 1px solid rgba(46, 204, 113, 0.3);
+}
+
+.change-badge.fix {
+    background: rgba(231, 76, 60, 0.15);
+    color: #e74c3c;
+    border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+.change-badge.style {
+    background: rgba(52, 152, 219, 0.15);
+    color: #3498db;
+    border: 1px solid rgba(52, 152, 219, 0.3);
+}
+
+.change-badge.pref {
+    background: rgba(155, 89, 182, 0.15);
+    color: #9b59b6;
+    border: 1px solid rgba(155, 89, 182, 0.3);
+}
+
+/* Clickable Build Number */
+#appBuildNumber {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+#appBuildNumber:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--accent);
+}
