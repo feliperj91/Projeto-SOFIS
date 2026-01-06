@@ -175,6 +175,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentClientFilter = 'all';
     let favoritesCollapsed = JSON.parse(localStorage.getItem('sofis_favorites_collapsed')) || false;
     let regularCollapsed = JSON.parse(localStorage.getItem('sofis_regular_collapsed')) || false;
+    let isModalFavorite = false;
 
     // User Favorites State
     window.userFavorites = new Set();
