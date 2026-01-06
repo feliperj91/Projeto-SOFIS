@@ -736,6 +736,9 @@
 
 
 
+    let cachedClientsForVersion = [];
+    let cachedUsersForResponsible = [];
+
     async function getClientsForDropdown() {
         // 1. Try Global Window Clients (fastest)
         if (window.clients && window.clients.length > 0) {
