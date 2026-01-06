@@ -1175,14 +1175,23 @@
                 }
             });
 
-            // Event Delegation
+            // Event Delegation with Error Handling
             document.addEventListener('click', (e) => {
                 if (e.target && e.target.id === 'appBuildNumber') {
-                    console.log("Clique na Build detectado!");
+                    console.log("🖱️ [DEBUG] Clique na Build detectado!");
+
                     const modal = document.getElementById('changelogModal');
-                    if (modal) {
-                        if (typeof renderChangelog === 'function') renderChangelog();
-                        modal.classList.remove('hidden');
+                    if (!modal) {
+                        console.error("❌ [DEBUG] Modal 'changelogModal' NÃO encontrado no DOM!");
+                        return;
+                    }
+
+                    // Force visible FIRST
+                    modal.classList.remove('hidden');
+                    modal.style.display = 'flex';
+
+                    if (typeof renderChangelog === 'function') {
+                        renderChangelog();
                     }
                 }
             });
