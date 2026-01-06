@@ -1399,7 +1399,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 <div ${nameClickAction}>
                                     ${escapeHtml(contact.name || 'Sem nome')}
                                 </div>
-                                <span class="server-client-badge" style="align-self: flex-start; margin-left: 0; font-size: 0.65rem; padding: 2px 6px;">${escapeHtml(client.name)}</span>
                             </div>
                             ${editButton}
                         </div>
