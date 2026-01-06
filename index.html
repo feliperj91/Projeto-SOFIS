@@ -1163,23 +1163,29 @@
         <script src="supabase-client.js?v=3.9"></script>
         <script src="changelog.js?v=1.0"></script>
         <script>
-            // Update Build Number Dynamically & Init Changelog
-            if (window.SOFIS_BUILD) {
-                const buildEl = document.getElementById('appBuildNumber');
-                if (buildEl) {
-                    buildEl.textContent = `Build: ${window.SOFIS_BUILD.version}`;
-                    buildEl.title = "Clique para ver o histórico de versões";
-                    buildEl.style.cursor = "pointer";
-
-                    buildEl.addEventListener('click', () => {
-                        const modal = document.getElementById('changelogModal');
-                        if (modal) {
-                            renderChangelog();
-                            modal.classList.remove('hidden');
-                        }
-                    });
+            // Init Changelog & Build Number
+            document.addEventListener('DOMContentLoaded', () => {
+                if (window.SOFIS_BUILD) {
+                    const buildEl = document.getElementById('appBuildNumber');
+                    if (buildEl) {
+                        buildEl.textContent = `Build: ${window.SOFIS_BUILD.version}`;
+                        buildEl.title = "Clique para ver o histórico de versões";
+                        buildEl.style.cursor = "pointer";
+                    }
                 }
-            }
+            });
+
+            // Event Delegation
+            document.addEventListener('click', (e) => {
+                if (e.target && e.target.id === 'appBuildNumber') {
+                    console.log("Clique na Build detectado!");
+                    const modal = document.getElementById('changelogModal');
+                    if (modal) {
+                        if (typeof renderChangelog === 'function') renderChangelog();
+                        modal.classList.remove('hidden');
+                    }
+                }
+            });
 
             function renderChangelog() {
                 const body = document.getElementById('changelogBody');
