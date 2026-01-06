@@ -403,7 +403,75 @@
     window.renderVersionControls = renderVersionControls;
     window.handleVersionSubmit = handleVersionSubmit;
 
-    window.editVersion = (id) => {
+    // Unified function to get clients list
+    async function getClientsForDropdown() {
+        // 1. Try Global Window Clients (fastest)
+        if (window.clients && window.clients.length > 0) {
+            return window.clients;
+        }
+        // 2. Try Local Cache
+        if (cachedClientsForVersion && cachedClientsForVersion.length > 0) {
+            return cachedClientsForVersion;
+        }
+        // 3. Fetch from Supabase
+        try {
+            console.log("🔄 Fetching clients for dropdown...");
+            const { data, error } = await window.supabaseClient
+                .from('clients')
+                .select('id, name')
+                .order('name');
+
+            if (error) {
+                console.error("Supabase Error (Clients):", error);
+                if (window.showToast) window.showToast("Erro ao carregar clientes: " + error.message, "error");
+                throw error;
+            }
+
+            if (data) {
+                cachedClientsForVersion = data;
+                return data;
+            }
+        } catch (e) {
+            console.error("Erro ao buscar clientes:", e);
+            if (window.showToast && !e.message?.includes('Supabase Error')) window.showToast("Erro de conexão ao buscar clientes.", "error");
+        }
+        return [];
+    }
+
+    window.populateVersionClientSelect = async () => {
+        const select = document.getElementById('versionClientSelect');
+        if (!select) return;
+
+        const currentVal = select.value; // Store current value
+        const isDisabled = select.disabled;
+
+        const clientsList = await getClientsForDropdown();
+
+        // Clear existing (keep default)
+        select.innerHTML = '<option value="">Selecione o cliente...</option>';
+
+        if (clientsList.length === 0) {
+            const opt = document.createElement('option');
+            opt.disabled = true;
+            opt.textContent = "Nenhum cliente carregado";
+            select.appendChild(opt);
+            return;
+        }
+
+        // Sort and Append
+        clientsList.sort((a, b) => a.name.localeCompare(b.name)).forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.id;
+            opt.textContent = c.name;
+            select.appendChild(opt);
+        });
+
+        // Restore value if still valid
+        if (currentVal) select.value = currentVal;
+        select.disabled = isDisabled;
+    };
+
+    window.editVersion = async (id) => {
         // Permission Check
         const P = window.Permissions;
         if (id) {
@@ -418,41 +486,34 @@
             }
         }
 
-        // Explicitly clear hidden ID to avoid any state leakage or 'undefined' string
-        const hiddenIdField = document.getElementById('versionClientSelect');
-        if (hiddenIdField) hiddenIdField.value = '';
-
-        // Refresh client list if adding new version control
-        if (!id && window.populateVersionClientSelect) {
-            window.populateVersionClientSelect();
-        }
-
-        if (window.populateResponsibleSelect) {
-            window.populateResponsibleSelect();
-        }
-
         const modal = document.getElementById('versionModal');
         if (!modal) return;
 
+        // Reset and Prep
         const form = document.getElementById('versionForm');
         if (form) form.reset();
-
         document.getElementById('versionId').value = id || '';
+
+        // Ensure Dropdowns are populated
+        await window.populateVersionClientSelect();
+        if (window.populateResponsibleSelect) await window.populateResponsibleSelect();
 
         const v = id ? versionControls.find(x => x.id === id) : null;
 
         if (v) {
-            if (document.getElementById('versionClientSelect')) {
-                document.getElementById('versionClientSelect').value = v.client_id;
-                document.getElementById('versionClientSelect').disabled = true; // Lock client on edit
+            const clientSelect = document.getElementById('versionClientSelect');
+            if (clientSelect) {
+                clientSelect.value = v.client_id || v.clients?.id || '';
+                clientSelect.disabled = true; // Lock client on edit
             }
+
             document.getElementById('versionEnvironmentSelect').value = v.environment;
             document.getElementById('versionSystemSelect').value = v.system;
             document.getElementById('versionNumberInput').value = v.version;
             document.getElementById('versionResponsibleSelect').value = v.responsible || '';
             if (v.updated_at) document.getElementById('versionDateInput').value = v.updated_at.split('T')[0];
-            if (v.updated_at) document.getElementById('versionDateInput').value = v.updated_at.split('T')[0];
-            // Alert logic removed from UI, default handling
+
+            // Notes logic
             const notes = document.getElementById('versionNotesInput');
             notes.value = v.notes || '';
             notes.disabled = false;
@@ -463,24 +524,19 @@
                 clientSelect.disabled = false;
                 clientSelect.value = '';
             }
-        }
 
-        // Auto-select current user in responsible list if new
-        if (!id) {
+            // Auto-select current user
             const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username;
-            if (currentUser) {
-                const respSelect = document.getElementById('versionResponsibleSelect');
-                // Wait small tick for populate to finish if needed, though usually cached
-                setTimeout(() => {
-                    if (respSelect) respSelect.value = currentUser;
-                }, 100);
-            }
+            const respSelect = document.getElementById('versionResponsibleSelect');
+            if (currentUser && respSelect) currValue = currentUser;
+            // Logic handled in populate or manually set here:
+            if (currentUser && respSelect) respSelect.value = currentUser;
         }
 
         modal.classList.remove('hidden');
     };
 
-    window.prefillClientVersion = (clientId, clientName) => {
+    window.prefillClientVersion = async (clientId, clientName) => {
         const P = window.Permissions;
         if (P && !P.can('Controle de Versões', 'can_create')) {
             if (window.showToast) window.showToast('🚫 Sem permissão para registrar novas atualizações.', 'error');
@@ -489,46 +545,35 @@
 
         const modal = document.getElementById('versionModal');
         if (!modal) return;
+
         document.getElementById('versionForm').reset();
         document.getElementById('versionId').value = '';
 
-        // Ensure we populate dropdown first if not already done
-        // Check if options > 1 (meaning more than just default "Selecione...")
+        // Wait for population
+        await window.populateVersionClientSelect();
+        if (window.populateResponsibleSelect) await window.populateResponsibleSelect();
+
         const select = document.getElementById('versionClientSelect');
-        if (select && select.options.length <= 1) {
-            if (window.populateVersionClientSelect) window.populateVersionClientSelect();
-        }
 
-        // Validate ID
-        let safeClientId = clientId;
-        // logic to find by name removed as we strictly use ID now for select values
-        if (clientName && (!safeClientId || safeClientId === 'undefined')) {
-            // fallback: try to find ID from global clients list if we only have name
-            if (window.clients) {
-                const f = window.clients.find(c => c.name === clientName);
-                if (f) safeClientId = f.id;
-            }
-        }
-
-        // Override client fields
+        // Select Client
         if (select) {
-            // We need to wait a tiny bit if populate is async, but usually populate is awaited or fast if cached.
-            // Force value set
-            setTimeout(() => {
-                select.value = safeClientId || '';
-                if (safeClientId) select.disabled = true;
-            }, 50);
+            select.value = clientId || '';
+            if (select.value === '' && clientName) {
+                // Fallback attempt to find by text if ID failed (should not happen if logic is correct)
+                for (let i = 0; i < select.options.length; i++) {
+                    if (select.options[i].text === clientName) {
+                        select.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+            select.disabled = true;
         }
 
-        // Auto-select current user in responsible list
+        // Auto-select current user
         const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username;
-        if (currentUser) {
-            const respSelect = document.getElementById('versionResponsibleSelect');
-            // Wait small tick for populate to finish if needed, though usually cached
-            setTimeout(() => {
-                if (respSelect) respSelect.value = currentUser;
-            }, 100);
-        }
+        const respSelect = document.getElementById('versionResponsibleSelect');
+        if (currentUser && respSelect) respSelect.value = currentUser;
 
         modal.classList.remove('hidden');
     };
@@ -689,75 +734,67 @@
     };
 
 
-    let cachedClientsForVersion = [];
-    window.populateVersionClientSelect = async () => {
-        const select = document.getElementById('versionClientSelect');
-        if (!select) return;
 
-        // Use global window.clients if available (source of truth), otherwise fetch
-        let clientsToUse = [];
 
+    async function getClientsForDropdown() {
+        // 1. Try Global Window Clients (fastest)
         if (window.clients && window.clients.length > 0) {
-            clientsToUse = window.clients;
-        } else if (cachedClientsForVersion.length > 0) {
-            clientsToUse = cachedClientsForVersion;
-        } else {
-            try {
-                const { data, error } = await window.supabaseClient
-                    .from('clients')
-                    .select('id, name')
-                    .order('name');
-
-                if (!error && data) {
-                    cachedClientsForVersion = data;
-                    clientsToUse = data;
-                }
-            } catch (e) {
-                console.error("Erro ao buscar clientes para select:", e);
-                return;
-            }
+            return window.clients;
         }
+        // 2. Try Local Cache
+        if (cachedClientsForVersion && cachedClientsForVersion.length > 0) {
+            return cachedClientsForVersion;
+        }
+        // 3. Fetch from Supabase
+        try {
+            console.log("🔄 Fetching clients for dropdown...");
+            const { data, error } = await window.supabaseClient
+                .from('clients')
+                .select('id, name')
+                .order('name');
 
-        // Preserve current selection if any
-        const currentVal = select.value;
-        const isDisabled = select.disabled;
+            if (error) {
+                console.error("Supabase Error (Clients):", error);
+                if (window.showToast) window.showToast("Erro ao carregar clientes: " + error.message, "error");
+                throw error;
+            }
 
-        select.innerHTML = '<option value="">Selecione o cliente...</option>';
-        // Sort explicitly just in case
-        clientsToUse.sort((a, b) => a.name.localeCompare(b.name)).forEach(c => {
-            const opt = document.createElement('option');
-            opt.value = c.id; // Use ID as value
-            opt.textContent = c.name;
-            select.appendChild(opt);
-        });
+            if (data) {
+                cachedClientsForVersion = data;
+                return data;
+            }
+        } catch (e) {
+            console.error("Erro ao buscar clientes:", e);
+            if (window.showToast && !e.message?.includes('Supabase Error')) window.showToast("Erro de conexão ao buscar clientes.", "error");
+        }
+        return [];
+    }
 
-        if (currentVal) select.value = currentVal;
-        select.disabled = isDisabled;
-    };
-
-    let cachedUsersForResponsible = [];
     window.populateResponsibleSelect = async () => {
         const select = document.getElementById('versionResponsibleSelect');
         if (!select) return;
 
-        // If we have cached users, verify if select is already populated (check length > 1 because of default option)
-        // However, to be safe, we can rebuild if cache exists.
+        // If we have cached users, verify if select is already populated
         if (cachedUsersForResponsible.length === 0) {
             try {
                 const { data, error } = await window.supabaseClient
                     .from('users')
-                    .select('username, full_name') // Correct column name
+                    .select('username, full_name')
                     .order('username');
 
-                if (!error && data) {
+                if (error) {
+                    console.error("Supabase Error (Users):", error);
+                    if (window.showToast) window.showToast("Erro ao carregar usuários: " + error.message, "error");
+                } else if (data) {
                     cachedUsersForResponsible = data;
                 }
             } catch (e) {
                 console.error("Erro ao buscar usuários para responsável:", e);
+                if (window.showToast) window.showToast("Erro ao carregar usuários.", "error");
             }
         }
 
-        // Save current selection if any (mostly relevant for edit or re-renders)
+        // Save current selection if any
         const currentVal = select.value;
 
         // Clear and add default
@@ -771,7 +808,6 @@
         });
 
         if (currentVal) {
-            // Try to restore selection if it still exists
             select.value = currentVal;
         }
     };
