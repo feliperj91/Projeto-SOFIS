@@ -3,6 +3,16 @@
 
 window.SOFIS_CHANGELOG = [
     {
+        version: '1.9.74',
+        date: '2026-01-06',
+        title: 'Refinamento e Máscaras Inteligentes',
+        changes: [
+            { type: 'style', text: 'Redesign completo do gerenciamento de produtos com visual premium e badges.' },
+            { type: 'feat', text: 'Implementação de máscara dinâmica no campo Versão (Numérica para Build, Padrão para Pacote).' },
+            { type: 'fix', text: 'Validação em tempo real para impedir caracteres inválidos conforme o tipo de produto.' }
+        ]
+    },
+    {
         version: '1.9.73',
         date: '2026-01-06',
         title: 'Gestão Dinâmica de Produtos',

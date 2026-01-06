@@ -1165,25 +1165,35 @@
 
             <div class="modal-body" style="padding: 20px 0;">
                 <!-- Product Form -->
-                <form id="productForm"
-                    style="display: flex; gap: 10px; padding: 0 20px 20px 20px; border-bottom: 1px solid var(--border); margin-bottom: 10px;">
-                    <input type="hidden" id="productId">
-                    <div style="flex: 2;">
-                        <input type="text" id="productName" placeholder="Nome do Produto" required style="width: 100%;">
-                    </div>
-                    <div style="flex: 1;">
-                        <select id="productType" required style="width: 100%;">
-                            <option value="Pacote">Pacote</option>
-                            <option value="Build">Build</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn-primary" style="padding: 0 20px;">
+                <form id="productForm" class="product-form-row"></form>
+                <input type="hidden" id="productId">
+                <div class="form-group" style="flex: 2; margin-bottom: 0;">
+                    <label for="productName" style="font-size: 0.8rem; margin-bottom: 5px;">
+                        <i class="fa-solid fa-tag" style="color: var(--accent); margin-right: 5px;"></i> Nome do Produto
+                    </label>
+                    <input type="text" id="productName" placeholder="Ex: CellVida" required style="width: 100%;">
+                </div>
+                <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                    <label for="productType" style="font-size: 0.8rem; margin-bottom: 5px;">
+                        <i class="fa-solid fa-layer-group" style="color: var(--accent); margin-right: 5px;"></i> Tipo
+                    </label>
+                    <select id="productType" required style="width: 100%;">
+                        <option value="Pacote">Pacote</option>
+                        <option value="Build">Build</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button type="submit" class="btn-primary"
+                        style="height: 42px; width: 42px; display: flex; align-items: center; justify-content: center; padding: 0;"
+                        title="Salvar">
                         <i class="fa-solid fa-save"></i>
                     </button>
                     <button type="button" id="cancelProductEdit" class="btn-secondary hidden"
-                        onclick="window.resetProductForm()">
+                        style="height: 42px; width: 42px; display: flex; align-items: center; justify-content: center; padding: 0;"
+                        onclick="window.resetProductForm()" title="Cancelar">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
+                </div>
                 </form>
 
                 <!-- Product List -->

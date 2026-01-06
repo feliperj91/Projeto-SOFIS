@@ -529,10 +529,11 @@
             // Auto-select current user
             const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username;
             const respSelect = document.getElementById('versionResponsibleSelect');
-            if (currentUser && respSelect) currValue = currentUser;
-            // Logic handled in populate or manually set here:
             if (currentUser && respSelect) respSelect.value = currentUser;
         }
+
+        // Sync version mask
+        if (typeof updateVersionMask === 'function') updateVersionMask();
 
         modal.classList.remove('hidden');
     };
@@ -1488,10 +1489,14 @@
                 productsList.forEach(p => {
                     const opt = document.createElement('option');
                     opt.value = p.name;
-                    opt.textContent = `${p.name} (${p.version_type})`;
+                    opt.setAttribute('data-type', p.version_type);
+                    opt.textContent = `${p.name}`;
                     sysSelect.appendChild(opt);
                 });
                 if (current) sysSelect.value = current;
+
+                // Trigger mask update if already selected
+                updateVersionMask();
             }
 
             // Sync table in management modal
@@ -1516,9 +1521,10 @@
 
         productsList.forEach(p => {
             const tr = document.createElement('tr');
+            const typeClass = p.version_type === 'Pacote' ? 'badge-type-pacote' : 'badge-type-build';
             tr.innerHTML = `
                 <td>${utils.escapeHtml(p.name)}</td>
-                <td><span class="badge-role ${p.version_type === 'Pacote' ? 'badge-admin' : 'badge-tecnico'}" style="font-size: 0.75rem;">${p.version_type}</span></td>
+                <td><span class="badge-product-type ${typeClass}">${p.version_type}</span></td>
                 <td class="action-cell">
                     ${canEdit ? `
                         <button class="btn-icon" onclick="window.editProduct('${p.id}')" title="Editar">
@@ -1632,6 +1638,47 @@
     // Initial load
     document.addEventListener('DOMContentLoaded', () => {
         loadProducts();
+        setupMaskLogic();
     });
+
+    function setupMaskLogic() {
+        const sysSelect = document.getElementById('versionSystemSelect');
+        const verInput = document.getElementById('versionNumberInput');
+        if (sysSelect) {
+            sysSelect.addEventListener('change', updateVersionMask);
+        }
+        if (verInput) {
+            verInput.addEventListener('input', (e) => {
+                const type = getSelectedProductType();
+                if (type === 'Build') {
+                    // Numbers only
+                    e.target.value = e.target.value.replace(/[^0-9]/g, '');
+                }
+            });
+        }
+    }
+
+    function updateVersionMask() {
+        const type = getSelectedProductType();
+        const verInput = document.getElementById('versionNumberInput');
+        if (!verInput) return;
+
+        if (type === 'Build') {
+            verInput.placeholder = 'Ex: 20250105006';
+            verInput.maxLength = 15;
+            verInput.title = 'Apenas números permitidos para o tipo Build';
+        } else {
+            verInput.placeholder = 'Ex: 2025.01-01';
+            verInput.maxLength = 10;
+            verInput.title = 'Formato sugerido: YYYY.MM-XX';
+        }
+    }
+
+    function getSelectedProductType() {
+        const sysSelect = document.getElementById('versionSystemSelect');
+        if (!sysSelect) return null;
+        const opt = sysSelect.options[sysSelect.selectedIndex];
+        return opt ? opt.getAttribute('data-type') : null;
+    }
 
 })();
