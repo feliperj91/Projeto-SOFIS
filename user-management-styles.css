@@ -5,12 +5,12 @@
 /* Management Toolbar - Matching Other Tabs */
 .management-toolbar {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
     gap: 12px;
     margin: 0 0 50px 0 !important;
     padding: 0;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     min-height: 40px;
 }
 
@@ -19,6 +19,7 @@
     display: flex;
     gap: 8px;
     align-items: center;
+    flex-shrink: 0;
 }
 
 .mng-tab-btn {
@@ -55,7 +56,6 @@
 /* Search Bar (Center) - Matching Standard Pattern */
 .mng-search {
     flex: 1;
-    max-width: 500px;
     position: relative;
 }
 
@@ -187,6 +187,8 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    margin-left: auto;
+    flex-shrink: 0;
 }
 
 .btn-flat-green {
