@@ -36,6 +36,12 @@
             if (!updatedAt) return 'Nunca atualizado';
             const lastUpdate = new Date(updatedAt);
             const now = new Date();
+
+            // Handle future dates gracefully
+            if (lastUpdate > now) {
+                return 'Atualização agendada';
+            }
+
             const diffTime = Math.abs(now - lastUpdate);
             const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
             if (diffDays === 0) return 'Atualizado hoje';
@@ -242,11 +248,6 @@
                         <h3 style="cursor:default" title="Nome do Cliente">${utils.escapeHtml(group.name)}</h3>
                     </div>
                 <div class="client-header-actions">
-                    ${canEditHistory ? `
-                    <button class="btn-card-action" onclick="window.openClientVersionsHistory('${group.id}')" title="Ver Histórico">
-                        <i class="fa-solid fa-rotate"></i>
-                    </button>` : ''}
-                    
                     <!-- Card Level Filter -->
                     <div class="card-filter-dropdown">
                         <button class="btn-card-action" onclick="window.toggleCardFilterMenu(this)" title="Filtrar Ambiente">
@@ -261,6 +262,16 @@
                             </div>
                         </div>
                     </div>
+
+                    ${canEditHistory ? `
+                    <button class="btn-card-action" onclick="window.openClientVersionsHistory('${group.id}')" title="Ver Histórico">
+                        <i class="fa-solid fa-rotate"></i>
+                    </button>` : ''}
+                    
+                    ${P && P.can('Controle de Versões - Produtos', 'can_view') ? `
+                    <button class="btn-card-action" onclick="window.openProductManagement()" title="Gerenciar Produtos">
+                        <i class="fa-solid fa-cube"></i>
+                    </button>` : ''}
 
                     ${canCreateVersion ? `
                     <button class="btn-card-action" onclick="window.prefillClientVersion('${group.id}', '${utils.escapeHtml(group.name)}')" title="Registrar Atualização">
@@ -286,7 +297,7 @@
                 sys: document.getElementById('versionSystemSelect').value,
                 ver: document.getElementById('versionNumberInput').value,
                 date: document.getElementById('versionDateInput').value,
-                alert: document.getElementById('versionAlertCheck').checked,
+                alert: false, // Checkbox removed from UI
                 notes: document.getElementById('versionNotesInput').value,
                 responsible: document.getElementById('versionResponsibleSelect').value
             };
@@ -320,21 +331,51 @@
                 return;
             }
 
-            // Version Validation (Incomplete or Empty)
+            // Version Validation
             if (!fields.ver || fields.ver.trim() === '') {
                 if (window.showToast) window.showToast('⚠️ O campo de versão é obrigatório.', 'warning');
                 sofis_isSaving = false;
                 return;
             }
 
-            if (fields.ver.length < 10) {
-                if (window.showToast) window.showToast('⚠️ Versão do sistema incompleta!', 'warning');
+            const productType = getSelectedProductType();
+            const minLength = productType === 'Build' ? 8 : 10;
+
+            // Strict Validation by Product Type
+            if (productType === 'Build') {
+                if (/[^0-9]/.test(fields.ver)) {
+                    if (window.showToast) window.showToast('⚠️ Para produtos do tipo Build, use apenas números.', 'warning');
+                    sofis_isSaving = false;
+                    return;
+                }
+            } else {
+                const pacoteRegex = /^\d{4}\.\d{2}-\d{2}$/;
+                if (!pacoteRegex.test(fields.ver)) {
+                    if (window.showToast) window.showToast('⚠️ Formato de versão inválido para Pacote. Use YYYY.MM-XX.', 'warning');
+                    sofis_isSaving = false;
+                    return;
+                }
+            }
+
+            if (fields.ver.length < minLength) {
+                if (window.showToast) window.showToast(`⚠️ Versão do sistema incompleta! (Mínimo ${minLength} caracteres)`, 'warning');
                 sofis_isSaving = false;
                 return;
             }
 
-            // Year Validation
+            // Date Validation (No future dates)
             if (fields.date) {
+                const selectedDate = new Date(fields.date + 'T12:00:00');
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                selectedDate.setHours(0, 0, 0, 0);
+
+                if (selectedDate > today) {
+                    if (window.showToast) window.showToast('⚠️ A data de atualização não pode ser superior à data atual.', 'warning');
+                    sofis_isSaving = false;
+                    return;
+                }
+
                 const year = parseInt(fields.date.split('-')[0]);
                 if (year < 2000 || year > 2099) {
                     if (window.showToast) window.showToast('⚠️ Ano inválido na data. Por favor verifique.', 'warning');
@@ -357,10 +398,13 @@
             let result;
             if (fields.id) {
                 result = await window.supabaseClient.from('version_controls').update(payload).eq('id', fields.id);
+                if (!result.error) {
+                    await logHistory(fields.id, null, fields.ver, fields.notes, fields.responsible);
+                }
             } else {
                 result = await window.supabaseClient.from('version_controls').insert([payload]).select();
                 if (result.data && result.data[0]) {
-                    await logHistory(result.data[0].id, null, fields.ver, 'Registro Inicial', fields.responsible);
+                    await logHistory(result.data[0].id, null, fields.ver, 'Registro de nova versão', fields.responsible);
                 }
             }
 
@@ -385,12 +429,22 @@
 
     async function logHistory(vcId, oldV, newV, notes, responsible = null) {
         try {
-            const user = responsible || JSON.parse(localStorage.getItem('sofis_user') || '{}').username || 'Sistema';
+            const userObj = JSON.parse(localStorage.getItem('sofis_user') || '{}');
+            let displayName = 'Sistema';
+
+            if (responsible) {
+                // Look up full name from cache if it's a username
+                const found = cachedUsersForResponsible.find(u => u.username === responsible || u.full_name === responsible);
+                displayName = found ? (found.full_name || found.username) : responsible;
+            } else {
+                displayName = userObj.full_name || userObj.username || 'Sistema';
+            }
+
             await window.supabaseClient.from('version_history').insert([{
                 version_control_id: vcId,
                 previous_version: oldV,
                 new_version: newV,
-                updated_by: user,
+                updated_by: displayName,
                 notes: notes || ''
             }]);
         } catch (e) {
@@ -403,7 +457,75 @@
     window.renderVersionControls = renderVersionControls;
     window.handleVersionSubmit = handleVersionSubmit;
 
-    window.editVersion = (id) => {
+    // Unified function to get clients list
+    async function getClientsForDropdown() {
+        // 1. Try Global Window Clients (fastest)
+        if (window.clients && window.clients.length > 0) {
+            return window.clients;
+        }
+        // 2. Try Local Cache
+        if (cachedClientsForVersion && cachedClientsForVersion.length > 0) {
+            return cachedClientsForVersion;
+        }
+        // 3. Fetch from Supabase
+        try {
+            console.log("🔄 Fetching clients for dropdown...");
+            const { data, error } = await window.supabaseClient
+                .from('clients')
+                .select('id, name')
+                .order('name');
+
+            if (error) {
+                console.error("Supabase Error (Clients):", error);
+                if (window.showToast) window.showToast("Erro ao carregar clientes: " + error.message, "error");
+                throw error;
+            }
+
+            if (data) {
+                cachedClientsForVersion = data;
+                return data;
+            }
+        } catch (e) {
+            console.error("Erro ao buscar clientes:", e);
+            if (window.showToast && !e.message?.includes('Supabase Error')) window.showToast("Erro de conexão ao buscar clientes.", "error");
+        }
+        return [];
+    }
+
+    window.populateVersionClientSelect = async () => {
+        const select = document.getElementById('versionClientSelect');
+        if (!select) return;
+
+        const currentVal = select.value; // Store current value
+        const isDisabled = select.disabled;
+
+        const clientsList = await getClientsForDropdown();
+
+        // Clear existing (keep default)
+        select.innerHTML = '<option value="">Selecione o cliente...</option>';
+
+        if (clientsList.length === 0) {
+            const opt = document.createElement('option');
+            opt.disabled = true;
+            opt.textContent = "Nenhum cliente carregado";
+            select.appendChild(opt);
+            return;
+        }
+
+        // Sort and Append
+        clientsList.sort((a, b) => a.name.localeCompare(b.name)).forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.id;
+            opt.textContent = c.name;
+            select.appendChild(opt);
+        });
+
+        // Restore value if still valid
+        if (currentVal) select.value = currentVal;
+        select.disabled = isDisabled;
+    };
+
+    window.editVersion = async (id) => {
         // Permission Check
         const P = window.Permissions;
         if (id) {
@@ -418,44 +540,38 @@
             }
         }
 
-        // Explicitly clear hidden ID to avoid any state leakage or 'undefined' string
-        const hiddenIdField = document.getElementById('versionClientSelect');
-        if (hiddenIdField) hiddenIdField.value = '';
-
-        // Refresh client list if adding new version control
-        if (!id && window.populateVersionClientSelect) {
-            window.populateVersionClientSelect();
-        }
-
-        if (window.populateResponsibleSelect) {
-            window.populateResponsibleSelect();
-        }
-
         const modal = document.getElementById('versionModal');
         if (!modal) return;
 
+        // Reset and Prep
         const form = document.getElementById('versionForm');
         if (form) form.reset();
-
         document.getElementById('versionId').value = id || '';
+
+        // Ensure Dropdowns are populated
+        await window.populateVersionClientSelect();
+        await loadProducts(); // Load dynamic products
+        if (window.populateResponsibleSelect) await window.populateResponsibleSelect();
 
         const v = id ? versionControls.find(x => x.id === id) : null;
 
         if (v) {
-            if (document.getElementById('versionClientSelect')) {
-                document.getElementById('versionClientSelect').value = v.client_id;
-                document.getElementById('versionClientSelect').disabled = true; // Lock client on edit
+            const clientSelect = document.getElementById('versionClientSelect');
+            if (clientSelect) {
+                clientSelect.value = v.client_id || v.clients?.id || '';
+                clientSelect.disabled = true; // Lock client on edit
             }
+
             document.getElementById('versionEnvironmentSelect').value = v.environment;
             document.getElementById('versionSystemSelect').value = v.system;
             document.getElementById('versionNumberInput').value = v.version;
             document.getElementById('versionResponsibleSelect').value = v.responsible || '';
             if (v.updated_at) document.getElementById('versionDateInput').value = v.updated_at.split('T')[0];
-            const check = document.getElementById('versionAlertCheck');
-            check.checked = !!v.has_alert;
+
+            // Notes logic
             const notes = document.getElementById('versionNotesInput');
             notes.value = v.notes || '';
-            notes.disabled = !check.checked;
+            notes.disabled = false;
         } else {
             // New Entry Mode
             const clientSelect = document.getElementById('versionClientSelect');
@@ -463,24 +579,20 @@
                 clientSelect.disabled = false;
                 clientSelect.value = '';
             }
+
+            // Auto-select current user
+            const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username;
+            const respSelect = document.getElementById('versionResponsibleSelect');
+            if (currentUser && respSelect) respSelect.value = currentUser;
         }
 
-        // Auto-select current user in responsible list if new
-        if (!id) {
-            const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username;
-            if (currentUser) {
-                const respSelect = document.getElementById('versionResponsibleSelect');
-                // Wait small tick for populate to finish if needed, though usually cached
-                setTimeout(() => {
-                    if (respSelect) respSelect.value = currentUser;
-                }, 100);
-            }
-        }
+        // Sync version mask
+        if (typeof updateVersionMask === 'function') updateVersionMask();
 
         modal.classList.remove('hidden');
     };
 
-    window.prefillClientVersion = (clientId, clientName) => {
+    window.prefillClientVersion = async (clientId, clientName) => {
         const P = window.Permissions;
         if (P && !P.can('Controle de Versões', 'can_create')) {
             if (window.showToast) window.showToast('🚫 Sem permissão para registrar novas atualizações.', 'error');
@@ -489,46 +601,39 @@
 
         const modal = document.getElementById('versionModal');
         if (!modal) return;
+
         document.getElementById('versionForm').reset();
         document.getElementById('versionId').value = '';
 
-        // Ensure we populate dropdown first if not already done
-        // Check if options > 1 (meaning more than just default "Selecione...")
+        // Wait for population
+        await window.populateVersionClientSelect();
+        await loadProducts(); // Ensure products are loaded and mask logic is ready
+        if (window.populateResponsibleSelect) await window.populateResponsibleSelect();
+
         const select = document.getElementById('versionClientSelect');
-        if (select && select.options.length <= 1) {
-            if (window.populateVersionClientSelect) window.populateVersionClientSelect();
-        }
 
-        // Validate ID
-        let safeClientId = clientId;
-        // logic to find by name removed as we strictly use ID now for select values
-        if (clientName && (!safeClientId || safeClientId === 'undefined')) {
-            // fallback: try to find ID from global clients list if we only have name
-            if (window.clients) {
-                const f = window.clients.find(c => c.name === clientName);
-                if (f) safeClientId = f.id;
-            }
-        }
-
-        // Override client fields
+        // Select Client
         if (select) {
-            // We need to wait a tiny bit if populate is async, but usually populate is awaited or fast if cached.
-            // Force value set
-            setTimeout(() => {
-                select.value = safeClientId || '';
-                if (safeClientId) select.disabled = true;
-            }, 50);
+            select.value = clientId || '';
+            if (select.value === '' && clientName) {
+                // Fallback attempt to find by text if ID failed (should not happen if logic is correct)
+                for (let i = 0; i < select.options.length; i++) {
+                    if (select.options[i].text === clientName) {
+                        select.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+            select.disabled = true;
         }
 
-        // Auto-select current user in responsible list
+        // Auto-select current user
         const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username;
-        if (currentUser) {
-            const respSelect = document.getElementById('versionResponsibleSelect');
-            // Wait small tick for populate to finish if needed, though usually cached
-            setTimeout(() => {
-                if (respSelect) respSelect.value = currentUser;
-            }, 100);
-        }
+        const respSelect = document.getElementById('versionResponsibleSelect');
+        if (currentUser && respSelect) respSelect.value = currentUser;
+
+        // Sync version mask
+        if (typeof updateVersionMask === 'function') updateVersionMask();
 
         modal.classList.remove('hidden');
     };
@@ -577,7 +682,8 @@
             return;
         }
 
-        if (!confirm(`Tem certeza que deseja excluir o registro do sistema "${system}" para o cliente "${clientName}"?`)) return;
+        const confirmed = await window.showConfirm(`Tem certeza que deseja excluir o registro do sistema "${system}" para o cliente "${clientName}"?`, 'Confirmar Exclusão', 'fa-trash');
+        if (!confirmed) return;
 
         try {
             if (window.showToast) window.showToast('⏳ Excluindo registro...', 'info');
@@ -668,101 +774,78 @@
             };
         });
 
-        const alertCheck = document.getElementById('versionAlertCheck');
-        if (alertCheck) {
-            alertCheck.onchange = () => {
-                document.getElementById('versionNotesInput').disabled = !alertCheck.checked;
-            };
-        }
 
-        // Mask for Version Number: YYYY.MM-DD
-        const versionInput = document.getElementById('versionNumberInput');
-        if (versionInput) {
-            versionInput.addEventListener('input', function (e) {
-                let value = e.target.value.replace(/\D/g, ''); // Remove all non-digits
-                if (value.length > 8) value = value.substring(0, 8); // Max 8 digits
+        // Removed legacy YYYY.MM-DD mask to use dynamic Product-based mask logic
 
-                let result = '';
-                for (let i = 0; i < value.length; i++) {
-                    if (i === 4) result += '.';
-                    if (i === 6) result += '-';
-                    result += value[i];
-                }
-                e.target.value = result;
-            });
-        }
     };
+
+
 
 
     let cachedClientsForVersion = [];
-    window.populateVersionClientSelect = async () => {
-        const select = document.getElementById('versionClientSelect');
-        if (!select) return;
-
-        // Use global window.clients if available (source of truth), otherwise fetch
-        let clientsToUse = [];
-
-        if (window.clients && window.clients.length > 0) {
-            clientsToUse = window.clients;
-        } else if (cachedClientsForVersion.length > 0) {
-            clientsToUse = cachedClientsForVersion;
-        } else {
-            try {
-                const { data, error } = await window.supabaseClient
-                    .from('clients')
-                    .select('id, name')
-                    .order('name');
-
-                if (!error && data) {
-                    cachedClientsForVersion = data;
-                    clientsToUse = data;
-                }
-            } catch (e) {
-                console.error("Erro ao buscar clientes para select:", e);
-                return;
-            }
-        }
-
-        // Preserve current selection if any
-        const currentVal = select.value;
-        const isDisabled = select.disabled;
-
-        select.innerHTML = '<option value="">Selecione o cliente...</option>';
-        // Sort explicitly just in case
-        clientsToUse.sort((a, b) => a.name.localeCompare(b.name)).forEach(c => {
-            const opt = document.createElement('option');
-            opt.value = c.id; // Use ID as value
-            opt.textContent = c.name;
-            select.appendChild(opt);
-        });
-
-        if (currentVal) select.value = currentVal;
-        select.disabled = isDisabled;
-    };
-
     let cachedUsersForResponsible = [];
+
+    async function getClientsForDropdown() {
+        // 1. Try Global Window Clients (fastest)
+        if (window.clients && window.clients.length > 0) {
+            console.log("✅ [VersionControl] Usando lista de clientes global (window.clients).");
+            return window.clients;
+
+        }
+        // 2. Try Local Cache
+        if (cachedClientsForVersion && cachedClientsForVersion.length > 0) {
+            return cachedClientsForVersion;
+        }
+        // 3. Fetch from Supabase
+        try {
+            console.log("🔄 Fetching clients for dropdown...");
+            const { data, error } = await window.supabaseClient
+                .from('clients')
+                .select('id, name')
+                .order('name');
+
+            if (error) {
+                console.error("Supabase Error (Clients):", error);
+                if (window.showToast) window.showToast("Erro ao carregar clientes: " + error.message, "error");
+                throw error;
+            }
+
+            if (data) {
+                cachedClientsForVersion = data;
+                return data;
+            }
+        } catch (e) {
+            console.error("Erro ao buscar clientes:", e);
+            if (window.showToast && !e.message?.includes('Supabase Error')) window.showToast("Erro de conexão ao buscar clientes.", "error");
+        }
+        return [];
+    }
+
     window.populateResponsibleSelect = async () => {
         const select = document.getElementById('versionResponsibleSelect');
         if (!select) return;
 
-        // If we have cached users, verify if select is already populated (check length > 1 because of default option)
-        // However, to be safe, we can rebuild if cache exists.
+        // If we have cached users, verify if select is already populated
         if (cachedUsersForResponsible.length === 0) {
             try {
                 const { data, error } = await window.supabaseClient
                     .from('users')
-                    .select('username, name') // Assuming 'username' is the display name or we have 'name'
+                    .select('username, full_name')
                     .order('username');
 
-                if (!error && data) {
+                if (error) {
+                    console.error("Supabase Error (Users):", error);
+                    if (window.showToast) window.showToast("Erro ao carregar usuários: " + error.message, "error");
+                } else if (data) {
                     cachedUsersForResponsible = data;
                 }
             } catch (e) {
                 console.error("Erro ao buscar usuários para responsável:", e);
+                if (window.showToast) window.showToast("Erro ao carregar usuários.", "error");
             }
         }
 
-        // Save current selection if any (mostly relevant for edit or re-renders)
+        // Save current selection if any
         const currentVal = select.value;
 
         // Clear and add default
@@ -771,12 +854,11 @@
         cachedUsersForResponsible.forEach(u => {
             const opt = document.createElement('option');
             opt.value = u.username;
-            opt.textContent = u.name || u.username;
+            opt.textContent = u.full_name || u.username;
             select.appendChild(opt);
         });
 
         if (currentVal) {
-            // Try to restore selection if it still exists
             select.value = currentVal;
         }
     };
@@ -799,8 +881,22 @@
         modal.classList.remove('hidden');
 
         // Reset filters
-        // Reset filters
-        document.getElementById('historySystemFilter').value = 'all';
+        const sysFilter = document.getElementById('historySystemFilter');
+        const envFilter = document.getElementById('historyEnvFilter');
+        if (sysFilter) sysFilter.value = 'all';
+        if (envFilter) envFilter.value = 'all';
+
+        // Populate System Filter dynamically
+        if (sysFilter) {
+            sysFilter.innerHTML = '<option value="all">Todos os Produtos</option>';
+            const uniqueSystems = [...new Set(versionControls.filter(v => v.client_id === clientId).map(v => v.system))].sort();
+            uniqueSystems.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s;
+                opt.textContent = s;
+                sysFilter.appendChild(opt);
+            });
+        }
 
         renderHistoryLoading();
 
@@ -812,7 +908,7 @@
             }
 
             const { data } = await window.supabaseClient.from('version_history')
-                .select('*, version_controls(system, environment)')
+                .select('*, version_controls(system, environment, updated_at)')
                 .in('version_control_id', clientVCs.map(vc => vc.id))
                 .order('created_at', { ascending: false });
 
@@ -824,38 +920,57 @@
     };
 
     function renderHistoryLoading() {
-        document.getElementById('versionHistoryList').innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-secondary)">Carregando...</div>';
+        document.getElementById('versionHistoryList').innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-secondary)">Buscando histórico...</div>';
     }
 
     function renderHistoryList(data) {
         const list = document.getElementById('versionHistoryList');
-        list.innerHTML = data.map(h => `
-            <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:10px; margin-bottom:12px; border-left:4px solid var(--accent); border: 1px solid rgba(255,255,255,0.05); border-left-width: 4px;">
-                <div style="display:flex; justify-content:space-between; margin-bottom:8px; align-items: flex-start;">
-                    <div>
-                        <strong style="color:#ffffff; font-size:1.1rem; display:block;">${h.version_controls?.system}</strong>
-                        <span class="environment-badge-small ${h.version_controls?.environment}" style="font-size: 0.6rem; padding: 1px 6px;">${h.version_controls?.environment?.toUpperCase()}</span>
+
+        const envLabels = {
+            'producao': 'PRODUÇÃO',
+            'homologacao': 'HOMOLOGAÇÃO'
+        };
+
+        list.innerHTML = data.map(h => {
+            const envDisplay = envLabels[h.version_controls?.environment] || h.version_controls?.environment?.toUpperCase() || 'N/A';
+
+            return `
+                <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:10px; margin-bottom:12px; border-left:4px solid var(--accent); border: 1px solid rgba(255,255,255,0.05); border-left-width: 4px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:8px; align-items: flex-start;">
+                        <div>
+                            <strong style="color:#ffffff; font-size:1.1rem; display:block;">${h.version_controls?.system}</strong>
+                            <span class="environment-badge-small ${h.version_controls?.environment}" style="font-size: 0.6rem; padding: 1px 6px;">${envDisplay}</span>
+                        </div>
+                        <small style="opacity:0.6; text-align:right;">${new Date(h.created_at).toLocaleDateString('pt-BR')} ${new Date(h.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</small>
                     </div>
-                    <small style="opacity:0.6; text-align:right;">${new Date(h.created_at).toLocaleDateString('pt-BR')} ${new Date(h.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</small>
+                    <div style="font-size:0.9rem; margin:5px 0; color:#fff; font-family:'Outfit', sans-serif;">
+                        <span style="font-weight: 400;">Identificação da Versão:</span> <span style="color:var(--success); font-weight:600;">${h.new_version}</span>
+                    </div>
+                    <div style="font-size:0.9rem; color:#fff; font-family:'Outfit', sans-serif; margin-bottom:2px;">
+                        <span style="font-weight: 400;">Data da Atualização:</span> <span>${h.version_controls?.updated_at ? new Date(h.version_controls.updated_at).toLocaleDateString('pt-BR') : 'N/A'}</span>
+                    </div>
+                    <div style="font-size:0.9rem; color:#fff; font-family:'Outfit', sans-serif;">
+                        <span style="font-weight: 400;">Responsável:</span> <span>${h.updated_by}</span>
+                    </div>
+                    ${h.notes && h.notes !== 'Versão inicial cadastrada' && h.notes !== 'Registro Inicial' && h.notes !== 'Registro de nova versão' ? `<div style="font-size:0.85rem; margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.05); color:#cfd8dc; border-radius:0;">${utils.escapeHtml(h.notes)}</div>` : ''}
                 </div>
-                <div style="font-size:0.9rem; margin:5px 0; color:#fff; font-family:'Outfit', sans-serif;">
-                    <span style="font-weight: 400;">Versão:</span> <span style="color:var(--success); font-weight:600;">${h.new_version}</span>
-                </div>
-                <div style="font-size:0.9rem; color:#fff; font-family:'Outfit', sans-serif;">
-                    <span style="font-weight: 400;">Atualizado por:</span> <span>${h.updated_by}</span>
-                </div>
-                ${h.notes && h.notes !== 'Versão inicial cadastrada' && h.notes !== 'Registro Inicial' ? `<div style="font-size:0.85rem; margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.05); color:#cfd8dc; border-radius:0;">${utils.escapeHtml(h.notes)}</div>` : ''}
-            </div>
-        `).join('') || '<div style="text-align:center; opacity:0.5; padding:30px;">Nenhum registro encontrado para os filtros selecionados.</div>';
+            `;
+        }).join('') || '<div style="text-align:center; opacity:0.5; padding:30px;">Nenhum registro encontrado para os filtros selecionados.</div>';
     }
 
     window.filterHistory = () => {
         const sys = document.getElementById('historySystemFilter').value;
+        const envFilter = document.getElementById('historyEnvFilter').value;
 
         // Base filter by system if selected
         let filtered = currentHistoryData;
         if (sys !== 'all') {
             filtered = filtered.filter(h => h.version_controls?.system === sys);
+        }
+
+        // Filter by environment if selected
+        if (envFilter !== 'all') {
+            filtered = filtered.filter(h => h.version_controls?.environment === envFilter);
         }
 
         // Apply Logic: Top 3 latest updates per System per Environment
@@ -1423,6 +1538,322 @@
     document.addEventListener('permissions-loaded', () => {
         console.log("🔄 Re-rendering Version Controls due to permissions update...");
         renderVersionControls();
+        loadProducts(); // Refresh products based on new permissions
     });
+
+    // ==========================================
+    // PRODUCT MANAGEMENT LOGIC
+    // ==========================================
+    let productsList = [];
+    let editingProductId = null;
+
+    async function loadProducts() {
+        if (!window.supabaseClient) return;
+        try {
+            const { data, error } = await window.supabaseClient
+                .from('products')
+                .select('*')
+                .order('name', { ascending: true });
+            if (error) throw error;
+            productsList = data || [];
+
+            // Sync dropdown in version modal
+            const sysSelect = document.getElementById('versionSystemSelect');
+            if (sysSelect) {
+                const current = sysSelect.value;
+                sysSelect.innerHTML = '<option value="">Selecione o produto...</option>';
+                productsList.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p.name;
+                    opt.setAttribute('data-type', p.version_type);
+                    opt.textContent = `${p.name}`;
+                    sysSelect.appendChild(opt);
+                });
+                if (current) sysSelect.value = current;
+
+                // Trigger mask update if already selected
+                updateVersionMask();
+            }
+
+            // Sync table in management modal
+            renderProductsTable();
+        } catch (err) {
+            console.error('❌ Error loadProducts:', err);
+        }
+    }
+
+    function renderProductsTable() {
+        const tbody = document.getElementById('productsTableBody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        const canEdit = window.Permissions?.can('Controle de Versões - Produtos', 'can_edit');
+        const canDelete = window.Permissions?.can('Controle de Versões - Produtos', 'can_delete');
+        const hasActions = canEdit || canDelete;
+
+        // Sync header visibility
+        const actionsHeader = document.getElementById('productActionsHeader');
+        if (actionsHeader) actionsHeader.style.display = hasActions ? '' : 'none';
+
+        if (productsList.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="${hasActions ? 3 : 2}" style="text-align: center; color: var(--text-secondary); padding: 20px;">Nenhum produto cadastrado.</td></tr>`;
+            return;
+        }
+
+        productsList.forEach(p => {
+            const tr = document.createElement('tr');
+            const typeClass = p.version_type === 'Pacote' ? 'badge-type-pacote' : 'badge-type-build';
+
+            let actionsHtml = '';
+            if (hasActions) {
+                actionsHtml = `
+                    <td class="action-cell">
+                        ${canEdit ? `
+                            <button class="btn-icon" onclick="window.editProduct('${p.id}')" title="Editar">
+                                <i class="fa-solid fa-pencil"></i>
+                            </button>
+                        ` : ''}
+                        ${canDelete ? `
+                            <button class="btn-icon btn-danger" onclick="window.deleteProduct('${p.id}')" title="Excluir">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        ` : ''}
+                    </td>
+                `;
+            }
+
+            tr.innerHTML = `
+                <td>${utils.escapeHtml(p.name)}</td>
+                <td><span class="badge-product-type ${typeClass}">${p.version_type}</span></td>
+                ${actionsHtml}
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    window.openProductManagement = async () => {
+        if (window.Permissions && !window.Permissions.can('Controle de Versões - Produtos', 'can_view')) {
+            if (window.showToast) window.showToast('🚫 Sem permissão para gerenciar produtos.', 'error');
+            return;
+        }
+        await loadProducts();
+
+        // Check if can create or edit to show/hide the form
+        const canCreate = window.Permissions?.can('Controle de Versões - Produtos', 'can_create');
+        const canEdit = window.Permissions?.can('Controle de Versões - Produtos', 'can_edit');
+        const form = document.getElementById('productForm');
+        if (form) {
+            form.style.display = (canCreate || canEdit) ? 'flex' : 'none';
+        }
+
+        document.getElementById('productManagementModal').classList.remove('hidden');
+    };
+
+    window.closeProductManagement = () => {
+        document.getElementById('productManagementModal').classList.add('hidden');
+        window.resetProductForm();
+    };
+
+    window.resetProductForm = () => {
+        const form = document.getElementById('productForm');
+        if (form) form.reset();
+        document.getElementById('productId').value = '';
+        document.getElementById('cancelProductEdit').classList.add('hidden');
+        const saveBtn = document.getElementById('saveProductBtn');
+        if (saveBtn) saveBtn.disabled = true;
+        editingProductId = null;
+    };
+
+    function validateProductForm() {
+        const nameInput = document.getElementById('productName');
+        const typeSelect = document.getElementById('productType');
+        const saveBtn = document.getElementById('saveProductBtn');
+        if (!nameInput || !typeSelect || !saveBtn) return;
+
+        const nameValue = nameInput.value.trim();
+        const typeValue = typeSelect.value;
+
+        // Find current editing product to compare changes
+        const existing = editingProductId ? productsList.find(x => x.id === editingProductId) : null;
+
+        const isChanged = !existing || (existing.name !== nameValue || existing.version_type !== typeValue);
+        const isValid = nameValue.length > 0 && typeValue.length > 0;
+
+        saveBtn.disabled = !(isChanged && isValid);
+    }
+
+    window.editProduct = (id) => {
+        if (window.Permissions && !window.Permissions.can('Controle de Versões - Produtos', 'can_edit')) {
+            if (window.showToast) window.showToast('🚫 Sem permissão para editar produtos.', 'error');
+            return;
+        }
+        const p = productsList.find(x => x.id === id);
+        if (!p) return;
+        editingProductId = id;
+        document.getElementById('productId').value = p.id;
+        document.getElementById('productName').value = p.name;
+        document.getElementById('productType').value = p.version_type;
+        document.getElementById('cancelProductEdit').classList.remove('hidden');
+        document.getElementById('productName').focus();
+        validateProductForm(); // Initial check
+    };
+
+    window.deleteProduct = async (id) => {
+        if (!window.Permissions?.can('Controle de Versões - Produtos', 'can_delete')) {
+            if (window.showToast) window.showToast('🚫 Sem permissão para excluir produtos.', 'error');
+            return;
+        }
+
+        const p = productsList.find(x => x.id === id);
+        if (!p) return;
+
+        const confirmed = await window.showConfirm(`Tem certeza que deseja excluir o produto "${p.name}"?`, 'Excluir Produto', 'fa-trash');
+        if (!confirmed) return;
+
+        try {
+            const { error } = await window.supabaseClient.from('products').delete().eq('id', id);
+            if (error) throw error;
+            if (window.showToast) window.showToast('Produto excluído com sucesso!', 'success');
+            if (window.registerAuditLog) {
+                await window.registerAuditLog('EXCLUSÃO', 'Exclusão de Produto', `Produto: ${p.name}`, p, null);
+            }
+            await loadProducts();
+        } catch (err) {
+            console.error('❌ deleteProduct error:', err);
+            if (window.showToast) window.showToast('Falha ao excluir produto.', 'error');
+        }
+    };
+
+    document.getElementById('productForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const canCreate = window.Permissions?.can('Controle de Versões - Produtos', 'can_create');
+        const canEdit = window.Permissions?.can('Controle de Versões - Produtos', 'can_edit');
+
+        const id = document.getElementById('productId').value;
+        if (id && !canEdit) {
+            if (window.showToast) window.showToast('🚫 Sem permissão para editar produtos.', 'error');
+            return;
+        }
+        if (!id && !canCreate) {
+            if (window.showToast) window.showToast('🚫 Sem permissão para criar produtos.', 'error');
+            return;
+        }
+
+        const name = document.getElementById('productName').value.trim();
+        const version_type = document.getElementById('productType').value;
+
+        try {
+            if (id) {
+                const oldProduct = productsList.find(p => p.id === id);
+                const { error } = await window.supabaseClient.from('products').update({ name, version_type }).eq('id', id);
+                if (error) throw error;
+                if (window.registerAuditLog) {
+                    await window.registerAuditLog('EDIÇÃO', 'Edição de Produto', `Produto: ${name}`, oldProduct, { name, version_type });
+                }
+            } else {
+                const { error } = await window.supabaseClient.from('products').insert([{ name, version_type }]);
+                if (error) throw error;
+                if (window.registerAuditLog) {
+                    await window.registerAuditLog('CRIAÇÃO', 'Criação de Produto', `Produto: ${name}`, null, { name, version_type });
+                }
+            }
+
+            if (window.showToast) window.showToast('Produto salvo com sucesso!', 'success');
+            window.resetProductForm();
+            await loadProducts();
+        } catch (err) {
+            console.error('❌ productForm error:', err);
+            if (window.showToast) window.showToast('Falha ao salvar produto.', 'error');
+        }
+    });
+
+    // Initial load
+    document.addEventListener('DOMContentLoaded', () => {
+        loadProducts();
+        setupMaskLogic();
+        setupProductFormListeners();
+
+        // Limit future dates
+        const dateInput = document.getElementById('versionDateInput');
+        if (dateInput) {
+            const today = new Date().toISOString().split('T')[0];
+            dateInput.setAttribute('max', today);
+        }
+    });
+
+    function setupProductFormListeners() {
+        const nameInput = document.getElementById('productName');
+        const typeSelect = document.getElementById('productType');
+
+        if (nameInput) nameInput.addEventListener('input', validateProductForm);
+        if (typeSelect) typeSelect.addEventListener('change', validateProductForm);
+    }
+
+    function setupMaskLogic() {
+        const sysSelect = document.getElementById('versionSystemSelect');
+        const verInput = document.getElementById('versionNumberInput');
+        if (sysSelect) {
+            sysSelect.addEventListener('change', updateVersionMask);
+        }
+        if (verInput) {
+            verInput.addEventListener('input', (e) => {
+                const type = getSelectedProductType();
+                if (type === 'Build') {
+                    // Numbers only
+                    e.target.value = e.target.value.replace(/[^0-9]/g, '');
+                } else {
+                    // Standard Pacote mask: YYYY.MM-XX
+                    let v = e.target.value.replace(/\D/g, '');
+                    if (v.length > 8) v = v.substring(0, 8);
+
+                    let masked = v;
+                    if (v.length > 4) {
+                        masked = v.substring(0, 4) + '.' + v.substring(4);
+                    }
+                    if (v.length > 6) {
+                        masked = v.substring(0, 4) + '.' + v.substring(4, 6) + '-' + v.substring(6);
+                    }
+                    e.target.value = masked;
+                }
+            });
+        }
+    }
+
+    function updateVersionMask() {
+        const type = getSelectedProductType();
+        const verInput = document.getElementById('versionNumberInput');
+        if (!verInput) return;
+
+        if (type === 'Build') {
+            verInput.placeholder = 'Ex: 20250105006';
+            verInput.maxLength = 15;
+            verInput.title = 'Apenas números permitidos para o tipo Build';
+            // If switched and has content, keep only numbers
+            if (verInput.value) {
+                verInput.value = verInput.value.replace(/[^0-9]/g, '');
+            }
+        } else {
+            verInput.placeholder = 'Ex: 2025.01-01';
+            verInput.maxLength = 10;
+            verInput.title = 'Formato sugerido: YYYY.MM-XX';
+            // If switched and has content, re-apply mask
+            if (verInput.value) {
+                let v = verInput.value.replace(/\D/g, '');
+                if (v.length > 8) v = v.substring(0, 8);
+                let masked = v;
+                if (v.length > 4) masked = v.substring(0, 4) + '.' + v.substring(4);
+                if (v.length > 6) masked = v.substring(0, 4) + '.' + v.substring(4, 6) + '-' + v.substring(6);
+                verInput.value = masked;
+            }
+        }
+    }
+
+    function getSelectedProductType() {
+        const sysSelect = document.getElementById('versionSystemSelect');
+        if (!sysSelect) return null;
+        const opt = sysSelect.options[sysSelect.selectedIndex];
+        return opt ? opt.getAttribute('data-type') : null;
+    }
 
 })();

@@ -843,7 +843,6 @@
     display: none;
 }
 
-#userPassword::-webkit-contacts-auto-fill-button,
 #userPassword::-webkit-credentials-auto-fill-button {
     visibility: hidden;
     display: none !important;
@@ -851,4 +850,150 @@
     height: 0;
     width: 0;
     margin: 0;
+}
+
+/* ===================================
+   LOGS TAB STYLES
+   =================================== */
+
+.table-responsive {
+    overflow-x: auto;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.logs-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.logs-table th {
+    background: rgba(0, 0, 0, 0.3);
+    text-align: left;
+    padding: 18px 20px;
+    /* Increased padding */
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.logs-table td {
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    vertical-align: top;
+    /* Align to top for multiline details */
+}
+
+.logs-table tr:hover td {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.logs-table tr:last-child td {
+    border-bottom: none;
+}
+
+.log-date {
+    white-space: nowrap;
+    color: var(--text-secondary);
+    font-family: monospace;
+    font-size: 0.85rem;
+}
+
+.log-user {
+    font-weight: 600;
+    color: var(--accent);
+}
+
+.log-action {
+    font-weight: 500;
+}
+
+.log-details {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    max-width: 400px;
+}
+
+/* Tag style for operation type */
+.log-type-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+}
+
+.type-security {
+    background: rgba(239, 83, 80, 0.15);
+    color: #ef5350;
+    border: 1px solid rgba(239, 83, 80, 0.3);
+}
+
+.type-edit {
+    background: rgba(41, 182, 246, 0.15);
+    color: #29b6f6;
+    border: 1px solid rgba(41, 182, 246, 0.3);
+}
+
+.type-create {
+    background: rgba(102, 187, 106, 0.15);
+    color: #66bb6a;
+    border: 1px solid rgba(102, 187, 106, 0.3);
+}
+
+.logs-pagination-controls span {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+/* Log Filters Toolbar */
+.logs-controls-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 2;
+    /* Take available space */
+    justify-content: center;
+}
+
+.log-filter-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.log-input {
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.log-input:focus {
+    border-color: var(--accent);
+    background: rgba(0, 0, 0, 0.4);
+}
+
+/* Date input specific */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+    opacity: 0.6;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
 }
