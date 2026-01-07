@@ -174,7 +174,7 @@
                 </div>
 
                 <!-- 1. Search (Moved to Middle) -->
-                <div class="search-input-group mng-search">
+                <div class="search-input-group mng-search" id="user-search-group">
                     <i class="fa-solid fa-magnifying-glass search-icon"></i>
                     <input type="text" id="userSearchInput" placeholder="Pesquisar...">
                     <button id="clearUserSearch" class="btn-clear hidden" title="Limpar pesquisa" tabindex="-1">
@@ -187,6 +187,31 @@
                     <button class="role-text-btn active" data-role="ADMINISTRADOR"><span>Administrador</span></button>
                     <button class="role-text-btn" data-role="ANALISTA"><span>Analista</span></button>
                     <button class="role-text-btn" data-role="TECNICO"><span>Técnico</span></button>
+                </div>
+
+                <!-- NEW: Logs Controls -->
+                <div id="logs-controls" class="logs-controls-group hidden">
+                    <div class="log-filter-item">
+                        <input type="text" id="logSearchInput" placeholder="Pesquisar log..." class="log-input">
+                    </div>
+                    <div class="log-filter-item">
+                        <input type="date" id="logStartDate" class="log-input" title="Data Inicial">
+                    </div>
+                    <div class="log-filter-item">
+                        <input type="date" id="logEndDate" class="log-input" title="Data Final">
+                    </div>
+                    <div class="log-filter-item">
+                        <select id="logTypeSelect" class="log-input">
+                            <option value="">Todos os Tipos</option>
+                            <option value="SECURITY">Segurança</option>
+                            <option value="CRIACAO">Criação</option>
+                            <option value="EDICAO">Edição</option>
+                            <option value="EXCLUSAO">Exclusão</option>
+                        </select>
+                    </div>
+                    <button id="btnSearchLogs" class="btn-primary" style="padding: 8px 16px;">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
                 </div>
 
                 <!-- 4. Actions -->
@@ -1094,6 +1119,9 @@
     <!-- Pulse Dashboard Modal -->
     <div id="pulseDashboardModal" class="dashboard-overlay hidden">
         <div class="dashboard-container">
+            <a href="#" onclick="window.showChangelog(); return false;" class="version-link">
+                Sofis v1.9.90 <i class="fa-solid fa-code-branch" style="font-size: 0.7em; margin-left: 3px;"></i>
+            </a>
             <div class="dashboard-header">
                 <div class="pulse-title">
                     <i class="fa-solid fa-activity" style="color: #7c4dff; font-size: 1.8rem;"></i>
@@ -1308,10 +1336,11 @@
             const typeMap = {
                 'fix': 'CORREÇÃO',
                 'feat': 'NOVIDADE',
-                'style': 'DESIGN',
-                'perf': 'MELHORIA',
+                'style': 'ESTILO',
+                'imp': 'MELHORIA',
+                'perf': 'PERFORMANCE',
                 'docs': 'DOCS',
-                'refactor': 'REFACTOR'
+                'refactor': 'REFATORAÇÃO'
             };
 
             const html = history.map(entry => {

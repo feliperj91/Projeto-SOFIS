@@ -3,6 +3,16 @@
 
 window.SOFIS_CHANGELOG = [
     {
+        version: '1.9.90',
+        date: '2026-01-06',
+        title: 'Módulo de Auditoria e Correções',
+        changes: [
+            { type: 'feat', text: 'Novo módulo de Logs e Auditoria com filtros avançados (Data, Tipo, Pesquisa) para rastreabilidade total.' },
+            { type: 'fix', text: 'Correção crítica na exclusão de clientes: implementada sincronização robusta com feedback visual de erro.' },
+            { type: 'imp', text: 'Normalização do banco de dados para melhor integridade referencial e performance.' }
+        ]
+    },
+    {
         version: '1.9.89',
         date: '2026-01-06',
         title: 'Expansão de Criptografia',

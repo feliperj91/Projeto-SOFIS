@@ -1862,17 +1862,41 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!client) return;
 
         const confirmed = await window.showConfirm(`⚠️ EXCLUIR CLIENTE ⚠️\n\nTem certeza que deseja excluir "${client.name}"?`, 'Excluir Cliente', 'fa-triangle-exclamation');
-        if (confirmed) {
-            const clientName = client.name;
-            const clientSnapshot = JSON.parse(JSON.stringify(client));
+        if (!confirmed) return;
 
-            // 1. Atualização Instantânea na Memória e UI de Contatos
+        const clientName = client.name;
+        const clientSnapshot = JSON.parse(JSON.stringify(client));
+
+        // Show loading state or at least indicate activity
+        const toastId = showToast('⏳ Excluindo cliente...', 'info'); // Assuming showToast returns ID or we just rely on replacement
+
+        try {
+            // 1. Delete from Supabase FIRST (Authority)
+            if (window.supabaseClient) {
+                const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+                if (isUUID) {
+                    const { error } = await window.supabaseClient.from('clients').delete().eq('id', id);
+                    if (error) throw error;
+                } else {
+                    console.warn('Skipping Supabase delete for non-UUID id:', id);
+                }
+            }
+
+            // 2. Register Log (Wait for it)
+            if (window.registerAuditLog) {
+                await registerAuditLog('EXCLUSÃO', 'Exclusão de Cliente', `Cliente: ${clientName}`, clientSnapshot, null);
+            }
+
+            // 3. Update Local State and UI
             clients = clients.filter(c => c.id !== id);
-            window.clients = clients;
-            applyClientFilter();
-            showToast(`🗑️ Cliente "${clientName}" removido com sucesso!`, 'success');
+            window.clients = clients; // Sync global
 
-            // 2. Atualização Instantânea na UI de Controle de Versão
+            await saveToLocal(); // Save allowed clients locally
+
+            // Update UI
+            applyClientFilter();
+
+            // Update Version Control UI if exists
             if (window.versionControls) {
                 window.versionControls = window.versionControls.filter(vc => vc.client_id !== id);
                 if (typeof window.renderVersionControls === 'function') {
@@ -1880,25 +1904,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
 
-            // 3. Processamento em segundo plano (LocalStorage, Supabase e Logs)
-            (async () => {
-                await saveToLocal();
+            // Dropdown update
+            if (typeof populateVersionClientSelect === 'function') {
+                populateVersionClientSelect();
+            }
 
-                if (window.supabaseClient) {
-                    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-                    if (isUUID) {
-                        try {
-                            await window.supabaseClient.from('clients').delete().eq('id', id);
-                        } catch (err) {
-                            console.error('Erro ao deletar do Supabase:', err);
-                        }
-                    }
-                }
+            showToast(`🗑️ Cliente "${clientName}" removido com sucesso!`, 'success');
 
-                if (window.registerAuditLog) {
-                    await registerAuditLog('EXCLUSÃO', 'Exclusão de Cliente', `Cliente: ${clientName}`, clientSnapshot, null);
-                }
-            })();
+        } catch (err) {
+            console.error('Erro ao excluir cliente:', err);
+            const msg = err.message || 'Erro desconhecido ao excluir do banco de dados.';
+            showToast(`❌ Erro ao excluir: ${msg}`, 'error');
+            // Do NOT remove from UI if DB delete failed
         }
     }
     window.deleteClient = deleteClient;

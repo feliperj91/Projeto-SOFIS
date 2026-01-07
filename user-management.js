@@ -59,6 +59,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     ];
 
     // --- DOM Elements ---
+    // --- DOM Elements ---
     const usersContainer = document.getElementById('users-container');
     const permissionsContainer = document.getElementById('permissions-container');
     const mngSubTabBtns = document.querySelectorAll('.mng-tab-btn');
@@ -68,8 +69,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     const usersListEl = document.getElementById('usersList');
     const permissionsTableBody = document.getElementById('permissionsTableBody');
     const userSearchInput = document.getElementById('userSearchInput');
+    const userSearchGroup = document.getElementById('user-search-group');
     const savePermissionsBtn = document.getElementById('savePermissionsBtn');
     const addNewUserBtn = document.getElementById('addNewUserBtn');
+
+    // Logs Controls
+    const logsControls = document.getElementById('logs-controls');
+    const logSearchInput = document.getElementById('logSearchInput');
+    const logStartDate = document.getElementById('logStartDate');
+    const logEndDate = document.getElementById('logEndDate');
+    const logTypeSelect = document.getElementById('logTypeSelect');
+    const btnSearchLogs = document.getElementById('btnSearchLogs');
 
     // Toggle Password Visibility
     const toggleUserPasswordBtn = document.getElementById('toggleUserPasswordBtn');
@@ -122,7 +132,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (canViewUsers && currentMngTab === 'users') await loadUsers();
         if (canViewPerms && currentMngTab === 'permissions') await loadPermissions(currentSelectedRole);
-        if (canViewLogs && currentMngTab === 'logs') await loadAuditLogs();
+        // logs will load manually via search button, but we might want to ensure empty state
+        if (canViewLogs && currentMngTab === 'logs') {
+            if (logsTableBody) {
+                logsTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                            <i class="fa-solid fa-magnifying-glass" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                            <br>
+                            Utilize os filtros acima e clique em buscar para visualizar os logs.
+                        </td>
+                    </tr>`;
+            }
+        }
     }
 
     // --- Tab Logic ---
@@ -142,13 +164,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Reset Common Controls
             if (savePermissionsBtn) savePermissionsBtn.classList.add('hidden');
             if (roleSelector) roleSelector.classList.add('hidden');
-            if (userSearchInput && userSearchInput.parentElement) userSearchInput.parentElement.classList.add('hidden');
+            // Hide User Search Group
+            if (userSearchGroup) userSearchGroup.classList.add('hidden');
+            // Hide Logs Controls
+            if (logsControls) logsControls.classList.add('hidden');
+
+            // Reset Add User Btn visibility (default to flex if perm allows, but hide on specific tabs)
+            const canCreateUsersData = window.Permissions.can('Gestão de Usuários - Usuários', 'can_create');
+            if (addNewUserBtn) addNewUserBtn.style.display = canCreateUsersData ? 'flex' : 'none';
 
             if (currentMngTab === 'users') {
                 if (usersContainer) usersContainer.classList.remove('hidden');
 
                 if (roleSelector) roleSelector.classList.add('hidden');
-                if (userSearchInput) userSearchInput.parentElement.classList.remove('hidden');
+                if (userSearchGroup) userSearchGroup.classList.remove('hidden');
 
                 renderUsers(usersList);
 
@@ -165,10 +194,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             } else if (currentMngTab === 'logs') {
                 if (logsContainer) logsContainer.classList.remove('hidden');
+                if (logsControls) logsControls.classList.remove('hidden');
 
-                // Maybe reuse search for logs in future?
-                // For now, no search per spec, just list
-                await loadAuditLogs(1);
+                // Hide "Novo Usuário" on Logs tab
+                if (addNewUserBtn) addNewUserBtn.style.display = 'none';
+
+                // DO NOT load logs automatically
+                // Reset table to empty state or instructions
+                if (logsTableBody) {
+                    logsTableBody.innerHTML = `
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                                <i class="fa-solid fa-magnifying-glass" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                                <br>
+                                Utilize os filtros acima e clique em buscar para visualizar os logs.
+                            </td>
+                        </tr>`;
+                }
+                if (logsPageInfo) logsPageInfo.innerText = '';
+                if (prevLogsBtn) prevLogsBtn.disabled = true;
+                if (nextLogsBtn) nextLogsBtn.disabled = true;
             }
         });
     });
@@ -629,7 +674,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!window.supabaseClient) return;
         logsPage = page;
 
-        // Show loading state?
+        // Validation: Require Date Range? User said "somente após o usuário informar o período".
+        // Let's require at least a date inputs or just let them search.
+        // Good practice: Check if dates are valid.
+        const startDate = logStartDate ? logStartDate.value : null;
+        const endDate = logEndDate ? logEndDate.value : null;
+
+        if (!startDate || !endDate) {
+            window.showToast?.('Por favor, informe o período (data inicial e final).', 'warning');
+            return;
+        }
+
+        // Show loading state
         if (logsTableBody) {
             logsTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Carregando logs...</td></tr>';
         }
@@ -638,11 +694,45 @@ document.addEventListener('DOMContentLoaded', async () => {
         const to = from + logsPerPage - 1;
 
         try {
-            const { data, error, count } = await window.supabaseClient
+            let query = window.supabaseClient
                 .from('audit_logs')
                 .select('*', { count: 'exact' })
                 .order('created_at', { ascending: false })
                 .range(from, to);
+
+            // Apply Filters
+
+            // Date Range (Inclusive)
+            // Start date 00:00:00
+            const startISO = new Date(startDate + 'T00:00:00').toISOString();
+            // End date 23:59:59
+            const endISO = new Date(endDate + 'T23:59:59.999').toISOString();
+
+            query = query.gte('created_at', startISO).lte('created_at', endISO);
+
+            // Search Text (User OR Details)
+            if (logSearchInput && logSearchInput.value.trim()) {
+                const term = logSearchInput.value.trim();
+                // ILIKE for case insensitive partial match
+                query = query.or(`username.ilike.%${term}%,details.ilike.%${term}%`);
+            }
+
+            // Operation Type
+            if (logTypeSelect && logTypeSelect.value) {
+                // Mapping select values to DB logic if needed, or simple partial match
+                // DB has "operation_type" or sometimes it's null, we might need to search in 'action' too if types aren't consistent.
+                // But let's assume operation_type is what we want.
+                // As per previous logs, operation_type can be 'SECURITY', 'EDIÇÃO', 'CRIAÇÃO'.
+                // If the select value is 'CRIACAO', we check against 'CRIAÇÃO' or similar. 
+                // Let's try to match loosely.
+                let typeVal = logTypeSelect.value;
+                if (typeVal === 'CRIACAO') query = query.ilike('operation_type', '%CRIA%'); // Catches CRIAÇÃO, CRIACAO, CRIAR
+                else if (typeVal === 'EDICAO') query = query.ilike('operation_type', '%EDI%'); // Catches EDIÇÃO, EDICAO, EDITAR
+                else if (typeVal === 'EXCLUSAO') query = query.ilike('operation_type', '%EXCLU%');
+                else if (typeVal === 'SECURITY') query = query.eq('operation_type', 'SECURITY');
+            }
+
+            const { data, error, count } = await query;
 
             if (error) throw error;
 
@@ -654,6 +744,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 logsTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--danger);">Erro ao carregar logs.</td></tr>';
             }
         }
+    }
+
+    if (btnSearchLogs) {
+        btnSearchLogs.addEventListener('click', () => {
+            loadAuditLogs(1);
+        });
     }
 
     function renderAuditLogs(logs) {
