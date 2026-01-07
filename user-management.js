@@ -946,9 +946,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <title>Relatório de Auditoria - Sofis</title>
                         <style>
                             @media print {
-                                @page { margin: 0; size: auto; }
-                                body { margin: 1.5cm; }
-                                .footer { position: fixed; bottom: 0; left: 0; right: 0; }
+                                body { margin: 10px; }
                                 button { display: none; }
                             }
                             body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; color: #333; }

@@ -3,6 +3,15 @@
 
 window.SOFIS_CHANGELOG = [
     {
+        version: '1.9.96',
+        date: '2026-01-07',
+        title: 'Polimento de Impressão',
+        changes: [
+            { type: 'fix', text: 'Correção de margens de impressão: Restauração da numeração de páginas nativa e prevenção de sobreposição de conteúdo pelo rodapé.' },
+            { type: 'style', text: 'Otimização do uso de papel reduzindo margens excessivas.' }
+        ]
+    },
+    {
         version: '1.9.95',
         date: '2026-01-06',
         title: 'Refinamento de Relatório',
