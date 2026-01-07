@@ -3,6 +3,16 @@
 
 window.SOFIS_CHANGELOG = [
     {
+        version: '1.9.91',
+        date: '2026-01-06',
+        title: 'Polimento de UI e Logs',
+        changes: [
+            { type: 'style', text: 'Padronização visual: Barra de pesquisa de usuários equalizada com o design do módulo de Logs.' },
+            { type: 'feat', text: 'Auditoria detalhada: Logs de usuários e permissões agora exibem exatamente quais campos foram alterados.' },
+            { type: 'fix', text: 'Atualização global de versão: Correção na sincronização do número da build em toda a aplicação.' }
+        ]
+    },
+    {
         version: '1.9.90',
         date: '2026-01-06',
         title: 'Módulo de Auditoria e Correções',

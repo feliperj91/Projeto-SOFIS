@@ -292,8 +292,7 @@ button {
 }
 
 #searchInput,
-#versionSearchInput,
-#userSearchInput {
+#versionSearchInput {
     width: 100%;
     background: var(--card-bg);
     backdrop-filter: blur(10px);
