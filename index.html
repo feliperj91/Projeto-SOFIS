@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 
 <head>
+    <script src="diagnose.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sofis - Gerenciamento de Clientes</title>
@@ -191,70 +192,70 @@
                         </button>
                     </div>
 
-                <!-- NEW: Logs Controls -->
-                <div id="logs-controls" class="logs-controls-group hidden">
-                    <div class="log-filter-item">
-                        <input type="text" id="logSearchInput" placeholder="Pesquisar log..." class="log-input">
+                    <!-- NEW: Logs Controls -->
+                    <div id="logs-controls" class="logs-controls-group hidden">
+                        <div class="log-filter-item">
+                            <input type="text" id="logSearchInput" placeholder="Pesquisar log..." class="log-input">
+                        </div>
+                        <div class="log-filter-item">
+                            <input type="date" id="logStartDate" class="log-input" title="Data Inicial">
+                        </div>
+                        <div class="log-filter-item">
+                            <input type="date" id="logEndDate" class="log-input" title="Data Final">
+                        </div>
+                        <div class="log-filter-item">
+                            <select id="logTypeSelect" class="log-input">
+                                <option value="">Todos os Tipos</option>
+                                <option value="SECURITY">Segurança</option>
+                                <option value="CRIACAO">Criação</option>
+                                <option value="EDICAO">Edição</option>
+                                <option value="EXCLUSAO">Exclusão</option>
+                            </select>
+                        </div>
+                        <button id="btnSearchLogs" class="btn-primary" style="padding: 8px 16px;">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </button>
+                        <button id="btnPrintLogs" class="btn-secondary hidden" style="padding: 8px 16px;"
+                            title="Imprimir Relatório">
+                            <i class="fa-solid fa-print"></i>
+                        </button>
                     </div>
-                    <div class="log-filter-item">
-                        <input type="date" id="logStartDate" class="log-input" title="Data Inicial">
-                    </div>
-                    <div class="log-filter-item">
-                        <input type="date" id="logEndDate" class="log-input" title="Data Final">
-                    </div>
-                    <div class="log-filter-item">
-                        <select id="logTypeSelect" class="log-input">
-                            <option value="">Todos os Tipos</option>
-                            <option value="SECURITY">Segurança</option>
-                            <option value="CRIACAO">Criação</option>
-                            <option value="EDICAO">Edição</option>
-                            <option value="EXCLUSAO">Exclusão</option>
-                        </select>
-                    </div>
-                    <button id="btnSearchLogs" class="btn-primary" style="padding: 8px 16px;">
-                        <i class="fa-solid fa-magnifying-glass"></i>
-                    </button>
-                    <button id="btnPrintLogs" class="btn-secondary hidden" style="padding: 8px 16px;"
-                        title="Imprimir Relatório">
-                        <i class="fa-solid fa-print"></i>
-                    </button>
-                </div>
 
-                <!-- 4. Actions -->
-                <div class="toolbar-actions">
-                    <button id="savePermissionsBtn" class="btn-flat-green hidden" disabled>
-                        <i class="fa-regular fa-floppy-disk"></i> SALVAR
-                    </button>
-                    <button id="addNewUserBtn" class="btn-primary">
-                        <i class="fa-solid fa-plus"></i> NOVO USUÁRIO
-                    </button>
-                </div>
-            </div>
-
-            <!-- Management Content Body -->
-            <div id="management-body">
-                <!-- User Grid -->
-                <div id="users-container" class="mng-panel-active">
-                    <div id="usersList" class="users-grid">
-                        <!-- User cards will be rendered here -->
+                    <!-- 4. Actions -->
+                    <div class="toolbar-actions">
+                        <button id="savePermissionsBtn" class="btn-flat-green hidden" disabled>
+                            <i class="fa-regular fa-floppy-disk"></i> SALVAR
+                        </button>
+                        <button id="addNewUserBtn" class="btn-primary">
+                            <i class="fa-solid fa-plus"></i> NOVO USUÁRIO
+                        </button>
                     </div>
                 </div>
 
-                <!-- Permissions Table -->
-                <div id="permissions-container" class="hidden">
-                    <table class="permissions-table">
-                        <thead>
-                            <tr>
-                                <th>MÓDULO</th>
-                                <th>GRUPO REQUISITADO</th>
-                                <th>VISUALIZAR</th>
-                                <th>CRIAR</th>
-                                <th>EDITAR</th>
-                                <th>EXCLUIR</th>
-                            </tr>
-                        </thead>
-                        <tbody id="permissionsTableBody">
-                            <!-- Rows like:
+                <!-- Management Content Body -->
+                <div id="management-body">
+                    <!-- User Grid -->
+                    <div id="users-container" class="mng-panel-active">
+                        <div id="usersList" class="users-grid">
+                            <!-- User cards will be rendered here -->
+                        </div>
+                    </div>
+
+                    <!-- Permissions Table -->
+                    <div id="permissions-container" class="hidden">
+                        <table class="permissions-table">
+                            <thead>
+                                <tr>
+                                    <th>MÓDULO</th>
+                                    <th>GRUPO REQUISITADO</th>
+                                    <th>VISUALIZAR</th>
+                                    <th>CRIAR</th>
+                                    <th>EDITAR</th>
+                                    <th>EXCLUIR</th>
+                                </tr>
+                            </thead>
+                            <tbody id="permissionsTableBody">
+                                <!-- Rows like:
                             <tr>
                                 <td>Logs e Atividades</td>
                                 <td><span class="badge-role badge-admin">ADMINISTRADOR</span></td>
@@ -262,36 +263,36 @@
                                 ...
                             </tr> 
                             -->
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Logs Table -->
-                <div id="logs-container" class="hidden">
-                    <div class="table-responsive">
-                        <table class="logs-table">
-                            <thead>
-                                <tr>
-                                    <th>DATA</th>
-                                    <th>USUÁRIO</th>
-                                    <th>AÇÃO</th>
-                                    <th>DETALHES</th>
-                                    <th>TIPO</th>
-                                </tr>
-                            </thead>
-                            <tbody id="logsTableBody">
-                                <!-- Logs will be rendered here -->
                             </tbody>
                         </table>
                     </div>
-                    <div class="logs-pagination-controls"
-                        style="display: flex; justify-content: center; gap: 10px; margin-top: 15px;">
-                        <button id="prevLogsBtn" class="btn-secondary" disabled>Anterior</button>
-                        <span id="logsPageInfo" style="align-self: center;">Página 1</span>
-                        <button id="nextLogsBtn" class="btn-secondary">Próximo</button>
+
+                    <!-- Logs Table -->
+                    <div id="logs-container" class="hidden">
+                        <div class="table-responsive">
+                            <table class="logs-table">
+                                <thead>
+                                    <tr>
+                                        <th>DATA</th>
+                                        <th>USUÁRIO</th>
+                                        <th>AÇÃO</th>
+                                        <th>DETALHES</th>
+                                        <th>TIPO</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="logsTableBody">
+                                    <!-- Logs will be rendered here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="logs-pagination-controls"
+                            style="display: flex; justify-content: center; gap: 10px; margin-top: 15px;">
+                            <button id="prevLogsBtn" class="btn-secondary" disabled>Anterior</button>
+                            <span id="logsPageInfo" style="align-self: center;">Página 1</span>
+                            <button id="nextLogsBtn" class="btn-secondary">Próximo</button>
+                        </div>
                     </div>
                 </div>
-            </div>
         </main>
 
         <!-- Modal Form -->
