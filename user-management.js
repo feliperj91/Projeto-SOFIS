@@ -982,7 +982,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </table>
                         <div class="footer">Este documento é confidencial e para uso interno. Registros totais: ${allLogs.length}</div>
                         <script>
-                            window.onload = function() { window.print(); }
+                            window.onload = function() {
+                                setTimeout(function() {
+                                    window.print();
+                                }, 500);
+                            }
                         </script>
                     </body>
                     </html>

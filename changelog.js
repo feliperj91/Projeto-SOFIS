@@ -3,6 +3,15 @@
 
 window.SOFIS_CHANGELOG = [
     {
+        version: '1.9.97',
+        date: '2026-01-07',
+        title: 'Correção de UX na Impressão',
+        changes: [
+            { type: 'fix', text: 'Correção de travamento de interface: A impressão agora é chamada de forma assíncrona, liberando o uso do sistema principal enquanto a janela de impressão está aberta.' },
+            { type: 'perf', text: 'Melhoria na performance da chamada de relatório.' }
+        ]
+    },
+    {
         version: '1.9.96',
         date: '2026-01-07',
         title: 'Polimento de Impressão',
