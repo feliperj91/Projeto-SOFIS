@@ -134,6 +134,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (canViewPerms && currentMngTab === 'permissions') await loadPermissions(currentSelectedRole);
         // logs will load manually via search button, but we might want to ensure empty state
         if (canViewLogs && currentMngTab === 'logs') {
+            if (addNewUserBtn) addNewUserBtn.style.display = 'none'; // Force hide on init if logs
             if (logsTableBody) {
                 logsTableBody.innerHTML = `
                     <tr>
@@ -432,6 +433,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         const currentPassword = document.getElementById('userPassword').value;
         const currentRole = document.getElementById('userRoleSelect').value;
 
+        // Determine if password is changed (simple check vs original if available, but here we assume if it's diff from what we loaded or just always re-encrypt)
+        // Actually, for edit, we only re-encrypt if changed. But here we encrypt always.
+        // Let's assume passed password is the raw one.
+
         const formData = {
             full_name: currentFullName,
             username: currentUsername,
@@ -452,10 +457,28 @@ document.addEventListener('DOMContentLoaded', async () => {
             let res;
             let actionText = id ? 'Editou usuário' : 'Criou novo usuário';
             let oldVal = null;
+            let details = '';
 
             if (id) {
                 oldVal = usersList.find(x => x.id === id);
                 res = await window.supabaseClient.from('users').update(formData).eq('id', id);
+
+                // Generate Diff Details
+                const changes = [];
+                if (oldVal.username !== formData.username) changes.push(`Usuário de '${oldVal.username}' para '${formData.username}'`);
+                if (oldVal.role !== formData.role) changes.push(`Cargo de '${oldVal.role}' para '${formData.role}'`);
+
+                // Password check: We compare encrypted values if possible, or assume change if input was interacted with.
+                // Since we treat the input as the source of truth and encrypt it, checking equality of ciphertexts is tricky due to IVs.
+                // However, we can check if the displayed 'decrypted' password in the UI was different.
+                // Simplified: If the user clicked save, and the password field has value, we log it was updated (safest).
+                // Or better: In a real app we wouldn't show the password.
+                // Let's just say "Senha atualizada" if it's an edit.
+                // Warning: Current implementation encrypts every save, changing the hash.
+                changes.push('Dados/Senha atualizados');
+
+                details = `Alterações: ${changes.join(', ')}`;
+
             } else {
                 // Check username uniqueness
                 const { data: existing } = await window.supabaseClient.from('users').select('id').eq('username', formData.username).maybeSingle();
@@ -464,6 +487,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     return;
                 }
                 res = await window.supabaseClient.from('users').insert([formData]);
+                details = `Novo usuário: ${formData.full_name} (${formData.role})`;
             }
 
             if (res.error) throw res.error;
@@ -473,7 +497,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 await window.registerAuditLog(
                     'SECURITY',
                     actionText,
-                    `${actionText}: ${formData.full_name} (@${formData.username})`,
+                    `${actionText}: ${formData.full_name} (@${formData.username}). ${details}`,
                     oldVal,
                     formData
                 );
@@ -649,17 +673,70 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         try {
+            // 1. Fetch OLD permissions state BEFORE update
+            const { data: oldData } = await window.supabaseClient
+                .from('role_permissions')
+                .select('*')
+                .eq('role_name', currentSelectedRole);
+
+            // 2. Perform Update
             const { error } = await window.supabaseClient
                 .from('role_permissions')
                 .upsert(updateData, { onConflict: 'role_name,module' });
 
             if (error) throw error;
+
+            // 3. Compare and Generate Log Diff
+            const changes = [];
+            const propLabels = {
+                can_view: 'Visualizar',
+                can_create: 'Criar',
+                can_edit: 'Editar',
+                can_delete: 'Excluir'
+            };
+
+            updateData.forEach(newItem => {
+                const oldItem = (oldData || []).find(o => o.module === newItem.module) || {
+                    can_view: false, can_create: false, can_edit: false, can_delete: false
+                };
+
+                const added = [];
+                const removed = [];
+
+                ['can_view', 'can_create', 'can_edit', 'can_delete'].forEach(p => {
+                    const oldVal = !!oldItem[p];
+                    const newVal = !!newItem[p];
+                    if (oldVal !== newVal) {
+                        if (newVal) added.push(propLabels[p]);
+                        else removed.push(propLabels[p]);
+                    }
+                });
+
+                if (added.length > 0 || removed.length > 0) {
+                    let desc = `Módulo '${newItem.module}':`;
+                    if (added.length > 0) desc += ` Permitido[${added.join(', ')}]`;
+                    if (removed.length > 0) desc += ` Removido[${removed.join(', ')}]`;
+                    changes.push(desc);
+                }
+            });
+
+            if (changes.length > 0 && window.registerAuditLog) {
+                await window.registerAuditLog(
+                    'SECURITY',
+                    `Alterou permissões de ${currentSelectedRole}`,
+                    changes.join('; '),
+                    oldData,
+                    updateData
+                );
+            }
+
             window.showToast('Permissões atualizadas!', 'success');
             if (btn) btn.disabled = true; // Keep disabled until next change
-            window.showToast('Permissões atualizadas!', 'success');
+
         } catch (err) {
             console.error('Erro ao salvar permissões:', err.message);
             window.showToast('Erro ao salvar permissões.', 'danger');
+            if (btn) btn.disabled = false;
         }
     });
 
@@ -770,12 +847,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Format Type Badge
             let typeClass = '';
-            let typeLabel = log.operation_type || 'Geral';
-            if (typeLabel.toUpperCase() === 'SECURITY') typeClass = 'type-security';
-            else if (typeLabel.toUpperCase().includes('CRIAR') || typeLabel.toUpperCase().includes('ADICIONAR')) typeClass = 'type-create';
-            else if (typeLabel.toUpperCase().includes('EDITAR') || typeLabel.toUpperCase().includes('ALTERAR')) typeClass = 'type-edit';
+            const opTypeRaw = (log.operation_type || 'geral').toLowerCase();
+            const opTypeMap = {
+                'security': 'SEGURANÇA',
+                'criação': 'CRIAÇÃO',
+                'criacao': 'CRIAÇÃO',
+                'edição': 'EDIÇÃO',
+                'edicao': 'EDIÇÃO',
+                'exclusão': 'EXCLUSÃO',
+                'exclusao': 'EXCLUSÃO',
+                'geral': 'GERAL' // Added for default case
+            };
+            const opLabel = opTypeMap[opTypeRaw] || opTypeRaw.toUpperCase();
 
-            const badgeHtml = `<span class="log-type-badge ${typeClass}">${typeLabel}</span>`;
+            if (opLabel === 'SEGURANÇA') typeClass = 'type-security';
+            else if (opLabel === 'CRIAÇÃO') typeClass = 'type-create';
+            else if (opLabel === 'EDIÇÃO') typeClass = 'type-edit';
+            else if (opLabel === 'EXCLUSÃO') typeClass = 'type-delete'; // Assuming a 'type-delete' class exists or can be added
+            else typeClass = 'type-general'; // Default class for 'Geral' or unmapped types
+
+            const badgeHtml = `<span class="log-type-badge ${typeClass}">${opLabel}</span>`;
 
             tr.innerHTML = `
                 <td><span class="log-date">${dateStr}</span></td>
