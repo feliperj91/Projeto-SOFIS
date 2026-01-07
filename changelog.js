@@ -3,6 +3,15 @@
 
 window.SOFIS_CHANGELOG = [
     {
+        version: '1.9.92',
+        date: '2026-01-06',
+        title: 'Refinamento de Texto',
+        changes: [
+            { type: 'style', text: 'Ajuste de terminologia: Substituição de "Módulo" por "Item" nos detalhes de logs de permissões.' },
+            { type: 'fix', text: 'Pequenas correções de consistência textual.' }
+        ]
+    },
+    {
         version: '1.9.91',
         date: '2026-01-06',
         title: 'Polimento de UI e Logs',

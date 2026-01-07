@@ -713,7 +713,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
 
                 if (added.length > 0 || removed.length > 0) {
-                    let desc = `Módulo '${newItem.module}':`;
+                    let desc = `Item '${newItem.module}':`;
                     if (added.length > 0) desc += ` Permitido[${added.join(', ')}]`;
                     if (removed.length > 0) desc += ` Removido[${removed.join(', ')}]`;
                     changes.push(desc);
@@ -746,6 +746,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const prevLogsBtn = document.getElementById('prevLogsBtn');
     const nextLogsBtn = document.getElementById('nextLogsBtn');
     const logsPageInfo = document.getElementById('logsPageInfo');
+    const btnPrintLogs = document.getElementById('btnPrintLogs'); // Print Button
+
+    let currentAuditLogs = []; // Store currently displayed logs for printing
 
     async function loadAuditLogs(page = 1) {
         if (!window.supabaseClient) return;
@@ -766,6 +769,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (logsTableBody) {
             logsTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Carregando logs...</td></tr>';
         }
+
+        // Hide print button during load
+        if (btnPrintLogs) btnPrintLogs.classList.add('hidden');
 
         const from = (page - 1) * logsPerPage;
         const to = from + logsPerPage - 1;
@@ -813,7 +819,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (error) throw error;
 
-            renderAuditLogs(data || []);
+            currentAuditLogs = data || []; // Update current logs
+            renderAuditLogs(currentAuditLogs);
             updatePaginationControls(count);
         } catch (err) {
             console.error('Erro ao carregar logs:', err.message);
@@ -829,9 +836,97 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    // Print Handler
+    if (btnPrintLogs) {
+        btnPrintLogs.addEventListener('click', () => {
+            if (!currentAuditLogs || currentAuditLogs.length === 0) return;
+
+            const printWindow = window.open('', '_blank');
+            const opTypeMap = {
+                'security': 'SEGURANÇA',
+                'criação': 'CRIAÇÃO',
+                'criacao': 'CRIAÇÃO',
+                'edição': 'EDIÇÃO',
+                'edicao': 'EDIÇÃO',
+                'exclusão': 'EXCLUSÃO',
+                'exclusao': 'EXCLUSÃO',
+                'geral': 'GERAL'
+            };
+
+            const rows = currentAuditLogs.map(log => {
+                const d = new Date(log.created_at);
+                const dateStr = d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR');
+                const opTypeRaw = (log.operation_type || 'geral').toLowerCase();
+                const typeLabel = opTypeMap[opTypeRaw] || opTypeRaw.toUpperCase();
+
+                return `
+                    <tr>
+                        <td>${dateStr}</td>
+                        <td>${log.username || '-'}</td>
+                        <td>${log.action || '-'}</td>
+                        <td>${log.details || '-'}</td>
+                        <td>${typeLabel}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            const content = `
+                <html>
+                <head>
+                    <title>Relatório de Auditoria - Sofis</title>
+                    <style>
+                        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; color: #333; }
+                        h1 { color: #2c3e50; text-align: center; margin-bottom: 10px; }
+                        .meta { text-align: center; color: #7f8c8d; margin-bottom: 30px; font-size: 0.9rem; }
+                        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.85rem; }
+                        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+                        th { background-color: #f2f2f2; color: #2c3e50; font-weight: 600; }
+                        tr:nth-child(even) { background-color: #f9f9f9; }
+                        .footer { text-align: center; font-size: 0.8rem; color: #95a5a6; margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px; }
+                    </style>
+                </head>
+                <body>
+                    <h1>Relatório de Logs de Auditoria</h1>
+                    <div class="meta">
+                        Gerado em: ${new Date().toLocaleString('pt-BR')} <br>
+                        Sistema SOFIS - Controle de Versões
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Usuário</th>
+                                <th>Ação</th>
+                                <th>Detalhes</th>
+                                <th>Tipo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rows}
+                        </tbody>
+                    </table>
+                    <div class="footer">Este documento é confidencial e para uso interno.</div>
+                    <script>
+                        window.onload = function() { window.print(); }
+                    </script>
+                </body>
+                </html>
+            `;
+
+            printWindow.document.write(content);
+            printWindow.document.close();
+        });
+    }
+
     function renderAuditLogs(logs) {
         if (!logsTableBody) return;
         logsTableBody.innerHTML = '';
+
+        // Toggle Print Button
+        if (btnPrintLogs) {
+            if (logs.length > 0) btnPrintLogs.classList.remove('hidden');
+            else btnPrintLogs.classList.add('hidden');
+        }
 
         if (logs.length === 0) {
             logsTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Nenhum log encontrado.</td></tr>';
