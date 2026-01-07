@@ -158,6 +158,7 @@
         <!-- User Management Tab Content -->
         <main id="managementTab" class="tab-content">
             <!-- Toolbar Unificada: Abas - Pesquisa - Ações -->
+            <!-- Toolbar Unificada: Abas - Pesquisa - Ações -->
             <div class="management-toolbar-container"
                 style="display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
 
@@ -178,45 +179,64 @@
                 <div class="management-center-controls" style="flex: 1; display: flex; justify-content: center;">
 
                     <!-- Busca de Usuários -->
-                    <div id="user-search-group" class="search-input-group" style="width: 100%; max-width: 600px;">
-                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                        <input type="text" id="userSearchInput" placeholder="Pesquisar usuário..." style="width: 100%;">
-                        <button id="clearUserSearch" class="btn-clear hidden" title="Limpar pesquisa" tabindex="-1">
+                    <div id="user-search-group" class="search-input-group"
+                        style="width: 100%; max-width: 600px; display: flex; align-items: center; background-color: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 0 12px; height: 40px;">
+                        <i class="fa-solid fa-magnifying-glass search-icon"
+                            style="color: var(--text-secondary); margin-right: 10px;"></i>
+                        <input type="text" id="userSearchInput" placeholder="Pesquisar usuário..."
+                            style="width: 100%; border: none; background: transparent; color: var(--text-primary); outline: none;">
+                        <button id="clearUserSearch" class="btn-clear hidden" title="Limpar pesquisa" tabindex="-1"
+                            style="background: transparent; border: none; color: var(--text-secondary); cursor: pointer;">
                             <i class="fa-solid fa-xmark"></i>
                         </button>
                     </div>
 
                     <!-- Filtros de Logs (Escondido por padrão) -->
                     <div id="logs-controls" class="logs-controls-group hidden"
-                        style="display: flex; gap: 8px; align-items: center; width: 100%;">
-                        <div class="search-input-group" style="flex: 1;">
-                            <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                            <input type="text" id="logSearchInput" placeholder="Pesquisar log...">
+                        style="display: flex; gap: 8px; align-items: center; width: 100%; justify-content: center;">
+
+                        <!-- Barra Pesquisa Log (Estilo igual Usuários) -->
+                        <div class="search-input-group"
+                            style="flex: 1; max-width: 400px; display: flex; align-items: center; background-color: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 0 12px; height: 40px;">
+                            <i class="fa-solid fa-magnifying-glass search-icon"
+                                style="color: var(--text-secondary); margin-right: 10px;"></i>
+                            <input type="text" id="logSearchInput" placeholder="Pesquisar log..."
+                                style="width: 100%; border: none; background: transparent; color: var(--text-primary); outline: none;">
                         </div>
+
                         <input type="date" id="logStartDate" class="log-input" title="Data Inicial"
-                            style="width: auto;">
+                            style="width: auto; height: 40px; background-color: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); padding: 0 10px;">
                         <span style="color: var(--text-secondary);">-</span>
-                        <input type="date" id="logEndDate" class="log-input" title="Data Final" style="width: auto;">
-                        <select id="logTypeSelect" class="log-input" style="width: auto;">
+                        <input type="date" id="logEndDate" class="log-input" title="Data Final"
+                            style="width: auto; height: 40px; background-color: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); padding: 0 10px;">
+
+                        <select id="logTypeSelect" class="log-input"
+                            style="width: auto; height: 40px; background-color: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); padding: 0 10px;">
                             <option value="">Todos</option>
                             <option value="SECURITY">Segurança</option>
                             <option value="CRIACAO">Criação</option>
                             <option value="EDICAO">Edição</option>
                             <option value="EXCLUSAO">Exclusão</option>
                         </select>
-                        <button id="btnSearchLogs" class="btn-primary" style="padding: 8px 12px;"><i
-                                class="fa-solid fa-filter"></i></button>
-                        <button id="btnPrintLogs" class="btn-secondary hidden" style="padding: 8px 12px;"><i
-                                class="fa-solid fa-print"></i></button>
+
+                        <button id="btnSearchLogs" class="btn-primary"
+                            style="height: 40px; padding: 0 15px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fa-solid fa-filter"></i>
+                        </button>
+                        <button id="btnPrintLogs" class="btn-secondary hidden"
+                            style="height: 40px; padding: 0 15px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fa-solid fa-print"></i>
+                        </button>
                     </div>
                 </div>
 
                 <!-- 3. Ações (Direita) -->
-                <div class="management-actions">
-                    <button id="savePermissionsBtn" class="btn-flat-green hidden" disabled>
+                <div class="management-actions" style="display: flex; align-items: center; gap: 10px;">
+                    <button id="savePermissionsBtn" class="btn-flat-green hidden" disabled
+                        style="height: 40px; padding: 0 20px;">
                         <i class="fa-regular fa-floppy-disk"></i> SALVAR
                     </button>
-                    <button id="addNewUserBtn" class="btn-primary">
+                    <button id="addNewUserBtn" class="btn-primary" style="height: 40px;">
                         <i class="fa-solid fa-plus"></i> NOVO USUÁRIO
                     </button>
                 </div>
