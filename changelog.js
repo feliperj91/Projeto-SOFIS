@@ -3,6 +3,25 @@
 
 window.SOFIS_CHANGELOG = [
     {
+        version: '1.9.95',
+        date: '2026-01-06',
+        title: 'Refinamento de Relatório',
+        changes: [
+            { type: 'style', text: 'Remoção de texto redundante ("Controle de Versões") do cabeçalho do relatório de auditoria.' },
+            { type: 'fix', text: 'Ajuste de layout para impressão.' }
+        ]
+    },
+    {
+        version: '1.9.94',
+        date: '2026-01-06',
+        title: 'Ajuste em Relatórios',
+        changes: [
+            { type: 'fix', text: 'Correção no deslocamento de timezone na data do relatório de logs.' },
+            { type: 'style', text: 'Remoção de cabeçalhos/rodapés padrão do navegador (como about:blank) na impressão.' },
+            { type: 'feat', text: 'Inclusão de resumo dos filtros utilizados no cabeçalho do relatório de auditoria.' }
+        ]
+    },
+    {
         version: '1.9.93',
         date: '2026-01-06',
         title: 'Relatórios Completos de Auditoria',

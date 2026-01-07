@@ -919,30 +919,54 @@ document.addEventListener('DOMContentLoaded', async () => {
                     `;
                 }).join('');
 
+                // Filter Info Calculation
+                let filterInfo = [];
+                if (logSearchInput && logSearchInput.value.trim()) {
+                    filterInfo.push(`Termo: "${logSearchInput.value.trim()}"`);
+                }
+                if (logTypeSelect && logTypeSelect.value) {
+                    const selText = logTypeSelect.options[logTypeSelect.selectedIndex].text;
+                    filterInfo.push(`Tipo: "${selText}"`);
+                }
+                const filterStr = filterInfo.length > 0 ? `<br>Filtros: ${filterInfo.join(' | ')}` : '';
+
+                // Date Formatting (String Split to avoid timezone shift)
+                const formatDateStr = (str) => {
+                    if (!str) return '-';
+                    const parts = str.split('-');
+                    if (parts.length !== 3) return str;
+                    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+                };
+
                 const content = `
-                    <html>
+                    <!DOCTYPE html>
+                    <html lang="pt-BR">
                     <head>
+                        <meta charset="UTF-8">
                         <title>Relatório de Auditoria - Sofis</title>
                         <style>
+                            @media print {
+                                @page { margin: 0; size: auto; }
+                                body { margin: 1.5cm; }
+                                .footer { position: fixed; bottom: 0; left: 0; right: 0; }
+                                button { display: none; }
+                            }
                             body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; color: #333; }
                             h1 { color: #2c3e50; text-align: center; margin-bottom: 5px; }
-                            .meta { text-align: center; color: #7f8c8d; margin-bottom: 30px; font-size: 0.9rem; }
+                            .meta { text-align: center; color: #7f8c8d; margin-bottom: 30px; font-size: 0.9rem; line-height: 1.5; }
                             table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.85rem; }
                             th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
                             th { background-color: #f2f2f2; color: #2c3e50; font-weight: 600; }
                             tr:nth-child(even) { background-color: #f9f9f9; }
                             .footer { text-align: center; font-size: 0.8rem; color: #95a5a6; margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px; }
-                            @media print {
-                                button { display: none; }
-                            }
                         </style>
                     </head>
                     <body>
                         <h1>Relatório de Logs de Auditoria</h1>
                         <div class="meta">
                             Gerado em: ${new Date().toLocaleString('pt-BR')} <br>
-                            Sistema SOFIS - Controle de Versões <br>
-                            Período: ${new Date(startDate).toLocaleDateString()} a ${new Date(endDate).toLocaleDateString()}
+                            Período: ${formatDateStr(startDate)} a ${formatDateStr(endDate)}
+                            ${filterStr}
                         </div>
                         <table>
                             <thead>
