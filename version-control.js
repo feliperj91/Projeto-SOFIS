@@ -36,6 +36,12 @@
             if (!updatedAt) return 'Nunca atualizado';
             const lastUpdate = new Date(updatedAt);
             const now = new Date();
+
+            // Handle future dates gracefully
+            if (lastUpdate > now) {
+                return 'Atualização agendada';
+            }
+
             const diffTime = Math.abs(now - lastUpdate);
             const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
             if (diffDays === 0) return 'Atualizado hoje';
@@ -334,14 +340,42 @@
 
             const productType = getSelectedProductType();
             const minLength = productType === 'Build' ? 8 : 10;
+
+            // Strict Validation by Product Type
+            if (productType === 'Build') {
+                if (/[^0-9]/.test(fields.ver)) {
+                    if (window.showToast) window.showToast('⚠️ Para produtos do tipo Build, use apenas números.', 'warning');
+                    sofis_isSaving = false;
+                    return;
+                }
+            } else {
+                const pacoteRegex = /^\d{4}\.\d{2}-\d{2}$/;
+                if (!pacoteRegex.test(fields.ver)) {
+                    if (window.showToast) window.showToast('⚠️ Formato de versão inválido para Pacote. Use YYYY.MM-XX.', 'warning');
+                    sofis_isSaving = false;
+                    return;
+                }
+            }
+
             if (fields.ver.length < minLength) {
                 if (window.showToast) window.showToast(`⚠️ Versão do sistema incompleta! (Mínimo ${minLength} caracteres)`, 'warning');
                 sofis_isSaving = false;
                 return;
             }
 
-            // Year Validation
+            // Date Validation (No future dates)
             if (fields.date) {
+                const selectedDate = new Date(fields.date + 'T12:00:00');
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                selectedDate.setHours(0, 0, 0, 0);
+
+                if (selectedDate > today) {
+                    if (window.showToast) window.showToast('⚠️ A data de atualização não pode ser superior à data atual.', 'warning');
+                    sofis_isSaving = false;
+                    return;
+                }
+
                 const year = parseInt(fields.date.split('-')[0]);
                 if (year < 2000 || year > 2099) {
                     if (window.showToast) window.showToast('⚠️ Ano inválido na data. Por favor verifique.', 'warning');
@@ -874,7 +908,7 @@
             }
 
             const { data } = await window.supabaseClient.from('version_history')
-                .select('*, version_controls(system, environment)')
+                .select('*, version_controls(system, environment, updated_at)')
                 .in('version_control_id', clientVCs.map(vc => vc.id))
                 .order('created_at', { ascending: false });
 
@@ -911,6 +945,9 @@
                     </div>
                     <div style="font-size:0.9rem; margin:5px 0; color:#fff; font-family:'Outfit', sans-serif;">
                         <span style="font-weight: 400;">Identificação da Versão:</span> <span style="color:var(--success); font-weight:600;">${h.new_version}</span>
+                    </div>
+                    <div style="font-size:0.9rem; color:#fff; font-family:'Outfit', sans-serif; margin-bottom:2px;">
+                        <span style="font-weight: 400;">Data da Atualização:</span> <span>${h.version_controls?.updated_at ? new Date(h.version_controls.updated_at).toLocaleDateString('pt-BR') : 'N/A'}</span>
                     </div>
                     <div style="font-size:0.9rem; color:#fff; font-family:'Outfit', sans-serif;">
                         <span style="font-weight: 400;">Responsável:</span> <span>${h.updated_by}</span>
@@ -1713,6 +1750,13 @@
         loadProducts();
         setupMaskLogic();
         setupProductFormListeners();
+
+        // Limit future dates
+        const dateInput = document.getElementById('versionDateInput');
+        if (dateInput) {
+            const today = new Date().toISOString().split('T')[0];
+            dateInput.setAttribute('max', today);
+        }
     });
 
     function setupProductFormListeners() {
@@ -1762,10 +1806,23 @@
             verInput.placeholder = 'Ex: 20250105006';
             verInput.maxLength = 15;
             verInput.title = 'Apenas números permitidos para o tipo Build';
+            // If switched and has content, keep only numbers
+            if (verInput.value) {
+                verInput.value = verInput.value.replace(/[^0-9]/g, '');
+            }
         } else {
             verInput.placeholder = 'Ex: 2025.01-01';
             verInput.maxLength = 10;
             verInput.title = 'Formato sugerido: YYYY.MM-XX';
+            // If switched and has content, re-apply mask
+            if (verInput.value) {
+                let v = verInput.value.replace(/\D/g, '');
+                if (v.length > 8) v = v.substring(0, 8);
+                let masked = v;
+                if (v.length > 4) masked = v.substring(0, 4) + '.' + v.substring(4);
+                if (v.length > 6) masked = v.substring(0, 4) + '.' + v.substring(4, 6) + '-' + v.substring(6);
+                verInput.value = masked;
+            }
         }
     }
 

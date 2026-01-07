@@ -3,6 +3,34 @@
 
 window.SOFIS_CHANGELOG = [
     {
+        version: '1.9.86',
+        date: '2026-01-06',
+        title: 'Melhoria Visual em Permissões',
+        changes: [
+            { type: 'style', text: 'Adicionado espaçamento estratégico entre os blocos de módulos na tabela de permissões para melhor legibilidade.' }
+        ]
+    },
+    {
+        version: '1.9.85',
+        date: '2026-01-06',
+        title: 'Padronização de Nomenclatura',
+        changes: [
+            { type: 'style', text: 'Ajuste terminológico: Substituição de "Instância do SQL Server" por "Nome do servidor" em todo o sistema.' },
+            { type: 'fix', text: 'Atualização de labels e mensagens de validação para manter a consistência visual.' }
+        ]
+    },
+    {
+        version: '1.9.84',
+        date: '2026-01-06',
+        title: 'Integridade de Dados e Validação de Versão',
+        changes: [
+            { type: 'fix', text: 'Bloqueio de lançamentos com data futura e correção do cálculo de tempo ("há X dias").' },
+            { type: 'feat', text: 'Inclusão da "Data da Atualização" no histórico de versões, facilitando a auditoria.' },
+            { type: 'fix', text: 'Reforço na máscara e validação: Agora o sistema impede salvar versões em formatos incorretos (ex: Build com pontos/traços).' },
+            { type: 'feat', text: 'Sincronização automática da máscara do campo Versão ao alterar o tipo de produto no formulário.' }
+        ]
+    },
+    {
         version: '1.9.83',
         date: '2026-01-06',
         title: 'Correção de Sobreposição de Interface',

@@ -2507,7 +2507,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                     <div class="server-info">
                         <div class="server-credentials-title">
-                            <i class="fa-solid fa-database" style="color: var(--accent);"></i> Instância do SQL Server
+                            <i class="fa-solid fa-database" style="color: var(--accent);"></i> Nome do servidor
                         </div>
                         <div class="server-info-value">${escapeHtml(server.sqlServer)}</div>
                     </div>
@@ -2579,7 +2579,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
         if (!sqlServerInput.value.trim()) {
-            showToast('⚠️ A instância do SQL Server é obrigatória.', 'error');
+            showToast('⚠️ O nome do servidor é obrigatório.', 'error');
             sqlServerInput.focus();
             return;
         }

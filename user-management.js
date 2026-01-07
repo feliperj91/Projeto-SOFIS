@@ -513,7 +513,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!permissionsTableBody) return;
         permissionsTableBody.innerHTML = '';
 
-        permissionSchema.forEach(guide => {
+        permissionSchema.forEach((guide, gIdx) => {
             // Guide Row Removed as per user request
             // We just render the items directly now
             guide.items.forEach(item => {
@@ -522,6 +522,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const p = permData.find(x => x.module === mod) || {
                     can_view: false, can_create: false, can_edit: false, can_delete: false
                 };
+
+                // Add spacer before new headers (except the first one)
+                if (item.isHeader && gIdx > 0) {
+                    const spacer = document.createElement('tr');
+                    spacer.innerHTML = '<td colspan="6" style="height: 35px; border: none; background: transparent;"></td>';
+                    permissionsTableBody.appendChild(spacer);
+                }
 
                 const roleClass = `badge-${role.toLowerCase()}`;
                 const indentClass = item.isHeader ? 'permission-header-item' : 'permission-sub-item';
