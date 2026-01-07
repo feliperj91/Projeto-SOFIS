@@ -3,6 +3,15 @@
 
 window.SOFIS_CHANGELOG = [
     {
+        version: '1.9.83',
+        date: '2026-01-06',
+        title: 'Correção de Sobreposição de Interface',
+        changes: [
+            { type: 'fix', text: 'Ajuste de z-index: Notificações (Toasts) e Alertas de Confirmação agora aparecem corretamente à frente do gerenciamento de produtos.' },
+            { type: 'fix', text: 'Correção na hierarquia visual dos modais para evitar que mensagens de sucesso fiquem ocultas.' }
+        ]
+    },
+    {
         version: '1.9.82',
         date: '2026-01-06',
         title: 'Ajustes de Identificação e Localização',

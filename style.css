@@ -1331,7 +1331,7 @@ button {
     -webkit-backdrop-filter: blur(8px);
     transition: all 0.3s;
     font-weight: 600;
-    z-index: 2000;
+    z-index: 30000;
 }
 
 .toast-success {
