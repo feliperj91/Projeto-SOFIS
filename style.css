@@ -2521,6 +2521,12 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
     border: 1px solid rgba(155, 89, 182, 0.3);
 }
 
+.change-badge.imp {
+    background: rgba(255, 160, 0, 0.15);
+    color: var(--accent);
+    border: 1px solid rgba(255, 160, 0, 0.3);
+}
+
 /* Clickable Build Number */
 #appBuildNumber {
     cursor: pointer;

@@ -837,84 +837,142 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Print Handler
+    // Print Handler with Fetch All Logic
     if (btnPrintLogs) {
-        btnPrintLogs.addEventListener('click', () => {
-            if (!currentAuditLogs || currentAuditLogs.length === 0) return;
+        btnPrintLogs.addEventListener('click', async () => {
+            // Re-fetch ALL logs matching current filters (without pagination)
+            // We use the input values directly as they represent what the user presumably wants to print based on what they see or filtered last.
+            // Ideally we should use the values from the *last search*, but using current input is standard behavior for "Print what I configured".
 
-            const printWindow = window.open('', '_blank');
-            const opTypeMap = {
-                'security': 'SEGURANÇA',
-                'criação': 'CRIAÇÃO',
-                'criacao': 'CRIAÇÃO',
-                'edição': 'EDIÇÃO',
-                'edicao': 'EDIÇÃO',
-                'exclusão': 'EXCLUSÃO',
-                'exclusao': 'EXCLUSÃO',
-                'geral': 'GERAL'
-            };
+            const startDate = logStartDate ? logStartDate.value : null;
+            const endDate = logEndDate ? logEndDate.value : null;
 
-            const rows = currentAuditLogs.map(log => {
-                const d = new Date(log.created_at);
-                const dateStr = d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR');
-                const opTypeRaw = (log.operation_type || 'geral').toLowerCase();
-                const typeLabel = opTypeMap[opTypeRaw] || opTypeRaw.toUpperCase();
+            if (!startDate || !endDate) {
+                window.showToast('Por favor, informe o período para gerar o relatório.', 'warning');
+                return;
+            }
 
-                return `
-                    <tr>
-                        <td>${dateStr}</td>
-                        <td>${log.username || '-'}</td>
-                        <td>${log.action || '-'}</td>
-                        <td>${log.details || '-'}</td>
-                        <td>${typeLabel}</td>
-                    </tr>
+            // Show loading toast because this might take a moment
+            window.showToast('Gerando relatório...', 'info');
+
+            try {
+                let query = window.supabaseClient
+                    .from('audit_logs')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                // Apply Filters (Same as loadAuditLogs but NO pagination)
+                const startISO = new Date(startDate + 'T00:00:00').toISOString();
+                const endISO = new Date(endDate + 'T23:59:59.999').toISOString();
+                query = query.gte('created_at', startISO).lte('created_at', endISO);
+
+                if (logSearchInput && logSearchInput.value.trim()) {
+                    const term = logSearchInput.value.trim();
+                    query = query.or(`username.ilike.%${term}%,details.ilike.%${term}%`);
+                }
+
+                if (logTypeSelect && logTypeSelect.value) {
+                    let typeVal = logTypeSelect.value;
+                    if (typeVal === 'CRIACAO') query = query.ilike('operation_type', '%CRIA%');
+                    else if (typeVal === 'EDICAO') query = query.ilike('operation_type', '%EDI%');
+                    else if (typeVal === 'EXCLUSAO') query = query.ilike('operation_type', '%EXCLU%');
+                    else if (typeVal === 'SECURITY') query = query.eq('operation_type', 'SECURITY');
+                }
+
+                // Execute Query
+                const { data: allLogs, error } = await query;
+
+                if (error) throw error;
+
+                if (!allLogs || allLogs.length === 0) {
+                    window.showToast('Nenhum log encontrado para impressão.', 'warning');
+                    return;
+                }
+
+                // Proceed to Print
+                const printWindow = window.open('', '_blank');
+                const opTypeMap = {
+                    'security': 'SEGURANÇA',
+                    'criação': 'CRIAÇÃO',
+                    'criacao': 'CRIAÇÃO',
+                    'edição': 'EDIÇÃO',
+                    'edicao': 'EDIÇÃO',
+                    'exclusão': 'EXCLUSÃO',
+                    'exclusao': 'EXCLUSÃO',
+                    'geral': 'GERAL'
+                };
+
+                const rows = allLogs.map(log => {
+                    const d = new Date(log.created_at);
+                    const dateStr = d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR');
+                    const opTypeRaw = (log.operation_type || 'geral').toLowerCase();
+                    const typeLabel = opTypeMap[opTypeRaw] || opTypeRaw.toUpperCase();
+
+                    return `
+                        <tr>
+                            <td>${dateStr}</td>
+                            <td>${log.username || '-'}</td>
+                            <td>${log.action || '-'}</td>
+                            <td>${log.details || '-'}</td>
+                            <td>${typeLabel}</td>
+                        </tr>
+                    `;
+                }).join('');
+
+                const content = `
+                    <html>
+                    <head>
+                        <title>Relatório de Auditoria - Sofis</title>
+                        <style>
+                            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; color: #333; }
+                            h1 { color: #2c3e50; text-align: center; margin-bottom: 5px; }
+                            .meta { text-align: center; color: #7f8c8d; margin-bottom: 30px; font-size: 0.9rem; }
+                            table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.85rem; }
+                            th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+                            th { background-color: #f2f2f2; color: #2c3e50; font-weight: 600; }
+                            tr:nth-child(even) { background-color: #f9f9f9; }
+                            .footer { text-align: center; font-size: 0.8rem; color: #95a5a6; margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px; }
+                            @media print {
+                                button { display: none; }
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <h1>Relatório de Logs de Auditoria</h1>
+                        <div class="meta">
+                            Gerado em: ${new Date().toLocaleString('pt-BR')} <br>
+                            Sistema SOFIS - Controle de Versões <br>
+                            Período: ${new Date(startDate).toLocaleDateString()} a ${new Date(endDate).toLocaleDateString()}
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Usuário</th>
+                                    <th>Ação</th>
+                                    <th>Detalhes</th>
+                                    <th>Tipo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${rows}
+                            </tbody>
+                        </table>
+                        <div class="footer">Este documento é confidencial e para uso interno. Registros totais: ${allLogs.length}</div>
+                        <script>
+                            window.onload = function() { window.print(); }
+                        </script>
+                    </body>
+                    </html>
                 `;
-            }).join('');
 
-            const content = `
-                <html>
-                <head>
-                    <title>Relatório de Auditoria - Sofis</title>
-                    <style>
-                        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; color: #333; }
-                        h1 { color: #2c3e50; text-align: center; margin-bottom: 10px; }
-                        .meta { text-align: center; color: #7f8c8d; margin-bottom: 30px; font-size: 0.9rem; }
-                        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.85rem; }
-                        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-                        th { background-color: #f2f2f2; color: #2c3e50; font-weight: 600; }
-                        tr:nth-child(even) { background-color: #f9f9f9; }
-                        .footer { text-align: center; font-size: 0.8rem; color: #95a5a6; margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px; }
-                    </style>
-                </head>
-                <body>
-                    <h1>Relatório de Logs de Auditoria</h1>
-                    <div class="meta">
-                        Gerado em: ${new Date().toLocaleString('pt-BR')} <br>
-                        Sistema SOFIS - Controle de Versões
-                    </div>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Data</th>
-                                <th>Usuário</th>
-                                <th>Ação</th>
-                                <th>Detalhes</th>
-                                <th>Tipo</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${rows}
-                        </tbody>
-                    </table>
-                    <div class="footer">Este documento é confidencial e para uso interno.</div>
-                    <script>
-                        window.onload = function() { window.print(); }
-                    </script>
-                </body>
-                </html>
-            `;
+                printWindow.document.write(content);
+                printWindow.document.close();
 
-            printWindow.document.write(content);
-            printWindow.document.close();
+            } catch (err) {
+                console.error('Erro ao gerar relatório:', err);
+                window.showToast('Erro ao gerar relatório de impressão.', 'danger');
+            }
         });
     }
 

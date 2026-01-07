@@ -3,6 +3,16 @@
 
 window.SOFIS_CHANGELOG = [
     {
+        version: '1.9.93',
+        date: '2026-01-06',
+        title: 'Relatórios Completos de Auditoria',
+        changes: [
+            { type: 'feat', text: 'Melhoria na geração de relatórios de logs: agora o sistema busca e imprime TODOS os registros do período filtrado, não apenas a página atual.' },
+            { type: 'style', text: 'Correção de estilo: Adicionado visual (Badge Laranja) para itens do tipo "MELHORIA" no histórico.' },
+            { type: 'feat', text: 'Funcionalidade de impressão de relatório de logs adicionada.' }
+        ]
+    },
+    {
         version: '1.9.92',
         date: '2026-01-06',
         title: 'Refinamento de Texto',
