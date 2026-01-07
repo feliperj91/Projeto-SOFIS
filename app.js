@@ -1504,7 +1504,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (client.contacts?.length > 0) {
                 const encryptedContacts = await Promise.all(client.contacts.map(async c => ({
                     client_id: clientId,
-                    client_name: client.name,
                     name: c.name,
                     phones: await Promise.all((c.phones || []).map(async p => await Security.encrypt(p))),
                     emails: await Promise.all((c.emails || []).map(async e => await Security.encrypt(e)))
@@ -1516,7 +1515,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (client.servers?.length > 0) {
                 const encryptedServers = await Promise.all(client.servers.map(async s => ({
                     client_id: clientId,
-                    client_name: client.name,
                     environment: s.environment,
                     sql_server: s.sqlServer,
                     notes: s.notes || '',
@@ -1532,7 +1530,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (client.vpns?.length > 0) {
                 const encryptedVpns = await Promise.all(client.vpns.map(async v => ({
                     client_id: clientId,
-                    client_name: client.name,
                     username: v.user,
                     password: await Security.encrypt(v.password),
                     notes: v.notes || ''
@@ -1544,7 +1541,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (client.urls?.length > 0) {
                 await window.supabaseClient.from('urls').insert(client.urls.map(u => ({
                     client_id: clientId,
-                    client_name: client.name,
                     environment: u.environment,
                     system: u.system,
                     bridge_data_access: u.bridgeDataAccess,
@@ -1824,6 +1820,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         let details = `Cliente: ${newClient.name}`;
         if (addedContactNames) details += `, Contato: ${addedContactNames}`;
 
+        // Log específico para adição de contato
+        if (mode === 'addContact' && addedContactNames) {
+            await registerAuditLog('CRIAÇÃO', 'Adição de Contato', details, null, { contactNames: addedContactNames, clientName: newClient.name });
+        }
+
         // Detect edited contacts if in Edit mode (not Add Contact mode)
         if (editingId && mode !== 'addContact' && clientBefore && clientBefore.contacts) {
             const changedContacts = [];
@@ -1845,7 +1846,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (changedContacts.length > 0) {
                 // Avoid duplicating if already added via addedContactNames (unlikely overlap but safe)
                 const unique = [...new Set(changedContacts)].filter(name => !addedContactNames.includes(name));
-                if (unique.length > 0) details += `, Contato: ${unique.join(', ')}`;
+                if (unique.length > 0) {
+                    details += `, Contato: ${unique.join(', ')}`;
+                    // Log específico para edição de contato
+                    await registerAuditLog('EDIÇÃO', 'Edição de Contato', `Cliente: ${newClient.name}, Contato: ${unique.join(', ')}`, clientBefore.contacts, clientAfter.contacts);
+                }
             }
         }
 
@@ -2170,6 +2175,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (!error) {
                     window.userFavorites.delete(id);
                     client.isFavorite = false;
+                    await registerAuditLog('EDIÇÃO', 'Remoção de Favorito', `Cliente: ${client.name}`, { isFavorite: true }, { isFavorite: false });
                 }
             } else {
                 // Add
@@ -2180,6 +2186,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (!error) {
                     window.userFavorites.add(id);
                     client.isFavorite = true;
+                    await registerAuditLog('EDIÇÃO', 'Adição de Favorito', `Cliente: ${client.name}`, { isFavorite: false }, { isFavorite: true });
                 }
             }
             applyClientFilter();

@@ -1714,6 +1714,9 @@
             const { error } = await window.supabaseClient.from('products').delete().eq('id', id);
             if (error) throw error;
             if (window.showToast) window.showToast('Produto excluído com sucesso!', 'success');
+            if (window.registerAuditLog) {
+                await window.registerAuditLog('EXCLUSÃO', 'Exclusão de Produto', `Produto: ${p.name}`, p, null);
+            }
             await loadProducts();
         } catch (err) {
             console.error('❌ deleteProduct error:', err);
@@ -1742,11 +1745,18 @@
 
         try {
             if (id) {
+                const oldProduct = productsList.find(p => p.id === id);
                 const { error } = await window.supabaseClient.from('products').update({ name, version_type }).eq('id', id);
                 if (error) throw error;
+                if (window.registerAuditLog) {
+                    await window.registerAuditLog('EDIÇÃO', 'Edição de Produto', `Produto: ${name}`, oldProduct, { name, version_type });
+                }
             } else {
                 const { error } = await window.supabaseClient.from('products').insert([{ name, version_type }]);
                 if (error) throw error;
+                if (window.registerAuditLog) {
+                    await window.registerAuditLog('CRIAÇÃO', 'Criação de Produto', `Produto: ${name}`, null, { name, version_type });
+                }
             }
 
             if (window.showToast) window.showToast('Produto salvo com sucesso!', 'success');
