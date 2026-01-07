@@ -1589,30 +1589,43 @@
 
         const canEdit = window.Permissions?.can('Controle de Versões - Produtos', 'can_edit');
         const canDelete = window.Permissions?.can('Controle de Versões - Produtos', 'can_delete');
+        const hasActions = canEdit || canDelete;
+
+        // Sync header visibility
+        const actionsHeader = document.getElementById('productActionsHeader');
+        if (actionsHeader) actionsHeader.style.display = hasActions ? '' : 'none';
 
         if (productsList.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-secondary); padding: 20px;">Nenhum produto cadastrado.</td></tr>';
+            tbody.innerHTML = `<tr><td colspan="${hasActions ? 3 : 2}" style="text-align: center; color: var(--text-secondary); padding: 20px;">Nenhum produto cadastrado.</td></tr>`;
             return;
         }
 
         productsList.forEach(p => {
             const tr = document.createElement('tr');
             const typeClass = p.version_type === 'Pacote' ? 'badge-type-pacote' : 'badge-type-build';
+
+            let actionsHtml = '';
+            if (hasActions) {
+                actionsHtml = `
+                    <td class="action-cell">
+                        ${canEdit ? `
+                            <button class="btn-icon" onclick="window.editProduct('${p.id}')" title="Editar">
+                                <i class="fa-solid fa-pencil"></i>
+                            </button>
+                        ` : ''}
+                        ${canDelete ? `
+                            <button class="btn-icon btn-danger" onclick="window.deleteProduct('${p.id}')" title="Excluir">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        ` : ''}
+                    </td>
+                `;
+            }
+
             tr.innerHTML = `
                 <td>${utils.escapeHtml(p.name)}</td>
                 <td><span class="badge-product-type ${typeClass}">${p.version_type}</span></td>
-                <td class="action-cell">
-                    ${canEdit ? `
-                        <button class="btn-icon" onclick="window.editProduct('${p.id}')" title="Editar">
-                            <i class="fa-solid fa-pencil"></i>
-                        </button>
-                    ` : ''}
-                    ${canDelete ? `
-                        <button class="btn-icon btn-danger" onclick="window.deleteProduct('${p.id}')" title="Excluir">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    ` : ''}
-                </td>
+                ${actionsHtml}
             `;
             tbody.appendChild(tr);
         });

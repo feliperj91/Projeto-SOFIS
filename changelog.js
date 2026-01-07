@@ -3,6 +3,22 @@
 
 window.SOFIS_CHANGELOG = [
     {
+        version: '1.9.88',
+        date: '2026-01-06',
+        title: 'Ajuste de Layout em Produtos',
+        changes: [
+            { type: 'fix', text: 'Correção na tabela de produtos para usuários sem permissão de edição: ocultação automática da coluna de ações para evitar falhas visuais.' }
+        ]
+    },
+    {
+        version: '1.9.87',
+        date: '2026-01-06',
+        title: 'Correção de Sincronização de Banco',
+        changes: [
+            { type: 'fix', text: 'Correção de política de segurança (RLS) na tabela de produtos que impedia a visualização em navegadores específicos ou sessões anônimas.' }
+        ]
+    },
+    {
         version: '1.9.86',
         date: '2026-01-06',
         title: 'Melhoria Visual em Permissões',
