@@ -168,6 +168,9 @@
                     <button class="mng-tab-btn" data-mng-tab="permissions">
                         <i class="fa-solid fa-shield-halved"></i><span>Permissões</span>
                     </button>
+                    <button class="mng-tab-btn" data-mng-tab="logs">
+                        <i class="fa-solid fa-clock-rotate-left"></i><span>Logs</span>
+                    </button>
                 </div>
 
                 <!-- 1. Search (Moved to Middle) -->
@@ -230,6 +233,32 @@
                             -->
                         </tbody>
                     </table>
+                </div>
+
+                <!-- Logs Table -->
+                <div id="logs-container" class="hidden">
+                    <div class="table-responsive">
+                        <table class="logs-table">
+                            <thead>
+                                <tr>
+                                    <th>DATA</th>
+                                    <th>USUÁRIO</th>
+                                    <th>AÇÃO</th>
+                                    <th>DETALHES</th>
+                                    <th>TIPO</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logsTableBody">
+                                <!-- Logs will be rendered here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="logs-pagination-controls"
+                        style="display: flex; justify-content: center; gap: 10px; margin-top: 15px;">
+                        <button id="prevLogsBtn" class="btn-secondary" disabled>Anterior</button>
+                        <span id="logsPageInfo" style="align-self: center;">Página 1</span>
+                        <button id="nextLogsBtn" class="btn-secondary">Próximo</button>
+                    </div>
                 </div>
             </div>
         </main>

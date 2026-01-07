@@ -20,6 +20,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentMngTab = 'users';
     let currentSelectedRole = 'ADMINISTRADOR';
     let editingUserId = null;
+    let logsPage = 1;
+    const logsPerPage = 10;
 
     const permissionSchema = [
         {
@@ -50,7 +52,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             items: [
                 { module: 'Gestão de Usuários', isHeader: true },
                 { module: 'Gestão de Usuários - Usuários', label: 'Usuários' },
-                { module: 'Gestão de Usuários - Permissões', label: 'Permissões' }
+                { module: 'Gestão de Usuários - Permissões', label: 'Permissões' },
+                { module: 'Gestão de Usuários - Logs', label: 'Logs e Auditoria' }
             ]
         }
     ];
@@ -98,69 +101,74 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Check sub-tab visibility
         const canViewUsers = window.Permissions.can('Gestão de Usuários - Usuários', 'can_view');
         const canViewPerms = window.Permissions.can('Gestão de Usuários - Permissões', 'can_view');
+        const canViewLogs = window.Permissions.can('Gestão de Usuários - Logs', 'can_view');
 
         const tabUsers = document.querySelector('[data-mng-tab="users"]');
         const tabPerms = document.querySelector('[data-mng-tab="permissions"]');
+        const tabLogs = document.querySelector('[data-mng-tab="logs"]');
 
         if (tabUsers) {
             tabUsers.style.display = canViewUsers ? '' : 'none';
             if (!canViewUsers && currentMngTab === 'users') {
-                // If cannot view users, switch to permissions if allowed, or hide container
+                // If cannot view users, switch to permissions if allowed, or logs
                 if (canViewPerms) tabPerms.click();
+                else if (canViewLogs) tabLogs?.click();
                 else usersContainer.classList.add('hidden');
             }
         }
 
-        if (tabPerms) {
-            tabPerms.style.display = canViewPerms ? '' : 'none';
-        }
+        if (tabPerms) tabPerms.style.display = canViewPerms ? '' : 'none';
+        if (tabLogs) tabLogs.style.display = canViewLogs ? '' : 'none';
 
-        if (canViewUsers) await loadUsers();
-        if (canViewPerms) await loadPermissions('ADMINISTRADOR');
+        if (canViewUsers && currentMngTab === 'users') await loadUsers();
+        if (canViewPerms && currentMngTab === 'permissions') await loadPermissions(currentSelectedRole);
+        if (canViewLogs && currentMngTab === 'logs') await loadAuditLogs();
     }
 
     // --- Tab Logic ---
     mngSubTabBtns.forEach(btn => {
-        btn.addEventListener('click', (e) => {
+        btn.addEventListener('click', async (e) => {
             currentMngTab = btn.dataset.mngTab;
 
             // Switch Tab Buttons
             mngSubTabBtns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
 
+            // Hide all containers specific to Management
+            if (usersContainer) usersContainer.classList.add('hidden');
+            if (permissionsContainer) permissionsContainer.classList.add('hidden');
+            if (logsContainer) logsContainer.classList.add('hidden');
+
+            // Reset Common Controls
+            if (savePermissionsBtn) savePermissionsBtn.classList.add('hidden');
+            if (roleSelector) roleSelector.classList.add('hidden');
+            if (userSearchInput && userSearchInput.parentElement) userSearchInput.parentElement.classList.add('hidden');
+
             if (currentMngTab === 'users') {
-                usersContainer.classList.remove('hidden');
-                permissionsContainer.classList.add('hidden');
+                if (usersContainer) usersContainer.classList.remove('hidden');
 
-                // HIDE Save button on Users tab
-                if (savePermissionsBtn) savePermissionsBtn.classList.add('hidden');
-
-                // HIDE Role Selector on Users tab
                 if (roleSelector) roleSelector.classList.add('hidden');
-
-                // SHOW Search on Users tab
                 if (userSearchInput) userSearchInput.parentElement.classList.remove('hidden');
 
-                // Remove filter, show all users
                 renderUsers(usersList);
 
-            } else {
-                usersContainer.classList.add('hidden');
-                permissionsContainer.classList.remove('hidden');
+            } else if (currentMngTab === 'permissions') {
+                if (permissionsContainer) permissionsContainer.classList.remove('hidden');
 
-                // SHOW Save button on Permissions tab (disabled initially)
                 if (savePermissionsBtn) {
                     savePermissionsBtn.classList.remove('hidden');
                     savePermissionsBtn.disabled = true;
                 }
-
-                // SHOW Role Selector on Permissions tab
                 if (roleSelector) roleSelector.classList.remove('hidden');
 
-                // HIDE Search on Permissions tab
-                if (userSearchInput) userSearchInput.parentElement.classList.add('hidden');
+                await loadPermissions(currentSelectedRole);
 
-                loadPermissions(currentSelectedRole);
+            } else if (currentMngTab === 'logs') {
+                if (logsContainer) logsContainer.classList.remove('hidden');
+
+                // Maybe reuse search for logs in future?
+                // For now, no search per spec, just list
+                await loadAuditLogs(1);
             }
         });
     });
@@ -609,6 +617,101 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.showToast('Erro ao salvar permissões.', 'danger');
         }
     });
+
+    // --- Audit Logs Logic ---
+    const logsContainer = document.getElementById('logs-container');
+    const logsTableBody = document.getElementById('logsTableBody');
+    const prevLogsBtn = document.getElementById('prevLogsBtn');
+    const nextLogsBtn = document.getElementById('nextLogsBtn');
+    const logsPageInfo = document.getElementById('logsPageInfo');
+
+    async function loadAuditLogs(page = 1) {
+        if (!window.supabaseClient) return;
+        logsPage = page;
+
+        // Show loading state?
+        if (logsTableBody) {
+            logsTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Carregando logs...</td></tr>';
+        }
+
+        const from = (page - 1) * logsPerPage;
+        const to = from + logsPerPage - 1;
+
+        try {
+            const { data, error, count } = await window.supabaseClient
+                .from('audit_logs')
+                .select('*', { count: 'exact' })
+                .order('created_at', { ascending: false })
+                .range(from, to);
+
+            if (error) throw error;
+
+            renderAuditLogs(data || []);
+            updatePaginationControls(count);
+        } catch (err) {
+            console.error('Erro ao carregar logs:', err.message);
+            if (logsTableBody) {
+                logsTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--danger);">Erro ao carregar logs.</td></tr>';
+            }
+        }
+    }
+
+    function renderAuditLogs(logs) {
+        if (!logsTableBody) return;
+        logsTableBody.innerHTML = '';
+
+        if (logs.length === 0) {
+            logsTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Nenhum log encontrado.</td></tr>';
+            return;
+        }
+
+        logs.forEach(log => {
+            const tr = document.createElement('tr');
+
+            // Format Date
+            const d = new Date(log.created_at);
+            const dateStr = d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR');
+
+            // Format Type Badge
+            let typeClass = '';
+            let typeLabel = log.operation_type || 'Geral';
+            if (typeLabel.toUpperCase() === 'SECURITY') typeClass = 'type-security';
+            else if (typeLabel.toUpperCase().includes('CRIAR') || typeLabel.toUpperCase().includes('ADICIONAR')) typeClass = 'type-create';
+            else if (typeLabel.toUpperCase().includes('EDITAR') || typeLabel.toUpperCase().includes('ALTERAR')) typeClass = 'type-edit';
+
+            const badgeHtml = `<span class="log-type-badge ${typeClass}">${typeLabel}</span>`;
+
+            tr.innerHTML = `
+                <td><span class="log-date">${dateStr}</span></td>
+                <td><span class="log-user">@${log.username}</span></td>
+                <td><span class="log-action">${log.action}</span></td>
+                <td><div class="log-details" title="${log.details || ''}">${log.details || '-'}</div></td>
+                <td>${badgeHtml}</td>
+            `;
+            logsTableBody.appendChild(tr);
+        });
+    }
+
+    function updatePaginationControls(totalCount) {
+        const totalPages = Math.ceil(totalCount / logsPerPage);
+        if (logsPageInfo) logsPageInfo.innerText = `Página ${logsPage} de ${totalPages || 1}`;
+
+        if (prevLogsBtn) prevLogsBtn.disabled = logsPage <= 1;
+        if (nextLogsBtn) nextLogsBtn.disabled = logsPage >= totalPages;
+    }
+
+    if (prevLogsBtn) {
+        prevLogsBtn.addEventListener('click', () => {
+            if (logsPage > 1) loadAuditLogs(logsPage - 1);
+        });
+    }
+
+    if (nextLogsBtn) {
+        nextLogsBtn.addEventListener('click', () => {
+            // We rely on the disabled state, but double check is fine
+            loadAuditLogs(logsPage + 1);
+        });
+    }
 
     // Make init global if needed for tab switching
     window.loadManagementTab = initUserManagement;
