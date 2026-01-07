@@ -3,6 +3,14 @@
 
 window.SOFIS_CHANGELOG = [
     {
+        version: '1.9.89',
+        date: '2026-01-06',
+        title: 'Expansão de Criptografia',
+        changes: [
+            { type: 'feat', text: 'Implementada criptografia para e-mails e telefones de contatos, e nomes de usuários em credenciais de servidores para maior segurança (LGPD/PII).' }
+        ]
+    },
+    {
         version: '1.9.88',
         date: '2026-01-06',
         title: 'Ajuste de Layout em Produtos',

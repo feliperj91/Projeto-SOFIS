@@ -217,7 +217,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const mask = (item) => {
                     if (item.password) item.password = '********';
                     if (item.credentials && Array.isArray(item.credentials)) {
-                        item.credentials.forEach(c => { if (c.password) c.password = '********'; });
+                        item.credentials.forEach(c => {
+                            if (c.password) c.password = '********';
+                            if (c.user) c.user = '********';
+                        });
+                    }
+                    if (item.phones && Array.isArray(item.phones)) {
+                        item.phones = item.phones.map(() => '********');
+                    }
+                    if (item.emails && Array.isArray(item.emails)) {
+                        item.emails = item.emails.map(() => '********');
                     }
                 };
 
@@ -561,17 +570,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                         isFavorite: c.is_favorite,
                         notes: c.notes,
                         webLaudo: c.web_laudo,
-                        contacts: (c.contacts || []).map(con => ({
+                        contacts: await Promise.all((c.contacts || []).map(async con => ({
                             name: con.name,
-                            phones: con.phones,
-                            emails: con.emails
-                        })),
+                            phones: await Promise.all((con.phones || []).map(async p => await Security.decrypt(p))),
+                            emails: await Promise.all((con.emails || []).map(async e => await Security.decrypt(e)))
+                        }))),
                         servers: await Promise.all((c.servers || []).map(async s => ({
                             environment: s.environment,
                             sqlServer: s.sql_server,
                             notes: s.notes,
                             credentials: await Promise.all((s.credentials || []).map(async cred => ({
-                                user: cred.user,
+                                user: await Security.decrypt(cred.user),
                                 password: await Security.decrypt(cred.password)
                             })))
                         }))),
@@ -1493,13 +1502,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Sync related tables - Delete and Re-insert for simplicity
             await window.supabaseClient.from('contacts').delete().eq('client_id', clientId);
             if (client.contacts?.length > 0) {
-                await window.supabaseClient.from('contacts').insert(client.contacts.map(c => ({
+                const encryptedContacts = await Promise.all(client.contacts.map(async c => ({
                     client_id: clientId,
                     client_name: client.name,
                     name: c.name,
-                    phones: c.phones || [],
-                    emails: c.emails || []
+                    phones: await Promise.all((c.phones || []).map(async p => await Security.encrypt(p))),
+                    emails: await Promise.all((c.emails || []).map(async e => await Security.encrypt(e)))
                 })));
+                await window.supabaseClient.from('contacts').insert(encryptedContacts);
             }
 
             await window.supabaseClient.from('servers').delete().eq('client_id', clientId);
@@ -1511,7 +1521,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     sql_server: s.sqlServer,
                     notes: s.notes || '',
                     credentials: await Promise.all((s.credentials || []).map(async cred => ({
-                        user: cred.user,
+                        user: await Security.encrypt(cred.user),
                         password: await Security.encrypt(cred.password)
                     })))
                 })));
