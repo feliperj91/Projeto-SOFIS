@@ -111,7 +111,7 @@
 }
 
 /* Specific override for userSearchInput to ensure proper styling */
-#userSearchInput {
+/* #userSearchInput {
     width: 100% !important;
     padding: 14px 45px 14px 45px !important;
     background: var(--card-bg) !important;
@@ -134,7 +134,7 @@
 #userSearchInput::placeholder {
     color: var(--text-secondary) !important;
     opacity: 0.6 !important;
-}
+} */
 
 .mng-search .search-icon {
     position: absolute;

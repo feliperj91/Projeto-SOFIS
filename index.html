@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 
 <head>
+    <script src="diagnose.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sofis - Gerenciamento de Clientes</title>
@@ -15,7 +16,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="build-config.js"></script>
     <script>
         // Auth Guard - Run immediately to prevent flash
         if (!localStorage.getItem('sofis_user')) {
@@ -157,10 +157,13 @@
 
         <!-- User Management Tab Content -->
         <main id="managementTab" class="tab-content">
-            <!-- Unified Management Toolbar (Two Rows) -->
-            <div class="management-toolbar">
-                <!-- 2. Tabs (Moved to First Position) -->
-                <div class="management-subtabs">
+            <!-- Toolbar Unificada: Abas - Pesquisa - Ações -->
+            <!-- Toolbar Unificada: Abas - Pesquisa - Ações -->
+            <div class="management-toolbar-container"
+                style="display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
+
+                <!-- 1. Abas (Esquerda) -->
+                <div class="management-subtabs" style="display: flex; gap: 8px;">
                     <button class="mng-tab-btn active" data-mng-tab="users">
                         <i class="fa-solid fa-users"></i><span>Usuários</span>
                     </button>
@@ -172,61 +175,68 @@
                     </button>
                 </div>
 
-                <!-- 1. Search (Moved to Middle) -->
-                <div class="mng-search" id="user-search-group" style="display: flex; align-items: center;">
-                    <input type="text" id="userSearchInput" placeholder="Pesquisar usuário..." class="log-input"
-                        style="width: 300px;">
-                    <button id="clearUserSearch" class="btn-clear hidden" title="Limpar pesquisa" tabindex="-1">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-                </div>
+                <!-- 2. Área Central (Pesquisa e Filtros) -->
+                <div class="management-center-controls" style="flex: 1; display: flex; justify-content: center;">
 
-                <!-- Row 2: Tabs + Role Selector -->
-                <div style="display: flex; gap: 12px; align-items: center;">
-                    <div class="management-subtabs">
-                        <button class="mng-tab-btn active" data-mng-tab="users">
-                            <i class="fa-solid fa-users"></i><span>Usuários</span>
-                        </button>
-                        <button class="mng-tab-btn" data-mng-tab="permissions">
-                            <i class="fa-solid fa-shield-halved"></i><span>Permissões</span>
+                    <!-- Busca de Usuários -->
+                    <div id="user-search-group" class="search-input-group"
+                        style="width: 100%; max-width: 600px; display: flex; align-items: center; background-color: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 0 12px; height: 40px;">
+                        <i class="fa-solid fa-magnifying-glass search-icon"
+                            style="color: var(--text-secondary); margin-right: 10px;"></i>
+                        <input type="text" id="userSearchInput" placeholder="Pesquisar usuário..."
+                            style="width: 100%; border: none; background: transparent; color: var(--text-primary); outline: none;">
+                        <button id="clearUserSearch" class="btn-clear hidden" title="Limpar pesquisa" tabindex="-1"
+                            style="background: transparent; border: none; color: var(--text-secondary); cursor: pointer;">
+                            <i class="fa-solid fa-xmark"></i>
                         </button>
                     </div>
 
-                <!-- NEW: Logs Controls -->
-                <div id="logs-controls" class="logs-controls-group hidden">
-                    <div class="log-filter-item">
-                        <input type="text" id="logSearchInput" placeholder="Pesquisar log..." class="log-input">
-                    </div>
-                    <div class="log-filter-item">
-                        <input type="date" id="logStartDate" class="log-input" title="Data Inicial">
-                    </div>
-                    <div class="log-filter-item">
-                        <input type="date" id="logEndDate" class="log-input" title="Data Final">
-                    </div>
-                    <div class="log-filter-item">
-                        <select id="logTypeSelect" class="log-input">
-                            <option value="">Todos os Tipos</option>
+                    <!-- Filtros de Logs (Escondido por padrão) -->
+                    <div id="logs-controls" class="logs-controls-group hidden"
+                        style="display: flex; gap: 8px; align-items: center; width: 100%; justify-content: center;">
+
+                        <!-- Barra Pesquisa Log (Estilo igual Usuários) -->
+                        <div class="search-input-group"
+                            style="flex: 1; max-width: 400px; display: flex; align-items: center; background-color: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 0 12px; height: 40px;">
+                            <i class="fa-solid fa-magnifying-glass search-icon"
+                                style="color: var(--text-secondary); margin-right: 10px;"></i>
+                            <input type="text" id="logSearchInput" placeholder="Pesquisar log..."
+                                style="width: 100%; border: none; background: transparent; color: var(--text-primary); outline: none;">
+                        </div>
+
+                        <input type="date" id="logStartDate" class="log-input" title="Data Inicial"
+                            style="width: auto; height: 40px; background-color: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); padding: 0 10px;">
+                        <span style="color: var(--text-secondary);">-</span>
+                        <input type="date" id="logEndDate" class="log-input" title="Data Final"
+                            style="width: auto; height: 40px; background-color: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); padding: 0 10px;">
+
+                        <select id="logTypeSelect" class="log-input"
+                            style="width: auto; height: 40px; background-color: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); padding: 0 10px;">
+                            <option value="">Todos</option>
                             <option value="SECURITY">Segurança</option>
                             <option value="CRIACAO">Criação</option>
                             <option value="EDICAO">Edição</option>
                             <option value="EXCLUSAO">Exclusão</option>
                         </select>
+
+                        <button id="btnSearchLogs" class="btn-primary"
+                            style="height: 40px; padding: 0 15px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fa-solid fa-filter"></i>
+                        </button>
+                        <button id="btnPrintLogs" class="btn-secondary hidden"
+                            style="height: 40px; padding: 0 15px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fa-solid fa-print"></i>
+                        </button>
                     </div>
-                    <button id="btnSearchLogs" class="btn-primary" style="padding: 8px 16px;">
-                        <i class="fa-solid fa-magnifying-glass"></i>
-                    </button>
-                    <button id="btnPrintLogs" class="btn-secondary hidden" style="padding: 8px 16px;"
-                        title="Imprimir Relatório">
-                        <i class="fa-solid fa-print"></i>
-                    </button>
                 </div>
 
-                <!-- 4. Actions -->
-                <div class="toolbar-actions">
-                    <button id="savePermissionsBtn" class="btn-flat-green hidden" disabled>
+                <!-- 3. Ações (Direita) -->
+                <div class="management-actions" style="display: flex; align-items: center; gap: 10px;">
+                    <button id="savePermissionsBtn" class="btn-flat-green hidden" disabled
+                        style="height: 40px; padding: 0 20px;">
                         <i class="fa-regular fa-floppy-disk"></i> SALVAR
                     </button>
-                    <button id="addNewUserBtn" class="btn-primary">
+                    <button id="addNewUserBtn" class="btn-primary" style="height: 40px;">
                         <i class="fa-solid fa-plus"></i> NOVO USUÁRIO
                     </button>
                 </div>
@@ -1300,9 +1310,9 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="build-config.js?v=2.0"></script>
-    <script src="supabase-client.js?v=3.9"></script>
-    <script src="changelog.js?v=1.0"></script>
+    <script src="build-config.js?v=FORCED_REFRESH_2"></script>
+    <script src="supabase-client.js?v=FORCED_REFRESH_2"></script>
+    <script src="changelog.js?v=FORCED_REFRESH_2"></script>
     <script>
         // Init Changelog & Build Number
         document.addEventListener('DOMContentLoaded', () => {
@@ -1375,10 +1385,10 @@
             body.innerHTML = `<div class="changelog-timeline">${html}</div>`;
         }
     </script>
-    <script src="security.js?v=1.0"></script>
-    <script src="app.js?v=4.2"></script>
-    <script src="version-control.js?v=10.6"></script>
-    <script src="user-management.js?v=1.2"></script>
+    <script src="security.js?v=FORCED_REFRESH_2"></script>
+    <script src="app.js?v=FORCED_REFRESH_2"></script>
+    <script src="version-control.js?v=FORCED_REFRESH_2"></script>
+    <script src="user-management.js?v=FORCED_REFRESH_2"></script>
 </body>
 
 </html>
