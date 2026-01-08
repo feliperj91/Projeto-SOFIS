@@ -1110,59 +1110,86 @@
                 <style>
                     ${styles}
                     
-                    /* Estilos específicos para impressão */
+                    /* OVERRIDE DEFINITIVO PARA IMPRESSÃO */
+                    html, body {
+                        height: auto !important;
+                        overflow: visible !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        background: white !important;
+                    }
+
                     body {
-                        margin: 0;
-                        padding: 20px;
-                        background: white;
-                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                        padding: 20px !important;
                     }
                     
-                    .btn-icon-large {
-                        display: none !important;
-                    }
-                    
-                    .live-indicator {
-                        display: none !important;
-                    }
-                    
+                    /* Neutralizar layout Flexbox/App */
                     .dashboard-container {
-                        max-width: 100% !important;
+                        position: static !important;
+                        display: block !important; /* Importante: remove flexbox */
+                        width: 100% !important;
+                        max-width: none !important;
+                        height: auto !important;
+                        max-height: none !important;
+                        overflow: visible !important;
                         box-shadow: none !important;
                         background: white !important;
-                        height: auto !important;
-                        overflow: visible !important;
+                        border: none !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        transform: none !important;
                     }
                     
+                    /* Permitir que o grid se expanda */
                     .dashboard-grid {
+                        display: block !important; /* Converte grid em blocos para impressão segura */
                         height: auto !important;
                         overflow: visible !important;
+                        padding: 0 !important;
+                        margin-top: 20px !important;
+                        background: white !important;
+                    }
+
+                    /* Header simplificado */
+                    .dashboard-header {
+                        display: flex !important;
+                        justify-content: space-between !important;
+                        align-items: center !important;
+                        padding-bottom: 20px !important;
+                        border-bottom: 2px solid #eee !important;
+                        margin-bottom: 20px !important;
+                    }
+
+                    /* Esconder elementos de interface */
+                    .btn-icon-large,
+                    .live-indicator,
+                    .version-link {
+                        display: none !important;
                     }
                     
+                    /* Estilo dos Cards na Impressão */
+                    .kpi-card, 
+                    .chart-card {
+                        page-break-inside: avoid !important;
+                        break-inside: avoid !important;
+                        margin-bottom: 20px !important;
+                        border: 1px solid #ddd !important;
+                        box-shadow: none !important;
+                        width: 100% !important;
+                        display: block !important; /* Garante que cada card seja um bloco */
+                        height: auto !important;
+                    }
+
+                    /* Ajuste para gráficos */
+                     .chart-body {
+                        height: auto !important;
+                        min-height: 300px !important;
+                    }
+
                     @media print {
                         @page {
                             size: A4;
-                            margin: 1cm;
-                        }
-                        
-                        body {
-                            padding: 0;
-                        }
-                        
-                        .dashboard-header {
-                            page-break-after: avoid;
-                        }
-                        
-                        .chart-card,
-                        .kpi-card {
-                            page-break-inside: avoid;
-                            break-inside: avoid;
-                            margin-bottom: 15px;
-                        }
-                        
-                        /* Permitir quebra entre grupos de cards */
-                        .dashboard-grid {
-                            page-break-inside: auto;
+                            margin: 10mm;
                         }
                     }
                 </style>
