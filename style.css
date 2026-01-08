@@ -249,6 +249,45 @@ button {
     color: var(--text-primary);
 }
 
+/* Standardize Edit/Delete Buttons to match User Management */
+button.btn-icon[title*="Editar"],
+button.btn-icon[title*="Excluir"],
+button.btn-icon[title*="Edit"],
+button.btn-icon[title*="Delete"],
+button.btn-icon[onclick*="edit"],
+button.btn-icon[onclick*="delete"] {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    /* Square-ish */
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+/* Edit Specific Hover */
+/* Force higher specificity or order to override generic hover */
+button.btn-icon[title*="Editar"]:hover,
+button.btn-icon[title*="Edit"]:hover,
+button.btn-icon[onclick*="edit"]:hover {
+    background: rgba(255, 160, 0, 0.1);
+    color: var(--accent);
+    border-color: rgba(255, 160, 0, 0.2);
+}
+
+/* Delete Specific Hover */
+button.btn-icon[title*="Excluir"]:hover,
+button.btn-icon[title*="Delete"]:hover,
+button.btn-icon[onclick*="delete"]:hover,
+button.btn-icon.btn-danger:hover {
+    background: rgba(255, 82, 82, 0.1) !important;
+    color: #ff5252 !important;
+    border-color: rgba(255, 82, 82, 0.2) !important;
+}
+
 .btn-danger {
     color: var(--danger);
 }
