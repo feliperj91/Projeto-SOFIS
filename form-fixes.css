@@ -69,3 +69,25 @@
     color: var(--text-secondary);
     font-size: 0.9rem;
 }
+
+/* ===================================
+   BUTTON STYLES
+   =================================== */
+
+/* Cancel Button Style (Matching Logout Button) */
+.btn-cancel {
+    background: transparent;
+    /* Ensure base is transparent like btn-secondary */
+    color: var(--danger) !important;
+    border-color: var(--danger) !important;
+    transition: all 0.3s ease;
+}
+
+.btn-cancel:hover {
+    background-color: var(--danger) !important;
+    color: #ffffff !important;
+    border-color: var(--danger) !important;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    /* Uses tailwind-like red shade for shadow */
+    transform: translateY(-2px);
+}
