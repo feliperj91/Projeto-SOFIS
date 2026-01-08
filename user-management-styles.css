@@ -715,7 +715,7 @@
 }
 
 #userForm .form-group {
-    margin-bottom: 24px;
+    margin-bottom: 15px;
 }
 
 #userForm label {
@@ -723,7 +723,7 @@
     text-align: left;
     font-size: 0.95rem;
     color: var(--text-secondary);
-    margin-bottom: 12px;
+    margin-bottom: 6px;
     font-weight: 500;
 }
 
