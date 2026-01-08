@@ -700,7 +700,7 @@
 }
 
 #userModal .modal-header {
-    padding: 30px 35px 20px 35px;
+    padding: 20px 20px 15px 20px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
@@ -711,7 +711,7 @@
 }
 
 #userForm {
-    padding: 30px 35px 35px 35px;
+    padding: 20px;
 }
 
 #userForm .form-group {
