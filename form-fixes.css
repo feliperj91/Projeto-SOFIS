@@ -1,0 +1,71 @@
+/* ===================================
+   FORM LAYOUT FIXES (Modal Alignment)
+   =================================== */
+
+/* Fix for label with action buttons (Produto) */
+.label-with-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    /* Standardize margin */
+}
+
+/* Override standard label margin when inside this container */
+.label-with-actions label {
+    margin-bottom: 0 !important;
+    display: flex;
+    align-items: center;
+}
+
+/* Fix for Date Input vs Text Input Height Mismatch */
+#versionForm input[type="text"],
+#versionForm input[type="date"],
+#versionForm select {
+    height: 50px !important;
+    /* Enforce uniform height */
+    padding: 0 15px !important;
+    /* Uniform padding */
+    line-height: 50px;
+    /* Vertically center text */
+    box-sizing: border-box !important;
+    width: 100%;
+    display: block;
+    background: var(--bg-darker);
+    /* Ensure consistent background */
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    transition: all 0.2s;
+}
+
+#versionForm textarea {
+    background: var(--bg-darker);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-primary);
+    padding: 12px;
+}
+
+/* Specific fix for Date input icon alignment if needed */
+#versionForm input[type="date"] {
+    padding-right: 15px !important;
+    position: relative;
+}
+
+/* Label Icon styling uniformity */
+.form-group label i {
+    width: 24px;
+    text-align: center;
+    margin-right: 8px;
+    color: var(--accent);
+}
+
+.form-group label {
+    margin-bottom: 8px;
+    display: block;
+    font-weight: 500;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
