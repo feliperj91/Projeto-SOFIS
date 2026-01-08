@@ -419,3 +419,39 @@
         padding: 20px;
     }
 }
+
+/* Print Styles */
+@media print {
+    .dashboard-overlay {
+        position: static !important;
+        background: white !important;
+        backdrop-filter: none !important;
+        padding: 0 !important;
+    }
+
+    .dashboard-container {
+        max-height: none !important;
+        height: auto !important;
+        overflow: visible !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+    }
+
+    .dashboard-grid {
+        overflow-y: visible !important;
+        overflow: visible !important;
+        height: auto !important;
+        page-break-inside: auto;
+    }
+
+    .btn-icon-large,
+    .live-indicator {
+        display: none !important;
+    }
+
+    .chart-card,
+    .kpi-card {
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+}
