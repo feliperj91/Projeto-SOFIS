@@ -1367,7 +1367,7 @@
                             <div style="height: 100%; background: ${color.main}; border-radius: 4px; width: ${percentage}%; transition: width 0.6s ease;"></div>
                         </div>
                     </div>
-                    <div style="font-size: 0.85rem; font-weight: 700; color: #111827; min-width: 50px; text-align: right;">${percentage}%</div>
+                    <div style="font-size: 0.85rem; font-weight: 700; color: #111827; min-width: 70px; text-align: right;">${value} (${percentage}%)</div>
                 </div>
             `;
             barsContainer.innerHTML += barHtml;
