@@ -427,14 +427,18 @@
             if (window.showToast) window.showToast('Concluído com sucesso!');
             window.closeVersionModal();
 
-            // Sutil delay para garantir a consistência do banco antes de ler
-            await new Promise(r => setTimeout(r, 500));
+            try {
+                // Sutil delay para garantir a consistência do banco antes de ler
+                await new Promise(r => setTimeout(r, 500));
 
-            // Force reload of EVERYTHING
-            await loadVersionControls();
+                // Force reload of EVERYTHING
+                await loadVersionControls();
 
-            // Re-render dashboard unconditionally (just in case it's open or about to be)
-            calculateAndRenderPulse();
+                // Re-render dashboard unconditionally (just in case it's open or about to be)
+                calculateAndRenderPulse();
+            } catch (refreshErr) {
+                console.warn("⚠️ Data refresh failed after save:", refreshErr);
+            }
 
         } catch (err) {
             console.error('❌ handleVersionSubmit Error:', err);
