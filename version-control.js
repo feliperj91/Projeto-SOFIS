@@ -1073,53 +1073,79 @@
     window.printDashboard = function () {
         // Criar estilos específicos para impressão
         const printStyles = `
-            <style>
+            <style id="dashboard-print-styles">
                 @media print {
-                    body * {
-                        visibility: hidden;
+                    /* Ocultar tudo exceto o dashboard */
+                    body > *:not(#pulseDashboardModal) {
+                        display: none !important;
                     }
-                    #pulseDashboardModal,
-                    #pulseDashboardModal * {
-                        visibility: visible;
-                    }
+                    
+                    /* Mostrar apenas o dashboard */
                     #pulseDashboardModal {
-                        position: absolute;
-                        left: 0;
-                        top: 0;
-                        width: 100%;
+                        display: block !important;
+                        position: static !important;
                         background: white !important;
+                        padding: 0 !important;
+                        margin: 0 !important;
                     }
+                    
                     .dashboard-overlay {
                         background: white !important;
+                        padding: 0 !important;
                     }
+                    
                     .dashboard-container {
                         max-width: 100% !important;
+                        width: 100% !important;
                         box-shadow: none !important;
                         background: white !important;
+                        margin: 0 !important;
+                        padding: 20px !important;
                     }
+                    
+                    /* Ocultar botões de ação */
                     .btn-icon-large {
                         display: none !important;
                     }
+                    
                     .live-indicator {
                         display: none !important;
                     }
+                    
+                    /* Ajustar cores para impressão */
                     .version-link {
                         color: #000 !important;
                     }
+                    
+                    /* Evitar quebras de página */
                     .dashboard-header {
                         page-break-after: avoid;
+                        page-break-inside: avoid;
                     }
+                    
                     .chart-card {
                         page-break-inside: avoid;
                         break-inside: avoid;
+                        margin-bottom: 20px;
                     }
+                    
                     .kpi-card {
                         page-break-inside: avoid;
                         break-inside: avoid;
                     }
+                    
+                    .dashboard-grid {
+                        page-break-inside: avoid;
+                    }
                 }
             </style>
         `;
+
+        // Remover estilos de impressão anteriores se existirem
+        const oldPrintStyles = document.getElementById('dashboard-print-styles');
+        if (oldPrintStyles) {
+            oldPrintStyles.remove();
+        }
 
         // Adicionar estilos temporariamente
         const styleElement = document.createElement('div');
@@ -1132,8 +1158,8 @@
 
             // Remover estilos após impressão
             setTimeout(() => {
-                const printStyle = document.querySelector('style:last-of-type');
-                if (printStyle && printStyle.textContent.includes('@media print')) {
+                const printStyle = document.getElementById('dashboard-print-styles');
+                if (printStyle) {
                     printStyle.remove();
                 }
             }, 1000);
