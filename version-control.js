@@ -1203,7 +1203,7 @@
             return;
         }
 
-        renderEnvironmentChart(allData); // Este pode mostrar todos os ambientes
+        // renderEnvironmentChart(allData); // Gráfico removido do HTML
         renderSystemDistributionChart(cleanData, systemCounts); // Apenas produção (limpo)
         renderVersionsChart(cleanData); // Apenas produção (limpo)
     }
