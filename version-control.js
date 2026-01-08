@@ -1046,7 +1046,7 @@
     let pulseCharts = {};
     let pulseRefreshInterval = null;
 
-    window.openPulseDashboard = function () {
+    window.openPulseDashboard = async function () {
         const modal = document.getElementById('pulseDashboardModal');
         if (!modal) return;
 
@@ -1062,14 +1062,18 @@
             container.style.transform = 'scale(1)';
         }, 50);
 
+        // Force fresh load
+        await window.loadVersionControls();
+
         // Initial render
         calculateAndRenderPulse();
 
-        // Auto-refresh every 5 seconds for real-time data
+        // Auto-refresh every 10 seconds for real-time data (fetching fresh data)
         if (pulseRefreshInterval) clearInterval(pulseRefreshInterval);
-        pulseRefreshInterval = setInterval(() => {
+        pulseRefreshInterval = setInterval(async () => {
+            await window.loadVersionControls();
             calculateAndRenderPulse();
-        }, 5000);
+        }, 10000);
     };
 
 
@@ -1100,18 +1104,8 @@
             const normalized = env.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
             // Aceitar: producao, produção, PRODUCAO, PRODUÇÃO
-            const isProduction = normalized === 'producao';
-
-            if (!isProduction) {
-                console.log(`❌ [Pulse] Filtrado: ${d.system} ${d.version} (ambiente: "${d.environment}")`);
-            }
-
-            return isProduction;
+            return normalized === 'producao';
         });
-
-        console.log(`📊 [Pulse] Total de registros: ${allData.length}`);
-        console.log(`📊 [Pulse] Filtrados (homologação): ${allData.length - data.length}`);
-        console.log(`📊 [Pulse] Produção: ${data.length} registros`);
 
 
 
@@ -1138,10 +1132,7 @@
         const latestRecordsMap = new Map();
 
         data.forEach(d => {
-            // Log específico para caçar a versão sumida 2026
-            if ((d.version || '').includes('2026')) {
-                console.warn("🎯 [Pulse] ENCONTREI VERSÃO 2026:", d.system, d.version, d.updated_at, "ID:", d.client_id);
-            }
+            // Log específico removido
 
             // Chave única: Cliente + Sistema (ex: "GHC-Hemote Plus")
             const key = `${d.client_id}-${d.system}`;
@@ -1157,9 +1148,10 @@
 
                 if (newDate > existingDate) {
                     latestRecordsMap.set(key, d);
-                } else {
-                    if ((d.version || '').includes('2026')) {
-                        console.warn("⚠️ [Pulse] VERSÃO 2026 DESCARTADA POR:", existing.version, "DATA:", existing.updated_at);
+                } else if (newDate.getTime() === existingDate.getTime()) {
+                    // Se datas iguais, tenta usar ID (maior ID = inserido depois)
+                    if (d.id > existing.id) {
+                        latestRecordsMap.set(key, d);
                     }
                 }
             }
