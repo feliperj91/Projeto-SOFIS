@@ -148,9 +148,21 @@ header {
 .app-build {
     color: var(--text-secondary);
     font-size: 0.8rem;
-    opacity: 0.5;
+    opacity: 0.8;
     font-family: 'Outfit', sans-serif;
     letter-spacing: 1px;
+    cursor: pointer;
+    position: relative;
+    z-index: 10001;
+    /* Above header */
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+
+.app-build:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--accent);
+    opacity: 1;
 }
 
 /* Buttons */
@@ -288,8 +300,7 @@ button {
 }
 
 #searchInput,
-#versionSearchInput,
-#userSearchInput {
+#versionSearchInput {
     width: 100%;
     background: var(--card-bg);
     backdrop-filter: blur(10px);
@@ -874,9 +885,13 @@ button {
     z-index: 1100;
 }
 
+/* Modal Hidden State - FORCE HIDE */
 .modal.hidden {
     opacity: 0;
     pointer-events: none;
+    visibility: hidden;
+    /* Ensure it doesn't block clicks when hidden */
+    z-index: -1;
 }
 
 .modal-content {
@@ -1323,7 +1338,7 @@ button {
     -webkit-backdrop-filter: blur(8px);
     transition: all 0.3s;
     font-weight: 600;
-    z-index: 2000;
+    z-index: 30000;
 }
 
 .toast-success {
@@ -2380,4 +2395,367 @@ button:hover .vpn-icon-img {
         opacity: 1;
         transform: translateY(0) scale(1);
     }
+}
+
+/* GLOBAL: Hide native password reveal/clear buttons */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+    display: none;
+}
+
+input[type="password"]::-webkit-contacts-auto-fill-button,
+input[type="password"]::-webkit-credentials-auto-fill-button {
+    visibility: hidden;
+    display: none !important;
+    pointer-events: none;
+    height: 0;
+    width: 0;
+    margin: 0;
+}
+
+/* =========================================
+   CHANGELOG TIMELINE STYLES
+   ========================================= */
+.changelog-timeline {
+    position: relative;
+    padding-left: 20px;
+}
+
+/* Vertical Line Connector */
+.changelog-timeline::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 6px;
+    width: 2px;
+    background: var(--border);
+    border-radius: 2px;
+}
+
+.changelog-entry {
+    position: relative;
+    margin-bottom: 30px;
+    padding-left: 25px;
+}
+
+/* Dot on Timeline */
+.changelog-entry::before {
+    content: '';
+    position: absolute;
+    left: -19px;
+    top: 5px;
+    width: 12px;
+    height: 12px;
+    background: var(--bg-card);
+    border: 2px solid var(--accent);
+    border-radius: 50%;
+    z-index: 1;
+}
+
+.changelog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.changelog-version {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.changelog-date {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.changelog-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+}
+
+.changelog-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.changelog-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+/* Type Badges */
+.change-badge {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.change-badge.feat {
+    background: rgba(46, 204, 113, 0.15);
+    color: #2ecc71;
+    border: 1px solid rgba(46, 204, 113, 0.3);
+}
+
+.change-badge.fix {
+    background: rgba(231, 76, 60, 0.15);
+    color: #e74c3c;
+    border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+.change-badge.style {
+    background: rgba(52, 152, 219, 0.15);
+    color: #3498db;
+    border: 1px solid rgba(52, 152, 219, 0.3);
+}
+
+.change-badge.pref {
+    background: rgba(155, 89, 182, 0.15);
+    color: #9b59b6;
+    border: 1px solid rgba(155, 89, 182, 0.3);
+}
+
+.change-badge.imp {
+    background: rgba(255, 160, 0, 0.15);
+    color: var(--accent);
+    border: 1px solid rgba(255, 160, 0, 0.3);
+}
+
+/* Clickable Build Number */
+#appBuildNumber {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+#appBuildNumber:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--accent);
+}
+
+/* Labels with Actions - Used in Version Modal */
+.label-with-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.label-actions {
+    display: flex;
+    gap: 8px;
+    margin-left: 10px;
+}
+
+.label-icon-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 0.85rem;
+    padding: 2px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.label-icon-btn:hover {
+    color: var(--accent);
+    transform: scale(1.1);
+}
+
+/* Product Management Modal Table */
+.products-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+    margin-top: 5px;
+}
+
+.products-table th {
+    text-align: left;
+    padding: 0 15px 10px 15px;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+}
+
+.products-table tr {
+    transition: all 0.2s ease;
+}
+
+.products-table tbody tr {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.products-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateX(5px);
+}
+
+.products-table td {
+    padding: 15px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+}
+
+.products-table tr td:first-child {
+    border-left: 1px solid var(--border);
+    border-radius: 12px 0 0 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.products-table tr td:last-child {
+    border-right: 1px solid var(--border);
+    border-radius: 0 12px 12px 0;
+}
+
+.products-table .action-cell {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+/* Specific Badges for Product Types */
+.badge-product-type {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: inline-block;
+}
+
+.badge-type-pacote {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.badge-type-build {
+    background: rgba(76, 175, 80, 0.1);
+    color: #81C784;
+    border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.product-form-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 0 20px 25px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    margin-bottom: 20px;
+}
+
+.product-input-modern {
+    flex: 2;
+    background: rgba(15, 23, 42, 0.4) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    padding: 10px 15px !important;
+    border-radius: 10px !important;
+    color: var(--text-primary) !important;
+    font-size: 0.95rem !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    margin-bottom: 0 !important;
+}
+
+.product-input-modern:focus {
+    background: rgba(15, 23, 42, 0.6) !important;
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 3px rgba(255, 160, 0, 0.15) !important;
+    outline: none;
+}
+
+.product-select-modern {
+    flex: 1;
+    background: rgba(15, 23, 42, 0.4) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    padding: 10px 15px !important;
+    border-radius: 10px !important;
+    color: var(--text-primary) !important;
+    font-size: 0.95rem !important;
+    cursor: pointer;
+    transition: all 0.3s ease !important;
+    margin-bottom: 0 !important;
+}
+
+.product-select-modern:focus {
+    border-color: var(--accent) !important;
+    outline: none;
+}
+
+.product-form-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.product-btn-save {
+    height: 42px;
+    width: 42px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    background: linear-gradient(135deg, var(--accent), #FF8F00) !important;
+    box-shadow: 0 4px 15px rgba(255, 160, 0, 0.2) !important;
+}
+
+.product-btn-save:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 160, 0, 0.35) !important;
+}
+
+.product-btn-save:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: grayscale(0.8);
+    box-shadow: none !important;
+}
+
+.product-btn-cancel {
+    height: 42px;
+    width: 42px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.product-btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--danger);
+    border-color: rgba(255, 61, 0, 0.3);
+}
+
+/* Specific Badges for Product Types in Table */
+.products-table td .badge-product-type {
+    margin: 0 auto;
+    display: block;
+    width: fit-content;
 }
