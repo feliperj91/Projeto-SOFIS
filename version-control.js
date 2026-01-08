@@ -311,7 +311,7 @@
                 sys: document.getElementById('versionSystemSelect').value,
                 ver: document.getElementById('versionNumberInput').value,
                 date: document.getElementById('versionDateInput').value,
-                alert: false, // Checkbox removed from UI
+                alert: document.getElementById('versionNotesInput').value.trim().length > 0, // Auto-set alert if notes exist
                 notes: document.getElementById('versionNotesInput').value,
                 responsible: document.getElementById('versionResponsibleSelect').value
             };
