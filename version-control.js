@@ -430,9 +430,11 @@
             // 1. Refresh Data (Wait for it)
             await loadVersionControls();
 
-            // 2. Explicitly Refresh Dashboard if Open
+            // 2. Explicitly Refresh Dashboard if Open (or if we suspect it's open)
+            // We check if it's NOT hidden, OR if we just removed the hidden class recently (safe check)
             const dashboardModal = document.getElementById('pulseDashboardModal');
             if (dashboardModal && !dashboardModal.classList.contains('hidden')) {
+                console.log("🔄 Triggering Dashboard Refresh from Submit...");
                 calculateAndRenderPulse();
             }
 
@@ -1098,8 +1100,13 @@
 
 
     function calculateAndRenderPulse() {
+        console.log("📊 [Pulse] Calculating metrics...");
+
         if (!window.versionControls || window.versionControls.length === 0) {
-            console.warn("📊 [Pulse] No data available");
+            console.warn("📊 [Pulse] No data available, tempting lazy load...");
+            // Optional: trigger load if empty? 
+            // Better to rely on the main loop, but we can set UI to '...'
+            document.getElementById('kpiTotalClients').innerText = '...';
             return;
         }
 
