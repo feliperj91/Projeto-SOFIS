@@ -52,11 +52,12 @@
 
     // Core Logic
     async function loadVersionControls() {
-        // Prevent stacking requests excessively, but allowed to force update.
-        if (sofis_isUpdating) {
-            console.log("⚠️ loadVersionControls: Update in progress...");
-        }
+        if (sofis_isUpdating) console.log("⚠️ Update already in progress...");
         sofis_isUpdating = true;
+
+        // Cache Buster
+        const _t = new Date().getTime();
+        console.log(`🔄 [${_t}] Fetching versions...`);
 
         try {
             if (!window.supabaseClient) {
@@ -78,11 +79,7 @@
 
             renderVersionControls();
 
-            // If Dashboard is open, refresh it too
-            const dashboardModal = document.getElementById('pulseDashboardModal');
-            if (dashboardModal && !dashboardModal.classList.contains('hidden')) {
-                calculateAndRenderPulse();
-            }
+            // NOTE: We do NOT render Dashboard here anymore.
 
         } catch (err) {
             console.error('❌ Error loadVersionControls:', err);
@@ -429,8 +426,14 @@
             if (window.showToast) window.showToast('Concluído com sucesso!');
             window.closeVersionModal();
 
-            // Refresh immediately
+            // 1. Refresh Data (Wait for it)
             await loadVersionControls();
+
+            // 2. Explicitly Refresh Dashboard if Open
+            const dashboardModal = document.getElementById('pulseDashboardModal');
+            if (dashboardModal && !dashboardModal.classList.contains('hidden')) {
+                calculateAndRenderPulse();
+            }
 
         } catch (err) {
             console.error('❌ handleVersionSubmit Error:', err);
@@ -1051,7 +1054,7 @@
 
         modal.classList.remove('hidden');
 
-        // Smooth entrance
+        // Animation
         const container = modal.querySelector('.dashboard-container');
         container.style.opacity = '0';
         container.style.transform = 'scale(0.95)';
@@ -1061,17 +1064,21 @@
             container.style.transform = 'scale(1)';
         }, 50);
 
-        // Feedback loading state - clear old potentially stale data visually
+        // Loading state
         document.getElementById('kpiTotalClients').innerText = '...';
-        document.getElementById('kpiMostPopularSystem').innerText = 'Atualizando...';
+        document.getElementById('kpiMostPopularSystem').innerText = '...';
 
-        // Force fresh load
+        // 1. Fetch Data
         await window.loadVersionControls();
 
-        // Auto-refresh every 10 seconds
+        // 2. Render explicitly
+        calculateAndRenderPulse();
+
+        // 3. Start Auto-Refresh
         if (pulseRefreshInterval) clearInterval(pulseRefreshInterval);
         pulseRefreshInterval = setInterval(async () => {
             await window.loadVersionControls();
+            calculateAndRenderPulse();
         }, 10000);
     };
 
