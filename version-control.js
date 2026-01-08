@@ -52,11 +52,9 @@
 
     // Core Logic
     async function loadVersionControls() {
-        // Prevent concurrent loads if needed, but for UI refresh we often want to force it
-        // sofis_isUpdating flag is useful to prevent spam, but let's allow overlapping calls to ensure latest data wins
+        // Prevent stacking requests excessively, but allowed to force update.
         if (sofis_isUpdating) {
-            console.log("⚠️ loadVersionControls: Already updating, queuing next check turned off for simplicity but allowing pass through if critical.");
-            // For now, let's just proceed to ensure data is fresh. Supabase client handles connection.
+            console.log("⚠️ loadVersionControls: Update in progress...");
         }
         sofis_isUpdating = true;
 
@@ -66,9 +64,8 @@
                 return;
             }
 
-            console.log("🔄 Loading Version Controls...");
+            console.log("🔄 Loading Version Controls (Fresh)...");
 
-            // Artificial delay removed/minimized. Just fetch.
             const { data, error } = await window.supabaseClient
                 .from('version_controls')
                 .select(`*, clients (id, name)`)
@@ -77,13 +74,18 @@
             if (error) throw error;
 
             versionControls = data || [];
-            window.versionControls = versionControls; // Sync global state including for other modules
+            window.versionControls = versionControls;
 
-            console.log(`✅ Loaded ${versionControls.length} version records.`);
             renderVersionControls();
+
+            // If Dashboard is open, refresh it too
+            const dashboardModal = document.getElementById('pulseDashboardModal');
+            if (dashboardModal && !dashboardModal.classList.contains('hidden')) {
+                calculateAndRenderPulse();
+            }
+
         } catch (err) {
             console.error('❌ Error loadVersionControls:', err);
-            // Optionally show error in UI
         } finally {
             sofis_isUpdating = false;
         }
@@ -427,11 +429,8 @@
             if (window.showToast) window.showToast('Concluído com sucesso!');
             window.closeVersionModal();
 
-            // Refresh with clear context - WAIT for a moment to ensure propagation
-            // Increased delay slightly and forceful reload
-            setTimeout(() => {
-                loadVersionControls();
-            }, 500);
+            // Refresh immediately
+            await loadVersionControls();
 
         } catch (err) {
             console.error('❌ handleVersionSubmit Error:', err);
@@ -1052,7 +1051,7 @@
 
         modal.classList.remove('hidden');
 
-        // Smooth entrance animation
+        // Smooth entrance
         const container = modal.querySelector('.dashboard-container');
         container.style.opacity = '0';
         container.style.transform = 'scale(0.95)';
@@ -1062,17 +1061,17 @@
             container.style.transform = 'scale(1)';
         }, 50);
 
+        // Feedback loading state - clear old potentially stale data visually
+        document.getElementById('kpiTotalClients').innerText = '...';
+        document.getElementById('kpiMostPopularSystem').innerText = 'Atualizando...';
+
         // Force fresh load
         await window.loadVersionControls();
 
-        // Initial render
-        calculateAndRenderPulse();
-
-        // Auto-refresh every 10 seconds for real-time data (fetching fresh data)
+        // Auto-refresh every 10 seconds
         if (pulseRefreshInterval) clearInterval(pulseRefreshInterval);
         pulseRefreshInterval = setInterval(async () => {
             await window.loadVersionControls();
-            calculateAndRenderPulse();
         }, 10000);
     };
 
@@ -1131,25 +1130,25 @@
         // ===== REMOVER REGISTROS ANTIGOS (Manter apenas o mais recente por Cliente + Sistema) =====
         const latestRecordsMap = new Map();
 
+        // Sort data by ID descending first to ensure if dates are equal, latest ID comes first in iteration
+        // (Though we iterate and logic below handles it, sorting helps debugging)
+        data.sort((a, b) => b.id - a.id);
+
         data.forEach(d => {
-            // Log específico removido
-
-            // Chave única: Cliente + Sistema (ex: "GHC-Hemote Plus")
+            // Chave única: Cliente + Sistema (ex: "ID-Hemote Plus")
             const key = `${d.client_id}-${d.system}`;
-
             const newDate = parseDate(d.updated_at);
 
             if (!latestRecordsMap.has(key)) {
                 latestRecordsMap.set(key, d);
             } else {
-                // Se já existe, compara as datas para manter o mais novo
                 const existing = latestRecordsMap.get(key);
                 const existingDate = parseDate(existing.updated_at);
 
+                // Priority: Newer Date > (Equal Date AND Higher ID)
                 if (newDate > existingDate) {
                     latestRecordsMap.set(key, d);
                 } else if (newDate.getTime() === existingDate.getTime()) {
-                    // Se datas iguais, tenta usar ID (maior ID = inserido depois)
                     if (d.id > existing.id) {
                         latestRecordsMap.set(key, d);
                     }
