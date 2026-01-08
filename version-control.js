@@ -783,7 +783,6 @@
 
 
     let cachedClientsForVersion = [];
-<<<<<<< HEAD
     window.populateVersionClientSelect = async () => {
         const select = document.getElementById('versionClientSelect');
         if (!select) return;
@@ -812,19 +811,6 @@
             }
         }
 
-        // Get all client IDs that already have version records
-        let clientsWithVersions = new Set();
-        if (window.versionControls && window.versionControls.length > 0) {
-            window.versionControls.forEach(vc => {
-                if (vc.client_id) {
-                    clientsWithVersions.add(vc.client_id);
-                }
-            });
-        }
-
-        // Filter out clients that already have version records
-        const availableClients = clientsToUse.filter(c => !clientsWithVersions.has(c.id));
-
         // Preserve current selection if any
         const currentVal = select.value;
         const isDisabled = select.disabled;
@@ -832,7 +818,7 @@
         select.innerHTML = '<option value="">Selecione o cliente...</option>';
 
         // Sort explicitly just in case
-        availableClients.sort((a, b) => a.name.localeCompare(b.name)).forEach(c => {
+        clientsToUse.sort((a, b) => a.name.localeCompare(b.name)).forEach(c => {
             const opt = document.createElement('option');
             opt.value = c.id; // Use ID as value
             opt.textContent = c.name;
@@ -843,8 +829,6 @@
         select.disabled = isDisabled;
     };
 
-=======
->>>>>>> 5552215099b3e0e8b1133e8703e01befe7d8c7b7
     let cachedUsersForResponsible = [];
 
     async function getClientsForDropdown() {
