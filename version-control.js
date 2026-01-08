@@ -1071,39 +1071,53 @@
     };
 
     window.printDashboard = function () {
-        // Criar estilos específicos para impressão
-        const printStyles = `
-            <style id="dashboard-print-styles">
-                @media print {
-                    /* Ocultar tudo exceto o dashboard */
-                    body > *:not(#pulseDashboardModal) {
-                        display: none !important;
+        // Obter o container do dashboard
+        const dashboardContainer = document.querySelector('#pulseDashboardModal .dashboard-container');
+        if (!dashboardContainer) {
+            console.error('Dashboard container not found');
+            return;
+        }
+
+        // Criar uma janela de impressão temporária
+        const printWindow = window.open('', '_blank', 'width=1200,height=800');
+
+        if (!printWindow) {
+            alert('Por favor, permita pop-ups para imprimir o dashboard');
+            return;
+        }
+
+        // Obter todos os estilos da página atual
+        const styles = Array.from(document.styleSheets)
+            .map(styleSheet => {
+                try {
+                    return Array.from(styleSheet.cssRules)
+                        .map(rule => rule.cssText)
+                        .join('\n');
+                } catch (e) {
+                    // Ignorar erros de CORS
+                    return '';
+                }
+            })
+            .join('\n');
+
+        // Criar HTML para impressão
+        const printHTML = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>Dashboard Pulse - SOFIS</title>
+                <style>
+                    ${styles}
+                    
+                    /* Estilos específicos para impressão */
+                    body {
+                        margin: 0;
+                        padding: 20px;
+                        background: white;
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
                     }
                     
-                    /* Mostrar apenas o dashboard */
-                    #pulseDashboardModal {
-                        display: block !important;
-                        position: static !important;
-                        background: white !important;
-                        padding: 0 !important;
-                        margin: 0 !important;
-                    }
-                    
-                    .dashboard-overlay {
-                        background: white !important;
-                        padding: 0 !important;
-                    }
-                    
-                    .dashboard-container {
-                        max-width: 100% !important;
-                        width: 100% !important;
-                        box-shadow: none !important;
-                        background: white !important;
-                        margin: 0 !important;
-                        padding: 20px !important;
-                    }
-                    
-                    /* Ocultar botões de ação */
                     .btn-icon-large {
                         display: none !important;
                     }
@@ -1112,58 +1126,49 @@
                         display: none !important;
                     }
                     
-                    /* Ajustar cores para impressão */
-                    .version-link {
-                        color: #000 !important;
+                    .dashboard-container {
+                        max-width: 100% !important;
+                        box-shadow: none !important;
+                        background: white !important;
                     }
                     
-                    /* Evitar quebras de página */
-                    .dashboard-header {
-                        page-break-after: avoid;
-                        page-break-inside: avoid;
+                    @media print {
+                        body {
+                            padding: 0;
+                        }
+                        
+                        .chart-card {
+                            page-break-inside: avoid;
+                            break-inside: avoid;
+                        }
+                        
+                        .kpi-card {
+                            page-break-inside: avoid;
+                            break-inside: avoid;
+                        }
                     }
-                    
-                    .chart-card {
-                        page-break-inside: avoid;
-                        break-inside: avoid;
-                        margin-bottom: 20px;
-                    }
-                    
-                    .kpi-card {
-                        page-break-inside: avoid;
-                        break-inside: avoid;
-                    }
-                    
-                    .dashboard-grid {
-                        page-break-inside: avoid;
-                    }
-                }
-            </style>
+                </style>
+            </head>
+            <body>
+                ${dashboardContainer.outerHTML}
+            </body>
+            </html>
         `;
 
-        // Remover estilos de impressão anteriores se existirem
-        const oldPrintStyles = document.getElementById('dashboard-print-styles');
-        if (oldPrintStyles) {
-            oldPrintStyles.remove();
-        }
+        // Escrever HTML na janela
+        printWindow.document.write(printHTML);
+        printWindow.document.close();
 
-        // Adicionar estilos temporariamente
-        const styleElement = document.createElement('div');
-        styleElement.innerHTML = printStyles;
-        document.head.appendChild(styleElement.firstChild);
-
-        // Imprimir
-        setTimeout(() => {
-            window.print();
-
-            // Remover estilos após impressão
+        // Aguardar carregamento e imprimir
+        printWindow.onload = function () {
             setTimeout(() => {
-                const printStyle = document.getElementById('dashboard-print-styles');
-                if (printStyle) {
-                    printStyle.remove();
-                }
-            }, 1000);
-        }, 100);
+                printWindow.print();
+                // Fechar janela após impressão
+                setTimeout(() => {
+                    printWindow.close();
+                }, 500);
+            }, 250);
+        };
     };
 
     function calculateAndRenderPulse() {
