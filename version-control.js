@@ -457,6 +457,9 @@
     window.renderVersionControls = renderVersionControls;
     window.handleVersionSubmit = handleVersionSubmit;
 
+    // Cache for clients list
+    let cachedClientsForVersion = [];
+
     // Unified function to get clients list
     async function getClientsForDropdown() {
         // 1. Try Global Window Clients (fastest)
@@ -501,19 +504,32 @@
 
         const clientsList = await getClientsForDropdown();
 
+        // Get all unique client IDs that already have version records
+        let clientsWithVersions = new Set();
+        if (window.versionControls && window.versionControls.length > 0) {
+            window.versionControls.forEach(vc => {
+                if (vc.client_id) {
+                    clientsWithVersions.add(vc.client_id);
+                }
+            });
+        }
+
+        // Filter out clients that already have ANY version record
+        const availableClients = clientsList.filter(c => !clientsWithVersions.has(c.id));
+
         // Clear existing (keep default)
         select.innerHTML = '<option value="">Selecione o cliente...</option>';
 
-        if (clientsList.length === 0) {
+        if (availableClients.length === 0) {
             const opt = document.createElement('option');
             opt.disabled = true;
-            opt.textContent = "Nenhum cliente carregado";
+            opt.textContent = "Todos os clientes já possuem registros";
             select.appendChild(opt);
             return;
         }
 
         // Sort and Append
-        clientsList.sort((a, b) => a.name.localeCompare(b.name)).forEach(c => {
+        availableClients.sort((a, b) => a.name.localeCompare(b.name)).forEach(c => {
             const opt = document.createElement('option');
             opt.value = c.id;
             opt.textContent = c.name;
@@ -782,65 +798,6 @@
 
 
 
-    let cachedClientsForVersion = [];
-    window.populateVersionClientSelect = async () => {
-        const select = document.getElementById('versionClientSelect');
-        if (!select) return;
-
-        // Use global window.clients if available (source of truth), otherwise fetch
-        let clientsToUse = [];
-
-        if (window.clients && window.clients.length > 0) {
-            clientsToUse = window.clients;
-        } else if (cachedClientsForVersion.length > 0) {
-            clientsToUse = cachedClientsForVersion;
-        } else {
-            try {
-                const { data, error } = await window.supabaseClient
-                    .from('clients')
-                    .select('id, name')
-                    .order('name');
-
-                if (!error && data) {
-                    cachedClientsForVersion = data;
-                    clientsToUse = data;
-                }
-            } catch (e) {
-                console.error("Erro ao buscar clientes para select:", e);
-                return;
-            }
-        }
-
-        // Get all unique client IDs that already have version records
-        let clientsWithVersions = new Set();
-        if (window.versionControls && window.versionControls.length > 0) {
-            window.versionControls.forEach(vc => {
-                if (vc.client_id) {
-                    clientsWithVersions.add(vc.client_id);
-                }
-            });
-        }
-
-        // Filter out clients that already have ANY version record
-        const availableClients = clientsToUse.filter(c => !clientsWithVersions.has(c.id));
-
-        // Preserve current selection if any
-        const currentVal = select.value;
-        const isDisabled = select.disabled;
-
-        select.innerHTML = '<option value="">Selecione o cliente...</option>';
-
-        // Sort explicitly just in case
-        availableClients.sort((a, b) => a.name.localeCompare(b.name)).forEach(c => {
-            const opt = document.createElement('option');
-            opt.value = c.id; // Use ID as value
-            opt.textContent = c.name;
-            select.appendChild(opt);
-        });
-
-        if (currentVal) select.value = currentVal;
-        select.disabled = isDisabled;
-    };
 
     let cachedUsersForResponsible = [];
 
