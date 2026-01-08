@@ -1442,8 +1442,8 @@
         const systemVersions = {};
 
         data.forEach(d => {
-            const sys = d.system || 'Desconhecido';
-            const ver = d.version || 'S/V';
+            const sys = (d.system || 'Desconhecido').trim();
+            const ver = (d.version || 'S/V').trim();
 
             // Tenta obter nome do cliente do join, ou usa ID
             let clientName = d.client_id;
