@@ -28,7 +28,7 @@
         getStatus: (updatedAt) => {
             if (!updatedAt) return 'outdated';
             const diffDays = Math.floor((new Date() - new Date(updatedAt)) / (1000 * 60 * 60 * 24));
-            if (diffDays <= 30) return 'recent';
+            if (diffDays <= 60) return 'recent';
             if (diffDays <= 90) return 'warning';
             return 'outdated';
         },
@@ -98,7 +98,21 @@
             // Clear IMMEDIATELY to prevent stale state visualization
             list.innerHTML = '';
 
-            let filtered = versionControls;
+            // 1. DEDUPLICAÇÃO: Manter apenas a última versão por Cliente/Sistema/Ambiente
+            const seenKeys = new Set();
+            const uniqueVersions = [];
+
+            versionControls.forEach(v => {
+                const cId = v.client_id || v.clients?.id;
+                const key = `${cId}|${v.system}|${v.environment}`;
+
+                if (!seenKeys.has(key)) {
+                    seenKeys.add(key);
+                    uniqueVersions.push(v);
+                }
+            });
+
+            let filtered = uniqueVersions;
             const searchInput = document.getElementById('versionSearchInput');
             const search = searchInput ? searchInput.value.toLowerCase() : '';
 
