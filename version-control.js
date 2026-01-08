@@ -70,7 +70,8 @@
             const { data, error } = await window.supabaseClient
                 .from('version_controls')
                 .select(`*, clients (id, name)`)
-                .order('created_at', { ascending: false }); // Prioritize insertion order (LIFO) over user-date
+                .select(`*, clients (id, name)`)
+                .order('updated_at', { ascending: false }); // Primary: User's Date of Update
 
             if (error) throw error;
 
@@ -1134,22 +1135,41 @@
             return new Date(0);
         };
 
-        // ===== REMOVER REGISTROS ANTIGOS (Manter apenas o mais recente por Cliente + Sistema) =====
-        const latestRecordsMap = new Map();
+        // ===== DEDUPLICAÇÃO ROBUSTA (Agrupar e Eleger o Melhor) =====
+        const groups = new Map();
 
-        // Data is already sorted by created_at DESC (LIFO) from keys query
-        // So the first record we find is the latest created one.
         data.forEach(d => {
-            // Chave única: Cliente + Sistema (ex: "ID-Hemote Plus")
             const key = `${d.client_id}-${d.system}`;
-
-            if (!latestRecordsMap.has(key)) {
-                latestRecordsMap.set(key, d);
+            if (!groups.has(key)) {
+                groups.set(key, []);
             }
+            groups.get(key).push(d);
+        });
+
+        const cleanData = [];
+
+        groups.forEach((records, key) => {
+            // Sort records within the exact same Client-System group to find absolute latest
+            records.sort((a, b) => {
+                // 1. Updated Date (User Intent)
+                const dateA = parseDate(a.updated_at).getTime();
+                const dateB = parseDate(b.updated_at).getTime();
+                if (dateA !== dateB) return dateB - dateA;
+
+                // 2. Created Date (Tie breaker for same manual date)
+                const createdA = new Date(a.created_at || 0).getTime();
+                const createdB = new Date(b.created_at || 0).getTime();
+                if (createdA !== createdB) return createdB - createdA;
+
+                // 3. ID (Ultimate stability)
+                return (b.id > a.id) ? 1 : -1;
+            });
+
+            // The winner is the first one
+            cleanData.push(records[0]);
         });
 
         // Usar APENAS os registros mais recentes para o dashboard
-        const cleanData = Array.from(latestRecordsMap.values());
 
         console.log(`📊 [Pulse] Dados Brutos (Produção): ${data.length}`);
         console.log(`📊 [Pulse] Dados Limpos (Apenas Recentes): ${cleanData.length}`);
