@@ -2766,7 +2766,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div class="server-card-header">
                         <div style="display: flex; gap: 8px; align-items: center;">
                             <span class="server-environment producao">VPN</span>
-                            <span class="server-client-badge">${escapeHtml(client.name)}</span>
                         </div>
                         <div class="server-card-actions">
                             ${editButton}
