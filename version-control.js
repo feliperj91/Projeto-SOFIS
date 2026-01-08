@@ -1058,6 +1058,7 @@
         }, 5000);
     };
 
+
     window.closePulseDashboard = function () {
         const modal = document.getElementById('pulseDashboardModal');
         if (modal) modal.classList.add('hidden');
@@ -1067,6 +1068,76 @@
             clearInterval(pulseRefreshInterval);
             pulseRefreshInterval = null;
         }
+    };
+
+    window.printDashboard = function () {
+        // Criar estilos específicos para impressão
+        const printStyles = `
+            <style>
+                @media print {
+                    body * {
+                        visibility: hidden;
+                    }
+                    #pulseDashboardModal,
+                    #pulseDashboardModal * {
+                        visibility: visible;
+                    }
+                    #pulseDashboardModal {
+                        position: absolute;
+                        left: 0;
+                        top: 0;
+                        width: 100%;
+                        background: white !important;
+                    }
+                    .dashboard-overlay {
+                        background: white !important;
+                    }
+                    .dashboard-container {
+                        max-width: 100% !important;
+                        box-shadow: none !important;
+                        background: white !important;
+                    }
+                    .btn-icon-large {
+                        display: none !important;
+                    }
+                    .live-indicator {
+                        display: none !important;
+                    }
+                    .version-link {
+                        color: #000 !important;
+                    }
+                    .dashboard-header {
+                        page-break-after: avoid;
+                    }
+                    .chart-card {
+                        page-break-inside: avoid;
+                        break-inside: avoid;
+                    }
+                    .kpi-card {
+                        page-break-inside: avoid;
+                        break-inside: avoid;
+                    }
+                }
+            </style>
+        `;
+
+        // Adicionar estilos temporariamente
+        const styleElement = document.createElement('div');
+        styleElement.innerHTML = printStyles;
+        document.head.appendChild(styleElement.firstChild);
+
+        // Imprimir
+        setTimeout(() => {
+            window.print();
+
+            // Remover estilos após impressão
+            setTimeout(() => {
+                const printStyle = document.querySelector('style:last-of-type');
+                if (printStyle && printStyle.textContent.includes('@media print')) {
+                    printStyle.remove();
+                }
+            }, 1000);
+        }, 100);
     };
 
     function calculateAndRenderPulse() {
