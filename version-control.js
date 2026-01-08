@@ -1300,6 +1300,30 @@
         });
     }
 
+    // ===== Helper de Cores Unificado (Top & Bottom Consistency) =====
+    const SYSTEM_COLOR_MAP = {
+        'Hemote Plus': '#8b5cf6', // Purple
+        'Hemote Web': '#6366f1',  // Indigo
+        'CellVida': '#10b981',    // Green
+        'Monetário': '#f59e0b',   // Amber
+        'Produção': '#10b981',    // Green
+        'Homologação': '#3b82f6'  // Blue
+    };
+
+    function getPulseSystemColor(sysName) {
+        if (!sysName) return '#6b7280';
+        // Exact match first
+        if (SYSTEM_COLOR_MAP[sysName]) return SYSTEM_COLOR_MAP[sysName];
+
+        // Partial match
+        for (const [key, color] of Object.entries(SYSTEM_COLOR_MAP)) {
+            if (sysName.includes(key)) return color;
+        }
+
+        // Fallback or hash-based color if needed (keeping it gray for safety)
+        return '#6b7280'; // Gray
+    }
+
     // ===== Gráfico 2: Distribuição de Clientes por Sistema =====
     function renderSystemDistributionChart(data, counts) {
         const container = document.getElementById('systemDistChart').parentElement;
@@ -1319,14 +1343,8 @@
         const labels = Object.keys(counts);
         const values = Object.values(counts);
 
-        const colors = [
-            { main: '#6366f1', light: '#6366f1' },  // indigo
-            { main: '#8b5cf6', light: '#8b5cf6' },  // purple
-            { main: '#ec4899', light: '#ec4899' },  // pink
-            { main: '#f59e0b', light: '#f59e0b' },  // orange
-            { main: '#14b8a6', light: '#14b8a6' },  // teal
-            { main: '#3b82f6', light: '#3b82f6' }   // blue
-        ];
+        // Determinar cores baseadas no NOME do sistema (Consistência)
+        const backgroundColors = labels.map(label => getPulseSystemColor(label));
 
         // Renderizar Pizza
         const ctx = document.getElementById('systemPieChart').getContext('2d');
@@ -1338,7 +1356,7 @@
                 labels: labels,
                 datasets: [{
                     data: values,
-                    backgroundColor: colors.map(c => c.main),
+                    backgroundColor: backgroundColors,
                     borderWidth: 3,
                     borderColor: '#ffffff',
                     hoverOffset: 8
@@ -1373,15 +1391,15 @@
         labels.forEach((label, i) => {
             const value = values[i];
             const percentage = ((value / total) * 100).toFixed(1);
-            const color = colors[i % colors.length];
+            const color = getPulseSystemColor(label);
 
             const barHtml = `
                 <div style="display: flex; align-items: center; gap: 12px;">
-                    <div style="width: 12px; height: 12px; border-radius: 50%; background: ${color.main}; flex-shrink: 0;"></div>
+                    <div style="width: 12px; height: 12px; border-radius: 50%; background: ${color}; flex-shrink: 0;"></div>
                     <div style="flex: 1; min-width: 0;">
                         <div style="font-size: 0.85rem; font-weight: 600; color: #374151; margin-bottom: 4px;">${label}</div>
                         <div style="width: 100%; height: 8px; background: #f3f4f6; border-radius: 4px; overflow: hidden;">
-                            <div style="height: 100%; background: ${color.main}; border-radius: 4px; width: ${percentage}%; transition: width 0.6s ease;"></div>
+                            <div style="height: 100%; background: ${color}; border-radius: 4px; width: ${percentage}%; transition: width 0.6s ease;"></div>
                         </div>
                     </div>
                     <div style="font-size: 0.85rem; font-weight: 700; color: #111827; min-width: 80px; text-align: right;">${value} (${percentage}%)</div>
@@ -1509,14 +1527,9 @@
         `;
         container.appendChild(style);
 
-        // Helper de cores
-        function getSystemColor(sysName) {
-            if (sysName.includes('Hemote Plus')) return '#8b5cf6'; // Purple
-            if (sysName.includes('Hemote Web')) return '#6366f1'; // Indigo
-            if (sysName.includes('CellVida')) return '#10b981'; // Green
-            if (sysName.includes('Monetário')) return '#f59e0b'; // Amber
-            return '#6b7280'; // Gray
-        }
+        // Helper de cores (usando a função compartilhada)
+        // getPulseSystemColor já está definido no escopo superior
+
 
         // 2. Gerar HTML dos Cards
         const sortedSystems = Object.keys(systemVersions).sort();
@@ -1532,7 +1545,7 @@
                 }))
                 .sort((a, b) => b.count - a.count || b.version.localeCompare(a.version));
 
-            const sysColor = getSystemColor(sys);
+            const sysColor = getPulseSystemColor(sys);
 
             let listHtml = '';
             versionsList.forEach(item => {
