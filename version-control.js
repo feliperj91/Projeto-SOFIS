@@ -1130,21 +1130,39 @@
                         max-width: 100% !important;
                         box-shadow: none !important;
                         background: white !important;
+                        height: auto !important;
+                        overflow: visible !important;
+                    }
+                    
+                    .dashboard-grid {
+                        height: auto !important;
+                        overflow: visible !important;
                     }
                     
                     @media print {
+                        @page {
+                            size: A4;
+                            margin: 1cm;
+                        }
+                        
                         body {
                             padding: 0;
                         }
                         
-                        .chart-card {
-                            page-break-inside: avoid;
-                            break-inside: avoid;
+                        .dashboard-header {
+                            page-break-after: avoid;
                         }
                         
+                        .chart-card,
                         .kpi-card {
                             page-break-inside: avoid;
                             break-inside: avoid;
+                            margin-bottom: 15px;
+                        }
+                        
+                        /* Permitir quebra entre grupos de cards */
+                        .dashboard-grid {
+                            page-break-inside: auto;
                         }
                     }
                 </style>
