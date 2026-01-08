@@ -196,6 +196,7 @@
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    white-space: nowrap;
 }
 
 .role-text-btn::before {
@@ -214,6 +215,7 @@
 .role-text-btn span {
     position: relative;
     z-index: 5;
+    color: inherit;
 }
 
 .role-text-btn:hover:not(.active) {
@@ -230,7 +232,7 @@
 .role-text-btn.active {
     background: linear-gradient(135deg, var(--accent), var(--accent-hover));
     border-color: var(--accent);
-    color: #1a1a1a;
+    color: #1a1a1a !important;
     font-weight: 600;
     box-shadow: 0 4px 12px rgba(255, 160, 0, 0.3);
 }
