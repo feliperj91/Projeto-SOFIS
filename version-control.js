@@ -723,13 +723,27 @@
             }
         }
 
+        // Get all client IDs that already have version records
+        let clientsWithVersions = new Set();
+        if (window.versionControls && window.versionControls.length > 0) {
+            window.versionControls.forEach(vc => {
+                if (vc.client_id) {
+                    clientsWithVersions.add(vc.client_id);
+                }
+            });
+        }
+
+        // Filter out clients that already have version records
+        const availableClients = clientsToUse.filter(c => !clientsWithVersions.has(c.id));
+
         // Preserve current selection if any
         const currentVal = select.value;
         const isDisabled = select.disabled;
 
         select.innerHTML = '<option value="">Selecione o cliente...</option>';
+
         // Sort explicitly just in case
-        clientsToUse.sort((a, b) => a.name.localeCompare(b.name)).forEach(c => {
+        availableClients.sort((a, b) => a.name.localeCompare(b.name)).forEach(c => {
             const opt = document.createElement('option');
             opt.value = c.id; // Use ID as value
             opt.textContent = c.name;
