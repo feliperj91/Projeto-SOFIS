@@ -69,7 +69,7 @@
             const { data, error } = await window.supabaseClient
                 .from('version_controls')
                 .select(`*, clients (id, name)`)
-                .order('updated_at', { ascending: false });
+                .order('created_at', { ascending: false }); // Prioritize insertion order (LIFO) over user-date
 
             if (error) throw error;
 
@@ -1141,19 +1141,10 @@
 
             if (!latestRecordsMap.has(key)) {
                 latestRecordsMap.set(key, d);
-            } else {
-                const existing = latestRecordsMap.get(key);
-                const existingDate = parseDate(existing.updated_at);
-
-                // Priority: Newer Date > (Equal Date AND Higher ID)
-                if (newDate > existingDate) {
-                    latestRecordsMap.set(key, d);
-                } else if (newDate.getTime() === existingDate.getTime()) {
-                    if (d.id > existing.id) {
-                        latestRecordsMap.set(key, d);
-                    }
-                }
             }
+            // Since data is sorted by updated_at DESC (LIFO), the first record we encounter
+            // is the most recently updated one for this system/client.
+            // We simply ignore subsequent (older) records.
         });
 
         // Usar APENAS os registros mais recentes para o dashboard
