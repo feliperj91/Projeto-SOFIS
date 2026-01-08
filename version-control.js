@@ -1130,21 +1130,15 @@
         // ===== REMOVER REGISTROS ANTIGOS (Manter apenas o mais recente por Cliente + Sistema) =====
         const latestRecordsMap = new Map();
 
-        // Sort data by ID descending first to ensure if dates are equal, latest ID comes first in iteration
-        // (Though we iterate and logic below handles it, sorting helps debugging)
-        data.sort((a, b) => b.id - a.id);
-
+        // Data is already sorted by created_at DESC (LIFO) from keys query
+        // So the first record we find is the latest created one.
         data.forEach(d => {
             // Chave única: Cliente + Sistema (ex: "ID-Hemote Plus")
             const key = `${d.client_id}-${d.system}`;
-            const newDate = parseDate(d.updated_at);
 
             if (!latestRecordsMap.has(key)) {
                 latestRecordsMap.set(key, d);
             }
-            // Since data is sorted by updated_at DESC (LIFO), the first record we encounter
-            // is the most recently updated one for this system/client.
-            // We simply ignore subsequent (older) records.
         });
 
         // Usar APENAS os registros mais recentes para o dashboard
