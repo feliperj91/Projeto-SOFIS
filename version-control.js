@@ -216,7 +216,7 @@
                     <div class="version-row-main">
                         <!-- Left section: System and Badge -->
                         <div class="version-left-info">
-                            <span class="version-system-name">${utils.escapeHtml(v.system)}</span>
+                            <span class="version-system-name">${utils.escapeHtml(v.system || '⚠️ Sem Sistema')}</span>
                             <div class="version-badge-container">
                                 <span class="environment-badge-small ${v.environment}">${v.environment === 'producao' ? 'PRODUÇÃO' : 'HOMOLOGAÇÃO'}</span>
                             </div>
@@ -341,6 +341,13 @@
             // Client Validation
             if (!fields.clientId) {
                 if (window.showToast) window.showToast('⚠️ Selecione um cliente válido da lista sugerida.', 'warning');
+                sofis_isSaving = false;
+                return;
+            }
+
+            // System Validation
+            if (!fields.sys || fields.sys.trim() === '') {
+                if (window.showToast) window.showToast('⚠️ Selecione ou digite um Sistema.', 'warning');
                 sofis_isSaving = false;
                 return;
             }
