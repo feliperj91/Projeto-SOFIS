@@ -427,16 +427,14 @@
             if (window.showToast) window.showToast('Concluído com sucesso!');
             window.closeVersionModal();
 
-            // 1. Refresh Data (Wait for it)
+            // Sutil delay para garantir a consistência do banco antes de ler
+            await new Promise(r => setTimeout(r, 500));
+
+            // Force reload of EVERYTHING
             await loadVersionControls();
 
-            // 2. Explicitly Refresh Dashboard if Open (or if we suspect it's open)
-            // We check if it's NOT hidden, OR if we just removed the hidden class recently (safe check)
-            const dashboardModal = document.getElementById('pulseDashboardModal');
-            if (dashboardModal && !dashboardModal.classList.contains('hidden')) {
-                console.log("🔄 Triggering Dashboard Refresh from Submit...");
-                calculateAndRenderPulse();
-            }
+            // Re-render dashboard unconditionally (just in case it's open or about to be)
+            calculateAndRenderPulse();
 
         } catch (err) {
             console.error('❌ handleVersionSubmit Error:', err);
