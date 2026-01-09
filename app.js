@@ -1,3 +1,53 @@
+// --- Global Modal Utilities ---
+window.openModal = function (modalId) {
+    if (modalId === 'clientModal') modalId = 'modal'; // Mapping for compatibility
+    const el = document.getElementById(modalId);
+    if (el) {
+        el.classList.remove('hidden');
+        // specialized init if needed
+        if (modalId === 'modal') {
+            if (document.getElementById('modalTitle')) document.getElementById('modalTitle').innerText = 'Novo Cliente';
+            if (document.getElementById('clientForm')) document.getElementById('clientForm').reset();
+            if (document.getElementById('clientId')) document.getElementById('clientId').value = '';
+            // Clear dynamic fields
+            const contactList = document.getElementById('contactList');
+            if (contactList) {
+                contactList.innerHTML = `
+                    <div class="contact-group">
+                        <div class="contact-group-header">
+                            <input type="text" class="contact-name-input" placeholder="Nome do contato (ex: João Silva, Comercial)">
+                            <button type="button" class="btn-remove-contact" onclick="removeContact(this)" title="Remover Contato" tabindex="-1">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                        <div class="contact-details">
+                            <div class="contact-section">
+                                <label class="section-label">
+                                    <i class="fa-solid fa-phone"></i> Telefones
+                                    <button type="button" class="btn-add-phone" onclick="addPhone(this)" title="Adicionar Telefone" tabindex="-1"><i class="fa-solid fa-plus"></i></button>
+                                </label>
+                                <div class="phone-list"><div class="contact-field"><input type="text" class="phone-input" placeholder="(11) 99999-9999" maxlength="15"><button type="button" class="btn-remove-field-small" onclick="removeContactField(this)" tabindex="-1"><i class="fa-solid fa-xmark"></i></button></div></div>
+                            </div>
+                            <div class="contact-section">
+                                <label class="section-label">
+                                    <i class="fa-solid fa-envelope"></i> E-mails
+                                    <button type="button" class="btn-add-email" onclick="addEmail(this)" title="Adicionar E-mail" tabindex="-1"><i class="fa-solid fa-plus"></i></button>
+                                </label>
+                                <div class="email-list"><div class="contact-field"><input type="email" class="email-input" placeholder="contato@empresa.com"><button type="button" class="btn-remove-field-small" onclick="removeContactField(this)" tabindex="-1"><i class="fa-solid fa-xmark"></i></button></div></div>
+                            </div>
+                        </div>
+                    </div>`;
+            }
+        }
+    }
+};
+
+window.closeModal = function (modalId) {
+    if (modalId === 'clientModal') modalId = 'modal';
+    const el = document.getElementById(modalId);
+    if (el) el.classList.add('hidden');
+};
+
 document.addEventListener('DOMContentLoaded', async () => {
     // --- Permissions System ---
     window.Permissions = {
@@ -126,59 +176,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     // Re-update display when permissions are loaded/changed
-    // --- Modal Utilities (Moved up to ensure availability) ---
-    window.openModal = function (modalId) {
-        if (modalId === 'clientModal') modalId = 'modal'; // Mapping for compatibility
-        const el = document.getElementById(modalId);
-        if (el) {
-            el.classList.remove('hidden');
-            // specialized init if needed
-            if (modalId === 'modal') {
-                if (document.getElementById('modalTitle')) document.getElementById('modalTitle').innerText = 'Novo Cliente';
-                if (document.getElementById('clientForm')) document.getElementById('clientForm').reset();
-                if (document.getElementById('clientId')) document.getElementById('clientId').value = '';
-                // Clear dynamic fields
-                const contactList = document.getElementById('contactList');
-                if (contactList) {
-                    contactList.innerHTML = `
-                        <div class="contact-group">
-                            <div class="contact-group-header">
-                                <input type="text" class="contact-name-input" placeholder="Nome do contato (ex: João Silva, Comercial)">
-                                <button type="button" class="btn-remove-contact" onclick="removeContact(this)" title="Remover Contato" tabindex="-1">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
-                            </div>
-                            <div class="contact-details">
-                                <div class="contact-section">
-                                    <label class="section-label">
-                                        <i class="fa-solid fa-phone"></i> Telefones
-                                        <button type="button" class="btn-add-phone" onclick="addPhone(this)" title="Adicionar Telefone" tabindex="-1"><i class="fa-solid fa-plus"></i></button>
-                                    </label>
-                                    <div class="phone-list"><div class="contact-field"><input type="text" class="phone-input" placeholder="(11) 99999-9999" maxlength="15"><button type="button" class="btn-remove-field-small" onclick="removeContactField(this)" tabindex="-1"><i class="fa-solid fa-xmark"></i></button></div></div>
-                                </div>
-                                <div class="contact-section">
-                                    <label class="section-label">
-                                        <i class="fa-solid fa-envelope"></i> E-mails
-                                        <button type="button" class="btn-add-email" onclick="addEmail(this)" title="Adicionar E-mail" tabindex="-1"><i class="fa-solid fa-plus"></i></button>
-                                    </label>
-                                    <div class="email-list"><div class="contact-field"><input type="email" class="email-input" placeholder="contato@empresa.com"><button type="button" class="btn-remove-field-small" onclick="removeContactField(this)" tabindex="-1"><i class="fa-solid fa-xmark"></i></button></div></div>
-                                </div>
-                            </div>
-                        </div>`;
-                }
-            }
-        }
-    };
-
-    window.closeModal = function (modalId) {
-        if (modalId === 'clientModal') modalId = 'modal';
-        const el = document.getElementById(modalId);
-        if (el) el.classList.add('hidden');
-    };
-
-    // Explicitly expose to window to be safe
-    window.openModal = window.openModal;
-    window.closeModal = window.closeModal;
+    // --- Modal Utilities (Moved to global scope) ---
 
     document.addEventListener('permissions-loaded', () => {
         console.log("🔒 Permissions Loaded Event: Applying Visibility...");
