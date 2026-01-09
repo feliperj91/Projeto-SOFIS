@@ -1459,7 +1459,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 urls: client.urls
             };
 
-            if (client.id && client.id.length > 10) { // Simple check for UUID-like ID
+            // Timestamp IDs (13 digits) are temporary and should be treated as new creations
+            const isTempId = (id) => typeof id === 'string' && /^\d{13}$/.test(id);
+            const isRealId = client.id && (client.id.length < 13 || (client.id.length > 13 && !isTempId(client.id)));
+
+            if (isRealId && client.id.length > 0) {
                 await window.api.clients.update(client.id, clientData);
             } else {
                 await window.api.clients.create(clientData);
