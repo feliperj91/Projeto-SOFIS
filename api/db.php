@@ -2,6 +2,10 @@
 // api/db.php
 header('Content-Type: application/json');
 
+// Enable error reporting for debugging
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
 // Allow CORS during development (Adjust for production)
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");

@@ -126,25 +126,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     // Re-update display when permissions are loaded/changed
-    document.addEventListener('permissions-loaded', () => {
-        console.log("🔒 Permissions Loaded Event: Applying Visibility...");
-        if (window.updateUserDisplay) window.updateUserDisplay();
-        window.applyPermissions();
-    });
-
-    // Load permissions immediately
-    await window.Permissions.load();
-
-    // State Variables
-    let clients = [];
-    window.clients = clients; // Ensure window.clients is always the current array
-    let editingId = null;
-    let currentClientFilter = 'all';
-    let favoritesCollapsed = JSON.parse(localStorage.getItem('sofis_favorites_collapsed')) || false;
-    let regularCollapsed = JSON.parse(localStorage.getItem('sofis_regular_collapsed')) || false;
-    let isModalFavorite = false;
-
-    // --- Modal Utilities ---
+    // --- Modal Utilities (Moved up to ensure availability) ---
     window.openModal = function (modalId) {
         if (modalId === 'clientModal') modalId = 'modal'; // Mapping for compatibility
         const el = document.getElementById(modalId);
@@ -193,6 +175,30 @@ document.addEventListener('DOMContentLoaded', async () => {
         const el = document.getElementById(modalId);
         if (el) el.classList.add('hidden');
     };
+
+    // Explicitly expose to window to be safe
+    window.openModal = window.openModal;
+    window.closeModal = window.closeModal;
+
+    document.addEventListener('permissions-loaded', () => {
+        console.log("🔒 Permissions Loaded Event: Applying Visibility...");
+        if (window.updateUserDisplay) window.updateUserDisplay();
+        window.applyPermissions();
+    });
+
+    // Load permissions immediately
+    await window.Permissions.load();
+
+    // State Variables
+    let clients = [];
+    window.clients = clients; // Ensure window.clients is always the current array
+    let editingId = null;
+    let currentClientFilter = 'all';
+    let favoritesCollapsed = JSON.parse(localStorage.getItem('sofis_favorites_collapsed')) || false;
+    let regularCollapsed = JSON.parse(localStorage.getItem('sofis_regular_collapsed')) || false;
+    let isModalFavorite = false;
+
+    // --- Modal Utilities (Moved to top) ---
 
     // Close buttons handlers
     document.addEventListener('DOMContentLoaded', () => {
