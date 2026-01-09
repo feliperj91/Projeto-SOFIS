@@ -1662,7 +1662,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             // Check for duplicates across other clients (only phones)
-            const otherClients = clients.filter(c => c.id !== editingId);
+            const otherClients = clients.filter(c => c.id != editingId);
 
             for (const phone of allPhones) {
                 for (const client of otherClients) {
@@ -1679,7 +1679,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // If in addContact mode, also check against existing contacts of the SAME client
             if (mode === 'addContact' && editingId) {
-                const currentClient = clients.find(c => c.id === editingId);
+                const currentClient = clients.find(c => c.id == editingId);
                 if (currentClient && currentClient.contacts) {
                     for (const phone of allPhones) {
                         for (const existingContact of currentClient.contacts) {
@@ -1692,7 +1692,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
 
-            const clientBefore = editingId ? JSON.parse(JSON.stringify(clients.find(c => c.id === editingId) || {})) : null;
+            const clientBefore = editingId ? JSON.parse(JSON.stringify(clients.find(c => c.id == editingId) || {})) : null;
 
             const newClient = {
                 id: editingId || Date.now().toString(),
@@ -1705,7 +1705,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // ... updates to clients array ...
             let addedContactNames = '';
             if (editingId && mode !== 'addContact') {
-                const clientToUpdate = clients.find(c => c.id === editingId);
+                const clientToUpdate = clients.find(c => c.id == editingId);
 
                 // Check if only name changed
                 const nameChanged = clientToUpdate.name !== newClient.name;
@@ -1719,10 +1719,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     newClient.updatedAt = clientToUpdate.updatedAt;
                 }
 
-                clients = clients.map(c => c.id === editingId ? newClient : c);
+                clients = clients.map(c => c.id == editingId ? newClient : c);
                 showToast(`✅ Cliente "${newClient.name}" atualizado com sucesso!`, 'success');
             } else if (editingId && mode === 'addContact') {
-                const clientToUpdate = clients.find(c => c.id === editingId);
+                const clientToUpdate = clients.find(c => c.id == editingId);
                 if (clientToUpdate) {
                     if (!clientToUpdate.contacts) clientToUpdate.contacts = [];
                     clientToUpdate.contacts.push(...contacts);
@@ -1740,8 +1740,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             await saveToLocal(newClient.id);
             renderClients(clients);
 
-            if (!contactModal.classList.contains('hidden') && contactModalClientId.value === editingId) {
-                const clientToRefresh = clients.find(c => c.id === editingId);
+            if (!contactModal.classList.contains('hidden') && contactModalClientId.value == editingId) {
+                const clientToRefresh = clients.find(c => c.id == editingId);
                 if (clientToRefresh) {
                     renderContactModalList(clientToRefresh);
                 }
@@ -1753,7 +1753,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             const opType = editingId ? 'EDIÇÃO' : 'CRIAÇÃO';
             const actionLabel = editingId ? (mode === 'addContact' ? 'Adição de Contato' : 'Edição de Cliente') : 'Novo Cliente';
-            const clientAfter = JSON.parse(JSON.stringify(clients.find(c => c.id === newClient.id) || newClient));
+            const clientAfter = JSON.parse(JSON.stringify(clients.find(c => c.id == newClient.id) || newClient));
 
             let details = `Cliente: ${newClient.name}`;
             if (addedContactNames) details += `, Contato: ${addedContactNames}`;
