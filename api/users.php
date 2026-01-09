@@ -36,7 +36,17 @@ switch ($method) {
                 $input['full_name'],
                 $passwordHash,
                 $input['role'] ?? 'TECNICO',
-                json_encode($input['permissions'] ?? new stdClass())
+                // If permissions logic is empty, try to fetch defaults from database or use empty object
+                (!empty($input['permissions']) ? json_encode($input['permissions']) : 
+                    (function($pdo, $role) {
+                        try {
+                            $stmt = $pdo->prepare("SELECT permissions FROM role_permissions WHERE role = ?");
+                            $stmt->execute([$role]);
+                            $res = $stmt->fetchColumn();
+                            return $res ? $res : '{}';
+                        } catch(Exception $e) { return '{}'; }
+                    })($pdo, $input['role'] ?? 'TECNICO')
+                )
             ]);
             
             // Try to get ID, but if it fails (e.g. no sequence), just return success since execute worked

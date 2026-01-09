@@ -1,4 +1,4 @@
-console.log("🚀 APP VERSION: FORCE_777 LOADED");
+console.log("🚀 APP VERSION: FORCE_PERMISSIONS_FIX LOADED");
 // --- Global Modal Utilities ---
 window.openModal = function (modalId) {
     if (modalId === 'clientModal') modalId = 'modal'; // Mapping for compatibility
