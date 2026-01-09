@@ -905,22 +905,16 @@
                 .map(v => v.system)
             )].filter(s => s && s.trim() !== ''); // Remove null/undefined/empty
 
-            console.log('🔍 Sistemas do cliente:', clientSystems);
-
             // Sort alphabetically
             clientSystems.sort((a, b) => a.localeCompare(b));
 
             // Add each system as an option
-            clientSystems.forEach((systemName, index) => {
-                console.log(`  ➡️ Adicionando produto ${index + 1}:`, systemName);
+            clientSystems.forEach((systemName) => {
                 const opt = document.createElement('option');
                 opt.value = systemName;
                 opt.textContent = systemName;
                 sysFilter.appendChild(opt);
             });
-
-            console.log('✅ Dropdown populado com', clientSystems.length, 'produtos');
-            console.log('📋 HTML do dropdown:', sysFilter.innerHTML);
         }
 
         renderHistoryLoading();
