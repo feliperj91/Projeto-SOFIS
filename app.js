@@ -5,72 +5,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         rules: {},
 
         async load() {
-            if (!window.supabaseClient) {
-                console.error('❌ Permissions: Supabase Client not found.');
-                return;
-            }
-
             try {
-                let foundRole = null;
-                let source = 'DEFAULT';
+                // Check Session via API
+                const session = await window.api.auth.checkSession();
 
-                // 1. Prioridade: Usuário Logado via Formulário (Legacy/Custom)
-                const localUser = JSON.parse(localStorage.getItem('sofis_user') || '{}');
-                if (localUser.username) {
-                    const { data: userData } = await window.supabaseClient
-                        .from('users')
-                        .select('role')
-                        .eq('username', localUser.username)
-                        .maybeSingle();
+                if (session.authenticated && session.user) {
+                    this.userRole = session.user.role;
+                    // For now, load default rules based on role, or from session if backend provides them
+                    // Since backend stores permissions in JSON column, we can use that!
+                    this.rules = session.user.permissions || {};
 
-                    if (userData) {
-                        foundRole = userData.role;
-                        source = 'DATABASE (users table)';
-
-                        // Sync localStorage
-                        if (localUser.role !== foundRole) {
-                            console.log(`🔄 Syncing role for ${localUser.username}: ${localUser.role} -> ${foundRole}`);
-                            localUser.role = foundRole;
-                            localStorage.setItem('sofis_user', JSON.stringify(localUser));
-                        }
-                    } else {
-                        foundRole = localUser.role;
-                        source = 'LOCALSTORAGE (cache)';
-                    }
+                    console.log(`🔒 Permissions: [${this.userRole}] loaded via API.`);
+                } else {
+                    console.warn('🔒 Permissions: No active session.');
+                    this.userRole = 'TECNICO'; // Default low priv
                 }
 
-                // 2. Secundário: Sessão do Supabase Auth (se não houver login local)
-                if (!foundRole) {
-                    const { data: { session } } = await window.supabaseClient.auth.getSession();
-                    if (session && session.user) {
-                        foundRole = session.user.user_metadata.role;
-                        source = 'SUPABASE AUTH SESSION';
-                    }
-                }
-
-                this.userRole = (foundRole || 'TECNICO').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
-
-                // 4. Carregar regras de permissão para o cargo identificado
-                const { data, error } = await window.supabaseClient
-                    .from('role_permissions')
-                    .select('*')
-                    .eq('role_name', this.userRole);
-
-                if (error) throw error;
-
-                this.rules = {};
-                if (data && data.length > 0) {
-                    data.forEach(r => {
-                        this.rules[r.module] = r;
-                    });
-                }
-
-                console.log(`🔒 Permissions: [${this.userRole}] detected via ${source}. Rules loaded: ${Object.keys(this.rules).length}`);
-
-                // Trigger event for other modules
+                // Trigger event
                 document.dispatchEvent(new CustomEvent('permissions-loaded'));
-
-                // Apply Global Visibility
                 if (window.applyPermissions) window.applyPermissions();
             } catch (e) {
                 console.error('❌ Permissions: Error during load:', e);
@@ -187,21 +139,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function loadUserFavorites() {
         const user = JSON.parse(localStorage.getItem('sofis_user') || '{}');
-        if (!user.username || !window.supabaseClient) return;
+        if (!user.username) return;
 
-        try {
-            const { data, error } = await window.supabaseClient
-                .from('user_favorites')
-                .select('client_id')
-                .eq('username', user.username);
-
-            if (data) {
-                window.userFavorites = new Set(data.map(f => f.client_id));
-            }
-        } catch (e) {
-            console.error('Error loading favorites:', e);
-        }
+        // Use localStorage for favorites in local version
+        const key = `sofis_favorites_${user.username}`;
+        const stored = JSON.parse(localStorage.getItem(key) || '[]');
+        window.userFavorites = new Set(stored);
     }
+
+    // Helper to save favorites
+    window.saveUserFavorites = () => {
+        const user = JSON.parse(localStorage.getItem('sofis_user') || '{}');
+        if (!user.username) return;
+
+        const key = `sofis_favorites_${user.username}`;
+        localStorage.setItem(key, JSON.stringify(Array.from(window.userFavorites)));
+    };
     let currentView = localStorage.getItem('sofis_view_mode') || 'list'; // 'list' or 'grid'
 
     // --- Audit Log Helper ---
@@ -242,7 +195,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         };
 
-        if (window.supabaseClient) {
+        if (window.api && window.api.logs) {
             try {
                 let cName = (newVal && newVal.name) || (oldVal && oldVal.name);
 
@@ -254,7 +207,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
                 }
 
-                await window.supabaseClient.from('audit_logs').insert([{
+                await window.api.logs.create({
                     username: username,
                     operation_type: opType,
                     action: action,
@@ -262,9 +215,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     old_value: sanitize(oldVal),
                     new_value: sanitize(newVal),
                     client_name: cName || null
-                }]);
+                });
                 // Refresh activity feed if sidebar is open or after an action
-                await fetchRecentActivities();
+                if (typeof fetchRecentActivities === 'function') await fetchRecentActivities();
             } catch (err) {
                 console.error('Erro ao registrar log:', err);
             }
@@ -544,80 +497,52 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Initial Render
+    // Initial Render
     async function initialLoad() {
         renderSkeleton();
-        if (window.supabaseClient) {
-            try {
-                // Fetch all data optimized with Joins
-                const { data: dbClients, error } = await window.supabaseClient
-                    .from('clients')
-                    .select(`
-                        *,
-                        contacts (*),
-                        servers (*),
-                        vpns (*),
-                        urls (*)
-                    `)
-                    .order('name');
 
-                if (error) throw error;
-
-                if (dbClients) {
-                    clients = await Promise.all(dbClients.map(async c => ({
-                        id: c.id,
-                        name: c.name,
-                        seqId: c.seq_id,
-                        updatedAt: c.updated_at,
-                        isFavorite: c.is_favorite,
-                        notes: c.notes,
-                        webLaudo: c.web_laudo,
-                        contacts: await Promise.all((c.contacts || []).map(async con => ({
-                            name: con.name,
-                            phones: await Promise.all((con.phones || []).map(async p => await Security.decrypt(p))),
-                            emails: await Promise.all((con.emails || []).map(async e => await Security.decrypt(e)))
-                        }))),
-                        servers: await Promise.all((c.servers || []).map(async s => ({
-                            environment: s.environment,
-                            sqlServer: s.sql_server,
-                            notes: s.notes,
-                            credentials: await Promise.all((s.credentials || []).map(async cred => ({
-                                user: await Security.decrypt(cred.user),
-                                password: await Security.decrypt(cred.password)
-                            })))
-                        }))),
-                        vpns: await Promise.all((c.vpns || []).map(async v => ({
-                            user: v.username,
-                            password: await Security.decrypt(v.password),
-                            notes: v.notes
-                        }))),
-                        urls: (c.urls || []).map(u => ({
-                            environment: u.environment,
-                            system: u.system,
-                            bridgeDataAccess: u.bridge_data_access,
-                            bootstrap: u.bootstrap,
-                            execUpdate: u.exec_update,
-                            notes: u.notes
-                        }))
-                    })));
-
-                    // Load user favorites and apply
-                    await loadUserFavorites();
-                    clients.forEach(c => {
-                        c.isFavorite = window.userFavorites.has(c.id);
-                    });
-
-                } else {
-                    clients = JSON.parse(localStorage.getItem('sofis_clients')) || [];
-                }
-            } catch (err) {
-                console.error('Erro ao carregar do Supabase:', err);
-                clients = JSON.parse(localStorage.getItem('sofis_clients')) || [];
+        try {
+            // Check API availability
+            if (!window.api || !window.api.clients) {
+                console.error('API service unavailable');
+                clients = [];
+                return;
             }
-        } else {
-            clients = JSON.parse(localStorage.getItem('sofis_clients')) || [];
+
+            // Fetch all data from API
+            const dbClients = await window.api.clients.list();
+
+            if (dbClients && Array.isArray(dbClients)) {
+                clients = dbClients.map(c => ({
+                    id: c.id,
+                    name: c.name,
+                    seqId: c.seq_id || c.id, // Fallback if no seq_id
+                    updatedAt: c.updated_at,
+                    isFavorite: false, // will load later
+                    notes: c.notes,
+                    webLaudo: c.web_laudo,
+                    // arrays are already decoded by API PHP
+                    contacts: c.contacts || [],
+                    servers: c.servers || [],
+                    vpns: c.vpns || [],
+                    urls: c.urls || []
+                }));
+
+                // Load user favorites and apply
+                await loadUserFavorites();
+                clients.forEach(c => {
+                    c.isFavorite = window.userFavorites.has(c.id);
+                });
+
+            } else {
+                clients = [];
+            }
+        } catch (err) {
+            console.error('Erro ao carregar do API:', err);
+            clients = [];
         }
 
-        // Clean duplicates
+        // Clean duplicates (shouldn't happen with API but good safety)
         const uniqueClients = [];
         const seenIds = new Set();
         clients.forEach(client => {
@@ -632,7 +557,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderClients(clients);
         updateFilterCounts();
         applyViewMode();
-        fetchRecentActivities();
+        if (typeof fetchRecentActivities === 'function') fetchRecentActivities();
         if (window.populateVersionClientSelect) {
             window.populateVersionClientSelect();
         }
@@ -1447,119 +1372,41 @@ document.addEventListener('DOMContentLoaded', async () => {
         contactModalList.innerHTML = contactsHTML;
     }
 
-    // Save data to localStorage and Supabase
-    async function saveToLocal(specificClientId = null) {
-        localStorage.setItem('sofis_clients', JSON.stringify(clients));
-        updateFilterCounts();
+    // Save to API
+    async function saveClientToApi(client) {
+        try {
+            const clientData = {
+                name: client.name,
+                document: client.document,
+                notes: client.notes,
+                contacts: client.contacts,
+                servers: client.servers,
+                vpns: client.vpns,
+                urls: client.urls
+            };
 
-        // Persist to Supabase if available
-        if (window.supabaseClient) {
-            if (specificClientId) {
-                // Only sync the specific client that was modified
-                const client = clients.find(c => c.id === specificClientId);
-                if (client) {
-                    await syncClientToSupabase(client);
-                }
+            if (client.id && client.id.length > 10) { // Simple check for UUID-like ID
+                await window.api.clients.update(client.id, clientData);
             } else {
-                // Sync all clients (used for initial load or bulk operations)
-                for (const client of clients) {
-                    await syncClientToSupabase(client);
-                }
+                await window.api.clients.create(clientData);
             }
+
+            // Reload clients to ensure everything is synced
+            await initialLoad();
+
+        } catch (e) {
+            console.error("Erro ao salvar cliente na API:", e);
+            throw e;
         }
     }
 
-    async function syncClientToSupabase(client) {
-        if (!window.supabaseClient) return;
-
-        const clientData = {
-            name: client.name,
-            is_favorite: !!client.isFavorite,
-            notes: client.notes || '',
-            web_laudo: client.webLaudo || ''
-        };
-
-        try {
-            let clientId = client.id;
-            const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(clientId);
-
-            let result;
-            if (isUUID) {
-                result = await window.supabaseClient.from('clients').upsert({ id: clientId, ...clientData }).select().single();
-            } else {
-                // New client or old localStorage ID
-                result = await window.supabaseClient.from('clients').insert(clientData).select().single();
-                if (result.data) {
-                    // Update local ID to the new UUID and capture seqId
-                    client.id = result.data.id;
-                    client.seqId = result.data.seq_id;
-                    clientId = result.data.id;
-                    localStorage.setItem('sofis_clients', JSON.stringify(clients));
-                }
-            }
-
-            if (result.error) throw result.error;
-
-            // Update local updatedAt with the value from Supabase
-            if (result.data && result.data.updated_at) {
-                client.updatedAt = result.data.updated_at;
-                client.seqId = result.data.seq_id;
-            }
-
-            // Sync related tables - Delete and Re-insert for simplicity
-            await window.supabaseClient.from('contacts').delete().eq('client_id', clientId);
-            if (client.contacts?.length > 0) {
-                const encryptedContacts = await Promise.all(client.contacts.map(async c => ({
-                    client_id: clientId,
-                    name: c.name,
-                    phones: await Promise.all((c.phones || []).map(async p => await Security.encrypt(p))),
-                    emails: await Promise.all((c.emails || []).map(async e => await Security.encrypt(e)))
-                })));
-                await window.supabaseClient.from('contacts').insert(encryptedContacts);
-            }
-
-            await window.supabaseClient.from('servers').delete().eq('client_id', clientId);
-            if (client.servers?.length > 0) {
-                const encryptedServers = await Promise.all(client.servers.map(async s => ({
-                    client_id: clientId,
-                    environment: s.environment,
-                    sql_server: s.sqlServer,
-                    notes: s.notes || '',
-                    credentials: await Promise.all((s.credentials || []).map(async cred => ({
-                        user: await Security.encrypt(cred.user),
-                        password: await Security.encrypt(cred.password)
-                    })))
-                })));
-                await window.supabaseClient.from('servers').insert(encryptedServers);
-            }
-
-            await window.supabaseClient.from('vpns').delete().eq('client_id', clientId);
-            if (client.vpns?.length > 0) {
-                const encryptedVpns = await Promise.all(client.vpns.map(async v => ({
-                    client_id: clientId,
-                    username: v.user,
-                    password: await Security.encrypt(v.password),
-                    notes: v.notes || ''
-                })));
-                await window.supabaseClient.from('vpns').insert(encryptedVpns);
-            }
-
-            await window.supabaseClient.from('urls').delete().eq('client_id', clientId);
-            if (client.urls?.length > 0) {
-                await window.supabaseClient.from('urls').insert(client.urls.map(u => ({
-                    client_id: clientId,
-                    environment: u.environment,
-                    system: u.system,
-                    bridge_data_access: u.bridgeDataAccess,
-                    bootstrap: u.bootstrap || '',
-                    exec_update: u.exec_update || '',
-                    notes: u.notes || ''
-                })));
-            }
-        } catch (err) {
-            console.error('Erro ao sincronizar com Supabase:', err);
-            const errorMsg = err.message || (err.error_description) || 'Erro desconhecido';
-            showToast(`❌ Erro no Banco: ${errorMsg}`, 'error');
+    // Deprecated: saveToLocal is now just a bridge to API for compatibility with existing calls
+    async function saveToLocal(specificClientId = null) {
+        if (specificClientId) {
+            const client = clients.find(c => c.id === specificClientId);
+            if (client) await saveClientToApi(client);
+        } else {
+            console.warn("saveToLocal called without specificClientId - this might be inefficient");
         }
     }
 
@@ -1876,16 +1723,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const toastId = showToast('⏳ Excluindo cliente...', 'info'); // Assuming showToast returns ID or we just rely on replacement
 
         try {
-            // 1. Delete from Supabase FIRST (Authority)
-            if (window.supabaseClient) {
-                const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-                if (isUUID) {
-                    const { error } = await window.supabaseClient.from('clients').delete().eq('id', id);
-                    if (error) throw error;
-                } else {
-                    console.warn('Skipping Supabase delete for non-UUID id:', id);
-                }
-            }
+            // 1. Delete from API
+            await window.api.clients.delete(id);
 
             // 2. Register Log (Wait for it)
             if (window.registerAuditLog) {
@@ -2188,28 +2027,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             if (isFav) {
                 // Remove
-                const { error } = await window.supabaseClient
-                    .from('user_favorites')
-                    .delete()
-                    .eq('username', user.username)
-                    .eq('client_id', id);
-
-                if (!error) {
-                    window.userFavorites.delete(id);
-                    client.isFavorite = false;
-                    await registerAuditLog('EDIÇÃO', 'Remoção de Favorito', `Cliente: ${client.name}`, { isFavorite: true }, { isFavorite: false });
-                }
+                await window.api.favorites.remove(user.username, id);
+                window.userFavorites.delete(id);
+                client.isFavorite = false;
+                await registerAuditLog('EDIÇÃO', 'Remoção de Favorito', `Cliente: ${client.name}`, { isFavorite: true }, { isFavorite: false });
             } else {
                 // Add
-                const { error } = await window.supabaseClient
-                    .from('user_favorites')
-                    .insert([{ username: user.username, client_id: id }]);
-
-                if (!error) {
-                    window.userFavorites.add(id);
-                    client.isFavorite = true;
-                    await registerAuditLog('EDIÇÃO', 'Adição de Favorito', `Cliente: ${client.name}`, { isFavorite: false }, { isFavorite: true });
-                }
+                await window.api.favorites.add(user.username, id);
+                window.userFavorites.add(id);
+                client.isFavorite = true;
+                await registerAuditLog('EDIÇÃO', 'Adição de Favorito', `Cliente: ${client.name}`, { isFavorite: false }, { isFavorite: true });
             }
             applyClientFilter();
         } catch (e) {
@@ -3385,18 +3212,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // --- Activity Feed Functions ---
+    // --- Activity Feed Functions ---
     async function fetchRecentActivities() {
-        if (!window.supabaseClient || !activityList) return;
+        if (!window.api || !window.api.logs || !activityList) return;
 
         try {
-            const { data, error } = await window.supabaseClient
-                .from('audit_logs')
-                .select('*')
-                .order('created_at', { ascending: false })
-                .limit(10);
-
-            if (error) throw error;
-            renderActivityFeed(data);
+            const logs = await window.api.logs.list({ limit: 10 });
+            renderActivityFeed(logs);
         } catch (err) {
             console.error('Erro ao buscar atividades:', err);
         }
@@ -3469,25 +3291,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             historyModal.classList.remove('hidden');
         }
 
-        if (!window.supabaseClient) {
-            if (historyList) historyList.innerHTML = '<div style="padding: 20px; text-align: center;">Histórico indisponível offline.</div>';
+        if (!window.api || !window.api.logs) {
+            if (historyList) historyList.innerHTML = '<div style="padding: 20px; text-align: center;">Histórico indisponível.</div>';
             return;
         }
 
         try {
-            // FILTER BY TEXT MATCH on 'details' column because jsonb IDs are inconsistent across operation types
-            // "Cliente: CLIENT_NAME" is the standard format used in registerAuditLog
-            const searchTerm = `Cliente: ${client.name}`;
-
-            const { data, error } = await window.supabaseClient
-                .from('audit_logs')
-                .select('*')
-                .ilike('details', `%${searchTerm}%`)
-                .order('created_at', { ascending: false })
-                .limit(10);
-
-            if (error) throw error;
-
+            const data = await window.api.logs.list({ client_name: client.name });
             renderClientHistory(data);
 
         } catch (err) {
@@ -3495,6 +3305,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (historyList) historyList.innerHTML = '<div style="color:var(--danger); padding: 20px; text-align: center;">Erro ao carregar histórico.</div>';
         }
     };
+
+
 
     function renderClientHistory(logs) {
         if (!historyList) return;

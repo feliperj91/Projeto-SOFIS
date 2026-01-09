@@ -134,7 +134,8 @@
     <div id="toast" class="toast hidden"></div>
 
     <script src="security.js?v=1.0"></script>
-    <script src="supabase-client.js?v=1.6"></script>
+    <script src="security.js?v=1.0"></script>
+    <script src="api-service.js?v=1.0"></script>
     <script>
         // Update Build Number Dynamically
         if (window.SOFIS_BUILD) {
@@ -191,50 +192,41 @@
                     return;
                 }
 
+                // Show loading state (optional: add visual feedback here)
+
                 try {
-                    if (!window.supabaseClient) {
-                        showToast('Erro: Cliente de banco de dados não inicializado.', 'error');
+                    // Check if API is available
+                    if (!window.api || !window.api.auth) {
+                        console.error('API service not loaded');
+                        showToast('Erro interno: Serviço de API indisponível.', 'error');
                         return;
                     }
 
-                    // 1. Fetch user by username ONLY
-                    const { data, error } = await window.supabaseClient
-                        .from('users')
-                        .select('*')
-                        .eq('username', username)
-                        .maybeSingle();
+                    // Authenticate via PHP Backend
+                    const data = await window.api.auth.signIn(username, password);
 
-                    if (error) throw error;
+                    // Success! Store user info (server response structure is { success: true, user: {...} })
+                    if (data && data.user) {
+                        localStorage.setItem('sofis_user', JSON.stringify({
+                            id: data.user.id,
+                            username: data.user.username,
+                            fullName: data.user.full_name,
+                            role: data.user.role || 'TECNICO',
+                            permissions: data.user.permissions // Store permissions if needed
+                        }));
 
-                    if (!data) {
-                        showToast('Usuário ou senha incorretos.', 'error');
-                        return;
+                        showToast('Login realizado com sucesso!');
+                        setTimeout(() => {
+                            window.location.href = 'index.html';
+                        }, 1000);
+                    } else {
+                        throw new Error('Dados de usuário inválidos.');
                     }
-
-                    // 2. Decrypt and compare
-                    const decryptedPassword = await Security.decrypt(data.password);
-
-                    if (decryptedPassword !== password) {
-                        showToast('Usuário ou senha incorretos.', 'error');
-                        return;
-                    }
-
-                    // Success! Store user info
-                    localStorage.setItem('sofis_user', JSON.stringify({
-                        id: data.id,
-                        username: data.username,
-                        fullName: data.full_name,
-                        role: data.role
-                    }));
-
-                    showToast('Login realizado com sucesso!');
-                    setTimeout(() => {
-                        window.location.href = 'index.html';
-                    }, 1000);
 
                 } catch (err) {
                     console.error('Erro no login:', err);
-                    showToast('Erro ao tentar realizar login. Tente novamente.', 'error');
+                    const msg = err.message || 'Erro ao tentar realizar login. Tente novamente.';
+                    showToast(msg, 'error');
                 }
             });
 

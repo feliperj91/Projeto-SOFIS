@@ -255,20 +255,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function loadUsers() {
-        if (!window.supabaseClient) return;
+        if (!window.api || !window.api.users) return;
         renderSkeletons();
         try {
-            const { data, error } = await window.supabaseClient
-                .from('users')
-                .select('*')
-                .order('created_at', { ascending: false });
-
-            if (error) throw error;
+            const data = await window.api.users.list();
+            // API returns array directly
             usersList = data || [];
-            console.log('📊 Usuários carregados:', usersList.length, usersList);
+            console.log('📊 Usuários carregados:', usersList.length);
             renderUsers(usersList);
         } catch (err) {
             console.error('Erro ao carregar usuários:', err.message);
+            if (window.showToast) window.showToast('Erro ao carregar usuários.', 'error');
         }
     }
 
@@ -395,9 +392,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (document.getElementById('userFullName')) document.getElementById('userFullName').value = u.full_name || '';
         if (document.getElementById('userUsername')) document.getElementById('userUsername').value = u.username;
 
-        // Decrypt password for editing
-        const decryptedPass = await Security.decrypt(u.password);
-        if (document.getElementById('userPassword')) document.getElementById('userPassword').value = decryptedPass;
+        if (document.getElementById('userUsername')) document.getElementById('userUsername').value = u.username;
+
+        // Password field always empty on edit for security
+        if (document.getElementById('userPassword')) document.getElementById('userPassword').value = '';
 
         if (document.getElementById('userRoleSelect')) document.getElementById('userRoleSelect').value = u.role || 'TECNICO';
 
@@ -440,7 +438,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const formData = {
             full_name: currentFullName,
             username: currentUsername,
-            password: await Security.encrypt(currentPassword),
+            password: currentPassword, // Send plain password, API handles hashing
             role: currentRole
         };
 
@@ -461,33 +459,44 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (id) {
                 oldVal = usersList.find(x => x.id === id);
-                res = await window.supabaseClient.from('users').update(formData).eq('id', id);
+                // Update via API
+                // Note: API only updates password if provided and not empty
+                const updateData = { ...formData };
+                if (!updateData.password) delete updateData.password; // If empty, don't send (though API checks !empty)
+
+                res = await window.api.users.update(id, updateData);
 
                 // Generate Diff Details
                 const changes = [];
                 if (oldVal.username !== formData.username) changes.push(`Usuário de '${oldVal.username}' para '${formData.username}'`);
                 if (oldVal.role !== formData.role) changes.push(`Cargo de '${oldVal.role}' para '${formData.role}'`);
-
-                // Password check: We compare encrypted values if possible, or assume change if input was interacted with.
-                // Since we treat the input as the source of truth and encrypt it, checking equality of ciphertexts is tricky due to IVs.
-                // However, we can check if the displayed 'decrypted' password in the UI was different.
-                // Simplified: If the user clicked save, and the password field has value, we log it was updated (safest).
-                // Or better: In a real app we wouldn't show the password.
-                // Let's just say "Senha atualizada" if it's an edit.
-                // Warning: Current implementation encrypts every save, changing the hash.
-                changes.push('Dados/Senha atualizados');
+                if (updateData.password) changes.push('Senha atualizada');
 
                 details = `Alterações: ${changes.join(', ')}`;
 
             } else {
-                // Check username uniqueness
-                const { data: existing } = await window.supabaseClient.from('users').select('id').eq('username', formData.username).maybeSingle();
-                if (existing) {
-                    window.showToast('Este usuário já existe!', 'danger');
-                    return;
-                }
-                res = await window.supabaseClient.from('users').insert([formData]);
+                // Check username uniqueness? API handles it (UNIQUE constraint) but we can catch error
+
+                res = await window.api.users.create(formData);
                 details = `Novo usuário: ${formData.full_name} (${formData.role})`;
+            }
+
+            // Check API response success? API methods throw if not ok, or return json
+            // My api-service.js methods return res.json().
+            // If create/update returns success: true, we differ.
+            // But api-service.js throws on res.ok === false.
+            // So if we are here, it succeeded.
+
+            // Audit Log
+            if (window.registerAuditLog) {
+                // Fix oldVal passed to audit (should be clean object)
+                await window.registerAuditLog(
+                    'SECURITY',
+                    actionText,
+                    `${actionText}: ${formData.full_name} (@${formData.username}). ${details}`,
+                    oldVal,
+                    { ...formData, password: '***' }
+                );
             }
 
             if (res.error) throw res.error;
@@ -548,8 +557,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!confirmed) return;
 
         try {
-            const { error } = await window.supabaseClient.from('users').delete().eq('id', id);
-            if (error) throw error;
+            if (window.api && window.api.users) {
+                await window.api.users.delete(id);
+            } else {
+                throw new Error("API unavailable");
+            }
 
             // Audit Log
             if (window.registerAuditLog) {
@@ -572,14 +584,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- Permissions Logic ---
     async function loadPermissions(role) {
-        if (!window.supabaseClient) return;
+        if (!window.api || !window.api.permissions) return;
         try {
-            const { data, error } = await window.supabaseClient
-                .from('role_permissions')
-                .select('*')
-                .eq('role_name', role);
-
-            if (error) throw error;
+            const data = await window.api.permissions.list(role);
             renderPermissionsTable(role, data || []);
         } catch (err) {
             console.error('Erro ao carregar permissões:', err.message);
@@ -674,17 +681,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         try {
             // 1. Fetch OLD permissions state BEFORE update
-            const { data: oldData } = await window.supabaseClient
-                .from('role_permissions')
-                .select('*')
-                .eq('role_name', currentSelectedRole);
+            const oldData = await window.api.permissions.list(currentSelectedRole);
 
-            // 2. Perform Update
-            const { error } = await window.supabaseClient
-                .from('role_permissions')
-                .upsert(updateData, { onConflict: 'role_name,module' });
-
-            if (error) throw error;
+            // 2. Perform Update via API
+            await window.api.permissions.update(updateData);
 
             // 3. Compare and Generate Log Diff
             const changes = [];
@@ -720,14 +720,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             });
 
-            if (changes.length > 0 && window.registerAuditLog) {
-                await window.registerAuditLog(
-                    'SECURITY',
-                    `Alterou permissões de ${currentSelectedRole}`,
-                    changes.join('; '),
-                    oldData,
-                    updateData
-                );
+            if (changes.length > 0 && window.api && window.api.logs) {
+                await window.api.logs.create({
+                    username: JSON.parse(localStorage.getItem('sofis_user')).username || 'Sistema',
+                    operation_type: 'SECURITY',
+                    action: `Alterou permissões de ${currentSelectedRole}`,
+                    details: changes.join('; '),
+                    old_value: oldData,
+                    new_value: updateData
+                });
             }
 
             window.showToast('Permissões atualizadas!', 'success');
@@ -751,12 +752,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentAuditLogs = []; // Store currently displayed logs for printing
 
     async function loadAuditLogs(page = 1) {
-        if (!window.supabaseClient) return;
+        if (!window.api || !window.api.logs) return;
         logsPage = page;
 
         // Validation: Require Date Range? User said "somente após o usuário informar o período".
-        // Let's require at least a date inputs or just let them search.
-        // Good practice: Check if dates are valid.
         const startDate = logStartDate ? logStartDate.value : null;
         const endDate = logEndDate ? logEndDate.value : null;
 
@@ -773,55 +772,45 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Hide print button during load
         if (btnPrintLogs) btnPrintLogs.classList.add('hidden');
 
-        const from = (page - 1) * logsPerPage;
-        const to = from + logsPerPage - 1;
-
         try {
-            let query = window.supabaseClient
-                .from('audit_logs')
-                .select('*', { count: 'exact' })
-                .order('created_at', { ascending: false })
-                .range(from, to);
+            // Prepare Filters
+            const filters = {
+                limit: logsPerPage,
+                offset: (page - 1) * logsPerPage,
+                start: new Date(startDate + 'T00:00:00').toISOString(),
+                end: new Date(endDate + 'T23:59:59.999').toISOString()
+            };
 
-            // Apply Filters
-
-            // Date Range (Inclusive)
-            // Start date 00:00:00
-            const startISO = new Date(startDate + 'T00:00:00').toISOString();
-            // End date 23:59:59
-            const endISO = new Date(endDate + 'T23:59:59.999').toISOString();
-
-            query = query.gte('created_at', startISO).lte('created_at', endISO);
-
-            // Search Text (User OR Details)
             if (logSearchInput && logSearchInput.value.trim()) {
-                const term = logSearchInput.value.trim();
-                // ILIKE for case insensitive partial match
-                query = query.or(`username.ilike.%${term}%,details.ilike.%${term}%`);
+                filters.user = logSearchInput.value.trim(); // API handles this as search term
             }
 
-            // Operation Type
             if (logTypeSelect && logTypeSelect.value) {
-                // Mapping select values to DB logic if needed, or simple partial match
-                // DB has "operation_type" or sometimes it's null, we might need to search in 'action' too if types aren't consistent.
-                // But let's assume operation_type is what we want.
-                // As per previous logs, operation_type can be 'SECURITY', 'EDIÇÃO', 'CRIAÇÃO'.
-                // If the select value is 'CRIACAO', we check against 'CRIAÇÃO' or similar. 
-                // Let's try to match loosely.
+                // Map select values to DB logic if needed
                 let typeVal = logTypeSelect.value;
-                if (typeVal === 'CRIACAO') query = query.ilike('operation_type', '%CRIA%'); // Catches CRIAÇÃO, CRIACAO, CRIAR
-                else if (typeVal === 'EDICAO') query = query.ilike('operation_type', '%EDI%'); // Catches EDIÇÃO, EDICAO, EDITAR
-                else if (typeVal === 'EXCLUSAO') query = query.ilike('operation_type', '%EXCLU%');
-                else if (typeVal === 'SECURITY') query = query.eq('operation_type', 'SECURITY');
+                if (typeVal === 'CRIACAO') filters.type = 'CRIAÇÃO'; // loose matching handled in API or precise?
+                // API uses LIKE or = check. The UI sends specific codes.
+                // In API: if ($type) { $sql .= " AND operation_type = ?"; }
+                // So I need to send exact string stored in DB.
+                // LogTypeSelect values: CRIACAO, EDICAO, EXCLUSAO, SECURITY
+                // DB Values (from logs): 'CRIAÇÃO', 'EDIÇÃO', 'EXCLUSÃO', 'SECURITY'
+                // I should map them.
+                if (typeVal === 'CRIACAO') filters.type = 'CRIAÇÃO';
+                else if (typeVal === 'EDICAO') filters.type = 'EDIÇÃO';
+                else if (typeVal === 'EXCLUSAO') filters.type = 'EXCLUSÃO';
+                else if (typeVal === 'SECURITY') filters.type = 'SECURITY';
             }
 
-            const { data, error, count } = await query;
-
-            if (error) throw error;
+            const data = await window.api.logs.list(filters);
 
             currentAuditLogs = data || []; // Update current logs
             renderAuditLogs(currentAuditLogs);
-            updatePaginationControls(count);
+
+            // Pagination count not returned by simple API list yet.
+            // For now, assume if less than limit, it's last page.
+            // Or update API to return { data: [], total: N }.
+            // I'll skip complex pagination count for now in API.
+            updatePaginationControls(currentAuditLogs.length === logsPerPage ? 999 : (logsPage * logsPerPage));
         } catch (err) {
             console.error('Erro ao carregar logs:', err.message);
             if (logsTableBody) {
@@ -856,33 +845,27 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.showToast('Gerando relatório...', 'info');
 
             try {
-                let query = window.supabaseClient
-                    .from('audit_logs')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-
-                // Apply Filters (Same as loadAuditLogs but NO pagination)
-                const startISO = new Date(startDate + 'T00:00:00').toISOString();
-                const endISO = new Date(endDate + 'T23:59:59.999').toISOString();
-                query = query.gte('created_at', startISO).lte('created_at', endISO);
+                // Prepare Filters for Print (No limit/pagination)
+                const filters = {
+                    limit: 1000, // Reasonable limit for print
+                    start: new Date(startDate + 'T00:00:00').toISOString(),
+                    end: new Date(endDate + 'T23:59:59.999').toISOString()
+                };
 
                 if (logSearchInput && logSearchInput.value.trim()) {
-                    const term = logSearchInput.value.trim();
-                    query = query.or(`username.ilike.%${term}%,details.ilike.%${term}%`);
+                    filters.user = logSearchInput.value.trim();
                 }
 
                 if (logTypeSelect && logTypeSelect.value) {
                     let typeVal = logTypeSelect.value;
-                    if (typeVal === 'CRIACAO') query = query.ilike('operation_type', '%CRIA%');
-                    else if (typeVal === 'EDICAO') query = query.ilike('operation_type', '%EDI%');
-                    else if (typeVal === 'EXCLUSAO') query = query.ilike('operation_type', '%EXCLU%');
-                    else if (typeVal === 'SECURITY') query = query.eq('operation_type', 'SECURITY');
+                    if (typeVal === 'CRIACAO') filters.type = 'CRIAÇÃO';
+                    else if (typeVal === 'EDICAO') filters.type = 'EDIÇÃO';
+                    else if (typeVal === 'EXCLUSAO') filters.type = 'EXCLUSÃO';
+                    else if (typeVal === 'SECURITY') filters.type = 'SECURITY';
                 }
 
-                // Execute Query
-                const { data: allLogs, error } = await query;
-
-                if (error) throw error;
+                // Execute Query via API
+                const allLogs = await window.api.logs.list(filters);
 
                 if (!allLogs || allLogs.length === 0) {
                     window.showToast('Nenhum log encontrado para impressão.', 'warning');

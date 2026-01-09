@@ -60,20 +60,14 @@
         console.log(`🔄 [${_t}] Fetching versions...`);
 
         try {
-            if (!window.supabaseClient) {
-                console.warn("❌ supabaseClient not ready");
+            if (!window.api || !window.api.versions) {
+                console.warn("❌ API service not ready");
                 return;
             }
 
-            console.log("🔄 Loading Version Controls (Fresh)...");
+            console.log("🔄 Loading Version Controls (Fresh via API)...");
 
-            const { data, error } = await window.supabaseClient
-                .from('version_controls')
-                .select(`*, clients (id, name)`)
-                .select(`*, clients (id, name)`)
-                .order('updated_at', { ascending: false }); // Primary: User's Date of Update
-
-            if (error) throw error;
+            const data = await window.api.versions.list();
 
             versionControls = data || [];
             window.versionControls = versionControls;
@@ -417,32 +411,28 @@
             };
 
             let result;
-            if (fields.id) {
-                result = await window.supabaseClient.from('version_controls').update(payload).eq('id', fields.id);
-                if (!result.error) {
-                    await logHistory(fields.id, null, fields.ver, fields.notes, fields.responsible);
+            try {
+                if (fields.id) {
+                    await window.api.versions.update(fields.id, payload);
+                } else {
+                    await window.api.versions.create(payload);
                 }
-            } else {
-                result = await window.supabaseClient.from('version_controls').insert([payload]).select();
-                if (result.data && result.data[0]) {
-                    await logHistory(result.data[0].id, null, fields.ver, 'Registro de nova versão', fields.responsible);
-                }
+            } catch (e) {
+                if (window.showToast) window.showToast('Erro ao salvar versão: ' + e.message, 'error');
+                throw e;
             }
-
-            if (result.error) throw result.error;
 
             if (window.showToast) window.showToast('Concluído com sucesso!');
             window.closeVersionModal();
 
             try {
                 // Sutil delay para garantir a consistência do banco antes de ler
-                await new Promise(r => setTimeout(r, 500));
+                await new Promise(r => setTimeout(r, 300));
 
                 // Force reload of EVERYTHING
                 await loadVersionControls();
 
-                // Re-render dashboard unconditionally (just in case it's open or about to be)
-                calculateAndRenderPulse();
+                if (window.calculateAndRenderPulse) window.calculateAndRenderPulse();
             } catch (refreshErr) {
                 console.warn("⚠️ Data refresh failed after save:", refreshErr);
             }
@@ -455,30 +445,8 @@
         }
     }
 
-    async function logHistory(vcId, oldV, newV, notes, responsible = null) {
-        try {
-            const userObj = JSON.parse(localStorage.getItem('sofis_user') || '{}');
-            let displayName = 'Sistema';
+    // logHistory moved to backend
 
-            if (responsible) {
-                // Look up full name from cache if it's a username
-                const found = cachedUsersForResponsible.find(u => u.username === responsible || u.full_name === responsible);
-                displayName = found ? (found.full_name || found.username) : responsible;
-            } else {
-                displayName = userObj.full_name || userObj.username || 'Sistema';
-            }
-
-            await window.supabaseClient.from('version_history').insert([{
-                version_control_id: vcId,
-                previous_version: oldV,
-                new_version: newV,
-                updated_by: displayName,
-                notes: notes || ''
-            }]);
-        } catch (e) {
-            console.warn('History log failed skipped');
-        }
-    }
 
     // EXPORTS
     window.loadVersionControls = loadVersionControls;
@@ -489,6 +457,7 @@
     let cachedClientsForVersion = [];
 
     // Unified function to get clients list
+    // Unified function to get clients list
     async function getClientsForDropdown() {
         // 1. Try Global Window Clients (fastest)
         if (window.clients && window.clients.length > 0) {
@@ -498,19 +467,12 @@
         if (cachedClientsForVersion && cachedClientsForVersion.length > 0) {
             return cachedClientsForVersion;
         }
-        // 3. Fetch from Supabase
+        // 3. Fetch from API
         try {
-            console.log("🔄 Fetching clients for dropdown...");
-            const { data, error } = await window.supabaseClient
-                .from('clients')
-                .select('id, name')
-                .order('name');
-
-            if (error) {
-                console.error("Supabase Error (Clients):", error);
-                if (window.showToast) window.showToast("Erro ao carregar clientes: " + error.message, "error");
-                throw error;
-            }
+            console.log("🔄 Fetching clients for dropdown via API...");
+            // Use API clients list if window.clients is empty (unlikely if app initialized, but safe fallback)
+            // But window.api.clients.list() returns full client objects. We just need names.
+            const data = await window.api.clients.list();
 
             if (data) {
                 cachedClientsForVersion = data;
@@ -518,7 +480,7 @@
             }
         } catch (e) {
             console.error("Erro ao buscar clientes:", e);
-            if (window.showToast && !e.message?.includes('Supabase Error')) window.showToast("Erro de conexão ao buscar clientes.", "error");
+            if (window.showToast) window.showToast("Erro de conexão ao buscar clientes.", "error");
         }
         return [];
     }
@@ -732,18 +694,19 @@
         try {
             if (window.showToast) window.showToast('⏳ Excluindo registro...', 'info');
 
-            const { error } = await window.supabaseClient
-                .from('version_controls')
-                .delete()
-                .eq('id', id);
-
-            if (error) throw error;
+            await window.api.versions.delete(id);
 
             if (window.showToast) window.showToast('🗑️ Registro excluído com sucesso!', 'success');
 
-            // Log de Auditoria (Opcional, se existir a função globalmente)
-            if (window.registerAuditLog) {
-                await window.registerAuditLog('EXCLUSÃO', 'Exclusão de Controle de Versão', `Cliente: ${clientName}, Sistema: ${system}`, { id, system, clientName }, null);
+            // Log de Auditoria
+            if (window.api && window.api.logs) {
+                await window.api.logs.create({
+                    username: JSON.parse(localStorage.getItem('sofis_user')).username || 'Sistema',
+                    operation_type: 'EXCLUSÃO',
+                    action: 'Exclusão de Controle de Versão',
+                    details: `Cliente: ${clientName}, Sistema: ${system}`,
+                    client_name: clientName
+                });
             }
 
             loadVersionControls(); // Refresh list
@@ -834,25 +797,15 @@
         if (window.clients && window.clients.length > 0) {
             console.log("✅ [VersionControl] Usando lista de clientes global (window.clients).");
             return window.clients;
-
         }
         // 2. Try Local Cache
         if (cachedClientsForVersion && cachedClientsForVersion.length > 0) {
             return cachedClientsForVersion;
         }
-        // 3. Fetch from Supabase
+        // 3. Fetch from API
         try {
             console.log("🔄 Fetching clients for dropdown...");
-            const { data, error } = await window.supabaseClient
-                .from('clients')
-                .select('id, name')
-                .order('name');
-
-            if (error) {
-                console.error("Supabase Error (Clients):", error);
-                if (window.showToast) window.showToast("Erro ao carregar clientes: " + error.message, "error");
-                throw error;
-            }
+            const data = await window.api.clients.list();
 
             if (data) {
                 cachedClientsForVersion = data;
@@ -860,7 +813,7 @@
             }
         } catch (e) {
             console.error("Erro ao buscar clientes:", e);
-            if (window.showToast && !e.message?.includes('Supabase Error')) window.showToast("Erro de conexão ao buscar clientes.", "error");
+            if (window.showToast) window.showToast("Erro de conexão ao buscar clientes.", "error");
         }
         return [];
     }
@@ -872,15 +825,8 @@
         // If we have cached users, verify if select is already populated
         if (cachedUsersForResponsible.length === 0) {
             try {
-                const { data, error } = await window.supabaseClient
-                    .from('users')
-                    .select('username, full_name')
-                    .order('username');
-
-                if (error) {
-                    console.error("Supabase Error (Users):", error);
-                    if (window.showToast) window.showToast("Erro ao carregar usuários: " + error.message, "error");
-                } else if (data) {
+                const data = await window.api.users.list();
+                if (data) {
                     cachedUsersForResponsible = data;
                 }
             } catch (e) {
@@ -945,17 +891,7 @@
         renderHistoryLoading();
 
         try {
-            const clientVCs = versionControls.filter(vc => vc.client_id === clientId);
-            if (clientVCs.length === 0) {
-                renderHistoryList([]);
-                return;
-            }
-
-            const { data } = await window.supabaseClient.from('version_history')
-                .select('*, version_controls(system, environment, updated_at)')
-                .in('version_control_id', clientVCs.map(vc => vc.id))
-                .order('created_at', { ascending: false });
-
+            const data = await window.api.versions.history(clientId);
             currentHistoryData = data || [];
             window.filterHistory(); // Apply limits immediately
         } catch (e) {
@@ -1613,13 +1549,9 @@
     let editingProductId = null;
 
     async function loadProducts() {
-        if (!window.supabaseClient) return;
+        if (!window.api || !window.api.products) return;
         try {
-            const { data, error } = await window.supabaseClient
-                .from('products')
-                .select('*')
-                .order('name', { ascending: true });
-            if (error) throw error;
+            const data = await window.api.products.list();
             productsList = data || [];
 
             // Sync dropdown in version modal
@@ -1776,8 +1708,7 @@
         if (!confirmed) return;
 
         try {
-            const { error } = await window.supabaseClient.from('products').delete().eq('id', id);
-            if (error) throw error;
+            await window.api.products.delete(id);
             if (window.showToast) window.showToast('Produto excluído com sucesso!', 'success');
             if (window.registerAuditLog) {
                 await window.registerAuditLog('EXCLUSÃO', 'Exclusão de Produto', `Produto: ${p.name}`, p, null);
@@ -1811,14 +1742,14 @@
         try {
             if (id) {
                 const oldProduct = productsList.find(p => p.id === id);
-                const { error } = await window.supabaseClient.from('products').update({ name, version_type }).eq('id', id);
-                if (error) throw error;
+                await window.api.products.update(id, { name, version_type });
+
                 if (window.registerAuditLog) {
                     await window.registerAuditLog('EDIÇÃO', 'Edição de Produto', `Produto: ${name}`, oldProduct, { name, version_type });
                 }
             } else {
-                const { error } = await window.supabaseClient.from('products').insert([{ name, version_type }]);
-                if (error) throw error;
+                await window.api.products.create({ name, version_type });
+
                 if (window.registerAuditLog) {
                     await window.registerAuditLog('CRIAÇÃO', 'Criação de Produto', `Produto: ${name}`, null, { name, version_type });
                 }
