@@ -735,16 +735,18 @@
 
                         <div class="form-group">
                             <label for="urlSystemSelect">
-                                <span><i class="fa-solid fa-window-maximize" style="color: var(--accent);"></i> Sistema
+                                <span><i class="fa-solid fa-window-maximize" style="color: var(--accent);"></i> Produto
                                     <span class="required">*</span></span>
                             </label>
-                            <select id="urlSystemSelect" required>
-                                <option value="">Selecione...</option>
-                                <option value="CellVida">CellVida</option>
-                                <option value="Hemote Plus">Hemote Plus</option>
-                                <option value="Hemote Web">Hemote Web</option>
-                                <option value="Monetário">Monetário</option>
-                            </select>
+                            <div style="display: flex; gap: 8px;">
+                                <select id="urlSystemSelect" required style="flex: 1;">
+                                    <option value="">Carregando...</option>
+                                </select>
+                                <button type="button" class="btn-primary" style="padding: 0 12px;"
+                                    onclick="window.openProductManagement()" title="Gerenciar Produtos">
+                                    <i class="fa-solid fa-cube"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
 

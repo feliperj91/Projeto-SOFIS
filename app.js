@@ -2981,12 +2981,43 @@ document.addEventListener('DOMContentLoaded', async () => {
         urlModal.classList.add('hidden');
     }
 
+    async function populateUrlProductSelect() {
+        const select = document.getElementById('urlSystemSelect');
+        if (!select) return;
+
+        try {
+            const products = await window.api.products.list();
+            const current = select.value;
+            select.innerHTML = '<option value="">Selecione...</option>';
+
+            if (products && products.length > 0) {
+                products.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p.name;
+                    opt.textContent = p.name;
+                    select.appendChild(opt);
+                });
+            }
+
+            if (current && Array.from(select.options).some(o => o.value === current)) {
+                select.value = current;
+            }
+        } catch (err) {
+            console.error('Error populating URL products:', err);
+            select.innerHTML = '<option value="">Erro ao carregar</option>';
+        }
+    }
+
     function openUrlEntry() {
         clearUrlForm();
         urlEntryModalTitle.textContent = 'URLs de Sistema';
         document.getElementById('editingUrlIndex').value = '';
         urlEntryModal.classList.remove('hidden');
-        handleUrlSystemChange();
+
+        // Populate and then handle change (might need to wait effectively, but immediate call is safer for UI feeling)
+        populateUrlProductSelect().then(() => {
+            handleUrlSystemChange();
+        });
     }
 
     function closeUrlEntryModal() {
@@ -3183,7 +3214,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         await registerAuditLog(opType, actionLabel, `Cliente: ${client.name}, Sistema: ${urlRecord.system}, Ambiente: ${urlRecord.environment}`, urlBefore, urlRecord);
     }
 
-    window.editUrlRecord = (clientId, index) => {
+    window.editUrlRecord = async (clientId, index) => {
         // Permission Check
         if (window.Permissions && !window.Permissions.can('URLs', 'can_edit')) {
             showToast('🚫 Sem permissão para editar URLs.', 'error');
@@ -3191,6 +3222,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         const client = clients.find(c => c.id == clientId);
         if (!client || !client.urls || !client.urls[index]) return;
+
+        // Ensure list is populated first
+        await populateUrlProductSelect();
 
         const url = client.urls[index];
         urlEnvironmentSelect.value = url.environment;
