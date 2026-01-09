@@ -205,6 +205,17 @@
             const status = utils.getStatus(v.updated_at);
             const timeInfo = utils.getTimeInfo(v.updated_at);
 
+            // Lógica de Logo
+            let logoHtml = '';
+            const sysName = (v.system || '').trim();
+            if (sysName === 'CellVida') {
+                logoHtml = '<img src="cellvida-logo.jpg" alt="CellVida" class="system-card-logo">';
+            } else if (['Hemote Plus', 'Hemote Web', 'Hemote'].includes(sysName)) {
+                logoHtml = '<img src="hemote-logo.jpg" alt="Hemote" class="system-card-logo">';
+            } else if (sysName === 'Monetário') {
+                logoHtml = '<img src="monetario-logo.jpg" alt="Monetário" class="system-card-logo">';
+            }
+
             return `
                 <div class="version-item-row status-${status}" data-environment="${v.environment}" style="${v.environment !== activeFilter ? 'display:none;' : ''}">
                     <div class="version-row-main">
@@ -246,6 +257,7 @@
                             </div>
                         </div>
                     </div>
+                    ${logoHtml}
                 </div>
             `;
         }).join('');

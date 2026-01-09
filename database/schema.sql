@@ -58,6 +58,7 @@ CREATE TABLE IF NOT EXISTS clients (
   servers JSONB, -- Storing server/vpn/url info as JSON for compatibility
   vpns JSONB,
   urls JSONB,
+  inactive_contract JSONB,
   notes TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
