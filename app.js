@@ -135,10 +135,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             btnActivity.style.display = P.can('Logs e Atividades', 'can_view') ? '' : 'none';
         }
 
-        // 2. Clientes e Contatos - Create
+        // 2. Clientes e Contatos (Global) - Create
         const btnAddClient = document.getElementById('addClientBtn');
         if (btnAddClient) {
-            btnAddClient.style.display = P.can('Clientes e Contatos', 'can_create') ? '' : 'none';
+            btnAddClient.style.display = P.can('Gestão de Clientes', 'can_create') ? '' : 'none';
         }
 
         // 3. Controle de Versões - View Tab
@@ -161,13 +161,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // 6. SQL/VPN/URL - Create
         const btnAddServer = document.getElementById('addServerEntryBtn');
-        if (btnAddServer) btnAddServer.style.display = P.can('Infraestruturas', 'can_create') ? '' : 'none';
+        if (btnAddServer) btnAddServer.style.display = P.can('Dados de Acesso (SQL)', 'can_create') ? '' : 'none';
 
         const btnAddVPN = document.getElementById('addVpnEntryBtn');
-        if (btnAddVPN) btnAddVPN.style.display = P.can('Infraestruturas', 'can_create') ? '' : 'none';
+        if (btnAddVPN) btnAddVPN.style.display = P.can('Dados de Acesso (VPN)', 'can_create') ? '' : 'none';
 
         const btnAddURL = document.getElementById('addUrlEntryBtn');
-        if (btnAddURL) btnAddURL.style.display = P.can('Infraestruturas', 'can_create') ? '' : 'none';
+        if (btnAddURL) btnAddURL.style.display = P.can('URLs', 'can_create') ? '' : 'none';
 
         // 7. Controle de Versões - Produtos
         const btnMngProducts = document.getElementById('productActionButtons');

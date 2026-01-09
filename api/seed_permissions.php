@@ -5,25 +5,37 @@ require 'db.php';
 
 $roles = [
     'ADMINISTRADOR' => [
-        'Logs e Atividades'    => [1,1,1,1],
-        'Clientes e Contatos'  => [1,1,1,1],
-        'Infraestruturas'      => [1,1,1,1],
-        'Gestão de Usuários'   => [1,1,1,1],
-        'Controle de Versões'  => [1,1,1,1]
+        'Logs e Atividades'            => [1,1,1,1],
+        'Gestão de Clientes'           => [1,1,1,1], // Was 'Clientes e Contatos', renamed to be specific to client entity
+        'Dados de Contato'             => [1,1,1,1],
+        'Dados de Acesso (SQL)'        => [1,1,1,1],
+        'Dados de Acesso (VPN)'        => [1,1,1,1],
+        'URLs'                         => [1,1,1,1],
+        'Gestão de Usuários'           => [1,1,1,1],
+        'Controle de Versões'          => [1,1,1,1],
+        'Controle de Versões - Produtos' => [1,1,1,1]
     ],
     'TECNICO' => [
-        'Logs e Atividades'    => [1,0,0,0],
-        'Clientes e Contatos'  => [1,1,1,0],
-        'Infraestruturas'      => [1,1,1,0],
-        'Gestão de Usuários'   => [0,0,0,0],
-        'Controle de Versões'  => [1,1,1,0]
+        'Logs e Atividades'            => [1,0,0,0],
+        'Gestão de Clientes'           => [1,1,1,0],
+        'Dados de Contato'             => [1,1,1,0],
+        'Dados de Acesso (SQL)'        => [1,1,1,0],
+        'Dados de Acesso (VPN)'        => [1,1,1,0],
+        'URLs'                         => [1,1,1,0],
+        'Gestão de Usuários'           => [0,0,0,0],
+        'Controle de Versões'          => [1,1,1,0],
+        'Controle de Versões - Produtos' => [1,1,1,0]
     ],
     'ANALISTA' => [
-        'Logs e Atividades'    => [1,1,0,0],
-        'Clientes e Contatos'  => [1,1,1,0],
-        'Infraestruturas'      => [1,0,0,0],
-        'Gestão de Usuários'   => [0,0,0,0],
-        'Controle de Versões'  => [1,1,1,0]
+        'Logs e Atividades'            => [1,1,0,0],
+        'Gestão de Clientes'           => [1,1,1,0],
+        'Dados de Contato'             => [1,1,1,0],
+        'Dados de Acesso (SQL)'        => [1,0,0,0],
+        'Dados de Acesso (VPN)'        => [1,0,0,0],
+        'URLs'                         => [1,0,0,0],
+        'Gestão de Usuários'           => [0,0,0,0],
+        'Controle de Versões'          => [1,1,1,0],
+        'Controle de Versões - Produtos' => [1,1,1,0]
     ]
 ];
 

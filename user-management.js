@@ -26,18 +26,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     const permissionSchema = [
         {
             type: 'guide',
-            title: 'Guia Contatos e Conexões',
+            title: 'Guia Clientes e Contatos',
             items: [
-                { module: 'Clientes e Contatos', isHeader: true },
-                { module: 'Logs e Atividades' },
-                { module: 'Infraestruturas' }
+                { module: 'Gestão de Clientes', isHeader: true },
+                { module: 'Dados de Contato' },
+                { module: 'Logs e Atividades' }
+            ]
+        },
+        {
+            type: 'guide',
+            title: 'Guia Infraestrutura',
+            items: [
+                { module: 'Dados de Acesso (SQL)', isHeader: true },
+                { module: 'Dados de Acesso (VPN)' },
+                { module: 'URLs' }
             ]
         },
         {
             type: 'guide',
             title: 'Guia Controle de Versões',
             items: [
-                { module: 'Controle de Versões', isHeader: true }
+                { module: 'Controle de Versões', isHeader: true },
+                { module: 'Controle de Versões - Produtos' }
             ]
         },
         {
