@@ -2308,7 +2308,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         serverClientIdInput.value = clientId;
 
         // Permissions
-        const canCreate = window.Permissions.can('Infraestruturas', 'can_create');
+        const canCreate = window.Permissions.can('Dados de Acesso (SQL)', 'can_create');
         if (addServerEntryBtn) {
             addServerEntryBtn.style.display = canCreate ? 'flex' : 'none';
         }
@@ -2375,8 +2375,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!serversList) return;
 
         const P = window.Permissions;
-        const canEditSQL = P ? P.can('Infraestruturas', 'can_edit') : false;
-        const canDeleteSQL = P ? P.can('Infraestruturas', 'can_delete') : false;
+        const canEditSQL = P ? P.can('Dados de Acesso (SQL)', 'can_edit') : false;
+        const canDeleteSQL = P ? P.can('Dados de Acesso (SQL)', 'can_delete') : false;
 
         const filterValue = currentServerFilter;
         let filteredServers = client.servers || [];
@@ -2643,8 +2643,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Permissions
         const P = window.Permissions;
-        const canEdit = P ? P.can('VPN', 'can_edit') : false;
-        const canDelete = P ? P.can('VPN', 'can_delete') : false;
+        const canEdit = P ? P.can('Dados de Acesso (VPN)', 'can_edit') : false;
+        const canDelete = P ? P.can('Dados de Acesso (VPN)', 'can_delete') : false;
 
         if (!client.vpns || client.vpns.length === 0) {
             listContainer.innerHTML = `
@@ -2763,7 +2763,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         vpnClientIdInput.value = clientId;
 
         // Permissions
-        const canCreate = window.Permissions.can('VPN', 'can_create');
+        const canCreate = window.Permissions.can('Dados de Acesso (VPN)', 'can_create');
         if (addVpnEntryBtn) {
             addVpnEntryBtn.style.display = canCreate ? 'flex' : 'none';
         }
@@ -3115,12 +3115,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         const editingIndex = document.getElementById('editingUrlIndex').value;
         const P = window.Permissions;
         if (editingIndex !== '') {
-            if (P && !P.can('Infraestruturas', 'can_edit')) {
+            if (P && !P.can('URLs', 'can_edit')) {
                 showToast('🚫 Sem permissão para editar URLs.', 'error');
                 return;
             }
         } else {
-            if (P && !P.can('Infraestruturas', 'can_create')) {
+            if (P && !P.can('URLs', 'can_create')) {
                 showToast('🚫 Sem permissão para criar URLs.', 'error');
                 return;
             }
@@ -3174,7 +3174,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     window.editUrlRecord = (clientId, index) => {
         // Permission Check
-        if (window.Permissions && !window.Permissions.can('Infraestruturas', 'can_edit')) {
+        if (window.Permissions && !window.Permissions.can('URLs', 'can_edit')) {
             showToast('🚫 Sem permissão para editar URLs.', 'error');
             return;
         }
@@ -3199,7 +3199,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     window.deleteUrlRecord = async (clientId, index) => {
         // Permission Check
-        if (window.Permissions && !window.Permissions.can('Infraestruturas', 'can_delete')) {
+        if (window.Permissions && !window.Permissions.can('URLs', 'can_delete')) {
             showToast('🚫 Sem permissão para excluir URLs.', 'error');
             return;
         }
@@ -3227,12 +3227,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Dynamic Permission Check
         if (isNew) {
-            if (P && !P.can('Infraestruturas', 'can_create')) {
+            if (P && !P.can('URLs', 'can_create')) {
                 showToast('🚫 Sem permissão para cadastrar WebLaudo.', 'error');
                 return;
             }
         } else {
-            if (P && !P.can('Infraestruturas', 'can_edit')) {
+            if (P && !P.can('URLs', 'can_edit')) {
                 showToast('🚫 Sem permissão para editar WebLaudo.', 'error');
                 return;
             }
