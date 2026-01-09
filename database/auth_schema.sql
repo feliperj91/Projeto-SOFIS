@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     username TEXT UNIQUE NOT NULL,
     password_hash TEXT NOT NULL, -- Stores the Bcrypt hash
+    permissions TEXT, -- JSON blob for user-specific permissions (denormalized)
     full_name TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );

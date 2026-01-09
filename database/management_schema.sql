@@ -2,6 +2,7 @@
 
 -- 1. Atualizar tabela de usuários com coluna de cargos
 ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'TECNICO';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS permissions TEXT;
 UPDATE users SET role = 'ADMINISTRADOR' WHERE username = 'admin';
 
 -- 2. Criar/Resetar tabela de permissões por cargo
