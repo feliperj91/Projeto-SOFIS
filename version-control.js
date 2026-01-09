@@ -895,16 +895,39 @@
         if (sysFilter) sysFilter.value = 'all';
         if (envFilter) envFilter.value = 'all';
 
-        // Populate System Filter dynamically
+        // Populate System Filter dynamically from products table
         if (sysFilter) {
             sysFilter.innerHTML = '<option value="all">Todos os Produtos</option>';
-            const uniqueSystems = [...new Set(versionControls.filter(v => v.client_id === clientId).map(v => v.system))].sort();
-            uniqueSystems.forEach(s => {
-                const opt = document.createElement('option');
-                opt.value = s;
-                opt.textContent = s;
-                sysFilter.appendChild(opt);
-            });
+
+            // Get unique systems that this client has versions for
+            const clientSystems = [...new Set(versionControls
+                .filter(v => v.client_id === clientId)
+                .map(v => v.system)
+            )];
+
+            // Fetch products and filter by client's systems
+            try {
+                const allProducts = await window.api.products.list();
+                const clientProducts = allProducts
+                    .filter(p => clientSystems.includes(p.name))
+                    .sort((a, b) => a.name.localeCompare(b.name));
+
+                clientProducts.forEach(product => {
+                    const opt = document.createElement('option');
+                    opt.value = product.name;
+                    opt.textContent = product.name;
+                    sysFilter.appendChild(opt);
+                });
+            } catch (err) {
+                console.error('Erro ao carregar produtos:', err);
+                // Fallback: use systems from version_controls
+                clientSystems.sort().forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s;
+                    opt.textContent = s;
+                    sysFilter.appendChild(opt);
+                });
+            }
         }
 
         renderHistoryLoading();
