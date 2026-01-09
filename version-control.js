@@ -208,9 +208,7 @@
             // Lógica de Logo
             let logoHtml = '';
             const sysName = (v.system || '').trim();
-            if (sysName === 'CellVida') {
-                logoHtml = '<img src="cellvida-logo.jpg" alt="CellVida" class="system-card-logo">';
-            } else if (['Hemote Plus', 'Hemote Web', 'Hemote'].includes(sysName)) {
+            if (['Hemote Plus', 'Hemote Web', 'Hemote'].includes(sysName)) {
                 logoHtml = '<img src="hemote-logo.jpg" alt="Hemote" class="system-card-logo">';
             } else if (sysName === 'Monetário') {
                 logoHtml = '<img src="monetario-logo.jpg" alt="Monetário" class="system-card-logo">';
