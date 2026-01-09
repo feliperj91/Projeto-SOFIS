@@ -895,7 +895,7 @@
         if (sysFilter) sysFilter.value = 'all';
         if (envFilter) envFilter.value = 'all';
 
-        // Populate System Filter dynamically from products table
+        // Populate System Filter dynamically
         if (sysFilter) {
             sysFilter.innerHTML = '<option value="all">Todos os Produtos</option>';
 
@@ -903,45 +903,23 @@
             const clientSystems = [...new Set(versionControls
                 .filter(v => v.client_id === clientId)
                 .map(v => v.system)
-            )].filter(s => s); // Remove null/undefined
+            )].filter(s => s && s.trim() !== ''); // Remove null/undefined/empty
 
             console.log('🔍 Sistemas do cliente:', clientSystems);
 
-            // Try to fetch products from table for proper ordering
-            let productsToShow = [];
-            try {
-                if (window.api && window.api.products) {
-                    const allProducts = await window.api.products.list();
-                    console.log('📦 Produtos da tabela:', allProducts);
+            // Sort alphabetically
+            clientSystems.sort((a, b) => a.localeCompare(b));
 
-                    productsToShow = allProducts
-                        .filter(p => clientSystems.includes(p.name))
-                        .sort((a, b) => a.name.localeCompare(b.name));
-
-                    console.log('✅ Produtos filtrados:', productsToShow);
-                }
-            } catch (err) {
-                console.warn('⚠️ Erro ao buscar produtos da tabela, usando fallback:', err);
-            }
-
-            // If products table didn't work, use systems directly
-            if (productsToShow.length === 0) {
-                console.log('📋 Usando sistemas diretamente de version_controls');
-                productsToShow = clientSystems.sort().map(s => ({ name: s }));
-            }
-
-            // Populate dropdown
-            console.log('🔄 Iniciando loop com', productsToShow.length, 'produtos:', productsToShow);
-            productsToShow.forEach((product, index) => {
-                console.log(`  ➡️ Adicionando produto ${index + 1}:`, product.name);
+            // Add each system as an option
+            clientSystems.forEach((systemName, index) => {
+                console.log(`  ➡️ Adicionando produto ${index + 1}:`, systemName);
                 const opt = document.createElement('option');
-                opt.value = product.name;
-                opt.textContent = product.name;
+                opt.value = systemName;
+                opt.textContent = systemName;
                 sysFilter.appendChild(opt);
             });
 
-
-            console.log('✅ Dropdown populado com', productsToShow.length, 'produtos');
+            console.log('✅ Dropdown populado com', clientSystems.length, 'produtos');
             console.log('📋 HTML do dropdown:', sysFilter.innerHTML);
         }
 
