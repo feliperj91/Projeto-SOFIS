@@ -81,6 +81,19 @@ try {
                 echo json_encode(['error' => 'ID missing']);
                 exit;
             }
+            
+            // Encrypt contact data before saving
+            if (isset($input['contacts']) && is_array($input['contacts'])) {
+                foreach ($input['contacts'] as &$contact) {
+                    if (isset($contact['phones'])) {
+                        $contact['phones'] = SecurityUtil::encryptPhones($contact['phones']);
+                    }
+                    if (isset($contact['emails'])) {
+                        $contact['emails'] = SecurityUtil::encryptEmails($contact['emails']);
+                    }
+                }
+            }
+            
             $sql = "UPDATE clients SET name = ?, document = ?, contacts = ?, servers = ?, vpns = ?, urls = ?, notes = ?, inactive_contract = ? WHERE id = ?";
             $stmt = $pdo->prepare($sql);
             $stmt->execute([
