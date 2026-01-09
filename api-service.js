@@ -7,6 +7,7 @@ async function request(endpoint, options = {}) {
     const url = `${API_BASE}/${endpoint}`;
     try {
         const res = await fetch(url, options);
+        // Helper to safely read JSON or get text if it fails
         const text = await res.text();
 
         let data;
@@ -14,6 +15,7 @@ async function request(endpoint, options = {}) {
             data = JSON.parse(text);
         } catch (e) {
             console.error(`[API] Non-JSON response from ${url}:`, text);
+            // This is likely a PHP Fatal Error or Warning printed as HTML
             throw new Error(`Erro no servidor (Resposta inválida). Verifique o console.`);
         }
 
