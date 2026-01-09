@@ -180,7 +180,7 @@
         const canEditVersion = P ? P.can('Controle de Versões', 'can_edit') : false;
         const canCreateVersion = P ? P.can('Controle de Versões', 'can_create') : false;
         const canDeleteVersion = P ? P.can('Controle de Versões', 'can_delete') : false;
-        const canEditClient = P ? P.can('Clientes e Contatos', 'can_edit') : false;
+        const canEditClient = P ? P.can('Gestão de Clientes', 'can_edit') : false;
 
         // General status of the card based on items
         let overallStatus = 'recent';

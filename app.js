@@ -919,7 +919,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Permissions Check
         const P = window.Permissions;
-        const canViewClients = P ? P.can('Clientes e Contatos', 'can_view') : true;
+        const canViewClients = P ? P.can('Gestão de Clientes', 'can_view') : true;
 
         if (!canViewClients) {
             clientList.innerHTML = `<div class="empty-state" style="padding: 40px; text-align: center; color: var(--text-secondary);"><i class="fa-solid fa-lock" style="font-size: 3rem; margin-bottom: 20px;"></i><p>Você não tem permissão para visualizar clientes.</p></div>`;
