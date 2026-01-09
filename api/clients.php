@@ -80,7 +80,12 @@ try {
             break;
     }
 } catch (Throwable $e) {
+    // Log the error to disk in case display_errors is off
+    file_put_contents('debug_error.log', date('[Y-m-d H:i:s] ') . "CRITICAL EXCEPTION: " . $e->getMessage() . " in " . $e->getFile() . ":" . $e->getLine() . "\n" . $e->getTraceAsString() . "\n", FILE_APPEND);
+
     http_response_code(500);
-    echo json_encode(['error' => $e->getMessage()]);
+    // Force specific headers to ensure it is treated as JSON
+    header('Content-Type: application/json');
+    echo json_encode(['error' => 'Critical Server Error: ' . $e->getMessage(), 'details' => $e->getTraceAsString()]);
 }
 ?>
