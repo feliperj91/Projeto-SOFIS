@@ -440,11 +440,20 @@
                 await new Promise(r => setTimeout(r, 300));
 
                 // Force reload of EVERYTHING
+                console.log('🔄 Recarregando lista de versões após salvar...');
                 await loadVersionControls();
 
+                // Ensure render happens even if loadVersionControls doesn't trigger it
+                renderVersionControls();
+
                 if (window.calculateAndRenderPulse) window.calculateAndRenderPulse();
+
+                console.log('✅ Lista de versões atualizada com sucesso');
             } catch (refreshErr) {
-                console.warn("⚠️ Data refresh failed after save:", refreshErr);
+                console.error("⚠️ Erro ao atualizar lista:", refreshErr);
+                // Force render anyway with current data
+                renderVersionControls();
+                if (window.showToast) window.showToast('⚠️ Salvo, mas a lista pode não estar atualizada. Recarregue a página.', 'warning');
             }
 
         } catch (err) {
