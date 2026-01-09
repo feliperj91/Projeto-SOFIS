@@ -20,7 +20,11 @@ try {
                 $c['vpns'] = json_decode($c['vpns'] ?? '[]');
                 $c['urls'] = json_decode($c['urls'] ?? '[]');
             }
-            echo json_encode($clients);
+            $json = json_encode($clients);
+            if ($json === false) {
+                throw new Exception('JSON Encode Error: ' . json_last_error_msg());
+            }
+            echo $json;
             break;
 
         case 'POST':
