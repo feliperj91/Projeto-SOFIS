@@ -866,7 +866,7 @@
     let currentHistoryData = [];
     window.openClientVersionsHistory = async (clientId) => {
         const P = window.Permissions;
-        if (P && !P.can('Controle de Versões - Histórico', 'can_view')) {
+        if (P && !P.can('Controle de Versões', 'can_view')) {
             if (window.showToast) window.showToast('🚫 Sem permissão para visualizar o histórico de versões.', 'error');
             return;
         }
