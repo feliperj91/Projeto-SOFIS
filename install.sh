@@ -1,6 +1,7 @@
 #!/bin/bash
 # SOFIS Project - Automated Installation Script for Lubuntu/Ubuntu 24.04
 # This script installs and configures all dependencies for the SOFIS project
+# Includes all fixes discovered during troubleshooting
 
 set -e  # Exit on any error
 
@@ -20,19 +21,24 @@ fi
 ACTUAL_USER=${SUDO_USER:-$USER}
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-echo "📦 Step 1/6: Updating package lists..."
+echo "📦 Step 1/7: Updating package lists..."
 apt update
 
 echo ""
-echo "📦 Step 2/6: Installing Apache2, PostgreSQL, and PHP..."
+echo "📦 Step 2/7: Installing Apache2, PostgreSQL, and PHP..."
 apt install -y apache2 postgresql postgresql-contrib php libapache2-mod-php php-pgsql
 
 echo ""
-echo "🗄️  Step 3/6: Configuring PostgreSQL database..."
+echo "🗄️  Step 3/7: Configuring PostgreSQL database..."
 
 # Start PostgreSQL if not running
-systemctl start postgresql
-systemctl enable postgresql
+systemctl start postgresql 2>/dev/null || service postgresql start
+systemctl enable postgresql 2>/dev/null || true
+
+# Fix permissions for schema files
+chmod +r "$SCRIPT_DIR/database"/*.sql 2>/dev/null || true
+chmod +x "$SCRIPT_DIR"
+chmod +x "$SCRIPT_DIR/database"
 
 # Create database and user
 sudo -u postgres psql <<EOF
@@ -55,7 +61,7 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO sofis_user;
 EOF
 
 echo ""
-echo "📊 Step 4/6: Importing database schema..."
+echo "📊 Step 4/7: Importing database schema..."
 
 # Import all schema files in order
 sudo -u postgres psql -d sofis_db -f "$SCRIPT_DIR/database/schema.sql"
@@ -65,7 +71,10 @@ sudo -u postgres psql -d sofis_db -f "$SCRIPT_DIR/database/version_control_schem
 sudo -u postgres psql -d sofis_db -f "$SCRIPT_DIR/database/migration_favorites.sql"
 
 echo ""
-echo "🌐 Step 5/6: Configuring Apache..."
+echo "🌐 Step 5/7: Configuring Apache..."
+
+# Enable PHP module (try multiple versions)
+a2enmod php8.3 2>/dev/null || a2enmod php8.2 2>/dev/null || a2enmod php8.1 2>/dev/null || a2enmod php 2>/dev/null || true
 
 # Enable mod_rewrite
 a2enmod rewrite
@@ -90,17 +99,25 @@ cat > /etc/apache2/sites-available/sofis.conf <<'VHOST'
 
     ErrorLog ${APACHE_LOG_DIR}/sofis_error.log
     CustomLog ${APACHE_LOG_DIR}/sofis_access.log combined
+
+    # PHP Configuration
+    <FilesMatch \.php$>
+        SetHandler application/x-httpd-php
+    </FilesMatch>
 </VirtualHost>
 VHOST
 
+echo ""
+echo "🔧 Step 6/7: Enabling SOFIS site and disabling default..."
+
 # Enable the site and disable default
 a2ensite sofis.conf
-a2dissite 000-default.conf
+a2dissite 000-default.conf 2>/dev/null || true
 
 echo ""
-echo "🔄 Step 6/6: Restarting services..."
-systemctl restart apache2
-systemctl restart postgresql
+echo "🔄 Step 7/7: Restarting services..."
+systemctl restart apache2 2>/dev/null || service apache2 restart
+systemctl restart postgresql 2>/dev/null || service postgresql restart
 
 echo ""
 echo "✅ Installation completed successfully!"
@@ -111,11 +128,14 @@ echo "=========================================="
 echo "1. Update database credentials in: /var/www/html/sofis/api/db.php"
 echo "   Current password: 'sofis_password_secure'"
 echo ""
-echo "2. Access the application at: http://localhost/sofis/login.html"
-echo "   or http://YOUR_SERVER_IP/sofis/login.html"
+echo "2. Access the application at: http://localhost/login.html"
+echo "   or http://YOUR_SERVER_IP/login.html"
 echo ""
-echo "3. Default admin credentials need to be created manually in the database"
-echo "   or through the application's first-run setup."
+echo "3. Create admin user with:"
+echo "   sudo -u postgres psql -d sofis_db"
+echo "   INSERT INTO users (username, password, role)"
+echo "   VALUES ('admin', '\$2y\$10\$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'ADMIN');"
+echo "   (Default password: 'password' - CHANGE THIS AFTER FIRST LOGIN!)"
 echo ""
 echo "=========================================="
 echo "📝 Important Files:"
