@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const managementTabBtn = document.getElementById('btnUserManagement');
 
             if (contactsTabBtn) {
-                contactsTabBtn.style.display = P.can('Clientes e Contatos', 'can_view') ? '' : 'none';
+                contactsTabBtn.style.display = P.can('Gestão de Clientes', 'can_view') ? '' : 'none';
             }
             if (versionsTabBtn) {
                 versionsTabBtn.style.display = P.can('Controle de Versões', 'can_view') ? '' : 'none';
