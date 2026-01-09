@@ -1,5 +1,10 @@
 <?php
 // api/clients.php
+// Enable error reporting for debugging
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 $method = $_SERVER['REQUEST_METHOD'];
 
 try {
@@ -67,7 +72,7 @@ try {
             echo json_encode(['success' => true]);
             break;
     }
-} catch (Exception $e) {
+} catch (Throwable $e) {
     http_response_code(500);
     echo json_encode(['error' => $e->getMessage()]);
 }
