@@ -13,7 +13,7 @@ if ($method === 'GET') {
         }
         // Simplified Logic: Get history for all versions of this client
         $sql = "
-            SELECT vh.*, vc.system, vc.environment 
+            SELECT vh.*, vc.system, vc.environment, vc.updated_at as vc_updated_at
             FROM version_history vh
             JOIN version_controls vc ON vh.version_control_id = vc.id
             WHERE vc.client_id = ?
@@ -21,7 +21,27 @@ if ($method === 'GET') {
         ";
         $stmt = $pdo->prepare($sql);
         $stmt->execute([$_GET['client_id']]);
-        echo json_encode($stmt->fetchAll());
+        $results = $stmt->fetchAll();
+        
+        // Restructure to match frontend expectations
+        $formatted = [];
+        foreach ($results as $row) {
+            $formatted[] = [
+                'id' => $row['id'],
+                'version_control_id' => $row['version_control_id'],
+                'new_version' => $row['new_version'],
+                'updated_by' => $row['updated_by'],
+                'notes' => $row['notes'],
+                'created_at' => $row['created_at'],
+                'version_controls' => [
+                    'system' => $row['system'],
+                    'environment' => $row['environment'],
+                    'updated_at' => $row['vc_updated_at']
+                ]
+            ];
+        }
+        
+        echo json_encode($formatted);
 
     } else {
         // List main versions
