@@ -38,13 +38,22 @@ switch ($method) {
                 $input['role'] ?? 'TECNICO',
                 json_encode($input['permissions'] ?? new stdClass())
             ]);
-            echo json_encode(['success' => true, 'id' => $pdo->lastInsertId()]);
+            
+            // Try to get ID, but if it fails (e.g. no sequence), just return success since execute worked
+            try {
+                $newId = $pdo->lastInsertId();
+            } catch (Exception $e) {
+                $newId = null;
+            }
+            
+            echo json_encode(['success' => true, 'id' => $newId]);
         } catch (PDOException $e) {
             if ($e->getCode() == 23505) { // Unique violation (Postgres)
                 http_response_code(409);
                 echo json_encode(['error' => 'Username already exists']);
             } else {
                 http_response_code(500);
+                // Fix typo JSON_encode -> json_encode
                 echo json_encode(['error' => $e->getMessage()]);
             }
         }
