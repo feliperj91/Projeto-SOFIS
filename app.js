@@ -1513,7 +1513,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Logic: if we are creating a new client (!editingId) or updating a client name (editingId && mode !== 'addContact')
 
             if (mode !== 'addContact') {
-                const duplicateClient = clients.find(c => c.name.toLowerCase() === nameValue.toLowerCase() && c.id !== editingId);
+                const duplicateClient = clients.find(c => c.name.toLowerCase() === nameValue.toLowerCase() && c.id != editingId);
                 if (duplicateClient) {
                     showToast('⚠️ Já existe um cliente cadastrado com este nome.', 'error');
                     clientNameInput.focus();
@@ -1544,7 +1544,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     return;
                 }
 
-                const client = clients.find(c => c.id === editingId);
+                const client = clients.find(c => c.id == editingId);
                 if (!client) return;
 
                 const currentIndex = parseInt(editingContactIndex);
@@ -1639,7 +1639,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // If editing or adding contact to existing client, check against existing contacts
             // Only do this check when adding a new contact, not when editing the entire client
             if (editingId && mode === 'addContact') {
-                const currentClient = clients.find(c => c.id === editingId);
+                const currentClient = clients.find(c => c.id == editingId);
                 if (currentClient && currentClient.contacts) {
                     for (const newContact of contacts) {
                         for (const existingContact of currentClient.contacts) {
