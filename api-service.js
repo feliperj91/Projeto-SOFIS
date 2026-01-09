@@ -3,16 +3,39 @@
 
 const API_BASE = 'api';
 
+async function request(endpoint, options = {}) {
+    const url = `${API_BASE}/${endpoint}`;
+    try {
+        const res = await fetch(url, options);
+        const text = await res.text();
+
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            console.error(`[API] Non-JSON response from ${url}:`, text);
+            throw new Error(`Erro no servidor (Resposta inválida). Verifique o console.`);
+        }
+
+        if (!res.ok) {
+            throw new Error(data.error || data.message || `Erro ${res.status}: ${res.statusText}`);
+        }
+
+        return data;
+    } catch (err) {
+        console.error(`[API] Network/Logic Error:`, err);
+        throw err;
+    }
+}
+
 const api = {
     logs: {
         async list(filters = {}) {
             const params = new URLSearchParams(filters).toString();
-            const res = await fetch(`${API_BASE}/audit.php?${params}`);
-            if (!res.ok) throw new Error('Failed to fetch logs');
-            return await res.json();
+            return await request(`audit.php?${params}`);
         },
         async create(log) {
-            await fetch(`${API_BASE}/audit.php`, {
+            return await request('audit.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(log)
@@ -21,30 +44,23 @@ const api = {
     },
     permissions: {
         async list(role) {
-            const res = await fetch(`${API_BASE}/permissions.php?role=${encodeURIComponent(role)}`);
-            if (!res.ok) throw new Error('Failed to fetch permissions');
-            return await res.json();
+            return await request(`permissions.php?role=${encodeURIComponent(role)}`);
         },
         async update(permissions) {
-            const res = await fetch(`${API_BASE}/permissions.php`, {
+            return await request('permissions.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(permissions)
             });
-            if (!res.ok) throw new Error('Failed to update permissions');
-            return await res.json();
         }
     },
     auth: {
         async signIn(username, password) {
-            const res = await fetch(`${API_BASE}/auth.php?action=login`, {
+            return await request('auth.php?action=login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password })
             });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Login failed');
-            return data;
         },
         async signOut() {
             await fetch(`${API_BASE}/auth.php?action=logout`);
@@ -53,9 +69,14 @@ const api = {
         },
         async checkSession() {
             try {
+                // We use raw fetch here to handle the specific case of 401/403 not being an exception we want to bubble up as an alert
                 const res = await fetch(`${API_BASE}/auth.php?action=check`);
-                const data = await res.json();
-                return data;
+                const text = await res.text();
+                try {
+                    return JSON.parse(text);
+                } catch {
+                    return { authenticated: false };
+                }
             } catch (e) {
                 return { authenticated: false };
             }
@@ -63,100 +84,75 @@ const api = {
     },
     clients: {
         async list() {
-            const res = await fetch(`${API_BASE}/clients.php`);
-            if (!res.ok) throw new Error('Failed to fetch clients');
-            return await res.json();
+            return await request('clients.php');
         },
         async create(client) {
-            const res = await fetch(`${API_BASE}/clients.php`, {
+            return await request('clients.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(client)
             });
-            if (!res.ok) throw new Error('Failed to create client');
-            return await res.json();
         },
         async update(id, client) {
-            const res = await fetch(`${API_BASE}/clients.php?id=${id}`, {
+            return await request(`clients.php?id=${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(client)
             });
-            if (!res.ok) throw new Error('Failed to update client');
-            return await res.json();
         },
         async delete(id) {
-            const res = await fetch(`${API_BASE}/clients.php?id=${id}`, {
+            return await request(`clients.php?id=${id}`, {
                 method: 'DELETE'
             });
-            if (!res.ok) throw new Error('Failed to delete client');
-            return await res.json();
         }
     },
     users: {
         async list() {
-            const res = await fetch(`${API_BASE}/users.php`);
-            if (!res.ok) throw new Error('Failed to fetch users');
-            return await res.json();
+            return await request('users.php');
         },
         async create(user) {
-            const res = await fetch(`${API_BASE}/users.php`, {
+            return await request('users.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(user)
             });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Failed to create user');
-            return data;
         },
         async update(id, user) {
-            const res = await fetch(`${API_BASE}/users.php?id=${id}`, {
+            return await request(`users.php?id=${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(user)
             });
-            if (!res.ok) throw new Error('Failed to update user');
-            return await res.json();
         },
         async delete(id) {
-            const res = await fetch(`${API_BASE}/users.php?id=${id}`, {
+            return await request(`users.php?id=${id}`, {
                 method: 'DELETE'
             });
-            if (!res.ok) throw new Error('Failed to delete user');
-            return await res.json();
         }
     },
     versions: {
         async list() {
-            const res = await fetch(`${API_BASE}/versions.php`);
-            if (!res.ok) throw new Error('Failed to fetch versions');
-            return await res.json();
+            return await request('versions.php');
         },
         async history(clientId) {
-            const res = await fetch(`${API_BASE}/versions.php?action=history&client_id=${clientId}`);
-            if (!res.ok) throw new Error('Failed to fetch history');
-            return await res.json();
+            return await request(`versions.php?action=history&client_id=${clientId}`);
         },
         async create(version) {
-            const res = await fetch(`${API_BASE}/versions.php`, {
+            return await request('versions.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(version)
             });
-            if (!res.ok) throw new Error('Failed to create version');
-            return await res.json();
         },
         async update(id, version) {
-            const res = await fetch(`${API_BASE}/versions.php?id=${id}`, {
+            return await request(`versions.php?id=${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(version)
             });
-            if (!res.ok) throw new Error('Failed to update version');
-            return await res.json();
         },
         async delete(id, smartContext = null) {
-            let url = `${API_BASE}/versions.php?id=${id}`;
+            let endpoint = `versions.php?id=${id}`;
             if (smartContext) {
                 const params = new URLSearchParams({
                     smart: 'true',
@@ -165,66 +161,50 @@ const api = {
                     environment: smartContext.environment,
                     version: smartContext.version
                 });
-                url = `${API_BASE}/versions.php?${params.toString()}`;
+                endpoint = `versions.php?${params.toString()}`;
             }
-
-            const res = await fetch(url, { method: 'DELETE' });
-            if (!res.ok) throw new Error('Failed to delete version');
-            return await res.json();
+            return await request(endpoint, { method: 'DELETE' });
         }
     },
     products: {
         async list() {
-            const res = await fetch(`${API_BASE}/products.php`);
-            return await res.json();
+            return await request('products.php');
         },
         async create(product) {
-            const res = await fetch(`${API_BASE}/products.php`, {
+            return await request('products.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(product)
             });
-            if (!res.ok) throw new Error('Failed to create product');
-            return await res.json();
         },
         async update(id, product) {
-            const res = await fetch(`${API_BASE}/products.php?id=${id}`, {
+            return await request(`products.php?id=${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(product)
             });
-            if (!res.ok) throw new Error('Failed to update product');
-            return await res.json();
         },
         async delete(id) {
-            const res = await fetch(`${API_BASE}/products.php?id=${id}`, {
+            return await request(`products.php?id=${id}`, {
                 method: 'DELETE'
             });
-            if (!res.ok) throw new Error('Failed to delete product');
-            return await res.json();
         }
     },
     favorites: {
         async list(username) {
-            const res = await fetch(`${API_BASE}/favorites.php?username=${encodeURIComponent(username)}`);
-            if (!res.ok) throw new Error('Failed to fetch favorites');
-            return await res.json();
+            return await request(`favorites.php?username=${encodeURIComponent(username)}`);
         },
         async add(username, clientId) {
-            const res = await fetch(`${API_BASE}/favorites.php`, {
+            return await request('favorites.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, client_id: clientId })
             });
-            if (!res.ok) throw new Error('Failed to add favorite');
-            return await res.json();
         },
         async remove(username, clientId) {
-            const res = await fetch(`${API_BASE}/favorites.php?username=${encodeURIComponent(username)}&client_id=${clientId}`, {
+            return await request(`favorites.php?username=${encodeURIComponent(username)}&client_id=${clientId}`, {
                 method: 'DELETE'
             });
-            if (!res.ok) throw new Error('Failed to remove favorite');
-            return await res.json();
         }
     }
 };
