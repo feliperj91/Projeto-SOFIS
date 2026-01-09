@@ -903,31 +903,42 @@
             const clientSystems = [...new Set(versionControls
                 .filter(v => v.client_id === clientId)
                 .map(v => v.system)
-            )];
+            )].filter(s => s); // Remove null/undefined
 
-            // Fetch products and filter by client's systems
+            console.log('🔍 Sistemas do cliente:', clientSystems);
+
+            // Try to fetch products from table for proper ordering
+            let productsToShow = [];
             try {
-                const allProducts = await window.api.products.list();
-                const clientProducts = allProducts
-                    .filter(p => clientSystems.includes(p.name))
-                    .sort((a, b) => a.name.localeCompare(b.name));
+                if (window.api && window.api.products) {
+                    const allProducts = await window.api.products.list();
+                    console.log('📦 Produtos da tabela:', allProducts);
 
-                clientProducts.forEach(product => {
-                    const opt = document.createElement('option');
-                    opt.value = product.name;
-                    opt.textContent = product.name;
-                    sysFilter.appendChild(opt);
-                });
+                    productsToShow = allProducts
+                        .filter(p => clientSystems.includes(p.name))
+                        .sort((a, b) => a.name.localeCompare(b.name));
+
+                    console.log('✅ Produtos filtrados:', productsToShow);
+                }
             } catch (err) {
-                console.error('Erro ao carregar produtos:', err);
-                // Fallback: use systems from version_controls
-                clientSystems.sort().forEach(s => {
-                    const opt = document.createElement('option');
-                    opt.value = s;
-                    opt.textContent = s;
-                    sysFilter.appendChild(opt);
-                });
+                console.warn('⚠️ Erro ao buscar produtos da tabela, usando fallback:', err);
             }
+
+            // If products table didn't work, use systems directly
+            if (productsToShow.length === 0) {
+                console.log('📋 Usando sistemas diretamente de version_controls');
+                productsToShow = clientSystems.sort().map(s => ({ name: s }));
+            }
+
+            // Populate dropdown
+            productsToShow.forEach(product => {
+                const opt = document.createElement('option');
+                opt.value = product.name;
+                opt.textContent = product.name;
+                sysFilter.appendChild(opt);
+            });
+
+            console.log('✅ Dropdown populado com', productsToShow.length, 'produtos');
         }
 
         renderHistoryLoading();
