@@ -3752,9 +3752,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         try {
             const client = clients.find(c => c.id == clientId);
+            if (!client) throw new Error("Cliente não encontrado.");
 
-            // Call API
-            await window.api.clients.update(clientId, { inactive_contract: inactiveData });
+            // Create FULL updated object
+            // Spread client to keep existing fields, then override inactive_contract
+            const updatedClient = {
+                ...client,
+                inactive_contract: inactiveData
+            };
+
+            console.log("Saving Inactive Contract:", updatedClient);
+
+            // Call API with FULL object
+            await window.api.clients.update(clientId, updatedClient);
 
             if (client) {
                 client.inactive_contract = inactiveData; // Optimistic update
@@ -3766,7 +3776,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         } catch (e) {
             console.error(e);
-            if (window.showToast) window.showToast('Erro ao salvar Inatividade.', 'error');
+            if (window.showToast) window.showToast('Erro ao salvar Inatividade: ' + e.message, 'error');
         }
     };
 
@@ -3778,9 +3788,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         try {
             const client = clients.find(c => c.id == clientId);
+            if (!client) throw new Error("Cliente não encontrado.");
 
-            // API Call
-            await window.api.clients.update(clientId, { inactive_contract: null }); // Sending null clears it
+            // Create FULL updated object with null inactive_contract
+            const updatedClient = {
+                ...client,
+                inactive_contract: null
+            };
+
+            // API Call with FULL object
+            await window.api.clients.update(clientId, updatedClient); // Sending null clears it
 
             if (client) {
                 client.inactive_contract = null;
@@ -3792,7 +3809,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         } catch (e) {
             console.error(e);
-            if (window.showToast) window.showToast('Erro ao reativar contrato.', 'error');
+            if (window.showToast) window.showToast('Erro ao reativar contrato: ' + e.message, 'error');
         }
     };
 

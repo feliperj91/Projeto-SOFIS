@@ -22,6 +22,7 @@ try {
                 $c['servers'] = json_decode($c['servers'] ?? '[]');
                 $c['vpns'] = json_decode($c['vpns'] ?? '[]');
                 $c['urls'] = json_decode($c['urls'] ?? '[]');
+                $c['inactive_contract'] = json_decode($c['inactive_contract'] ?? 'null');
             }
             $json = json_encode($clients);
             if ($json === false) {
@@ -32,7 +33,7 @@ try {
 
         case 'POST':
             $input = json_decode(file_get_contents('php://input'), true);
-            $sql = "INSERT INTO clients (name, document, contacts, servers, vpns, urls, notes) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            $sql = "INSERT INTO clients (name, document, contacts, servers, vpns, urls, notes, inactive_contract) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             $stmt = $pdo->prepare($sql);
             $stmt->execute([
                 $input['name'],
@@ -41,7 +42,8 @@ try {
                 json_encode($input['servers'] ?? []),
                 json_encode($input['vpns'] ?? []),
                 json_encode($input['urls'] ?? []),
-                $input['notes'] ?? null
+                $input['notes'] ?? null,
+                json_encode($input['inactive_contract'] ?? null)
             ]);
             echo json_encode(['success' => true, 'id' => $pdo->lastInsertId()]);
             break;
@@ -53,7 +55,7 @@ try {
                 echo json_encode(['error' => 'ID missing']);
                 exit;
             }
-            $sql = "UPDATE clients SET name = ?, document = ?, contacts = ?, servers = ?, vpns = ?, urls = ?, notes = ? WHERE id = ?";
+            $sql = "UPDATE clients SET name = ?, document = ?, contacts = ?, servers = ?, vpns = ?, urls = ?, notes = ?, inactive_contract = ? WHERE id = ?";
             $stmt = $pdo->prepare($sql);
             $stmt->execute([
                 $input['name'],
@@ -63,6 +65,7 @@ try {
                 json_encode($input['vpns'] ?? []),
                 json_encode($input['urls'] ?? []),
                 $input['notes'] ?? null,
+                json_encode($input['inactive_contract'] ?? null),
                 $_GET['id']
             ]);
             echo json_encode(['success' => true]);
