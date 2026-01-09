@@ -1,18 +1,51 @@
 <?php
 require 'db.php';
 
-$permissions_admin = json_encode(['can_view_users' => true, 'can_edit_users' => true, 'can_delete_users' => true, 'can_view_clients' => true, 'can_edit_clients' => true, 'can_delete_clients' => true]);
-$permissions_tecnico = json_encode(['can_view_users' => false, 'can_edit_users' => false, 'can_delete_users' => false, 'can_view_clients' => true, 'can_edit_clients' => true, 'can_delete_clients' => false]);
+// role_permissions uses: role_name, module, can_view, can_create, can_edit, can_delete
 
-// Upsert for ADMINISTRADOR
-$sql = "INSERT INTO role_permissions (role, permissions) VALUES ('ADMINISTRADOR', '$permissions_admin') 
-        ON CONFLICT (role) DO UPDATE SET permissions = '$permissions_admin'";
-$pdo->exec($sql);
+$roles = [
+    'ADMINISTRADOR' => [
+        'Logs e Atividades'    => [1,1,1,1],
+        'Clientes e Contatos'  => [1,1,1,1],
+        'Infraestruturas'      => [1,1,1,1],
+        'Gestão de Usuários'   => [1,1,1,1],
+        'Controle de Versões'  => [1,1,1,1]
+    ],
+    'TECNICO' => [
+        'Logs e Atividades'    => [1,0,0,0],
+        'Clientes e Contatos'  => [1,1,1,0],
+        'Infraestruturas'      => [1,1,1,0],
+        'Gestão de Usuários'   => [0,0,0,0],
+        'Controle de Versões'  => [1,1,1,0]
+    ],
+    'ANALISTA' => [
+        'Logs e Atividades'    => [1,1,0,0],
+        'Clientes e Contatos'  => [1,1,1,0],
+        'Infraestruturas'      => [1,0,0,0],
+        'Gestão de Usuários'   => [0,0,0,0],
+        'Controle de Versões'  => [1,1,1,0]
+    ]
+];
 
-// Upsert for TECNICO
-$sql = "INSERT INTO role_permissions (role, permissions) VALUES ('TECNICO', '$permissions_tecnico') 
-        ON CONFLICT (role) DO UPDATE SET permissions = '$permissions_tecnico'";
-$pdo->exec($sql);
+$sql = "INSERT INTO role_permissions (role_name, module, can_view, can_create, can_edit, can_delete) 
+        VALUES (?, ?, ?, ?, ?, ?)
+        ON CONFLICT (role_name, module) DO UPDATE 
+        SET can_view=EXCLUDED.can_view, can_create=EXCLUDED.can_create, can_edit=EXCLUDED.can_edit, can_delete=EXCLUDED.can_delete";
 
-echo "Permissions seeded successfully.";
+$stmt = $pdo->prepare($sql);
+
+foreach ($roles as $roleName => $modules) {
+    foreach ($modules as $modName => $perms) {
+        $stmt->execute([
+            $roleName, 
+            $modName, 
+            $perms[0] ? 't' : 'f', 
+            $perms[1] ? 't' : 'f', 
+            $perms[2] ? 't' : 'f', 
+            $perms[3] ? 't' : 'f'
+        ]);
+    }
+}
+
+echo "Permissions seeded successfully (Granular Schema).";
 ?>

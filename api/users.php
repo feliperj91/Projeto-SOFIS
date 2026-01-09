@@ -36,14 +36,24 @@ switch ($method) {
                 $input['full_name'],
                 $passwordHash,
                 $input['role'] ?? 'TECNICO',
-                // If permissions logic is empty, try to fetch defaults from database or use empty object
                 (!empty($input['permissions']) ? json_encode($input['permissions']) : 
                     (function($pdo, $role) {
                         try {
-                            $stmt = $pdo->prepare("SELECT permissions FROM role_permissions WHERE role = ?");
+                            // Fetch granular permissions (Schema A)
+                            $stmt = $pdo->prepare("SELECT module, can_view, can_create, can_edit, can_delete FROM role_permissions WHERE role_name = ?");
                             $stmt->execute([$role]);
-                            $res = $stmt->fetchColumn();
-                            return $res ? $res : '{}';
+                            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                            
+                            $perms = [];
+                            foreach($rows as $r) {
+                                $perms[$r['module']] = [
+                                    'can_view' => $r['can_view'],
+                                    'can_create' => $r['can_create'],
+                                    'can_edit' => $r['can_edit'],
+                                    'can_delete' => $r['can_delete']
+                                ];
+                            }
+                            return empty($perms) ? '{}' : json_encode($perms);
                         } catch(Exception $e) { return '{}'; }
                     })($pdo, $input['role'] ?? 'TECNICO')
                 )
