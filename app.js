@@ -768,7 +768,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (contactModalSearch) {
         contactModalSearch.addEventListener('input', () => {
             const clientId = contactModalClientId.value;
-            const client = clients.find(c => c.id === clientId);
+            const client = clients.find(c => c.id == clientId);
             if (client) {
                 renderContactModalList(client);
             }
@@ -1330,7 +1330,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- Contact Modal Functions ---
     window.openContactData = (clientId) => {
-        const client = clients.find(c => c.id === clientId);
+        const client = clients.find(c => c.id == clientId);
         if (!client) return;
 
         if (contactModalClientId) contactModalClientId.value = clientId;
@@ -1790,7 +1790,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     async function deleteClient(id) {
-        const client = clients.find(c => c.id === id);
+        const client = clients.find(c => c.id == id);
         if (!client) return;
 
         const confirmed = await window.showConfirm(`⚠️ EXCLUIR CLIENTE ⚠️\n\nTem certeza que deseja excluir "${client.name}"?`, 'Excluir Cliente', 'fa-triangle-exclamation');
@@ -1845,7 +1845,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.deleteClient = deleteClient;
 
     function editClient(id) {
-        const client = clients.find(c => c.id === id);
+        const client = clients.find(c => c.id == id);
         if (!client) return;
 
         editingId = id;
@@ -2075,7 +2075,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.registerAuditLog = registerAuditLog;
 
     window.addNewContact = (clientId) => {
-        const client = clients.find(c => c.id === clientId);
+        const client = clients.find(c => c.id == clientId);
         if (!client) return;
 
         editingId = clientId;
@@ -2093,7 +2093,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     window.toggleFavorite = async (id) => {
-        const client = clients.find(c => c.id === id);
+        const client = clients.find(c => c.id == id);
         if (!client) return;
 
         const user = JSON.parse(localStorage.getItem('sofis_user') || '{}');
@@ -2126,7 +2126,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     window.editContact = (clientId, contactIndex) => {
-        const client = clients.find(c => c.id === clientId);
+        const client = clients.find(c => c.id == clientId);
         if (!client || !client.contacts || !client.contacts[contactIndex]) return;
 
         editingId = clientId;
@@ -2304,7 +2304,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.openServerData = (clientId) => {
         console.log("🟢 CLICK: openServerData for", clientId);
         try {
-            const client = clients.find(c => c.id === clientId);
+            const client = clients.find(c => c.id == clientId);
             if (!client) {
                 console.error("Client not found for ID:", clientId);
                 return;
@@ -2514,7 +2514,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function handleServerSubmit(e) {
         e.preventDefault();
         const id = serverClientIdInput.value;
-        const client = clients.find(c => c.id === id);
+        const client = clients.find(c => c.id == id);
 
         if (!client) return;
 
@@ -2579,7 +2579,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     window.editServerRecord = (clientId, index) => {
-        const client = clients.find(c => c.id === clientId);
+        const client = clients.find(c => c.id == clientId);
         if (!client || !client.servers || !client.servers[index]) return;
 
         const server = client.servers[index];
@@ -2608,7 +2608,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const confirmed = await window.showConfirm('Tem certeza que deseja excluir este servidor?', 'Excluir Servidor', 'fa-server');
         if (!confirmed) return;
 
-        const client = clients.find(c => c.id === clientId);
+        const client = clients.find(c => c.id == clientId);
         if (!client || !client.servers) return;
 
         const deletedServer = JSON.parse(JSON.stringify(client.servers[index]));
@@ -2719,7 +2719,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function handleVpnSubmit(e) {
         e.preventDefault();
         const id = vpnClientIdInput.value;
-        const client = clients.find(c => c.id === id);
+        const client = clients.find(c => c.id == id);
         if (!client) return;
 
         if (!client.vpns) client.vpns = [];
@@ -2765,7 +2765,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function openVpnData(clientId) {
-        const client = clients.find(c => c.id === clientId);
+        const client = clients.find(c => c.id == clientId);
         if (!client) return;
 
         vpnClientIdInput.value = clientId;
@@ -2788,7 +2788,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function editVpnRecord(clientId, index) {
-        const client = clients.find(c => c.id === clientId);
+        const client = clients.find(c => c.id == clientId);
         if (!client || !client.vpns || !client.vpns[index]) return;
 
         const vpn = client.vpns[index];
@@ -2804,7 +2804,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function deleteVpnRecord(clientId, index) {
         const confirmed = await window.showConfirm('Tem certeza que deseja excluir esta VPN?', 'Excluir VPN', 'fa-shield-halved');
         if (!confirmed) return;
-        const client = clients.find(c => c.id === clientId);
+        const client = clients.find(c => c.id == clientId);
         if (!client || !client.vpns) return;
 
         const deletedVpn = JSON.parse(JSON.stringify(client.vpns[index]));
@@ -2819,7 +2819,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- Client Notes Functions ---
 
     window.openClientNotes = (clientId) => {
-        const client = clients.find(c => c.id === clientId);
+        const client = clients.find(c => c.id == clientId);
         if (!client) return;
 
         notesClientIdInput.value = clientId;
@@ -2836,7 +2836,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function handleNotesSubmit(e) {
         e.preventDefault();
         const id = notesClientIdInput.value;
-        const client = clients.find(c => c.id === id);
+        const client = clients.find(c => c.id == id);
 
         if (!client) return;
 
@@ -2873,7 +2873,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- URL Data Functions ---
     window.openUrlData = (clientId) => {
-        const client = clients.find(c => c.id === clientId);
+        const client = clients.find(c => c.id == clientId);
         if (!client) return;
 
         urlClientIdInput.value = clientId;
@@ -2950,7 +2950,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const confirmed = await window.showConfirm('Tem certeza que deseja excluir o WebLaudo?', 'Excluir WebLaudo', 'fa-link-slash');
         if (!confirmed) return;
         const id = urlClientIdInput.value;
-        const client = clients.find(c => c.id === id);
+        const client = clients.find(c => c.id == id);
         if (!client) return;
 
         const oldWebLaudo = client.webLaudo || '';
@@ -3116,7 +3116,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function handleUrlSubmit(e) {
         e.preventDefault();
         const id = urlClientIdInput.value;
-        const client = clients.find(c => c.id === id);
+        const client = clients.find(c => c.id == id);
         if (!client) return;
 
         // Permissions
@@ -3186,7 +3186,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             showToast('🚫 Sem permissão para editar URLs.', 'error');
             return;
         }
-        const client = clients.find(c => c.id === clientId);
+        const client = clients.find(c => c.id == clientId);
         if (!client || !client.urls || !client.urls[index]) return;
 
         const url = client.urls[index];
@@ -3213,7 +3213,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         const confirmed = await window.showConfirm('Tem certeza que deseja excluir este sistema?', 'Excluir Sistema', 'fa-laptop-code');
         if (!confirmed) return;
-        const client = clients.find(c => c.id === clientId);
+        const client = clients.find(c => c.id == clientId);
         if (!client || !client.urls) return;
 
         const deletedUrl = JSON.parse(JSON.stringify(client.urls[index]));
@@ -3227,7 +3227,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function handleWebLaudoSave() {
         const id = urlClientIdInput.value;
-        const client = clients.find(c => c.id === id);
+        const client = clients.find(c => c.id == id);
         if (!client) return;
 
         const isNew = !client.webLaudo;
@@ -3370,7 +3370,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- History Modal Functions ---
     window.openClientHistory = async (clientId) => {
-        const client = clients.find(c => c.id === clientId);
+        const client = clients.find(c => c.id == clientId);
         if (!client) return;
 
         if (historyModal) {
@@ -3596,7 +3596,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     window.openClientGeneralNotes = function (id) {
         if (typeof clients === 'undefined') return;
-        const client = clients.find(c => c.id === id);
+        const client = clients.find(c => c.id == id);
         if (!client) return;
 
         const modal = document.getElementById('notesModal');
@@ -3624,7 +3624,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        const client = clients.find(c => c.id === id);
+        const client = clients.find(c => c.id == id);
         if (client) {
             const oldName = client.name;
             client.name = newName;
