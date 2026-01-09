@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const managementTabBtn = document.getElementById('btnUserManagement');
 
             if (contactsTabBtn) {
-                contactsTabBtn.style.display = P.can('Gestão de Clientes', 'can_view') ? '' : 'none';
+                contactsTabBtn.style.display = P.can('Clientes e Contatos', 'can_view') ? '' : 'none';
             }
             if (versionsTabBtn) {
                 versionsTabBtn.style.display = P.can('Controle de Versões', 'can_view') ? '' : 'none';
@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const addVersionBtn = document.getElementById('addVersionBtn');
 
                 if (pulseBtn) {
-                    pulseBtn.style.display = P.can('Controle de Versões - Dashboard', 'can_view') ? '' : 'none';
+                    pulseBtn.style.display = P.can('Controle de Versões', 'can_view') ? '' : 'none';
                 }
                 if (addVersionBtn) {
                     addVersionBtn.style.display = P.can('Controle de Versões', 'can_create') ? '' : 'none';
@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // 2. Clientes e Contatos - Create
         const btnAddClient = document.getElementById('addClientBtn');
         if (btnAddClient) {
-            btnAddClient.style.display = P.can('Gestão de Clientes', 'can_create') ? '' : 'none';
+            btnAddClient.style.display = P.can('Clientes e Contatos', 'can_create') ? '' : 'none';
         }
 
         // 3. Controle de Versões - View Tab
@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // 4. Controle de Versões - Buttons
         const pulseBtn = document.getElementById('pulseDashboardBtn');
         const addVersionBtn = document.getElementById('addVersionBtn');
-        if (pulseBtn) pulseBtn.style.display = P.can('Controle de Versões - Dashboard', 'can_view') ? '' : 'none';
+        if (pulseBtn) pulseBtn.style.display = P.can('Controle de Versões', 'can_view') ? '' : 'none';
         if (addVersionBtn) addVersionBtn.style.display = P.can('Controle de Versões', 'can_create') ? '' : 'none';
 
         // 5. User Management - Tab Button
@@ -100,13 +100,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // 6. SQL/VPN/URL - Create
         const btnAddServer = document.getElementById('addServerEntryBtn');
-        if (btnAddServer) btnAddServer.style.display = P.can('Banco de Dados', 'can_create') ? '' : 'none';
+        if (btnAddServer) btnAddServer.style.display = P.can('Infraestruturas', 'can_create') ? '' : 'none';
 
         const btnAddVPN = document.getElementById('addVpnEntryBtn');
-        if (btnAddVPN) btnAddVPN.style.display = P.can('VPN', 'can_create') ? '' : 'none';
+        if (btnAddVPN) btnAddVPN.style.display = P.can('Infraestruturas', 'can_create') ? '' : 'none';
 
         const btnAddURL = document.getElementById('addUrlEntryBtn');
-        if (btnAddURL) btnAddURL.style.display = P.can('URLs', 'can_create') ? '' : 'none';
+        if (btnAddURL) btnAddURL.style.display = P.can('Infraestruturas', 'can_create') ? '' : 'none';
 
         // 7. Controle de Versões - Produtos
         const btnMngProducts = document.getElementById('productActionButtons');
