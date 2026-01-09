@@ -9,6 +9,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 try {
     require 'db.php';
+    require 'security.php';
     
     // Debug logging
     file_put_contents('debug_log.txt', date('[Y-m-d H:i:s] ') . "Method: $method POST/PUT Input: " . file_get_contents('php://input') . "\n", FILE_APPEND);
@@ -23,6 +24,18 @@ try {
                 $c['vpns'] = json_decode($c['vpns'] ?? '[]');
                 $c['urls'] = json_decode($c['urls'] ?? '[]');
                 $c['inactive_contract'] = json_decode($c['inactive_contract'] ?? 'null');
+                
+                // Decrypt contact data
+                if (is_array($c['contacts'])) {
+                    foreach ($c['contacts'] as &$contact) {
+                        if (isset($contact->phones)) {
+                            $contact->phones = SecurityUtil::decryptPhones($contact->phones);
+                        }
+                        if (isset($contact->emails)) {
+                            $contact->emails = SecurityUtil::decryptEmails($contact->emails);
+                        }
+                    }
+                }
             }
             $json = json_encode($clients);
             if ($json === false) {
@@ -33,6 +46,19 @@ try {
 
         case 'POST':
             $input = json_decode(file_get_contents('php://input'), true);
+            
+            // Encrypt contact data before saving
+            if (isset($input['contacts']) && is_array($input['contacts'])) {
+                foreach ($input['contacts'] as &$contact) {
+                    if (isset($contact['phones'])) {
+                        $contact['phones'] = SecurityUtil::encryptPhones($contact['phones']);
+                    }
+                    if (isset($contact['emails'])) {
+                        $contact['emails'] = SecurityUtil::encryptEmails($contact['emails']);
+                    }
+                }
+            }
+            
             $sql = "INSERT INTO clients (name, document, contacts, servers, vpns, urls, notes, inactive_contract) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             $stmt = $pdo->prepare($sql);
             $stmt->execute([
