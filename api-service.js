@@ -196,34 +196,37 @@ const api = {
             if (!res.ok) throw new Error('Failed to update product');
             return await res.json();
         },
-    });
-if (!res.ok) throw new Error('Failed to delete product');
-return await res.json();
+        async delete(id) {
+            const res = await fetch(`${API_BASE}/products.php?id=${id}`, {
+                method: 'DELETE'
+            });
+            if (!res.ok) throw new Error('Failed to delete product');
+            return await res.json();
         }
     },
-favorites: {
+    favorites: {
         async list(username) {
-        const res = await fetch(`${API_BASE}/favorites.php?username=${encodeURIComponent(username)}`);
-        if (!res.ok) throw new Error('Failed to fetch favorites');
-        return await res.json();
-    },
+            const res = await fetch(`${API_BASE}/favorites.php?username=${encodeURIComponent(username)}`);
+            if (!res.ok) throw new Error('Failed to fetch favorites');
+            return await res.json();
+        },
         async add(username, clientId) {
-        const res = await fetch(`${API_BASE}/favorites.php`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, client_id: clientId })
-        });
-        if (!res.ok) throw new Error('Failed to add favorite');
-        return await res.json();
-    },
+            const res = await fetch(`${API_BASE}/favorites.php`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, client_id: clientId })
+            });
+            if (!res.ok) throw new Error('Failed to add favorite');
+            return await res.json();
+        },
         async remove(username, clientId) {
-        const res = await fetch(`${API_BASE}/favorites.php?username=${encodeURIComponent(username)}&client_id=${clientId}`, {
-            method: 'DELETE'
-        });
-        if (!res.ok) throw new Error('Failed to remove favorite');
-        return await res.json();
+            const res = await fetch(`${API_BASE}/favorites.php?username=${encodeURIComponent(username)}&client_id=${clientId}`, {
+                method: 'DELETE'
+            });
+            if (!res.ok) throw new Error('Failed to remove favorite');
+            return await res.json();
+        }
     }
-}
 };
 
 window.api = api;
