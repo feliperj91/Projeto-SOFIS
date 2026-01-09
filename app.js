@@ -1784,6 +1784,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
 
+            // Audit Log for Contact Creation (addContact mode)
+            if (mode === 'addContact' && addedContactNames) {
+                await registerAuditLog('CRIAÇÃO', 'Criação de Contato', `Cliente: ${newClient.name}, Contato: ${addedContactNames}`, null, newClient.contacts[newClient.contacts.length - 1]);
+            }
+
             await registerAuditLog(opType, actionLabel, details, clientBefore, clientAfter);
 
         } catch (error) {
@@ -2113,13 +2118,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 await window.api.favorites.remove(user.username, id);
                 window.userFavorites.delete(id);
                 client.isFavorite = false;
-                await registerAuditLog('EDIÇÃO', 'Remoção de Favorito', `Cliente: ${client.name}`, { isFavorite: true }, { isFavorite: false });
+                // Removed trivial audit log for favorites
             } else {
                 // Add
                 await window.api.favorites.add(user.username, id);
                 window.userFavorites.add(id);
                 client.isFavorite = true;
-                await registerAuditLog('EDIÇÃO', 'Adição de Favorito', `Cliente: ${client.name}`, { isFavorite: false }, { isFavorite: true });
+                // Removed trivial audit log for favorites
             }
             applyClientFilter();
         } catch (e) {
@@ -3707,10 +3712,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 populateVersionClientSelect();
             }
 
-            if (window.registerAuditLog) {
-                // Standardize format so it appears in history search (which filters by "Cliente: NEW_NAME")
-                await window.registerAuditLog('EDIÇÃO', 'Renomeação Rápida de Cliente', `Cliente: ${newName} - Renomeado de "${oldName}"`, oldName, newName);
-            }
+            // Removed redundant audit log - already covered by "Edição de Cliente"
         } else {
             showToast(`Erro: Cliente não encontrado (ID: ${id})`, 'error');
         }
@@ -3808,6 +3810,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 renderClients(clients);
             }
 
+            // Audit Log
+            await registerAuditLog('EDIÇÃO', 'Inativação de Contrato', `Cliente: ${client.name}`, null, inactiveData);
+
             if (window.showToast) window.showToast('Contrato marcado como inativo.', 'success');
             document.getElementById('inactiveContractModal').classList.add('hidden');
 
@@ -3840,6 +3845,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 client.inactive_contract = null;
                 renderClients(clients);
             }
+
+            // Audit Log
+            await registerAuditLog('EDIÇÃO', 'Reativação de Contrato', `Cliente: ${client.name}`, client.inactive_contract, null);
 
             if (window.showToast) window.showToast('Contrato reativado com sucesso!', 'success');
             document.getElementById('inactiveContractModal').classList.add('hidden');
