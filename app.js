@@ -3816,5 +3816,79 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
+    // --- Filter Logic Implementation ---
+    function setupFilters() {
+        const filters = [
+            {
+                btnId: 'serverFilterBtn',
+                menuId: 'serverFilterMenu',
+                variable: 'currentServerFilter',
+                renderFunc: () => {
+                    const id = document.getElementById('serverClientId').value;
+                    const client = clients.find(c => c.id == id);
+                    if (client) renderServersList(client);
+                }
+            },
+            {
+                btnId: 'urlFilterBtn',
+                menuId: 'urlFilterMenu',
+                variable: 'currentUrlFilter',
+                renderFunc: () => {
+                    const id = document.getElementById('urlClientId').value;
+                    const client = clients.find(c => c.id == id);
+                    if (client) renderUrlList(client);
+                }
+            }
+        ];
+
+        filters.forEach(filter => {
+            const btn = document.getElementById(filter.btnId);
+            const menu = document.getElementById(filter.menuId);
+
+            if (!btn || !menu) return;
+
+            // Toggle Menu
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Close others
+                document.querySelectorAll('.dropdown-menu').forEach(m => {
+                    if (m !== menu) m.classList.remove('show');
+                });
+                menu.classList.toggle('show');
+            });
+
+            // Handle Selection
+            const items = menu.querySelectorAll('.dropdown-item');
+            items.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const value = item.dataset.value;
+
+                    // Update Global Variable explicitly
+                    if (filter.variable === 'currentServerFilter') currentServerFilter = value;
+                    if (filter.variable === 'currentUrlFilter') currentUrlFilter = value;
+
+                    // Update UI Selection
+                    items.forEach(i => i.classList.remove('selected'));
+                    item.classList.add('selected');
+
+                    // Close Menu
+                    menu.classList.remove('show');
+
+                    // Re-render
+                    if (filter.renderFunc) filter.renderFunc();
+                });
+            });
+        });
+
+        // Close on click outside
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
+        });
+    }
+
+    // Initialize Filters
+    setupFilters();
+
 });
 console.log("✅ APP.JS FULLY PARSED AND LOADED");
