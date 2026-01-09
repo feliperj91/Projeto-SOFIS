@@ -1463,10 +1463,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             };
 
             // Timestamp IDs (13 digits) are temporary and should be treated as new creations
-            const isTempId = (id) => typeof id === 'string' && /^\d{13}$/.test(id);
-            const isRealId = client.id && (client.id.length < 13 || (client.id.length > 13 && !isTempId(client.id)));
+            // Timestamp IDs (13 digits) are temporary and should be treated as new creations
+            const idStr = String(client.id);
+            const isTempId = /^\d{13}$/.test(idStr);
+            const isRealId = client.id && !isTempId;
 
-            if (isRealId && client.id.length > 0) {
+            if (isRealId) {
                 await window.api.clients.update(client.id, clientData);
             } else {
                 await window.api.clients.create(clientData);
