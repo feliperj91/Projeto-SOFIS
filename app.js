@@ -13,7 +13,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                     this.userRole = session.user.role;
                     // For now, load default rules based on role, or from session if backend provides them
                     // Since backend stores permissions in JSON column, we can use that!
-                    this.rules = session.user.permissions || {};
+                    // Handle permissions whether they come as object (API decode) or string (raw)
+                    if (typeof session.user.permissions === 'string') {
+                        try {
+                            this.rules = JSON.parse(session.user.permissions);
+                        } catch (e) {
+                            console.error('Failed to parse permission string:', e);
+                            this.rules = {};
+                        }
+                    } else {
+                        this.rules = session.user.permissions || {};
+                    }
 
                     console.log(`🔒 Permissions: [${this.userRole}] loaded via API.`);
                 } else {
