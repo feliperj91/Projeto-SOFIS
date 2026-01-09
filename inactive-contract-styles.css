@@ -21,8 +21,11 @@
 
 /* Estilo para o indicador de contrato inativo */
 .inactive-contract-indicator {
-    color: #dc2626;
-    font-size: 0.5rem;
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background-color: #dc2626;
+    border-radius: 50%;
     margin-right: 8px;
     cursor: pointer;
     animation: pulse-red 2s infinite;
@@ -32,6 +35,22 @@
 .inactive-contract-indicator:hover {
     transform: scale(1.3);
     filter: brightness(1.2);
+}
+
+/* 
+   Estilo COMPLETO para a linha do cliente inativo 
+   (Solicitado pelo usuário)
+*/
+.client-row.inactive-contract-row {
+    border-left: 4px solid #dc2626 !important;
+    background: linear-gradient(90deg, rgba(220, 38, 38, 0.05) 0%, transparent 40%) !important;
+}
+
+/* Ajuste no modo escuro para garantir legibilidade */
+@media (prefers-color-scheme: dark) {
+    .client-row.inactive-contract-row {
+        background: linear-gradient(90deg, rgba(220, 38, 38, 0.15) 0%, transparent 40%) !important;
+    }
 }
 
 /* Estilo Inativo para Controle de Versão */

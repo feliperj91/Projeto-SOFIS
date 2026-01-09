@@ -1228,7 +1228,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Helper function to create a client row
     function createClientRow(client) {
         const row = document.createElement('div');
-        row.className = `client-row ${client.isFavorite ? 'favorite' : ''}`;
+        const isInactiveContract = client.inactive_contract && client.inactive_contract.active;
+        row.className = `client-row ${client.isFavorite ? 'favorite' : ''} ${isInactiveContract ? 'inactive-contract-row' : ''}`;
         row.id = `client-row-${client.id}`;
 
         // Permissions
@@ -1812,7 +1813,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             // 3. Update Local State and UI
-            clients = clients.filter(c => c.id !== id);
+            clients = clients.filter(c => c.id != id);
             window.clients = clients; // Sync global
 
             await saveToLocal(); // Save allowed clients locally
