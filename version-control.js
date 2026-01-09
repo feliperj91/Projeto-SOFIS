@@ -931,7 +931,9 @@
             }
 
             // Populate dropdown
-            productsToShow.forEach(product => {
+            console.log('🔄 Iniciando loop com', productsToShow.length, 'produtos:', productsToShow);
+            productsToShow.forEach((product, index) => {
+                console.log(`  ➡️ Adicionando produto ${index + 1}:`, product.name);
                 const opt = document.createElement('option');
                 opt.value = product.name;
                 opt.textContent = product.name;
