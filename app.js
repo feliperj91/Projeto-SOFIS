@@ -1825,7 +1825,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Update Version Control UI if exists
             if (window.versionControls) {
-                window.versionControls = window.versionControls.filter(vc => vc.client_id !== id);
+                window.versionControls = window.versionControls.filter(vc => vc.client_id != id);
                 if (typeof window.renderVersionControls === 'function') {
                     window.renderVersionControls();
                 }
