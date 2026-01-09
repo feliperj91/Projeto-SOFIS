@@ -856,7 +856,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Permissions Check
         const P = window.Permissions;
-        const canViewClients = P ? P.can('Gestão de Clientes', 'can_view') : true;
+        const canViewClients = P ? P.can('Clientes e Contatos', 'can_view') : true;
 
         if (!canViewClients) {
             clientList.innerHTML = `<div class="empty-state" style="padding: 40px; text-align: center; color: var(--text-secondary);"><i class="fa-solid fa-lock" style="font-size: 3rem; margin-bottom: 20px;"></i><p>Você não tem permissão para visualizar clientes.</p></div>`;
@@ -1170,14 +1170,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Permissions
         const P = window.Permissions;
-        const canEdit = P ? P.can('Gestão de Clientes', 'can_edit') : false;
-        const canDelete = P ? P.can('Gestão de Clientes', 'can_delete') : false;
+        const canEdit = P ? P.can('Clientes e Contatos', 'can_edit') : false;
+        const canDelete = P ? P.can('Clientes e Contatos', 'can_delete') : false;
 
         // Granular Permissions
-        const canViewContactsButton = P ? P.can('Contatos', 'can_view') : false;
-        const canViewSQL = P ? P.can('Banco de Dados', 'can_view') : false;
-        const canViewVPN = P ? P.can('VPN', 'can_view') : false;
-        const canViewURL = P ? P.can('URLs', 'can_view') : false;
+        const canViewContactsButton = P ? P.can('Clientes e Contatos', 'can_view') : false;
+        const canViewSQL = P ? P.can('Infraestruturas', 'can_view') : false;
+        const canViewVPN = P ? P.can('Infraestruturas', 'can_view') : false;
+        const canViewURL = P ? P.can('Infraestruturas', 'can_view') : false;
         const canViewLogs = P ? P.can('Logs e Atividades', 'can_view') : false;
 
         const hasServers = client.servers && client.servers.length > 0;
@@ -1275,7 +1275,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Permission Check for Add Button
         if (addContactModalBtn) {
-            addContactModalBtn.style.display = window.Permissions.can('Contatos', 'can_create') ? '' : 'none';
+            addContactModalBtn.style.display = window.Permissions.can('Clientes e Contatos', 'can_create') ? '' : 'none';
         }
 
         renderContactModalList(client);
@@ -1328,8 +1328,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Reuse the logic from createClientRow for generating contact cards
         const P = window.Permissions;
-        const canEditContact = P ? P.can('Contatos', 'can_edit') : false;
-        const canDeleteContact = P ? P.can('Contatos', 'can_delete') : false; // Added mapping
+        const canEditContact = P ? P.can('Clientes e Contatos', 'can_edit') : false;
+        const canDeleteContact = P ? P.can('Clientes e Contatos', 'can_delete') : false; // Added mapping
 
         const contactsHTML = filteredContacts.map((contact) => {
             // We need to find the original index for editing
@@ -2240,7 +2240,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         serverClientIdInput.value = clientId;
 
         // Permissions
-        const canCreate = window.Permissions.can('Banco de Dados', 'can_create');
+        const canCreate = window.Permissions.can('Infraestruturas', 'can_create');
         if (addServerEntryBtn) {
             addServerEntryBtn.style.display = canCreate ? 'flex' : 'none';
         }
@@ -2307,8 +2307,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!serversList) return;
 
         const P = window.Permissions;
-        const canEditSQL = P ? P.can('Banco de Dados', 'can_edit') : false;
-        const canDeleteSQL = P ? P.can('Banco de Dados', 'can_delete') : false;
+        const canEditSQL = P ? P.can('Infraestruturas', 'can_edit') : false;
+        const canDeleteSQL = P ? P.can('Infraestruturas', 'can_delete') : false;
 
         const filterValue = currentServerFilter;
         let filteredServers = client.servers || [];
@@ -3047,12 +3047,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         const editingIndex = document.getElementById('editingUrlIndex').value;
         const P = window.Permissions;
         if (editingIndex !== '') {
-            if (P && !P.can('URLs', 'can_edit')) {
+            if (P && !P.can('Infraestruturas', 'can_edit')) {
                 showToast('🚫 Sem permissão para editar URLs.', 'error');
                 return;
             }
         } else {
-            if (P && !P.can('URLs', 'can_create')) {
+            if (P && !P.can('Infraestruturas', 'can_create')) {
                 showToast('🚫 Sem permissão para criar URLs.', 'error');
                 return;
             }
@@ -3106,7 +3106,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     window.editUrlRecord = (clientId, index) => {
         // Permission Check
-        if (window.Permissions && !window.Permissions.can('URLs', 'can_edit')) {
+        if (window.Permissions && !window.Permissions.can('Infraestruturas', 'can_edit')) {
             showToast('🚫 Sem permissão para editar URLs.', 'error');
             return;
         }
@@ -3131,7 +3131,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     window.deleteUrlRecord = async (clientId, index) => {
         // Permission Check
-        if (window.Permissions && !window.Permissions.can('URLs', 'can_delete')) {
+        if (window.Permissions && !window.Permissions.can('Infraestruturas', 'can_delete')) {
             showToast('🚫 Sem permissão para excluir URLs.', 'error');
             return;
         }
@@ -3159,12 +3159,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Dynamic Permission Check
         if (isNew) {
-            if (P && !P.can('URLs', 'can_create')) {
+            if (P && !P.can('Infraestruturas', 'can_create')) {
                 showToast('🚫 Sem permissão para cadastrar WebLaudo.', 'error');
                 return;
             }
         } else {
-            if (P && !P.can('URLs', 'can_edit')) {
+            if (P && !P.can('Infraestruturas', 'can_edit')) {
                 showToast('🚫 Sem permissão para editar WebLaudo.', 'error');
                 return;
             }
