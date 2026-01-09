@@ -153,4 +153,115 @@ class SecurityUtil {
         if (!is_array($emails)) return $emails;
         return array_map([self::class, 'decrypt'], $emails);
     }
+    
+    /**
+     * Encrypt servers array (passwords and credentials)
+     */
+    public static function encryptServers($servers) {
+        if (!is_array($servers)) return $servers;
+        
+        foreach ($servers as &$server) {
+            // Encrypt password if exists
+            if (isset($server['password'])) {
+                $server['password'] = self::encrypt($server['password']);
+            }
+            
+            // Encrypt credentials array
+            if (isset($server['credentials']) && is_array($server['credentials'])) {
+                foreach ($server['credentials'] as &$cred) {
+                    if (isset($cred['password'])) {
+                        $cred['password'] = self::encrypt($cred['password']);
+                    }
+                }
+            }
+        }
+        
+        return $servers;
+    }
+    
+    /**
+     * Decrypt servers array (passwords and credentials)
+     */
+    public static function decryptServers($servers) {
+        if (!is_array($servers)) return $servers;
+        
+        foreach ($servers as &$server) {
+            // Decrypt password if exists
+            if (isset($server->password)) {
+                $server->password = self::decrypt($server->password);
+            }
+            
+            // Decrypt credentials array
+            if (isset($server->credentials) && is_array($server->credentials)) {
+                foreach ($server->credentials as &$cred) {
+                    if (isset($cred->password)) {
+                        $cred->password = self::decrypt($cred->password);
+                    }
+                }
+            }
+        }
+        
+        return $servers;
+    }
+    
+    /**
+     * Encrypt VPNs array (passwords)
+     */
+    public static function encryptVpns($vpns) {
+        if (!is_array($vpns)) return $vpns;
+        
+        foreach ($vpns as &$vpn) {
+            if (isset($vpn['password'])) {
+                $vpn['password'] = self::encrypt($vpn['password']);
+            }
+        }
+        
+        return $vpns;
+    }
+    
+    /**
+     * Decrypt VPNs array (passwords)
+     */
+    public static function decryptVpns($vpns) {
+        if (!is_array($vpns)) return $vpns;
+        
+        foreach ($vpns as &$vpn) {
+            if (isset($vpn->password)) {
+                $vpn->password = self::decrypt($vpn->password);
+            }
+        }
+        
+        return $vpns;
+    }
+    
+    /**
+     * Encrypt URLs array (passwords if any)
+     */
+    public static function encryptUrls($urls) {
+        if (!is_array($urls)) return $urls;
+        
+        foreach ($urls as &$url) {
+            // URLs might have passwords in the future
+            if (isset($url['password'])) {
+                $url['password'] = self::encrypt($url['password']);
+            }
+        }
+        
+        return $urls;
+    }
+    
+    /**
+     * Decrypt URLs array (passwords if any)
+     */
+    public static function decryptUrls($urls) {
+        if (!is_array($urls)) return $urls;
+        
+        foreach ($urls as &$url) {
+            if (isset($url->password)) {
+                $url->password = self::decrypt($url->password);
+            }
+        }
+        
+        return $urls;
+    }
 }

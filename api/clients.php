@@ -36,6 +36,21 @@ try {
                         }
                     }
                 }
+                
+                // Decrypt servers data (passwords and credentials)
+                if (is_array($c['servers'])) {
+                    $c['servers'] = SecurityUtil::decryptServers($c['servers']);
+                }
+                
+                // Decrypt VPNs data (passwords)
+                if (is_array($c['vpns'])) {
+                    $c['vpns'] = SecurityUtil::decryptVpns($c['vpns']);
+                }
+                
+                // Decrypt URLs data (if any passwords)
+                if (is_array($c['urls'])) {
+                    $c['urls'] = SecurityUtil::decryptUrls($c['urls']);
+                }
             }
             $json = json_encode($clients);
             if ($json === false) {
@@ -57,6 +72,21 @@ try {
                         $contact['emails'] = SecurityUtil::encryptEmails($contact['emails']);
                     }
                 }
+            }
+            
+            // Encrypt servers data (passwords and credentials)
+            if (isset($input['servers']) && is_array($input['servers'])) {
+                $input['servers'] = SecurityUtil::encryptServers($input['servers']);
+            }
+            
+            // Encrypt VPNs data (passwords)
+            if (isset($input['vpns']) && is_array($input['vpns'])) {
+                $input['vpns'] = SecurityUtil::encryptVpns($input['vpns']);
+            }
+            
+            // Encrypt URLs data (if any passwords)
+            if (isset($input['urls']) && is_array($input['urls'])) {
+                $input['urls'] = SecurityUtil::encryptUrls($input['urls']);
             }
             
             $sql = "INSERT INTO clients (name, document, contacts, servers, vpns, urls, notes, inactive_contract) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
@@ -92,6 +122,21 @@ try {
                         $contact['emails'] = SecurityUtil::encryptEmails($contact['emails']);
                     }
                 }
+            }
+            
+            // Encrypt servers data (passwords and credentials)
+            if (isset($input['servers']) && is_array($input['servers'])) {
+                $input['servers'] = SecurityUtil::encryptServers($input['servers']);
+            }
+            
+            // Encrypt VPNs data (passwords)
+            if (isset($input['vpns']) && is_array($input['vpns'])) {
+                $input['vpns'] = SecurityUtil::encryptVpns($input['vpns']);
+            }
+            
+            // Encrypt URLs data (if any passwords)
+            if (isset($input['urls']) && is_array($input['urls'])) {
+                $input['urls'] = SecurityUtil::encryptUrls($input['urls']);
             }
             
             $sql = "UPDATE clients SET name = ?, document = ?, contacts = ?, servers = ?, vpns = ?, urls = ?, notes = ?, inactive_contract = ? WHERE id = ?";
