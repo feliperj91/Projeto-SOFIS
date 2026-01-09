@@ -28,32 +28,23 @@ document.addEventListener('DOMContentLoaded', async () => {
             type: 'guide',
             title: 'Guia Contatos e Conexões',
             items: [
-                { module: 'Gestão de Clientes', isHeader: true },
+                { module: 'Clientes e Contatos', isHeader: true },
                 { module: 'Logs e Atividades' },
-                { module: 'Contatos' },
-                { module: 'Banco de Dados' },
-                { module: 'VPN' },
-                { module: 'URLs' }
+                { module: 'Infraestruturas' }
             ]
         },
         {
             type: 'guide',
             title: 'Guia Controle de Versões',
             items: [
-                { module: 'Controle de Versões', isHeader: true },
-                { module: 'Controle de Versões - Dashboard', label: 'Dashboard' },
-                { module: 'Controle de Versões - Histórico', label: 'Histórico' },
-                { module: 'Controle de Versões - Produtos', label: 'Produtos' }
+                { module: 'Controle de Versões', isHeader: true }
             ]
         },
         {
             type: 'guide',
             title: 'Guia Gerenciamento de Usuários',
             items: [
-                { module: 'Gestão de Usuários', isHeader: true },
-                { module: 'Gestão de Usuários - Usuários', label: 'Usuários' },
-                { module: 'Gestão de Usuários - Permissões', label: 'Permissões' },
-                { module: 'Gestão de Usuários - Logs', label: 'Logs e Auditoria' }
+                { module: 'Gestão de Usuários', isHeader: true }
             ]
         }
     ];
@@ -105,13 +96,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- Initialization ---
     async function initUserManagement() {
         // Now checks specific sub-module for user creation
-        const canCreateUsers = window.Permissions.can('Gestão de Usuários - Usuários', 'can_create');
+        const canCreateUsers = window.Permissions.can('Gestão de Usuários', 'can_create');
         if (addNewUserBtn) addNewUserBtn.style.display = canCreateUsers ? 'flex' : 'none';
 
         // Check sub-tab visibility
-        const canViewUsers = window.Permissions.can('Gestão de Usuários - Usuários', 'can_view');
-        const canViewPerms = window.Permissions.can('Gestão de Usuários - Permissões', 'can_view');
-        const canViewLogs = window.Permissions.can('Gestão de Usuários - Logs', 'can_view');
+        // Map all sub-features to the main permission
+        const canViewUsers = window.Permissions.can('Gestão de Usuários', 'can_view');
+        const canViewPerms = window.Permissions.can('Gestão de Usuários', 'can_view');
+        const canViewLogs = window.Permissions.can('Logs e Atividades', 'can_view'); // Logs usually have their own module
 
         const tabUsers = document.querySelector('[data-mng-tab="users"]');
         const tabPerms = document.querySelector('[data-mng-tab="permissions"]');
@@ -171,7 +163,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (logsControls) logsControls.classList.add('hidden');
 
             // Reset Add User Btn visibility (default to flex if perm allows, but hide on specific tabs)
-            const canCreateUsersData = window.Permissions.can('Gestão de Usuários - Usuários', 'can_create');
+            const canCreateUsersData = window.Permissions.can('Gestão de Usuários', 'can_create');
             if (addNewUserBtn) addNewUserBtn.style.display = canCreateUsersData ? 'flex' : 'none';
 
             if (currentMngTab === 'users') {
@@ -277,8 +269,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const P = window.Permissions;
         // Use granular permissions
-        const canEdit = P && P.can('Gestão de Usuários - Usuários', 'can_edit');
-        const canDelete = P && P.can('Gestão de Usuários - Usuários', 'can_delete');
+        const canEdit = P && P.can('Gestão de Usuários', 'can_edit');
+        const canDelete = P && P.can('Gestão de Usuários', 'can_delete');
 
         if (list.length === 0) {
             usersListEl.innerHTML = `
@@ -536,7 +528,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     window.deleteUser = async (id) => {
         // Security Check
-        if (!window.Permissions.can('Gestão de Usuários - Usuários', 'can_delete')) {
+        if (!window.Permissions.can('Gestão de Usuários', 'can_delete')) {
             window.showToast('🚫 Acesso negado: Você não tem permissão para excluir usuários.', 'error');
             return;
         }
