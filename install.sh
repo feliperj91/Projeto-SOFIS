@@ -1,31 +1,31 @@
 #!/bin/bash
-# SOFIS Project - Automated Installation Script for Lubuntu/Ubuntu 24.04
-# This script installs and configures all dependencies for the SOFIS project
-# Includes all fixes discovered during troubleshooting
+# Projeto SOFIS - Script de Instalação Automatizada para Lubuntu/Ubuntu 24.04
+# Este script instala e configura todas as dependências do projeto SOFIS
+# Inclui todas as correções descobertas durante troubleshooting
 
-set -e  # Exit on any error
+set -e  # Sair em caso de erro
 
 echo "=========================================="
-echo "SOFIS Project - Linux Installation Script"
+echo "Projeto SOFIS - Script de Instalação Linux"
 echo "=========================================="
 echo ""
 
-# Check if running as root
+# Verificar se está executando como root
 if [ "$EUID" -ne 0 ]; then 
-    echo "⚠️  This script requires sudo privileges."
-    echo "Please run with: sudo ./install.sh"
+    echo "⚠️  Este script requer privilégios sudo."
+    echo "Execute com: sudo ./install.sh"
     exit 1
 fi
 
-# Get the actual user (not root when using sudo)
+# Obter o usuário real (não root quando usando sudo)
 ACTUAL_USER=${SUDO_USER:-$USER}
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-echo "📦 Step 1/7: Updating package lists..."
+echo "📦 Passo 1/7: Atualizando lista de pacotes..."
 apt update
 
 echo ""
-echo "📦 Step 2/7: Installing Apache2, PostgreSQL, and PHP..."
+echo "📦 Passo 2/7: Instalando Apache2, PostgreSQL e PHP..."
 apt install -y apache2 postgresql postgresql-contrib php libapache2-mod-php php-pgsql
 
 echo ""
