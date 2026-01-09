@@ -1233,14 +1233,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Permissions
         const P = window.Permissions;
-        const canEdit = P ? P.can('Clientes e Contatos', 'can_edit') : false;
-        const canDelete = P ? P.can('Clientes e Contatos', 'can_delete') : false;
+        // Edit/Delete Client itself -> Gestão de Clientes
+        const canEdit = P ? P.can('Gestão de Clientes', 'can_edit') : false;
+        const canDelete = P ? P.can('Gestão de Clientes', 'can_delete') : false;
 
-        // Granular Permissions
-        const canViewContactsButton = P ? P.can('Clientes e Contatos', 'can_view') : false;
-        const canViewSQL = P ? P.can('Infraestruturas', 'can_view') : false;
-        const canViewVPN = P ? P.can('Infraestruturas', 'can_view') : false;
-        const canViewURL = P ? P.can('Infraestruturas', 'can_view') : false;
+        // Granular Permissions for Sub-Modules
+        const canViewContactsButton = P ? P.can('Dados de Contato', 'can_view') : false;
+        const canViewSQL = P ? P.can('Dados de Acesso (SQL)', 'can_view') : false;
+        const canViewVPN = P ? P.can('Dados de Acesso (VPN)', 'can_view') : false;
+        const canViewURL = P ? P.can('URLs', 'can_view') : false;
         const canViewLogs = P ? P.can('Logs e Atividades', 'can_view') : false;
 
         const hasServers = client.servers && client.servers.length > 0;
@@ -1336,9 +1337,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (contactModalClientName) contactModalClientName.textContent = client.name;
         if (contactModalSearch) contactModalSearch.value = '';
 
-        // Permission Check for Add Button
+        // Permission Check for Add Button (Granular)
         if (addContactModalBtn) {
-            addContactModalBtn.style.display = window.Permissions.can('Clientes e Contatos', 'can_create') ? '' : 'none';
+            addContactModalBtn.style.display = window.Permissions.can('Dados de Contato', 'can_create') ? '' : 'none';
         }
 
         renderContactModalList(client);
@@ -1391,8 +1392,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Reuse the logic from createClientRow for generating contact cards
         const P = window.Permissions;
-        const canEditContact = P ? P.can('Clientes e Contatos', 'can_edit') : false;
-        const canDeleteContact = P ? P.can('Clientes e Contatos', 'can_delete') : false; // Added mapping
+        const canEditContact = P ? P.can('Dados de Contato', 'can_edit') : false;
+        const canDeleteContact = P ? P.can('Dados de Contato', 'can_delete') : false;
 
         const contactsHTML = filteredContacts.map((contact) => {
             // We need to find the original index for editing
