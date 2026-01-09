@@ -1,10 +1,10 @@
 <?php
 // api/clients.php
-require 'db.php';
-
 $method = $_SERVER['REQUEST_METHOD'];
 
 try {
+    require 'db.php';
+    
     switch ($method) {
         case 'GET':
             $stmt = $pdo->query('SELECT * FROM clients ORDER BY name ASC');
