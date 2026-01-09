@@ -938,7 +938,9 @@
                 sysFilter.appendChild(opt);
             });
 
+
             console.log('✅ Dropdown populado com', productsToShow.length, 'produtos');
+            console.log('📋 HTML do dropdown:', sysFilter.innerHTML);
         }
 
         renderHistoryLoading();
