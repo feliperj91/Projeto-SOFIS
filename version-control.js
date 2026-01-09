@@ -571,7 +571,7 @@
         await loadProducts(); // Load dynamic products
         if (window.populateResponsibleSelect) await window.populateResponsibleSelect();
 
-        const v = id ? versionControls.find(x => x.id === id) : null;
+        const v = id ? versionControls.find(x => x.id == id) : null;
 
         if (v) {
             const clientSelect = document.getElementById('versionClientSelect');
@@ -1683,7 +1683,7 @@
         const typeValue = typeSelect.value;
 
         // Find current editing product to compare changes
-        const existing = editingProductId ? productsList.find(x => x.id === editingProductId) : null;
+        const existing = editingProductId ? productsList.find(x => x.id == editingProductId) : null;
 
         const isChanged = !existing || (existing.name !== nameValue || existing.version_type !== typeValue);
         const isValid = nameValue.length > 0 && typeValue.length > 0;
@@ -1696,7 +1696,7 @@
             if (window.showToast) window.showToast('🚫 Sem permissão para editar produtos.', 'error');
             return;
         }
-        const p = productsList.find(x => x.id === id);
+        const p = productsList.find(x => x.id == id);
         if (!p) return;
         editingProductId = id;
         document.getElementById('productId').value = p.id;
@@ -1713,7 +1713,7 @@
             return;
         }
 
-        const p = productsList.find(x => x.id === id);
+        const p = productsList.find(x => x.id == id);
         if (!p) return;
 
         const confirmed = await window.showConfirm(`Tem certeza que deseja excluir o produto "${p.name}"?`, 'Excluir Produto', 'fa-trash');
@@ -1753,7 +1753,7 @@
 
         try {
             if (id) {
-                const oldProduct = productsList.find(p => p.id === id);
+                const oldProduct = productsList.find(p => p.id == id);
                 await window.api.products.update(id, { name, version_type });
 
                 if (window.registerAuditLog) {

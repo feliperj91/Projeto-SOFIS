@@ -382,7 +382,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Modal Handlers
     window.editUser = async function (id) {
         console.log('Editando usuário ID:', id);
-        const u = usersList.find(x => x.id === id);
+        const u = usersList.find(x => x.id == id);
         if (!u) {
             console.error('Usuário não encontrado na lista local:', id);
             return;
@@ -446,7 +446,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // If editing admin, block username change
         if (id) {
-            const oldUser = usersList.find(x => x.id === id);
+            const oldUser = usersList.find(x => x.id == id);
             if (oldUser && oldUser.username === 'admin' && formData.username !== 'admin') {
                 window.showToast('O usuário admin não pode ter o login alterado.', 'danger');
                 return;
@@ -460,7 +460,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             let details = '';
 
             if (id) {
-                oldVal = usersList.find(x => x.id === id);
+                oldVal = usersList.find(x => x.id == id);
                 // Update via API
                 // Note: API only updates password if provided and not empty
                 const updateData = { ...formData };
@@ -543,7 +543,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        const u = usersList.find(x => x.id === id);
+        const u = usersList.find(x => x.id == id);
         if (!u) return;
         if (u.username === 'admin') {
             window.showToast('O usuário administrador central não pode ser removido.', 'danger');
