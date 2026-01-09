@@ -2302,51 +2302,48 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- Server Data Functions ---
 
     window.openServerData = (clientId) => {
-        console.log('OpenServerData called for:', clientId);
+        console.log("🟢 CLICK: openServerData for", clientId);
         try {
             const client = clients.find(c => c.id === clientId);
             if (!client) {
-                console.error('Client not found:', clientId);
+                console.error("Client not found for ID:", clientId);
                 return;
             }
 
-            serverClientIdInput.value = clientId;
-
-            // Permissions (Safe Check)
+            // Permissions Check
             const P = window.Permissions;
-            const canCreate = (P && typeof P.can === 'function') ? P.can('Dados de Acesso (SQL)', 'can_create') : false;
+            // Check if Permissions object exists and has 'can' method
+            const canCreate = (P && P.can) ? P.can('Dados de Acesso (SQL)', 'can_create') : false;
 
-            if (addServerEntryBtn) {
-                addServerEntryBtn.style.display = canCreate ? 'flex' : 'none';
+            // DOM Elements Check
+            const sClientIdInput = document.getElementById('serverClientId');
+            const sAddBtn = document.getElementById('addServerEntryBtn');
+            const sModal = document.getElementById('serverModal');
+            const sModalTitle = document.getElementById('serverModalClientName');
+
+            if (sClientIdInput) sClientIdInput.value = clientId;
+
+            if (sAddBtn) {
+                sAddBtn.style.display = canCreate ? 'flex' : 'none';
             }
 
-            // Initialize servers array if it doesn't exist
-            if (!client.servers) {
-                client.servers = [];
-            }
+            // Ensure servers array exists
+            if (!client.servers) client.servers = [];
 
-            const serverModalClientName = document.getElementById('serverModalClientName');
-            if (serverModalClientName) serverModalClientName.textContent = client.name;
+            if (sModalTitle) sModalTitle.textContent = client.name;
 
-            // Reset filter state
-            currentServerFilter = 'all';
-            if (serverFilterBtn) serverFilterBtn.classList.remove('filter-btn-active');
-            if (serverFilterMenu) {
-                serverFilterMenu.querySelectorAll('.dropdown-item').forEach(i => {
-                    i.classList.toggle('selected', i.dataset.value === 'all');
-                });
-            }
+            // Reset UI State
+            if (typeof currentServerFilter !== 'undefined') currentServerFilter = 'all';
 
-            // Clear and reset the form
-            clearServerForm();
+            // Helpers
+            if (typeof clearServerForm === 'function') clearServerForm();
+            if (typeof renderServersList === 'function') renderServersList(client);
 
-            // Render the servers list
-            renderServersList(client);
+            if (sModal) sModal.classList.remove('hidden');
 
-            serverModal.classList.remove('hidden');
         } catch (e) {
-            console.error("Error in openServerData:", e);
-            alert("Erro ao abrir dados do servidor. Verifique o console.");
+            console.error("❌ CRITICAL ERROR in openServerData:", e);
+            alert("Erro interno ao abrir modal de Servidor: " + e.message);
         }
     };
 
@@ -3800,3 +3797,4 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
 });
+console.log("✅ APP.JS FULLY PARSED AND LOADED");
