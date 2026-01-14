@@ -4229,14 +4229,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             showToast(`✅ Servidor adicionado ao cliente "${client.name}"!`, 'success');
         }
 
-        await saveToLocal(client.id);
-        renderClients(clients);
+        // Optimistic Render
         renderHostsList(client);
         closeHostEntryModal();
 
-        const opType = (editingIndex !== '') ? 'EDIÇÃO' : 'CRIAÇÃO';
-        const actionLabel = (editingIndex !== '') ? 'Edição de Servidor' : 'Adição de Servidor';
-        await registerAuditLog(opType, actionLabel, `Cliente: ${client.name}, Servidor: ${hostRecord.name}`, hostBefore, hostRecord);
+        try {
+            await saveToLocal(client.id);
+            renderClients(clients);
+
+            const opType = (editingIndex !== '') ? 'EDIÇÃO' : 'CRIAÇÃO';
+            const actionLabel = (editingIndex !== '') ? 'Edição de Servidor' : 'Adição de Servidor';
+            await registerAuditLog(opType, actionLabel, `Cliente: ${client.name}, Servidor: ${hostRecord.name}`, hostBefore, hostRecord);
+        } catch (error) {
+            console.error(error);
+            showToast('Erro ao salvar servidor: ' + error.message, 'error');
+            // Revert changes if needed, but for now we just log
+        }
     }
 
     window.editHostRecord = (clientId, index) => {
