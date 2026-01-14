@@ -1313,30 +1313,35 @@
 
     <!-- Client Interaction Modal (Simple Selection) -->
     <div id="clientInteractionModal" class="modal hidden" style="z-index: 9999;">
-        <div class="modal-content" style="max-width: 400px; padding: 30px; text-align: center;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-                <h2 id="clientInteractionTitle" style="margin: 0; font-size: 1.5rem; text-transform: uppercase;">CLIENTE
-                </h2>
+        <div class="modal-content"
+            style="max-width: 450px; padding: 40px; text-align: center; background: #1e1e1e; border: 1px solid #333; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                <h2 id="clientInteractionTitle"
+                    style="margin: 0; font-size: 1.8rem; font-weight: 700; color: #fff; text-transform: uppercase; letter-spacing: 0.5px;">
+                    CLIENTE</h2>
                 <button type="button" class="btn-icon"
-                    onclick="document.getElementById('clientInteractionModal').classList.add('hidden')">
-                    <i class="fa-solid fa-xmark"></i>
+                    onclick="document.getElementById('clientInteractionModal').classList.add('hidden')"
+                    style="color: #888;">
+                    <i class="fa-solid fa-xmark" style="font-size: 1.2rem;"></i>
                 </button>
             </div>
 
-            <p style="color: var(--text-secondary); margin-bottom: 20px;">O que você deseja fazer?</p>
+            <p style="color: #aaa; margin-bottom: 25px; font-size: 1.1rem;">O que você deseja fazer?</p>
 
-            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                <button class="btn-primary" onclick="window.triggerRenameClient()" style="flex: 1;">
-                    <i class="fa-solid fa-pen" style="margin-right: 8px;"></i> Alterar Nome
+            <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+                <button onclick="window.triggerRenameClient()"
+                    style="flex: 1; background: #FFAB00; color: white; border: none; border-radius: 8px; padding: 12px 20px; font-weight: 600; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(255, 171, 0, 0.3);">
+                    <i class="fa-solid fa-pen"></i> Alterar Nome
                 </button>
-                <button class="btn-secondary" onclick="window.triggerClientNotes()" style="flex: 1;">
-                    <i class="fa-solid fa-comment-dots" style="margin-right: 8px;"></i> Observação
+                <button onclick="window.triggerClientNotes()"
+                    style="flex: 1; background: transparent; color: #ccc; border: 1px solid #444; border-radius: 8px; padding: 12px 20px; font-weight: 500; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s;">
+                    <i class="fa-solid fa-comment-dots"></i> Observação
                 </button>
             </div>
 
-            <button class="btn-secondary" onclick="window.triggerInactiveContract()"
-                style="width: 100%; border: 1px solid var(--danger); color: var(--danger);">
-                <i class="fa-solid fa-ban" style="margin-right: 8px;"></i> Contrato Inativo
+            <button onclick="window.triggerInactiveContract()"
+                style="width: 100%; background: #e0e0e0; color: #222; border: none; border-radius: 8px; padding: 12px; font-weight: 600; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 5px;">
+                <i class="fa-solid fa-ban"></i> Contrato Inativo
             </button>
         </div>
     </div>
