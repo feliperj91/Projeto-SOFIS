@@ -1065,34 +1065,7 @@
         </div>
     </div>
 
-    <!-- Client Interaction Modal -->
-    <div id="clientInteractionModal" class="modal hidden">
-        <div class="modal-content" style="max-width: 450px;">
-            <div class="modal-header">
-                <h2 id="clientInteractionTitle">Opções do Cliente</h2>
-                <button type="button" class="btn-icon"
-                    onclick="document.getElementById('clientInteractionModal').classList.add('hidden')">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-            <div class="modal-body" style="display: flex; flex-direction: column; gap: 15px; padding: 20px 0;">
-                <p style="text-align: center; color: var(--text-secondary);">O que você deseja fazer?</p>
-                <div style="display: flex; gap: 15px; justify-content: center;">
-                    <button class="btn-primary" onclick="window.triggerRenameClient()">
-                        <i class="fa-solid fa-pen"></i> Alterar Nome
-                    </button>
-                    <button class="btn-secondary" onclick="window.triggerClientNotes()">
-                        <i class="fa-solid fa-comment-dots"></i> Observação
-                    </button>
-                </div>
-                <!-- Inactive Contract Button -->
-                <button class="btn-danger-outlined" onclick="window.triggerInactiveContract()"
-                    style="width: 80%; justify-content: center; padding: 12px 20px; margin: 0 auto;">
-                    <i class="fa-solid fa-ban"></i> Contrato Inativo
-                </button>
-            </div>
-        </div>
-    </div>
+
 
     <!-- Quick Rename Modal -->
     <div id="quickRenameModal" class="modal hidden">
