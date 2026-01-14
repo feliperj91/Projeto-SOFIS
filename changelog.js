@@ -3,6 +3,16 @@
 
 window.SOFIS_CHANGELOG = [
     {
+        version: '2.0.3',
+        date: '2026-01-14',
+        title: 'Módulo de Servidores',
+        changes: [
+            { type: 'feat', text: 'Novo módulo "Servidores" dedicado: gestão de hosts, IPs e credenciais de acesso.' },
+            { type: 'refactor', text: 'Migração completa de estruturas dinâmicas para tabelas dedicadas.' },
+            { type: 'sec', text: 'Implementação de criptografia para credenciais de servidores.' }
+        ]
+    },
+    {
         version: '2.0.2',
         date: '2026-01-14',
         title: 'Modernização Visual de Modais',
