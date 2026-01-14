@@ -638,6 +638,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     await initialLoad();
+    console.log("CLIENTS LOADED:", clients.map(c => ({ id: c.id, name: c.name, inactive: c.inactive_contract })));
 
     // Event Listeners
     addBtn.addEventListener('click', openAddModal);
