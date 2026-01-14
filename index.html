@@ -1340,7 +1340,9 @@
             </div>
 
             <button onclick="window.triggerInactiveContract()"
-                style="width: 100%; background: #e0e0e0; color: #222; border: none; border-radius: 8px; padding: 12px; font-weight: 600; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 5px;">
+                onmouseover="this.style.background='rgba(255, 68, 68, 0.1)'"
+                onmouseout="this.style.background='transparent'"
+                style="width: 100%; background: transparent; color: #ff5252; border: 1px solid #ff5252; border-radius: 8px; padding: 12px; font-weight: 600; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 5px; transition: all 0.2s;">
                 <i class="fa-solid fa-ban"></i> Contrato Inativo
             </button>
         </div>
