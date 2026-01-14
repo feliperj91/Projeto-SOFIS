@@ -264,4 +264,35 @@ class SecurityUtil {
         
         return $urls;
     }
+
+    /**
+     * Encrypt hosts array (passwords)
+     */
+    public static function encryptHosts($hosts) {
+        if (!is_array($hosts)) return $hosts;
+        
+        foreach ($hosts as &$host) {
+            // Encrypt password if exists
+            if (isset($host['password'])) {
+                $host['password'] = self::encrypt($host['password']);
+            }
+        }
+        
+        return $hosts;
+    }
+    
+    /**
+     * Decrypt hosts array (passwords)
+     */
+    public static function decryptHosts($hosts) {
+        if (!is_array($hosts)) return $hosts;
+        
+        foreach ($hosts as &$host) {
+            if (isset($host->password)) {
+                $host->password = self::decrypt($host->password);
+            }
+        }
+        
+        return $hosts;
+    }
 }

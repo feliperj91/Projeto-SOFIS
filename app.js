@@ -1113,6 +1113,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     function updateClientRow(row, client) {
         const hasServers = client.servers && client.servers.length > 0;
         const hasVpns = client.vpns && client.vpns.length > 0;
+        const hasHosts = client.hosts && client.hosts.length > 0;
         const urlCount = (client.urls ? client.urls.length : 0) + (client.webLaudo && client.webLaudo.trim() !== '' ? 1 : 0);
         const hasUrls = urlCount > 0;
         const hasContacts = client.contacts && client.contacts.length > 0;
@@ -1243,18 +1244,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Granular Permissions for Sub-Modules
         const canViewContactsButton = P ? P.can('Dados de Contato', 'can_view') : false;
         const canViewSQL = P ? P.can('Dados de Acesso (SQL)', 'can_view') : false;
+        const canViewServers = canViewSQL; // Reuse SQL permission for Servidores
         const canViewVPN = P ? P.can('Dados de Acesso (VPN)', 'can_view') : false;
         const canViewURL = P ? P.can('URLs', 'can_view') : false;
         const canViewLogs = P ? P.can('Logs e Atividades', 'can_view') : false;
 
         const hasServers = client.servers && client.servers.length > 0;
         const hasVpns = client.vpns && client.vpns.length > 0;
+        const hasHosts = client.hosts && client.hosts.length > 0;
         const urlCount = (client.urls ? client.urls.length : 0) + (client.webLaudo && client.webLaudo.trim() !== '' ? 1 : 0);
         const hasUrls = urlCount > 0;
         const hasContacts = client.contacts && client.contacts.length > 0;
 
         const serverBtnClass = hasServers ? 'btn-icon active-success' : 'btn-icon';
         const vpnBtnClass = hasVpns ? 'btn-icon active-success' : 'btn-icon';
+        const hostBtnClass = hasHosts ? 'btn-icon active-success' : 'btn-icon';
         const urlBtnClass = hasUrls ? 'btn-icon active-success' : 'btn-icon';
         const contactBtnClass = hasContacts ? 'btn-icon active-success' : 'btn-icon';
         const vpnIconClass = hasVpns ? 'vpn-icon-img vpn-icon-success' : 'vpn-icon-img';
@@ -1290,6 +1294,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                          ` : ''}
                          
                          <!-- Granular Infra Buttons -->
+                         ${canViewServers ? `
+                          <button class="${hostBtnClass} btn-with-badge perm-infra-server" onclick="openHostData('${client.id}'); event.stopPropagation();" title="Servidores">
+                              <i class="fa-solid fa-server"></i>
+                              ${hasHosts ? `<span class="btn-badge">${client.hosts.length}</span>` : ''}
+                          </button>
+                          ` : ''}
+
                          ${canViewSQL ? `
                           <button class="${serverBtnClass} btn-with-badge perm-infra-sql" onclick="openServerData('${client.id}'); event.stopPropagation();" title="Dados de acesso ao SQL">
                               <i class="fa-solid fa-database"></i>
@@ -3874,6 +3885,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             },
             {
+                btnId: 'hostFilterBtn',
+                menuId: 'hostFilterMenu',
+                variable: 'currentHostFilter',
+                renderFunc: () => {
+                    const id = document.getElementById('hostClientId').value;
+                    const client = clients.find(c => c.id == id);
+                    if (client) renderHostsList(client);
+                }
+            },
+            {
                 btnId: 'urlFilterBtn',
                 menuId: 'urlFilterMenu',
                 variable: 'currentUrlFilter',
@@ -3933,6 +3954,359 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Initialize Filters
     setupFilters();
+
+
+    // --- Host Data (Servidores) Functions ---
+    let currentHostFilter = 'all';
+
+    window.openHostData = (clientId) => {
+        try {
+            const client = clients.find(c => c.id == clientId);
+            if (!client) return;
+
+            const P = window.Permissions;
+            // Using same permission category as SQL for now (closest match for 'Infra')
+            const canCreate = (P && P.can) ? P.can('Dados de Acesso (SQL)', 'can_create') : false;
+
+            const hClientIdInput = document.getElementById('hostClientId');
+            const hAddBtn = document.getElementById('addHostEntryBtn');
+            const hModal = document.getElementById('hostModal');
+            const hModalTitle = document.getElementById('hostModalClientName');
+
+            if (hClientIdInput) hClientIdInput.value = clientId;
+
+            if (hAddBtn) {
+                hAddBtn.style.display = canCreate ? 'flex' : 'none';
+            }
+
+            if (!client.hosts) client.hosts = [];
+
+            if (hModalTitle) hModalTitle.textContent = client.name;
+
+            currentHostFilter = 'all';
+
+            // Reset UI State
+            if (hostFilterBtn) hostFilterBtn.classList.remove('filter-btn-active');
+            if (hostFilterMenu) {
+                hostFilterMenu.querySelectorAll('.dropdown-item').forEach(i => {
+                    i.classList.toggle('selected', i.dataset.value === 'all');
+                });
+            }
+
+            // Helpers
+            clearHostForm();
+            renderHostsList(client);
+
+            if (hModal) hModal.classList.remove('hidden');
+
+        } catch (e) {
+            console.error("Error in openHostData:", e);
+        }
+    };
+
+    function closeHostModal() {
+        hostModal.classList.add('hidden');
+    }
+
+    function openHostEntry() {
+        clearHostForm();
+        hostEntryModalTitle.textContent = 'Novo Servidor';
+        const editingHostIndex = document.getElementById('editingHostIndex');
+        if (editingHostIndex) editingHostIndex.value = '';
+        hostEntryModal.classList.remove('hidden');
+    }
+
+    function closeHostEntryModal() {
+        hostEntryModal.classList.add('hidden');
+        clearHostForm();
+    }
+
+    function clearHostForm() {
+        const environmentSelect = document.getElementById('hostEnvironmentSelect');
+        if (environmentSelect) environmentSelect.value = '';
+        const hostNameInput = document.getElementById('hostNameInput');
+        if (hostNameInput) hostNameInput.value = '';
+        const hostNotesInput = document.getElementById('hostNotesInput');
+        if (hostNotesInput) hostNotesInput.value = '';
+
+        const editingHostIndex = document.getElementById('editingHostIndex');
+        if (editingHostIndex) editingHostIndex.value = '';
+
+        // Clear credentials
+        const hostCredentialList = document.getElementById('hostCredentialList');
+        if (hostCredentialList) {
+            hostCredentialList.innerHTML = '';
+            addHostCredentialField();
+        }
+    }
+
+    function addHostCredentialField(user = '', password = '') {
+        const hostCredentialList = document.getElementById('hostCredentialList');
+        if (!hostCredentialList) return;
+
+        const div = document.createElement('div');
+        div.className = 'credential-field-group';
+        div.innerHTML = `
+            <div class="credential-fields-container">
+                <div class="credential-field-item">
+                    <label class="credential-label-text"><i class="fa-solid fa-user" style="color: var(--accent); margin-right: 5px;"></i> Usuário<span class="required">*</span></label>
+                    <input type="text" class="server-user-input" placeholder="Digite o usuário" value="${escapeHtml(user)}" required>
+                </div>
+                <div class="credential-field-item">
+                    <label class="credential-label-text"><i class="fa-solid fa-key" style="color: var(--accent); margin-right: 5px;"></i> Senha<span class="required">*</span></label>
+                    <input type="text" class="server-pass-input" placeholder="Digite a senha" value="${escapeHtml(password)}" required>
+                </div>
+                <button type="button" class="btn-remove-credential" onclick="removeHostCredentialField(this)" title="Remover Credencial" tabindex="-1">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
+        `;
+        hostCredentialList.appendChild(div);
+    }
+
+    window.removeHostCredentialField = function (btn) {
+        const hostCredentialList = document.getElementById('hostCredentialList');
+        const groups = hostCredentialList.querySelectorAll('.credential-field-group');
+        if (groups.length <= 1) {
+            showToast('⚠️ É necessário ter pelo menos um usuário e senha.', 'error');
+            return;
+        }
+        btn.closest('.credential-field-group').remove();
+    };
+
+
+    function renderHostsList(client) {
+        const list = document.getElementById('hostsList');
+        if (!list) return;
+
+        const P = window.Permissions;
+        const canEdit = P ? P.can('Dados de Acesso (SQL)', 'can_edit') : false;
+        const canDelete = P ? P.can('Dados de Acesso (SQL)', 'can_delete') : false;
+
+        const filterValue = currentHostFilter;
+        let filtered = client.hosts || [];
+
+        if (filterValue !== 'all') {
+            filtered = filtered.filter(h => h.environment === filterValue);
+        }
+
+        if (filtered.length === 0) {
+            list.innerHTML = `
+                <div class="servers-grid-empty">
+                    <i class="fa-solid fa-server"></i>
+                    <p>${filterValue === 'all' ? 'Nenhum servidor cadastrado ainda.' : 'Nenhum servidor encontrado para este filtro.'}</p>
+                </div>
+            `;
+            return;
+        }
+
+        list.innerHTML = filtered.map((host, index) => {
+            const originalIndex = client.hosts.indexOf(host);
+            const environmentClass = host.environment === 'homologacao' ? 'homologacao' : 'producao';
+            const environmentLabel = host.environment === 'homologacao' ? 'Homologação' : 'Produção';
+
+            const credentialsHTML = host.credentials && host.credentials.length > 0
+                ? `
+                    <div class="server-credentials">
+                        <div class="server-credentials-title">
+                            <i class="fa-solid fa-key" style="color: var(--accent);"></i> Credenciais
+                        </div>
+                        ${host.credentials.map(cred => `
+                            <div class="credential-item">
+                                <div class="credential-row">
+                                    <span class="credential-label">Usuário:</span>
+                                    <span class="credential-value">${escapeHtml(cred.user)}</span>
+                                    <button class="btn-copy-small" onclick="copyToClipboard('${escapeHtml(cred.user).replace(/'/g, "\\'")}')" title="Copiar Usuário">
+                                        <i class="fa-regular fa-copy"></i>
+                                    </button>
+                                </div>
+                                <div class="credential-row">
+                                    <span class="credential-label">Senha:</span>
+                                    <span class="credential-value" data-raw="${escapeHtml(cred.password)}">••••••</span>
+                                    <button class="btn-copy-small" onclick="togglePassword(this)" title="Visualizar Senha" style="margin-right: 4px;">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </button>
+                                    <button class="btn-copy-small" onclick="copyToClipboard('${escapeHtml(cred.password).replace(/'/g, "\\'")}')" title="Copiar Senha">
+                                        <i class="fa-regular fa-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `
+                : '';
+
+            const notesHTML = host.notes
+                ? `<div class="server-notes">
+                    <div class="server-notes-title"><i class="fa-solid fa-comment-dots" style="color: var(--accent); margin-right: 6px;"></i> Observações</div>
+                    <div class="server-notes-content">${escapeHtml(host.notes)}</div>
+                   </div>`
+                : '';
+
+            const editButton = canEdit ? `
+                            <button class="btn-icon" onclick="editHostRecord('${client.id}', ${originalIndex})" title="Editar">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>` : '';
+
+            const deleteButton = canDelete ? `
+                            <button class="btn-icon btn-danger" onclick="deleteHostRecord('${client.id}', ${originalIndex})" title="Excluir">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>` : '';
+
+            return `
+                <div class="server-card">
+                    <div class="server-card-header">
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <span class="server-environment ${environmentClass}">${environmentLabel}</span>
+                        </div>
+                        <div class="server-card-actions">
+                            ${editButton}
+                            ${deleteButton}
+                        </div>
+                    </div>
+                    <div class="server-info">
+                        <div class="server-credentials-title">
+                            <i class="fa-solid fa-server" style="color: var(--accent);"></i> Nome do Servidor / IP
+                        </div>
+                        <div class="server-info-value">${escapeHtml(host.name)}</div>
+                    </div>
+                    ${credentialsHTML}
+                    ${notesHTML}
+                </div>
+            `;
+        }).join('');
+    }
+
+    async function handleHostSubmit(e) {
+        e.preventDefault();
+        const hostClientId = document.getElementById('hostClientId');
+        const id = hostClientId.value;
+        const client = clients.find(c => c.id == id);
+        if (!client) return;
+
+        if (!client.hosts) client.hosts = [];
+
+        const environmentSelect = document.getElementById('hostEnvironmentSelect');
+        const editingIndex = document.getElementById('editingHostIndex').value;
+        const hostNameInput = document.getElementById('hostNameInput');
+        const hostNotesInput = document.getElementById('hostNotesInput');
+        const hostCredentialList = document.getElementById('hostCredentialList');
+
+        // Collect Credentials
+        const credDivs = hostCredentialList.querySelectorAll('.credential-field-group');
+        const credentials = Array.from(credDivs).map(div => {
+            return {
+                user: div.querySelector('.server-user-input').value.trim(),
+                password: div.querySelector('.server-pass-input').value.trim()
+            };
+        }).filter(c => c.user !== '' || c.password !== '');
+
+        if (!environmentSelect.value) {
+            showToast('⚠️ O ambiente é obrigatório.', 'error');
+            environmentSelect.focus();
+            return;
+        }
+        if (!hostNameInput.value.trim()) {
+            showToast('⚠️ O nome do servidor é obrigatório.', 'error');
+            hostNameInput.focus();
+            return;
+        }
+
+        const hostBefore = (editingIndex !== '') ? JSON.parse(JSON.stringify(client.hosts[parseInt(editingIndex)])) : null;
+
+        const hostRecord = {
+            environment: environmentSelect.value,
+            name: hostNameInput.value.trim(),
+            credentials: credentials,
+            notes: hostNotesInput ? hostNotesInput.value.trim() : ''
+        };
+
+        if (editingIndex !== '') {
+            client.hosts[parseInt(editingIndex)] = hostRecord;
+            showToast(`✅ Servidor do cliente "${client.name}" atualizado com sucesso!`, 'success');
+        } else {
+            client.hosts.push(hostRecord);
+            showToast(`✅ Servidor adicionado ao cliente "${client.name}"!`, 'success');
+        }
+
+        await saveToLocal(client.id);
+        renderClients(clients);
+        renderHostsList(client);
+        closeHostEntryModal();
+
+        const opType = (editingIndex !== '') ? 'EDIÇÃO' : 'CRIAÇÃO';
+        const actionLabel = (editingIndex !== '') ? 'Edição de Servidor' : 'Adição de Servidor';
+        await registerAuditLog(opType, actionLabel, `Cliente: ${client.name}, Servidor: ${hostRecord.name}`, hostBefore, hostRecord);
+    }
+
+    window.editHostRecord = (clientId, index) => {
+        const client = clients.find(c => c.id == clientId);
+        if (!client || !client.hosts || !client.hosts[index]) return;
+
+        const host = client.hosts[index];
+        const environmentSelect = document.getElementById('hostEnvironmentSelect');
+        const editingHostIndex = document.getElementById('editingHostIndex');
+        const hostNameInput = document.getElementById('hostNameInput');
+        const hostNotesInput = document.getElementById('hostNotesInput');
+        const hostCredentialList = document.getElementById('hostCredentialList');
+
+        if (environmentSelect) environmentSelect.value = host.environment;
+        if (hostNameInput) hostNameInput.value = host.name;
+        if (hostNotesInput) hostNotesInput.value = host.notes || '';
+        if (editingHostIndex) editingHostIndex.value = index;
+
+        // Populate credentials
+        hostCredentialList.innerHTML = '';
+        if (host.credentials && host.credentials.length > 0) {
+            host.credentials.forEach(cred => addHostCredentialField(cred.user, cred.password));
+        } else {
+            addHostCredentialField();
+        }
+
+        const hostEntryModalTitle = document.getElementById('hostEntryModalTitle');
+        const hostEntryModal = document.getElementById('hostEntryModal');
+
+        if (hostEntryModalTitle) hostEntryModalTitle.textContent = 'Editar Servidor';
+        if (hostEntryModal) hostEntryModal.classList.remove('hidden');
+    };
+
+    window.deleteHostRecord = async (clientId, index) => {
+        const confirmed = await window.showConfirm('Tem certeza que deseja excluir este servidor?', 'Excluir Servidor', 'fa-server');
+        if (!confirmed) return;
+
+        const client = clients.find(c => c.id == clientId);
+        if (!client || !client.hosts) return;
+
+        const deletedHost = JSON.parse(JSON.stringify(client.hosts[index]));
+        client.hosts.splice(index, 1);
+        await saveToLocal(client.id);
+        renderClients(clients);
+        renderHostsList(client);
+        showToast(`🗑️ Servidor excluído com sucesso!`, 'success');
+        await registerAuditLog('EXCLUSÃO', 'Exclusão de Servidor', `Cliente: ${client.name}, Servidor: ${deletedHost.name}`, deletedHost, null);
+    };
+
+    // Event Listeners for Host Modals
+    if (document.getElementById('closeHostModal'))
+        document.getElementById('closeHostModal').onclick = closeHostModal;
+
+    if (document.getElementById('closeHostModalBtn'))
+        document.getElementById('closeHostModalBtn').onclick = closeHostModal;
+
+    if (document.getElementById('addHostEntryBtn'))
+        document.getElementById('addHostEntryBtn').onclick = openHostEntry;
+
+    if (document.getElementById('closeHostEntryModal'))
+        document.getElementById('closeHostEntryModal').onclick = closeHostEntryModal;
+
+    if (document.getElementById('cancelHostEntryBtn'))
+        document.getElementById('cancelHostEntryBtn').onclick = closeHostEntryModal;
+
+    if (document.getElementById('addHostCredentialBtn'))
+        document.getElementById('addHostCredentialBtn').onclick = () => addHostCredentialField();
+
+    if (document.getElementById('hostForm'))
+        document.getElementById('hostForm').onsubmit = handleHostSubmit;
 
 });
 console.log("✅ APP.JS FULLY PARSED AND LOADED");

@@ -47,6 +47,7 @@ CREATE TABLE IF NOT EXISTS clients (
     contacts JSONB DEFAULT '[]',
     servers JSONB DEFAULT '[]',
     vpns JSONB DEFAULT '[]',
+    hosts JSONB DEFAULT '[]',
     urls JSONB DEFAULT '[]',
     inactive_contract JSONB DEFAULT NULL,
     notes TEXT,
@@ -169,3 +170,4 @@ $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER update_users_timestamp BEFORE UPDATE ON users FOR EACH ROW EXECUTE PROCEDURE update_timestamp();
 CREATE TRIGGER update_clients_timestamp BEFORE UPDATE ON clients FOR EACH ROW EXECUTE PROCEDURE update_timestamp();
+

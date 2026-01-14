@@ -51,6 +51,12 @@ try {
                 if (is_array($c['urls'])) {
                     $c['urls'] = SecurityUtil::decryptUrls($c['urls']);
                 }
+
+                // Decrypt Hosts data
+                $c['hosts'] = json_decode($c['hosts'] ?? '[]');
+                if (is_array($c['hosts'])) {
+                    $c['hosts'] = SecurityUtil::decryptHosts($c['hosts']);
+                }
             }
             $json = json_encode($clients);
             if ($json === false) {
@@ -88,8 +94,13 @@ try {
             if (isset($input['urls']) && is_array($input['urls'])) {
                 $input['urls'] = SecurityUtil::encryptUrls($input['urls']);
             }
+
+            // Encrypt Hosts data
+            if (isset($input['hosts']) && is_array($input['hosts'])) {
+                $input['hosts'] = SecurityUtil::encryptHosts($input['hosts']);
+            }
             
-            $sql = "INSERT INTO clients (name, document, contacts, servers, vpns, urls, notes, inactive_contract) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            $sql = "INSERT INTO clients (name, document, contacts, servers, vpns, hosts, urls, notes, inactive_contract) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $stmt = $pdo->prepare($sql);
             $stmt->execute([
                 $input['name'],
@@ -97,6 +108,7 @@ try {
                 json_encode($input['contacts'] ?? []),
                 json_encode($input['servers'] ?? []),
                 json_encode($input['vpns'] ?? []),
+                json_encode($input['hosts'] ?? []),
                 json_encode($input['urls'] ?? []),
                 $input['notes'] ?? null,
                 json_encode($input['inactive_contract'] ?? null)
@@ -138,8 +150,13 @@ try {
             if (isset($input['urls']) && is_array($input['urls'])) {
                 $input['urls'] = SecurityUtil::encryptUrls($input['urls']);
             }
+
+            // Encrypt Hosts data
+            if (isset($input['hosts']) && is_array($input['hosts'])) {
+                $input['hosts'] = SecurityUtil::encryptHosts($input['hosts']);
+            }
             
-            $sql = "UPDATE clients SET name = ?, document = ?, contacts = ?, servers = ?, vpns = ?, urls = ?, notes = ?, inactive_contract = ? WHERE id = ?";
+            $sql = "UPDATE clients SET name = ?, document = ?, contacts = ?, servers = ?, vpns = ?, hosts = ?, urls = ?, notes = ?, inactive_contract = ? WHERE id = ?";
             $stmt = $pdo->prepare($sql);
             $stmt->execute([
                 $input['name'],
@@ -147,6 +164,7 @@ try {
                 json_encode($input['contacts'] ?? []),
                 json_encode($input['servers'] ?? []),
                 json_encode($input['vpns'] ?? []),
+                json_encode($input['hosts'] ?? []),
                 json_encode($input['urls'] ?? []),
                 $input['notes'] ?? null,
                 json_encode($input['inactive_contract'] ?? null),

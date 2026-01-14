@@ -540,6 +540,124 @@
             </div>
         </div>
 
+        <!-- Host Data Modal (Servidores) -->
+        <div id="hostModal" class="modal hidden">
+            <div class="modal-content modal-content-large">
+                <div class="modal-header">
+                    <div class="modal-header-left">
+                        <h2>Servidores</h2>
+                        <span class="modal-subtitle" id="hostModalClientName"></span>
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <div class="custom-dropdown" id="hostFilterDropdown">
+                            <button type="button" class="filter-icon-btn" id="hostFilterBtn"
+                                title="Filtrar por Ambiente">
+                                <i class="fa-solid fa-filter"></i>
+                            </button>
+                            <div class="dropdown-menu" id="hostFilterMenu">
+                                <div class="dropdown-item selected" data-value="all">
+                                    <span>Todos os Ambientes</span>
+                                    <i class="fa-solid fa-check check-icon"></i>
+                                </div>
+                                <div class="dropdown-item" data-value="producao">
+                                    <span>Produção</span>
+                                    <i class="fa-solid fa-check check-icon"></i>
+                                </div>
+                                <div class="dropdown-item" data-value="homologacao">
+                                    <span>Homologação</span>
+                                    <i class="fa-solid fa-check check-icon"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <button id="addHostEntryBtn" class="btn-primary" style="margin-right: 15px;">
+                            <i class="fa-solid fa-plus"></i> Adicionar
+                        </button>
+                        <button id="closeHostModal" type="button" class="btn-icon">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Saved hosts grid -->
+                <div class="servers-section" style="border-top: none; margin-top: 0; padding-top: 0;">
+                    <h3><i class="fa-solid fa-server" style="color: var(--accent);"></i> Servidores Cadastrados
+                    </h3>
+                    <div id="hostsList" class="servers-grid">
+                        <!-- Host records will be displayed here -->
+                    </div>
+                </div>
+
+                <div class="modal-actions"
+                    style="margin-top: 20px; border-top: 1px solid var(--border); padding-top: 20px;">
+                    <button type="button" id="closeHostModalBtn" class="btn-primary">Fechar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- New Host Entry Modal -->
+        <div id="hostEntryModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="hostEntryModalTitle">Novo Servidor</h2>
+                    <button id="closeHostEntryModal" type="button" class="btn-icon"><i
+                            class="fa-solid fa-xmark"></i></button>
+                </div>
+                <form id="hostForm">
+                    <input type="hidden" id="hostClientId">
+                    <input type="hidden" id="editingHostIndex">
+
+                    <div class="server-form-grid">
+                        <div class="form-group">
+                            <label for="hostEnvironmentSelect">
+                                <span><i class="fa-solid fa-layer-group" style="color: var(--accent);"></i> Ambiente
+                                    <span class="required">*</span></span>
+                            </label>
+                            <select id="hostEnvironmentSelect" required>
+                                <option value="">Selecione...</option>
+                                <option value="homologacao">Homologação</option>
+                                <option value="producao">Produção</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="hostNameInput"><span><i class="fa-solid fa-server"
+                                        style="color: var(--accent); margin-right: 5px;"></i> Nome do servidor / IP
+                                    <span class="required">*</span></span></label>
+                            <input type="text" id="hostNameInput" required
+                                placeholder="Ex: SRV-APP-01 ou 192.168.1.100">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <span><i class="fa-solid fa-key" style="color: var(--accent);"></i> Autenticação</span>
+                            <button type="button" id="addHostCredentialBtn" class="btn-add-field" tabindex="-1">
+                                <i class="fa-solid fa-plus"></i> Adicionar
+                            </button>
+                        </label>
+                        <div id="hostCredentialList">
+                            <!-- Credential items will be added here -->
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="hostNotesInput"><span><i class="fa-solid fa-comment-dots"
+                                    style="color: var(--accent); margin-right: 5px;"></i>
+                                Observações</span></label>
+                        <textarea id="hostNotesInput" rows="3"
+                            placeholder="Prozocolo (RDP/SSH), detalhes de acesso..."></textarea>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="button" id="cancelHostEntryBtn" class="btn-secondary btn-cancel">Cancelar</button>
+                        <button type="submit" class="btn-primary">
+                            <i class="fa-solid fa-plus"></i> Salvar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <!-- Client Notes Modal -->
         <div id="notesModal" class="modal hidden">
             <div class="modal-content">
