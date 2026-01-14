@@ -1120,6 +1120,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Update favorite status
         const isInactiveContract = client.inactive_contract && client.inactive_contract.active;
+        if (isInactiveContract) console.log(`Updating Inactive Row for ${client.name}`);
         row.className = `client-row ${client.isFavorite ? 'favorite' : ''} ${isInactiveContract ? 'inactive-contract-row' : ''}`;
 
         // Update favorite button
@@ -1232,6 +1233,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     function createClientRow(client) {
         const row = document.createElement('div');
         const isInactiveContract = client.inactive_contract && client.inactive_contract.active;
+        if (isInactiveContract) console.log(`Creating Inactive Row for ${client.name}`);
         row.className = `client-row ${client.isFavorite ? 'favorite' : ''} ${isInactiveContract ? 'inactive-contract-row' : ''}`;
         row.id = `client-row-${client.id}`;
 
