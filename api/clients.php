@@ -10,6 +10,9 @@ $method = $_SERVER['REQUEST_METHOD'];
 try {
     require 'db.php';
     require 'security.php';
+
+    // Auto-migration for 'hosts' column
+    $pdo->exec("ALTER TABLE clients ADD COLUMN IF NOT EXISTS hosts JSONB DEFAULT '[]'");
     
     // Debug logging
     file_put_contents('debug_log.txt', date('[Y-m-d H:i:s] ') . "Method: $method POST/PUT Input: " . file_get_contents('php://input') . "\n", FILE_APPEND);

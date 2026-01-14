@@ -3931,6 +3931,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     // Update Global Variable explicitly
                     if (filter.variable === 'currentServerFilter') currentServerFilter = value;
+                    if (filter.variable === 'currentHostFilter') currentHostFilter = value;
                     if (filter.variable === 'currentUrlFilter') currentUrlFilter = value;
 
                     // Update UI Selection
@@ -4231,11 +4232,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Optimistic Render
         renderHostsList(client);
+        renderClients(clients);
         closeHostEntryModal();
 
         try {
             await saveToLocal(client.id);
-            renderClients(clients);
 
             const opType = (editingIndex !== '') ? 'EDIÇÃO' : 'CRIAÇÃO';
             const actionLabel = (editingIndex !== '') ? 'Edição de Servidor' : 'Adição de Servidor';
