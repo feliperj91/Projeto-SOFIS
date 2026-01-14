@@ -638,7 +638,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     await initialLoad();
-    console.log("CLIENTS LOADED:", clients.map(c => ({ id: c.id, name: c.name, inactive: c.inactive_contract })));
 
     // Event Listeners
     addBtn.addEventListener('click', openAddModal);
@@ -1120,7 +1119,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Update favorite status
         const isInactiveContract = client.inactive_contract && client.inactive_contract.active;
-        if (isInactiveContract) console.log(`Updating Inactive Row for ${client.name}`);
         row.className = `client-row ${client.isFavorite ? 'favorite' : ''} ${isInactiveContract ? 'inactive-contract-row' : ''}`;
 
         // Update favorite button
@@ -1233,7 +1231,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     function createClientRow(client) {
         const row = document.createElement('div');
         const isInactiveContract = client.inactive_contract && client.inactive_contract.active;
-        if (isInactiveContract) console.log(`Creating Inactive Row for ${client.name}`);
         row.className = `client-row ${client.isFavorite ? 'favorite' : ''} ${isInactiveContract ? 'inactive-contract-row' : ''}`;
         row.id = `client-row-${client.id}`;
 
