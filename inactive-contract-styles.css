@@ -65,3 +65,50 @@
     line-height: 1;
     padding-bottom: 2px;
 }
+
+/* ==========================================================================
+   VISUAL STYLES FOR INACTIVE CONTRACT ROW (Entire Card/Row)
+   ========================================================================== */
+
+/* Dark Red Background for the Inactive Client Row */
+.client-row.inactive-contract-row {
+    background: linear-gradient(135deg, #3a0d0d 0%, #1a0505 100%) !important;
+    border-color: #8B0000 !important;
+    box-shadow: 0 4px 12px rgba(139, 0, 0, 0.2);
+}
+
+.client-row.inactive-contract-row:hover {
+    border-color: #ff4d4d !important;
+    box-shadow: 0 6px 16px rgba(139, 0, 0, 0.3);
+    transform: translateY(-2px);
+}
+
+/* Make inner header transparent so the red background shows through */
+.client-row.inactive-contract-row .client-row-header {
+    background: transparent !important;
+}
+
+/* Text Colors for readability on dark red background */
+.client-row.inactive-contract-row .client-name-row {
+    color: #ffcccc;
+    text-shadow: 0 0 5px rgba(255, 0, 0, 0.3);
+}
+
+.client-row.inactive-contract-row .client-updated-info {
+    color: #ff9999 !important;
+}
+
+.client-row.inactive-contract-row .subtitle,
+.client-row.inactive-contract-row .client-contact {
+    color: #ffadad !important;
+}
+
+/* Actions buttons specific styling for red background */
+.client-row.inactive-contract-row .btn-icon {
+    color: #ffcccc;
+}
+
+.client-row.inactive-contract-row .btn-icon:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
