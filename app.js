@@ -1119,7 +1119,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const hasContacts = client.contacts && client.contacts.length > 0;
 
         // Update favorite status
-        row.className = `client-row ${client.isFavorite ? 'favorite' : ''}`;
+        const isInactiveContract = client.inactive_contract && client.inactive_contract.active;
+        row.className = `client-row ${client.isFavorite ? 'favorite' : ''} ${isInactiveContract ? 'inactive-contract-row' : ''}`;
 
         // Update favorite button
         const starBtn = row.querySelector('.btn-star');
