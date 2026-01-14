@@ -16,6 +16,9 @@
     <link rel="stylesheet" href="form-fixes.css?v=1.0">
     <link rel="stylesheet" href="inactive-contract-styles.css?v=1.0">
     <link rel="stylesheet" href="system-logos.css?v=1.0">
+    <link rel="stylesheet" href="dashboard-print.css?v=1.0">
+    <link rel="stylesheet" href="inactive-contract-styles.css?v=1.0">
+    <link rel="stylesheet" href="system-logos.css?v=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -24,6 +27,17 @@
         if (!localStorage.getItem('sofis_user')) {
             window.location.href = 'login.html';
         }
+        
+        // Tab Persistence
+        (function() {
+            const savedTab = localStorage.getItem('sofis_active_tab') || 'contacts';
+            document.addEventListener('DOMContentLoaded', () => {
+                const tabButton = document.querySelector(`.tab-btn[data-tab="${savedTab}"]`);
+                if (tabButton) {
+                   tabButton.click();
+                }
+            });
+        })();
     </script>
 </head>
 

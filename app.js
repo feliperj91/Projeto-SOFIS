@@ -598,7 +598,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     contacts: c.contacts || [],
                     servers: c.servers || [],
                     vpns: c.vpns || [],
-                    urls: c.urls || []
+                    urls: c.urls || [],
+                    inactive_contract: c.inactive_contract || null
                 }));
 
                 // Load user favorites and apply
@@ -1139,7 +1140,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             nameContainer.innerHTML = `
                 ${escapeHtml(client.name)}
                 ${client.notes ? `<i class="fa-solid fa-bell client-note-indicator" style="margin-left: 15px; cursor: pointer;" onclick="window.openClientGeneralNotes('${client.id}'); event.stopPropagation();" title="Possui observações importantes"></i>` : ''}
-                ${(client.inactive_contract && client.inactive_contract.active) ? `<span class="inactive-contract-indicator" style="margin-left:10px;"></span>` : ''}
+                ${(client.inactive_contract && client.inactive_contract.active) ? `<span class="inactive-info-icon" title="Contrato Inativo">i</span>` : ''}
             `;
         }
 
@@ -1267,7 +1268,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <div class="client-name-row" title="Nome do Cliente" style="display: flex; align-items: center;">
                             <span style="font-weight: 600;">${escapeHtml(client.name)}</span>
                             ${client.notes ? `<i class="fa-solid fa-bell client-note-indicator" title="Possui observações importantes" style="margin-left: 15px; cursor: pointer;" onclick="window.openClientGeneralNotes('${client.id}'); event.stopPropagation();"></i>` : ''}
-                            ${(client.inactive_contract && client.inactive_contract.active) ? `<span class="inactive-contract-indicator" style="margin-left:10px;"></span>` : ''}
+                            ${(client.inactive_contract && client.inactive_contract.active) ? `<span class="inactive-info-icon" title="Contrato Inativo">i</span>` : ''}
                         </div>
                         ${client.updatedAt && canViewLogs ? `
                             <div class="client-updated-info clickable" onclick="openClientHistory('${client.id}'); event.stopPropagation();" title="Ver Histórico de Alterações" style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 2px; font-weight: normal; display: flex; align-items: center; gap: 4px; cursor: pointer; width: fit-content;">
