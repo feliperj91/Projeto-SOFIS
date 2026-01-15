@@ -76,10 +76,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                         this.rules = session.user.permissions || {};
                     }
 
+                    // Sync localStorage with session data
+                    localStorage.setItem('sofis_user', JSON.stringify({
+                        id: session.user.id,
+                        username: session.user.username,
+                        fullName: session.user.full_name,
+                        role: session.user.role,
+                        permissions: session.user.permissions
+                    }));
+
                     console.log(`🔒 Permissions: [${this.userRole}] loaded via API.`);
                 } else {
-                    console.warn('🔒 Permissions: No active session.');
-                    this.userRole = 'TECNICO'; // Default low priv
+                    console.warn('🔒 Permissions: No active session or session expired.');
+                    localStorage.removeItem('sofis_user');
+                    window.location.href = 'login.html';
+                    return;
                 }
 
                 // Trigger event
@@ -433,8 +444,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             );
 
             if (confirmed) {
-                localStorage.removeItem('sofis_user');
-                window.location.href = 'login.html';
+                if (window.api && window.api.auth) {
+                    await window.api.auth.signOut();
+                } else {
+                    localStorage.removeItem('sofis_user');
+                    window.location.href = 'login.html';
+                }
             }
         });
     }

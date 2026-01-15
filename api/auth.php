@@ -2,6 +2,10 @@
 // api/auth.php
 require 'db.php';
 
+// Set session lifetime to 12 hours (43200 seconds)
+ini_set('session.gc_maxlifetime', 43200);
+ini_set('session.cookie_lifetime', 43200);
+session_set_cookie_params(43200);
 session_start();
 
 $action = $_GET['action'] ?? '';
