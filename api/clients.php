@@ -10,16 +10,17 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 try {
     require 'db.php';
-    require 'security.php';
+    require_once 'security.php';
 
     // Auto-migration for 'hosts' column
     try {
         $pdo->exec("ALTER TABLE clients ADD COLUMN IF NOT EXISTS hosts JSONB DEFAULT '[]'");
     } catch (Exception $e) {
-        error_log("Database Migration Failed: " . $e->getMessage());
+        http_response_code(500);
+        header('Content-Type: application/json');
+        echo json_encode(['error' => 'Database Migration Failed: ' . $e->getMessage()]);
+        exit;
     }
-    
-    // Debug logging
     // error_log("Method: $method POST/PUT Input: " . file_get_contents('php://input'));
 
     switch ($method) {
