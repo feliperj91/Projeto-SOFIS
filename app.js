@@ -598,6 +598,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     contacts: c.contacts || [],
                     servers: c.servers || [],
                     vpns: c.vpns || [],
+                    hosts: c.hosts || [],
                     urls: c.urls || [],
                     inactive_contract: c.inactive_contract || null
                 }));
