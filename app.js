@@ -4011,6 +4011,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     e.stopPropagation();
                     console.log('Filter button clicked!');
                     hostFilterMenu.classList.toggle('show');
+                    console.log('Menu classList after toggle:', hostFilterMenu.classList.toString());
+                    console.log('Menu display style:', window.getComputedStyle(hostFilterMenu).display);
                 };
 
                 const items = hostFilterMenu.querySelectorAll('.dropdown-item');
