@@ -3972,8 +3972,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- Host Data (Servidores) Functions ---
     let currentHostFilter = 'all';
-    const hostFilterBtn = document.getElementById('hostFilterBtn');
-    const hostFilterMenu = document.getElementById('hostFilterMenu');
+    let hostFilterInitialized = false;
 
     window.openHostData = (clientId) => {
         try {
@@ -4000,6 +3999,47 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (hModalTitle) hModalTitle.textContent = client.name;
 
             currentHostFilter = 'all';
+
+            // Get filter elements
+            const hostFilterBtn = document.getElementById('hostFilterBtn');
+            const hostFilterMenu = document.getElementById('hostFilterMenu');
+
+            // Setup filter event listeners (only once)
+            if (!hostFilterInitialized && hostFilterBtn && hostFilterMenu) {
+                hostFilterBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    hostFilterMenu.classList.toggle('show');
+                });
+
+                const items = hostFilterMenu.querySelectorAll('.dropdown-item');
+                items.forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const value = item.dataset.value;
+                        currentHostFilter = value;
+
+                        // Update UI Selection
+                        items.forEach(i => i.classList.remove('selected'));
+                        item.classList.add('selected');
+
+                        // Update filter button visual state
+                        if (value === 'all') {
+                            hostFilterBtn.classList.remove('filter-btn-active');
+                        } else {
+                            hostFilterBtn.classList.add('filter-btn-active');
+                        }
+
+                        // Close Menu
+                        hostFilterMenu.classList.remove('show');
+
+                        // Re-render
+                        const currentClient = clients.find(c => c.id == clientId);
+                        if (currentClient) renderHostsList(currentClient);
+                    });
+                });
+
+                hostFilterInitialized = true;
+            }
 
             // Reset UI State
             if (hostFilterBtn) hostFilterBtn.classList.remove('filter-btn-active');
