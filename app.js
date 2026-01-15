@@ -4226,8 +4226,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <i class="fa-solid fa-server" style="color: var(--accent);"></i> Nome do Servidor / IP
                         </div>
                         <div class="server-info-value" style="display: flex; align-items: center; gap: 8px;">
-                            <span>${escapeHtml(host.name)}</span>
-                            <button class="btn-copy-small" onclick="copyToClipboard('${escapeHtml(host.name).replace(/'/g, "\\'")}'); event.stopPropagation();" title="Copiar Nome/IP">
+                            <span data-raw="${host.name.replace(/"/g, '&quot;')}">${escapeHtml(host.name)}</span>
+                            <button class="btn-copy-small" onclick="const raw = this.previousElementSibling.dataset.raw; copyToClipboard(raw); event.stopPropagation();" title="Copiar Nome/IP">
                                 <i class="fa-regular fa-copy"></i>
                             </button>
                         </div>
