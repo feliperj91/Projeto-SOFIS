@@ -1489,7 +1489,8 @@ button:hover .vpn-icon-img {
     animation: dropdownFade 0.2s ease-out;
 }
 
-.dropdown-menu.active {
+.dropdown-menu.active,
+.dropdown-menu.show {
     display: block !important;
 }
 
@@ -2798,16 +2799,19 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
     display: block;
     width: fit-content;
 }
+
 /* Pulse Animation for Red Icon */
 @keyframes pulse-icon-red {
     0% {
         transform: scale(1);
         box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7);
     }
+
     50% {
         transform: scale(1.15);
         box-shadow: 0 0 0 6px rgba(220, 38, 38, 0);
     }
+
     100% {
         transform: scale(1);
         box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
@@ -2817,4 +2821,3 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
 .inactive-icon-pulse {
     animation: pulse-icon-red 2s infinite ease-in-out;
 }
-

@@ -4005,22 +4005,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Setup filter event listeners
             if (hostFilterBtn && hostFilterMenu) {
-                console.log('Setting up host filter listeners');
-
                 hostFilterBtn.onclick = (e) => {
                     e.stopPropagation();
-                    console.log('Filter button clicked!');
-                    console.log('Menu classList BEFORE:', hostFilterMenu.classList.toString());
-
-                    // Force toggle
-                    if (hostFilterMenu.classList.contains('show')) {
-                        hostFilterMenu.classList.remove('show');
-                    } else {
-                        hostFilterMenu.classList.add('show');
-                    }
-
-                    console.log('Menu classList AFTER:', hostFilterMenu.classList.toString());
-                    console.log('Menu display style:', window.getComputedStyle(hostFilterMenu).display);
+                    hostFilterMenu.classList.toggle('show');
                 };
 
                 const items = hostFilterMenu.querySelectorAll('.dropdown-item');
