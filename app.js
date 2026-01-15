@@ -4004,18 +4004,33 @@ document.addEventListener('DOMContentLoaded', async () => {
             const hostFilterMenu = document.getElementById('hostFilterMenu');
 
             // Setup filter event listeners
+            console.log('Host filter setup:', {
+                btnExists: !!hostFilterBtn,
+                menuExists: !!hostFilterMenu
+            });
+
             if (hostFilterBtn && hostFilterMenu) {
-                hostFilterBtn.onclick = (e) => {
+                // Remove any existing listeners by cloning
+                const newBtn = hostFilterBtn.cloneNode(true);
+                hostFilterBtn.parentNode.replaceChild(newBtn, hostFilterBtn);
+
+                // Re-get reference after cloning
+                const filterBtn = document.getElementById('hostFilterBtn');
+                const filterMenu = document.getElementById('hostFilterMenu');
+
+                filterBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    hostFilterMenu.classList.toggle('show');
-                };
+                    console.log('Filter button clicked! Menu will toggle.');
+                    filterMenu.classList.toggle('show');
+                    console.log('Menu has show class:', filterMenu.classList.contains('show'));
+                });
 
                 // Prevent menu clicks from closing it
-                hostFilterMenu.onclick = (e) => {
+                filterMenu.addEventListener('click', (e) => {
                     e.stopPropagation();
-                };
+                });
 
-                const items = hostFilterMenu.querySelectorAll('.dropdown-item');
+                const items = filterMenu.querySelectorAll('.dropdown-item');
                 items.forEach(item => {
                     item.addEventListener('click', (e) => {
                         e.stopPropagation();
@@ -4028,13 +4043,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                         // Update filter button visual state
                         if (value === 'all') {
-                            hostFilterBtn.classList.remove('filter-btn-active');
+                            filterBtn.classList.remove('filter-btn-active');
                         } else {
-                            hostFilterBtn.classList.add('filter-btn-active');
+                            filterBtn.classList.add('filter-btn-active');
                         }
 
                         // Close Menu
-                        hostFilterMenu.classList.remove('show');
+                        filterMenu.classList.remove('show');
 
                         // Re-render
                         const currentClient = clients.find(c => c.id == clientId);
