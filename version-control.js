@@ -205,15 +205,6 @@
             const status = utils.getStatus(v.updated_at);
             const timeInfo = utils.getTimeInfo(v.updated_at);
 
-            // Lógica de Logo
-            let logoHtml = '';
-            const sysName = (v.system || '').trim();
-            if (['Hemote Plus', 'Hemote Web', 'Hemote'].includes(sysName)) {
-                logoHtml = '<img src="hemote-logo.jpg" alt="Hemote" class="system-card-logo">';
-            } else if (sysName === 'Monetário') {
-                logoHtml = '<img src="monetario-logo.jpg" alt="Monetário" class="system-card-logo">';
-            }
-
             return `
                 <div class="version-item-row status-${status}" data-environment="${v.environment}" style="${v.environment !== activeFilter ? 'display:none;' : ''}">
                     <div class="version-row-main">
@@ -255,7 +246,6 @@
                             </div>
                         </div>
                     </div>
-                    ${logoHtml}
                 </div>
             `;
         }).join('');
@@ -264,10 +254,10 @@
         const clientRef = window.clients ? window.clients.find(c => c.id == group.id) : null;
         const isInactive = clientRef && clientRef.inactive_contract && clientRef.inactive_contract.active;
         const inactiveClass = isInactive ? 'inactive-contract-version-header' : '';
-        const inactiveIndicator = isInactive ? `<span class="inactive-info-icon" title="Contrato Inativo" style="margin-left: 10px; transform: scale(0.8);">i</span>` : '';
+        const inactiveIndicator = isInactive ? `< span class="inactive-info-icon" title = "Contrato Inativo" style = "margin-left: 10px; transform: scale(0.8);" > i</span > ` : '';
 
         card.innerHTML = `
-                <div class="client-group-header status-${overallStatus} ${inactiveClass}">
+            < div class="client-group-header status-${overallStatus} ${inactiveClass}" >
                     <div class="client-group-title">
                         <h3 style="cursor:default" title="Nome do Cliente">${utils.escapeHtml(group.name)}</h3>
                         ${inactiveIndicator}
@@ -303,7 +293,7 @@
                         <i class="fa-solid fa-plus"></i>
                     </button>` : ''}
                 </div>
-            </div>
+            </div >
             <div class="client-group-body">${versionsHtml}</div>
         `;
         return card;
@@ -390,7 +380,7 @@
             }
 
             if (fields.ver.length < minLength) {
-                if (window.showToast) window.showToast(`⚠️ Versão do sistema incompleta! (Mínimo ${minLength} caracteres)`, 'warning');
+                if (window.showToast) window.showToast(`⚠️ Versão do sistema incompleta!(Mínimo ${minLength} caracteres)`, 'warning');
                 sofis_isSaving = false;
                 return;
             }
@@ -424,7 +414,7 @@
                 has_alert: fields.alert,
                 notes: fields.notes,
                 responsible: fields.responsible,
-                updated_at: fields.date ? `${fields.date}T12:00:00+00:00` : new Date().toISOString()
+                updated_at: fields.date ? `${fields.date} T12:00:00 +00:00` : new Date().toISOString()
             };
 
             let result;
@@ -714,7 +704,7 @@
             return;
         }
 
-        const confirmed = await window.showConfirm(`Tem certeza que deseja excluir o registro do sistema "${system}" para o cliente "${clientName}"?`, 'Confirmar Exclusão', 'fa-trash');
+        const confirmed = await window.showConfirm(`Tem certeza que deseja excluir o registro do sistema "${system}" para o cliente "${clientName}" ? `, 'Confirmar Exclusão', 'fa-trash');
         if (!confirmed) return;
 
         try {
@@ -730,7 +720,7 @@
                     username: JSON.parse(localStorage.getItem('sofis_user')).username || 'Sistema',
                     operation_type: 'EXCLUSÃO',
                     action: 'Exclusão de Controle de Versão',
-                    details: `Cliente: ${clientName}, Sistema: ${system}`,
+                    details: `Cliente: ${clientName}, Sistema: ${system} `,
                     client_name: clientName
                 });
             }
@@ -951,7 +941,7 @@
             const envDisplay = envLabels[h.version_controls?.environment] || h.version_controls?.environment?.toUpperCase() || 'N/A';
 
             return `
-                <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:10px; margin-bottom:12px; border-left:4px solid var(--accent); border: 1px solid rgba(255,255,255,0.05); border-left-width: 4px;">
+            < div style = "background:rgba(255,255,255,0.03); padding:12px; border-radius:10px; margin-bottom:12px; border-left:4px solid var(--accent); border: 1px solid rgba(255,255,255,0.05); border-left-width: 4px;" >
                     <div style="display:flex; justify-content:space-between; margin-bottom:8px; align-items: flex-start;">
                         <div>
                             <strong style="color:#ffffff; font-size:1.1rem; display:block;">${h.version_controls?.system}</strong>
@@ -969,7 +959,7 @@
                         <span style="font-weight: 400;">Responsável:</span> <span>${h.updated_by}</span>
                     </div>
                     ${h.notes && h.notes !== 'Versão inicial cadastrada' && h.notes !== 'Registro Inicial' && h.notes !== 'Registro de nova versão' ? `<div style="font-size:0.85rem; margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.05); color:#cfd8dc; border-radius:0;">${utils.escapeHtml(h.notes)}</div>` : ''}
-                </div>
+                </div >
             `;
         }).join('') || '<div style="text-align:center; opacity:0.5; padding:30px;">Nenhum registro encontrado para os filtros selecionados.</div>';
     }
@@ -996,7 +986,7 @@
         filtered.forEach(h => {
             const system = h.version_controls?.system || 'Unknown';
             const env = h.version_controls?.environment || 'Unknown';
-            const key = `${system}|${env}`;
+            const key = `${system}| ${env} `;
 
             if (!counters[key]) counters[key] = 0;
 
@@ -1117,7 +1107,7 @@
             const parts = dateStr.split('/');
             if (parts.length === 3) {
                 // assume DD/MM/YYYY -> YYYY-MM-DD
-                return new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+                return new Date(`${parts[2]} -${parts[1]} -${parts[0]} `);
             }
 
             return new Date(0);
@@ -1127,7 +1117,7 @@
         const groups = new Map();
 
         data.forEach(d => {
-            const key = `${d.client_id}-${d.system}`;
+            const key = `${d.client_id} -${d.system} `;
             if (!groups.has(key)) {
                 groups.set(key, []);
             }
@@ -1159,8 +1149,8 @@
 
         // Usar APENAS os registros mais recentes para o dashboard
 
-        console.log(`📊 [Pulse] Dados Brutos (Produção): ${data.length}`);
-        console.log(`📊 [Pulse] Dados Limpos (Apenas Recentes): ${cleanData.length}`);
+        console.log(`📊[Pulse] Dados Brutos(Produção): ${data.length} `);
+        console.log(`📊[Pulse] Dados Limpos(Apenas Recentes): ${cleanData.length} `);
 
         if (cleanData.length === 0) {
             console.warn("📊 [Pulse] No clean data available");
@@ -1322,14 +1312,14 @@
 
         // Criar layout customizado: Pizza à esquerda + Barras à direita
         container.innerHTML = `
-            <div style="display: flex; gap: 32px; align-items: center; height: 100%;">
+            < div style = "display: flex; gap: 32px; align-items: center; height: 100%;" >
                 <div style="flex: 0 0 280px; position: relative;">
                     <canvas id="systemPieChart"></canvas>
                 </div>
                 <div id="systemBars" style="flex: 1; display: flex; flex-direction: column; gap: 16px; justify-content: center;">
                 </div>
-            </div>
-        `;
+            </div >
+            `;
 
         const labels = Object.keys(counts);
         const values = Object.values(counts);
@@ -1385,7 +1375,7 @@
             const color = getPulseSystemColor(label);
 
             const barHtml = `
-                <div style="display: flex; align-items: center; gap: 12px;">
+            < div style = "display: flex; align-items: center; gap: 12px;" >
                     <div style="width: 12px; height: 12px; border-radius: 50%; background: ${color}; flex-shrink: 0;"></div>
                     <div style="flex: 1; min-width: 0;">
                         <div style="font-size: 0.85rem; font-weight: 600; color: #374151; margin-bottom: 4px;">${label}</div>
@@ -1394,7 +1384,7 @@
                         </div>
                     </div>
                     <div style="font-size: 0.85rem; font-weight: 700; color: #111827; min-width: 80px; text-align: right;">${value} (${percentage}%)</div>
-                </div>
+                </div >
             `;
             barsContainer.innerHTML += barHtml;
         });
@@ -1437,84 +1427,84 @@
         // CSS Inline para garantir layout dos cards
         const style = document.createElement('style');
         style.innerHTML = `
-            .versions-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-                gap: 16px;
-                padding: 4px;
-                max-height: 450px;
-                overflow-y: auto;
-            }
-            .version-card {
-                background: white;
-                border-radius: 12px;
-                padding: 16px;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-                border: 1px solid #f3f4f6;
-                display: flex;
-                flex-direction: column;
-            }
-            .v-card-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 12px;
-                padding-bottom: 8px;
-                border-bottom: 1px solid #f9fafb;
-            }
-            .v-card-title {
-                font-weight: 700;
-                color: #111827;
-                font-size: 0.95rem;
-            }
-            .v-list {
-                display: flex;
-                flex-direction: column;
-                gap: 8px;
-            }
-            .v-item {
-                display: flex;
-                flex-direction: column; /* Coluna para caber clientes em baixo */
-                align-items: flex-start;
-                font-size: 0.85rem;
-                color: #4b5563;
-                padding: 6px 0;
-                border-bottom: 1px dashed #f3f4f6;
-            }
-            .v-item:last-child {
-                border-bottom: none;
-            }
-            .v-row-main {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                width: 100%;
-            }
-            .v-version-text {
-                font-family: monospace;
-                font-weight: 600;
-                color: #374151;
-            }
-            .v-badge {
-                background: #8b5cf6;
-                color: white;
-                font-weight: 600;
-                font-size: 0.75rem;
-                min-width: 20px;
-                height: 20px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                border-radius: 6px;
-                padding: 0 6px;
-            }
-            .v-clients-list {
-                font-size: 0.75rem;
-                color: #9ca3af;
-                margin-top: 4px;
-                line-height: 1.2;
-                word-break: break-word;
-            }
+                .versions - grid {
+            display: grid;
+            grid - template - columns: repeat(auto - fill, minmax(260px, 1fr));
+            gap: 16px;
+            padding: 4px;
+            max - height: 450px;
+            overflow - y: auto;
+        }
+            .version - card {
+            background: white;
+            border - radius: 12px;
+            padding: 16px;
+            box - shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #f3f4f6;
+            display: flex;
+            flex - direction: column;
+        }
+            .v - card - header {
+            display: flex;
+            justify - content: space - between;
+            align - items: center;
+            margin - bottom: 12px;
+            padding - bottom: 8px;
+            border - bottom: 1px solid #f9fafb;
+        }
+            .v - card - title {
+            font - weight: 700;
+            color: #111827;
+            font - size: 0.95rem;
+        }
+            .v - list {
+            display: flex;
+            flex - direction: column;
+            gap: 8px;
+        }
+            .v - item {
+            display: flex;
+            flex - direction: column; /* Coluna para caber clientes em baixo */
+            align - items: flex - start;
+            font - size: 0.85rem;
+            color: #4b5563;
+            padding: 6px 0;
+            border - bottom: 1px dashed #f3f4f6;
+        }
+            .v - item: last - child {
+            border - bottom: none;
+        }
+            .v - row - main {
+            display: flex;
+            justify - content: space - between;
+            align - items: center;
+            width: 100 %;
+        }
+            .v - version - text {
+            font - family: monospace;
+            font - weight: 600;
+            color: #374151;
+        }
+            .v - badge {
+            background: #8b5cf6;
+            color: white;
+            font - weight: 600;
+            font - size: 0.75rem;
+            min - width: 20px;
+            height: 20px;
+            display: flex;
+            align - items: center;
+            justify - content: center;
+            border - radius: 6px;
+            padding: 0 6px;
+        }
+            .v - clients - list {
+            font - size: 0.75rem;
+            color: #9ca3af;
+            margin - top: 4px;
+            line - height: 1.2;
+            word -break: break-word;
+        }
         `;
         container.appendChild(style);
 
@@ -1541,7 +1531,7 @@
             let listHtml = '';
             versionsList.forEach(item => {
                 listHtml += `
-                    <div class="v-item">
+            < div class="v-item" >
                         <div class="v-row-main">
                             <span class="v-version-text">${item.version}</span>
                             <span class="v-badge" style="background-color: ${sysColor}">${item.count}</span>
@@ -1550,12 +1540,12 @@
                             <i class="fa-regular fa-user" style="font-size: 10px; margin-right: 4px;"></i>
                             ${item.clients}
                         </div>
-                    </div>
-                 `;
+                    </div >
+            `;
             });
 
             const cardHtml = `
-                <div class="version-card">
+            < div class="version-card" >
                     <div class="v-card-header">
                         <div class="v-card-title" style="color: ${sysColor}">${sys}</div>
                         <i class="fa-solid fa-layer-group" style="color: ${sysColor} opacity: 0.5;"></i>
@@ -1563,8 +1553,8 @@
                     <div class="v-list">
                         ${listHtml}
                     </div>
-                </div>
-             `;
+                </div >
+            `;
 
             container.insertAdjacentHTML('beforeend', cardHtml);
         });
@@ -1599,7 +1589,7 @@
                     const opt = document.createElement('option');
                     opt.value = p.name;
                     opt.setAttribute('data-type', p.version_type);
-                    opt.textContent = `${p.name}`;
+                    opt.textContent = `${p.name} `;
                     sysSelect.appendChild(opt);
                 });
                 if (current) sysSelect.value = current;
@@ -1629,7 +1619,7 @@
         if (actionsHeader) actionsHeader.style.display = hasActions ? '' : 'none';
 
         if (productsList.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="${hasActions ? 3 : 2}" style="text-align: center; color: var(--text-secondary); padding: 20px;">Nenhum produto cadastrado.</td></tr>`;
+            tbody.innerHTML = `< tr > <td colspan="${hasActions ? 3 : 2}" style="text-align: center; color: var(--text-secondary); padding: 20px;">Nenhum produto cadastrado.</td></tr > `;
             return;
         }
 
@@ -1640,26 +1630,28 @@
             let actionsHtml = '';
             if (hasActions) {
                 actionsHtml = `
-                    <td class="action-cell">
-                        ${canEdit ? `
+            < td class="action-cell" >
+                ${canEdit ? `
                             <button class="btn-icon" onclick="window.editProduct('${p.id}')" title="Editar">
                                 <i class="fa-solid fa-pencil"></i>
                             </button>
-                        ` : ''}
+                        ` : ''
+                    }
                         ${canDelete ? `
                             <button class="btn-icon btn-danger" onclick="window.deleteProduct('${p.id}')" title="Excluir">
                                 <i class="fa-solid fa-trash"></i>
                             </button>
-                        ` : ''}
-                    </td>
-                `;
+                        ` : ''
+                    }
+                    </td >
+            `;
             }
 
             tr.innerHTML = `
-                <td>${utils.escapeHtml(p.name)}</td>
+            < td > ${utils.escapeHtml(p.name)}</td >
                 <td><span class="badge-product-type ${typeClass}">${p.version_type}</span></td>
                 ${actionsHtml}
-            `;
+        `;
             tbody.appendChild(tr);
         });
     }
@@ -1740,14 +1732,14 @@
         const p = productsList.find(x => x.id == id);
         if (!p) return;
 
-        const confirmed = await window.showConfirm(`Tem certeza que deseja excluir o produto "${p.name}"?`, 'Excluir Produto', 'fa-trash');
+        const confirmed = await window.showConfirm(`Tem certeza que deseja excluir o produto "${p.name}" ? `, 'Excluir Produto', 'fa-trash');
         if (!confirmed) return;
 
         try {
             await window.api.products.delete(id);
             if (window.showToast) window.showToast('Produto excluído com sucesso!', 'success');
             if (window.registerAuditLog) {
-                await window.registerAuditLog('EXCLUSÃO', 'Exclusão de Produto', `Produto: ${p.name}`, p, null);
+                await window.registerAuditLog('EXCLUSÃO', 'Exclusão de Produto', `Produto: ${p.name} `, p, null);
             }
             await loadProducts();
         } catch (err) {
@@ -1781,13 +1773,13 @@
                 await window.api.products.update(id, { name, version_type });
 
                 if (window.registerAuditLog) {
-                    await window.registerAuditLog('EDIÇÃO', 'Edição de Produto', `Produto: ${name}`, oldProduct, { name, version_type });
+                    await window.registerAuditLog('EDIÇÃO', 'Edição de Produto', `Produto: ${name} `, oldProduct, { name, version_type });
                 }
             } else {
                 await window.api.products.create({ name, version_type });
 
                 if (window.registerAuditLog) {
-                    await window.registerAuditLog('CRIAÇÃO', 'Criação de Produto', `Produto: ${name}`, null, { name, version_type });
+                    await window.registerAuditLog('CRIAÇÃO', 'Criação de Produto', `Produto: ${name} `, null, { name, version_type });
                 }
             }
 
