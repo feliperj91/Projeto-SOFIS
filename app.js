@@ -4004,11 +4004,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             const hostFilterMenu = document.getElementById('hostFilterMenu');
 
             // Setup filter event listeners
-            console.log('Host filter setup:', {
-                btnExists: !!hostFilterBtn,
-                menuExists: !!hostFilterMenu
-            });
-
             if (hostFilterBtn && hostFilterMenu) {
                 // Remove any existing listeners by cloning
                 const newBtn = hostFilterBtn.cloneNode(true);
@@ -4020,9 +4015,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 filterBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    console.log('Filter button clicked! Menu will toggle.');
                     filterMenu.classList.toggle('show');
-                    console.log('Menu has show class:', filterMenu.classList.contains('show'));
                 });
 
                 // Prevent menu clicks from closing it
