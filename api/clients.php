@@ -1,8 +1,9 @@
 <?php
 // api/clients.php
 // Enable error reporting for debugging
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
+// Disable error display to prevent HTML in JSON response
+ini_set('display_errors', 0);
+ini_set('display_startup_errors', 0);
 error_reporting(E_ALL);
 
 $method = $_SERVER['REQUEST_METHOD'];
@@ -14,14 +15,12 @@ try {
     // Auto-migration for 'hosts' column
     try {
         $pdo->exec("ALTER TABLE clients ADD COLUMN IF NOT EXISTS hosts JSONB DEFAULT '[]'");
-        file_put_contents('C:/Users/user/Projetos/Projeto-SOFIS-1/migration_log.txt', date('[Y-m-d H:i:s] ') . "Migration success or already exists\n", FILE_APPEND);
     } catch (Exception $e) {
-        file_put_contents('C:/Users/user/Projetos/Projeto-SOFIS-1/migration_log.txt', date('[Y-m-d H:i:s] ') . "Migration Failed: " . $e->getMessage() . "\n", FILE_APPEND);
-        // Continue execution - if column is missing, subsequent queries will fail, but we need to know WHY migration failed.
+        error_log("Database Migration Failed: " . $e->getMessage());
     }
     
     // Debug logging
-    file_put_contents('debug_log.txt', date('[Y-m-d H:i:s] ') . "Method: $method POST/PUT Input: " . file_get_contents('php://input') . "\n", FILE_APPEND);
+    // error_log("Method: $method POST/PUT Input: " . file_get_contents('php://input'));
 
     switch ($method) {
         case 'GET':
