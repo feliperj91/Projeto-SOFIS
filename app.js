@@ -4010,8 +4010,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 hostFilterBtn.onclick = (e) => {
                     e.stopPropagation();
                     console.log('Filter button clicked!');
-                    hostFilterMenu.classList.toggle('show');
-                    console.log('Menu classList after toggle:', hostFilterMenu.classList.toString());
+                    console.log('Menu classList BEFORE:', hostFilterMenu.classList.toString());
+
+                    // Force toggle
+                    if (hostFilterMenu.classList.contains('show')) {
+                        hostFilterMenu.classList.remove('show');
+                    } else {
+                        hostFilterMenu.classList.add('show');
+                    }
+
+                    console.log('Menu classList AFTER:', hostFilterMenu.classList.toString());
                     console.log('Menu display style:', window.getComputedStyle(hostFilterMenu).display);
                 };
 
