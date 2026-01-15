@@ -1547,8 +1547,12 @@
             const cardHtml = `
             < div class="version-card" >
                     <div class="v-card-header">
-                        <div class="v-card-title" style="color: ${sysColor}">${sys}</div>
-                        <i class="fa-solid fa-layer-group" style="color: ${sysColor} opacity: 0.5;"></i>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            ${(sys === 'Hemote Plus' || sys === 'Hemote Web') ? '<img src="hemote-logo.jpg" style="height: 20px; width: auto;">' : ''}
+                            ${(sys === 'Monetário') ? '<img src="monetario-logo.jpg" style="height: 20px; width: auto;">' : ''}
+                            <div class="v-card-title" style="color: ${sysColor}">${sys}</div>
+                        </div>
+                        <i class="fa-solid fa-layer-group" style="color: ${sysColor}; opacity: 0.5;"></i>
                     </div>
                     <div class="v-list">
                         ${listHtml}
