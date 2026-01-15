@@ -1476,7 +1476,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 contacts: client.contacts,
                 servers: client.servers,
                 vpns: client.vpns,
-                urls: client.urls
+                hosts: client.hosts,
+                urls: client.urls,
+                inactive_contract: client.inactive_contract
             };
 
             // Timestamp IDs (13 digits) are temporary and should be treated as new creations
