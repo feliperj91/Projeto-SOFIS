@@ -12,15 +12,9 @@ try {
     require 'db.php';
     require_once 'security.php';
 
-    // Auto-migration for 'hosts' column
-    try {
-        $pdo->exec("ALTER TABLE clients ADD COLUMN IF NOT EXISTS hosts JSONB DEFAULT '[]'");
-    } catch (Exception $e) {
-        http_response_code(500);
-        header('Content-Type: application/json');
-        echo json_encode(['error' => 'Database Migration Failed: ' . $e->getMessage()]);
-        exit;
-    }
+    // Auto-migration removed due to permission restrictions.
+    // If 'hosts' column is missing, please run:
+    // ALTER TABLE clients ADD COLUMN IF NOT EXISTS hosts JSONB DEFAULT '[]';
     // error_log("Method: $method POST/PUT Input: " . file_get_contents('php://input'));
 
     switch ($method) {
