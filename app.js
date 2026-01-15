@@ -3972,7 +3972,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- Host Data (Servidores) Functions ---
     let currentHostFilter = 'all';
-    let hostFilterInitialized = false;
 
     window.openHostData = (clientId) => {
         try {
@@ -4004,12 +4003,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             const hostFilterBtn = document.getElementById('hostFilterBtn');
             const hostFilterMenu = document.getElementById('hostFilterMenu');
 
-            // Setup filter event listeners (only once)
-            if (!hostFilterInitialized && hostFilterBtn && hostFilterMenu) {
-                hostFilterBtn.addEventListener('click', (e) => {
+            // Setup filter event listeners
+            if (hostFilterBtn && hostFilterMenu) {
+                console.log('Setting up host filter listeners');
+
+                hostFilterBtn.onclick = (e) => {
                     e.stopPropagation();
+                    console.log('Filter button clicked!');
                     hostFilterMenu.classList.toggle('show');
-                });
+                };
 
                 const items = hostFilterMenu.querySelectorAll('.dropdown-item');
                 items.forEach(item => {
@@ -4038,7 +4040,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     });
                 });
 
-                hostFilterInitialized = true;
             }
 
             // Reset UI State
