@@ -3944,6 +3944,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                     items.forEach(i => i.classList.remove('selected'));
                     item.classList.add('selected');
 
+                    // Update filter button visual state
+                    if (value === 'all') {
+                        btn.classList.remove('filter-btn-active');
+                    } else {
+                        btn.classList.add('filter-btn-active');
+                    }
+
                     // Close Menu
                     menu.classList.remove('show');
 
@@ -3965,6 +3972,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- Host Data (Servidores) Functions ---
     let currentHostFilter = 'all';
+    const hostFilterBtn = document.getElementById('hostFilterBtn');
+    const hostFilterMenu = document.getElementById('hostFilterMenu');
 
     window.openHostData = (clientId) => {
         try {
