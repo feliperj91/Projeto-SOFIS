@@ -254,10 +254,10 @@
         const clientRef = window.clients ? window.clients.find(c => c.id == group.id) : null;
         const isInactive = clientRef && clientRef.inactive_contract && clientRef.inactive_contract.active;
         const inactiveClass = isInactive ? 'inactive-contract-version-header' : '';
-        const inactiveIndicator = isInactive ? `< span class="inactive-info-icon" title = "Contrato Inativo" style = "margin-left: 10px; transform: scale(0.8);" > i</span > ` : '';
+        const inactiveIndicator = isInactive ? `<span class="inactive-info-icon" title="Contrato Inativo" style="margin-left: 10px; transform: scale(0.8);">i</span>` : '';
 
         card.innerHTML = `
-            < div class="client-group-header status-${overallStatus} ${inactiveClass}" >
+            <div class="client-group-header status-${overallStatus} ${inactiveClass}">
                     <div class="client-group-title">
                         <h3 style="cursor:default" title="Nome do Cliente">${utils.escapeHtml(group.name)}</h3>
                         ${inactiveIndicator}
@@ -293,7 +293,7 @@
                         <i class="fa-solid fa-plus"></i>
                     </button>` : ''}
                 </div>
-            </div >
+            </div>
             <div class="client-group-body">${versionsHtml}</div>
         `;
         return card;
