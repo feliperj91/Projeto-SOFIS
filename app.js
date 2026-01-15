@@ -1176,7 +1176,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         };
 
-        // Update contact badge and icon
+        // Update Hosts/Servers Badge (New Module)
+        updateBadge('button[title="Servidores"]', hasHosts, client.hosts ? client.hosts.length : 0);
+
+        // Update SQL Badge
         const contactBtn = row.querySelector('.btn-with-badge:has(.contact-icon-img)');
         if (contactBtn) {
             contactBtn.className = hasContacts ? 'btn-icon active-success btn-with-badge' : 'btn-icon btn-with-badge';
