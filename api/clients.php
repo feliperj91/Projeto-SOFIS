@@ -12,7 +12,13 @@ try {
     require 'security.php';
 
     // Auto-migration for 'hosts' column
-    $pdo->exec("ALTER TABLE clients ADD COLUMN IF NOT EXISTS hosts JSONB DEFAULT '[]'");
+    try {
+        $pdo->exec("ALTER TABLE clients ADD COLUMN IF NOT EXISTS hosts JSONB DEFAULT '[]'");
+        file_put_contents('C:/Users/user/Projetos/Projeto-SOFIS-1/migration_log.txt', date('[Y-m-d H:i:s] ') . "Migration success or already exists\n", FILE_APPEND);
+    } catch (Exception $e) {
+        file_put_contents('C:/Users/user/Projetos/Projeto-SOFIS-1/migration_log.txt', date('[Y-m-d H:i:s] ') . "Migration Failed: " . $e->getMessage() . "\n", FILE_APPEND);
+        // Continue execution - if column is missing, subsequent queries will fail, but we need to know WHY migration failed.
+    }
     
     // Debug logging
     file_put_contents('debug_log.txt', date('[Y-m-d H:i:s] ') . "Method: $method POST/PUT Input: " . file_get_contents('php://input') . "\n", FILE_APPEND);

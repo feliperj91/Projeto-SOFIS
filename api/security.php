@@ -268,13 +268,19 @@ class SecurityUtil {
     /**
      * Encrypt hosts array (passwords)
      */
+    /**
+     * Encrypt hosts array (credentials passwords)
+     */
     public static function encryptHosts($hosts) {
         if (!is_array($hosts)) return $hosts;
         
         foreach ($hosts as &$host) {
-            // Encrypt password if exists
-            if (isset($host['password'])) {
-                $host['password'] = self::encrypt($host['password']);
+            if (isset($host['credentials']) && is_array($host['credentials'])) {
+                foreach ($host['credentials'] as &$cred) {
+                    if (isset($cred['password'])) {
+                        $cred['password'] = self::encrypt($cred['password']);
+                    }
+                }
             }
         }
         
@@ -282,14 +288,18 @@ class SecurityUtil {
     }
     
     /**
-     * Decrypt hosts array (passwords)
+     * Decrypt hosts array (credentials passwords)
      */
     public static function decryptHosts($hosts) {
         if (!is_array($hosts)) return $hosts;
         
         foreach ($hosts as &$host) {
-            if (isset($host->password)) {
-                $host->password = self::decrypt($host->password);
+            if (isset($host->credentials) && is_array($host->credentials)) {
+                foreach ($host->credentials as &$cred) {
+                    if (isset($cred->password)) {
+                        $cred->password = self::decrypt($cred->password);
+                    }
+                }
             }
         }
         
