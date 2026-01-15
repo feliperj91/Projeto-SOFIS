@@ -4010,6 +4010,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                     hostFilterMenu.classList.toggle('show');
                 };
 
+                // Prevent menu clicks from closing it
+                hostFilterMenu.onclick = (e) => {
+                    e.stopPropagation();
+                };
+
                 const items = hostFilterMenu.querySelectorAll('.dropdown-item');
                 items.forEach(item => {
                     item.addEventListener('click', (e) => {
