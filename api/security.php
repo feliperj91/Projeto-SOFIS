@@ -265,12 +265,7 @@ class SecurityUtil {
         return $urls;
     }
 
-    /**
-     * Encrypt hosts array (passwords)
-     */
-    /**
-     * Encrypt hosts array (credentials passwords)
-     */
+
     public static function encryptHosts($hosts) {
         if (!is_array($hosts)) return $hosts;
         
