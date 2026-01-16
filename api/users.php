@@ -7,7 +7,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 switch ($method) {
     case 'GET':
         // Return sensitive info (hash) only if needed, usually we hide it.
-        $stmt = $pdo->query('SELECT id, username, full_name, role, permissions, created_at FROM users ORDER BY username ASC');
+        $stmt = $pdo->query('SELECT id, username, full_name, role, permissions, is_active, force_password_reset, created_at FROM users ORDER BY username ASC');
         $users = $stmt->fetchAll();
         // Decode JSON permissions for frontend use
         foreach ($users as &$u) {
@@ -28,7 +28,7 @@ switch ($method) {
 
         $passwordHash = password_hash($input['password'], PASSWORD_BCRYPT);
         
-        $sql = "INSERT INTO users (username, full_name, password_hash, role, permissions) VALUES (?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO users (username, full_name, password_hash, role, permissions, is_active, force_password_reset) VALUES (?, ?, ?, ?, ?, TRUE, TRUE)";
         try {
             $stmt = $pdo->prepare($sql);
             $stmt->execute([
@@ -90,20 +90,24 @@ switch ($method) {
         // Check if password update is requested
         if (!empty($input['password'])) {
             $passwordHash = password_hash($input['password'], PASSWORD_BCRYPT);
-            $sql = "UPDATE users SET full_name = ?, role = ?, permissions = ?, password_hash = ? WHERE id = ?";
+            $sql = "UPDATE users SET full_name = ?, role = ?, permissions = ?, is_active = ?, force_password_reset = ?, password_hash = ? WHERE id = ?";
             $params = [
                 $input['full_name'],
                 $input['role'],
                 json_encode($input['permissions'] ?? new stdClass()),
+                isset($input['is_active']) ? (bool)$input['is_active'] : true,
+                isset($input['force_password_reset']) ? (bool)$input['force_password_reset'] : false,
                 $passwordHash,
                 $_GET['id']
             ];
         } else {
-            $sql = "UPDATE users SET full_name = ?, role = ?, permissions = ? WHERE id = ?";
+            $sql = "UPDATE users SET full_name = ?, role = ?, permissions = ?, is_active = ?, force_password_reset = ? WHERE id = ?";
             $params = [
                 $input['full_name'],
                 $input['role'],
                 json_encode($input['permissions'] ?? new stdClass()),
+                isset($input['is_active']) ? (bool)$input['is_active'] : true,
+                isset($input['force_password_reset']) ? (bool)$input['force_password_reset'] : false,
                 $_GET['id']
             ];
         }

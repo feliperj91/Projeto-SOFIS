@@ -142,6 +142,26 @@
 
             <button type="submit" class="btn-primary login-btn">Entrar</button>
         </form>
+
+        <!-- Redirect Form for Forced Password Reset -->
+        <form id="resetPasswordForm" class="login-form hidden">
+            <h2 style="font-size: 1.1rem; color: var(--accent); margin-bottom: 20px;">Redefinição Obrigatória</h2>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.4;">
+                Seu acesso foi configurado pelo administrador para exigir a troca de senha no primeiro login.
+            </p>
+            <input type="hidden" id="resetUserId">
+            <div class="form-group">
+                <label for="newPassword"><i class="fa-solid fa-lock"></i> Nova Senha</label>
+                <input type="password" id="newPassword" required placeholder="Digite sua nova senha">
+            </div>
+            <div class="form-group">
+                <label for="confirmNewPassword"><i class="fa-solid fa-check-double"></i> Confirmar Nova Senha</label>
+                <input type="password" id="confirmNewPassword" required placeholder="Confirme sua nova senha">
+            </div>
+            <button type="submit" class="btn-primary login-btn">Atualizar e Entrar</button>
+            <button type="button" class="btn-secondary" style="width: 100%; margin-top: 10px; border: none;"
+                onclick="location.reload()">Cancelar</button>
+        </form>
     </div>
 
     <!-- Bottom Right Logo -->
@@ -223,6 +243,16 @@
 
                     // Success! Store user info (server response structure is { success: true, user: {...} })
                     if (data && data.user) {
+                        // CHECK: Forced Reset?
+                        if (data.user.force_password_reset) {
+                            showToast('Troca de senha obrigatória identificada.', 'info');
+                            document.getElementById('loginForm').classList.add('hidden');
+                            document.getElementById('resetPasswordForm').classList.remove('hidden');
+                            document.querySelector('.login-title').textContent = 'Nova Senha';
+                            document.getElementById('resetUserId').value = data.user.id;
+                            return;
+                        }
+
                         localStorage.setItem('sofis_user', JSON.stringify({
                             id: data.user.id,
                             username: data.user.username,
@@ -243,6 +273,39 @@
                     console.error('Erro no login:', err);
                     const msg = err.message || 'Erro ao tentar realizar login. Tente novamente.';
                     showToast(msg, 'error');
+                }
+            });
+
+            // Handle Password Reset Form
+            const resetPasswordForm = document.getElementById('resetPasswordForm');
+            resetPasswordForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const userId = document.getElementById('resetUserId').value;
+                const newPass = document.getElementById('newPassword').value;
+                const confirmPass = document.getElementById('confirmNewPassword').value;
+
+                if (newPass !== confirmPass) {
+                    showToast('As senhas não coincidem.', 'error');
+                    return;
+                }
+
+                if (newPass.length < 4) {
+                    showToast('A senha deve ter pelo menos 4 caracteres.', 'error');
+                    return;
+                }
+
+                try {
+                    // We update the user via API. Since we just logged in (session exists in PHP), 
+                    // we can use the put method on users.php
+                    await window.api.users.update(userId, {
+                        password: newPass,
+                        force_password_reset: false
+                    });
+
+                    showToast('Senha atualizada! Por favor, realize o login novamente.');
+                    setTimeout(() => location.reload(), 1500);
+                } catch (err) {
+                    showToast('Erro ao atualizar senha: ' + err.message, 'error');
                 }
             });
 

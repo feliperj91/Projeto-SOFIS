@@ -15,11 +15,17 @@ if ($action === 'login') {
     $username = $input['username'] ?? '';
     $password = $input['password'] ?? '';
 
-    $stmt = $pdo->prepare('SELECT * FROM users WHERE username = ?');
+    $stmt = $pdo->prepare('SELECT id, username, full_name, password_hash, role, permissions, is_active, force_password_reset FROM users WHERE username = ?');
     $stmt->execute([$username]);
     $user = $stmt->fetch();
 
     if ($user && password_verify($password, $user['password_hash'])) {
+        if (!$user['is_active']) {
+            http_response_code(403); // Forbidden
+            echo json_encode(['error' => 'Sua conta está desativada. Entre em contato com o administrador.']);
+            exit;
+        }
+
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['username'] = $user['username'];
         $_SESSION['role'] = $user['role'];
@@ -31,7 +37,8 @@ if ($action === 'login') {
             'username' => $user['username'],
             'full_name' => $user['full_name'],
             'role' => $user['role'],
-            'permissions' => json_decode($user['permissions'])
+            'permissions' => json_decode($user['permissions']),
+            'force_password_reset' => (bool)$user['force_password_reset']
         ]]);
     } else {
         http_response_code(401); // Unauthorized

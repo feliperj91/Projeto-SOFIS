@@ -1334,6 +1334,18 @@
             </div>
             <form id="userForm">
                 <input type="hidden" id="userIdInput">
+                <div class="form-group"
+                    style="display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.1); padding: 10px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--border);">
+                    <label style="margin-bottom: 0; cursor: pointer;">
+                        <i class="fa-solid fa-user-check" style="color: var(--accent); margin-right: 8px;"></i> Conta
+                        Ativa
+                    </label>
+                    <label class="switch">
+                        <input type="checkbox" id="userIsActive" checked>
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+
                 <div class="form-group">
                     <label for="userFullName"><i class="fa-solid fa-signature" style="color: var(--accent);"></i> Nome
                         <span class="required">*</span></label>
@@ -1344,18 +1356,33 @@
                             class="required">*</span></label>
                     <input type="text" id="userUsername" required>
                 </div>
-                <div class="form-group">
+                <div class="form-group" id="passwordGroup">
                     <label for="userPassword"><i class="fa-solid fa-key" style="color: var(--accent);"></i> Senha <span
-                            class="required">*</span></label>
-                    <div style="position: relative;">
-                        <input type="password" id="userPassword" required style="padding-right: 45px;">
-                        <button type="button" id="toggleUserPasswordBtn" class="btn-icon"
-                            style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%);"
-                            tabindex="-1" title="Mostrar/Ocultar Senha">
-                            <i class="fa-solid fa-eye"></i>
+                            class="required" id="userPasswordRequired">*</span></label>
+                    <div style="position: relative; display: flex; gap: 8px;">
+                        <div style="position: relative; flex: 1;">
+                            <input type="password" id="userPassword" required style="padding-right: 45px;">
+                            <button type="button" id="toggleUserPasswordBtn" class="btn-icon"
+                                style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%);"
+                                tabindex="-1" title="Mostrar/Ocultar Senha">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                        <button type="button" id="btnResetPassword" class="btn-secondary hidden"
+                            style="padding: 0 15px; font-size: 0.85rem;"
+                            title="Resetar para uma senha padrão e forçar troca">
+                            <i class="fa-solid fa-rotate"></i> Resetar
                         </button>
                     </div>
                 </div>
+
+                <div class="form-group" style="margin-top: -10px; margin-bottom: 20px;">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 0.9rem;">
+                        <input type="checkbox" id="userForceReset" style="width: 16px; height: 16px;">
+                        Forçar redefinição no primeiro login
+                    </label>
+                </div>
+
                 <div class="form-group">
                     <label for="userRoleSelect"><i class="fa-solid fa-user-tag" style="color: var(--accent);"></i> Nivel
                         de Acesso

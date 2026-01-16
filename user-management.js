@@ -394,10 +394,42 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (document.getElementById('userFullName')) document.getElementById('userFullName').value = u.full_name || '';
         if (document.getElementById('userUsername')) document.getElementById('userUsername').value = u.username;
 
-        if (document.getElementById('userUsername')) document.getElementById('userUsername').value = u.username;
+        // Status Toggle & Force Reset
+        const isActiveChk = document.getElementById('userIsActive');
+        if (isActiveChk) isActiveChk.checked = !!u.is_active;
 
-        // Password field always empty on edit for security
-        if (document.getElementById('userPassword')) document.getElementById('userPassword').value = '';
+        const forceResetChk = document.getElementById('userForceReset');
+        if (forceResetChk) forceResetChk.checked = !!u.force_password_reset;
+
+        // Reset Password Button Logic
+        const btnReset = document.getElementById('btnResetPassword');
+        if (btnReset) {
+            btnReset.classList.remove('hidden');
+            btnReset.onclick = async () => {
+                const confirmed = await window.showConfirm(
+                    `Deseja resetar a senha de ${u.full_name}? A nova senha será 'Sofis@123' e o usuário será obrigado a alterá-la no próximo login.`,
+                    'Resetar Senha',
+                    'fa-rotate'
+                );
+                if (confirmed) {
+                    const passInput = document.getElementById('userPassword');
+                    if (passInput) {
+                        passInput.value = 'Sofis@123';
+                        passInput.type = 'text'; // Show it
+                        if (forceResetChk) forceResetChk.checked = true;
+                        window.showToast('Senha resetada no formulário. Clique em Salvar para aplicar.', 'info');
+                    }
+                }
+            };
+        }
+
+        // Password field always empty on edit for security by default, unless reset
+        if (document.getElementById('userPassword')) {
+            document.getElementById('userPassword').value = '';
+            document.getElementById('userPassword').required = false; // Not required on edit
+            if (document.getElementById('userPasswordRequired'))
+                document.getElementById('userPasswordRequired').classList.add('hidden');
+        }
 
         if (document.getElementById('userRoleSelect')) document.getElementById('userRoleSelect').value = u.role || 'TECNICO';
 
@@ -418,6 +450,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         editingUserId = null;
         userModalTitle.innerText = 'Novo Usuário';
         userForm.reset();
+
+        // Default to active and force reset for new users
+        if (document.getElementById('userIsActive')) document.getElementById('userIsActive').checked = true;
+        if (document.getElementById('userForceReset')) document.getElementById('userForceReset').checked = true;
+
+        // Hide Reset Password button
+        if (document.getElementById('btnResetPassword')) document.getElementById('btnResetPassword').classList.add('hidden');
+
+        // Ensure Password is required for new user
+        if (document.getElementById('userPassword')) {
+            document.getElementById('userPassword').required = true;
+            if (document.getElementById('userPasswordRequired'))
+                document.getElementById('userPasswordRequired').classList.remove('hidden');
+        }
+
         // Ensure ID field is cleared for new user
         if (document.getElementById('userIdInput')) {
             document.getElementById('userIdInput').value = '';
@@ -432,16 +479,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         const currentUsername = document.getElementById('userUsername').value;
         const currentPassword = document.getElementById('userPassword').value;
         const currentRole = document.getElementById('userRoleSelect').value;
-
-        // Determine if password is changed (simple check vs original if available, but here we assume if it's diff from what we loaded or just always re-encrypt)
-        // Actually, for edit, we only re-encrypt if changed. But here we encrypt always.
-        // Let's assume passed password is the raw one.
+        const currentIsActive = document.getElementById('userIsActive').checked;
+        const currentForceReset = document.getElementById('userForceReset').checked;
 
         const formData = {
             full_name: currentFullName,
             username: currentUsername,
             password: currentPassword, // Send plain password, API handles hashing
-            role: currentRole
+            role: currentRole,
+            is_active: currentIsActive,
+            force_password_reset: currentForceReset
         };
 
         // If editing admin, block username change
