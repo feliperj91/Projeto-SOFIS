@@ -45,7 +45,7 @@
                 <img src="logo.png" alt="Sofis Logo" class="logo-img">
                 <div class="subtitle-wrapper">
                     <span class="app-subtitle">Gerenciamento de Clientes</span>
-                    <span class="app-build" id="appBuildNumber">Build: 2.0.0</span>
+                    <span class="app-build" id="appBuildNumber">Build: 2.0.4</span>
                 </div>
             </div>
             <div class="header-controls">
@@ -242,9 +242,9 @@
                             <option value="EXCLUSAO">Exclusão</option>
                         </select>
 
-                        <button id="btnSearchLogs" class="btn-primary"
+                        <button id="btnSearchLogs" class="btn-primary" title="Buscar Logs"
                             style="height: 40px; padding: 0 15px; display: flex; align-items: center; justify-content: center;">
-                            <i class="fa-solid fa-filter"></i>
+                            <i class="fa-solid fa-magnifying-glass"></i>
                         </button>
                         <button id="btnPrintLogs" class="btn-secondary hidden"
                             style="height: 40px; padding: 0 15px; display: flex; align-items: center; justify-content: center;">
@@ -855,14 +855,15 @@
                                 </div>
 
                                 <!-- Password col -->
-                                <div id="webLaudoPassRow" style="display: flex; flex-direction: column; gap: 6px;">
+                                <div id="webLaudoPassRow" class="credential-field-row"
+                                    style="display: flex; flex-direction: column; gap: 6px;">
                                     <span
                                         style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Senha</span>
                                     <div
                                         style="display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.03); padding: 10px 14px; border-radius: 8px;">
-                                        <span id="webLaudoPassText"
+                                        <span id="webLaudoPassText" class="credential-value"
                                             style="flex: 1; color: var(--text-primary); font-family: monospace; letter-spacing: 2px;">••••••</span>
-                                        <div style="display: flex; gap: 5px;">
+                                        <div style="display: flex; gap: 7px;">
                                             <button type="button" class="btn-icon-tiny" onclick="togglePassword(this)"
                                                 title="Mostrar/Ocultar Senha">
                                                 <i class="fa-regular fa-eye"></i>
@@ -906,6 +907,10 @@
                             </div>
                         </div>
                         <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                            <button type="button" id="cancelWebLaudoBtn" class="btn-secondary"
+                                style="padding: 8px 20px; font-size: 0.9rem;" onclick="cancelWebLaudoEdit()">
+                                Cancelar
+                            </button>
                             <button type="button" id="saveWebLaudoBtn" class="btn-primary" style="padding: 8px 20px;">
                                 <i class="fa-solid fa-floppy-disk" style="margin-right: 8px;"></i> Salvar WebLaudo
                             </button>

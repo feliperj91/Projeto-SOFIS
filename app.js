@@ -2296,31 +2296,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    window.togglePassword = async (btn) => {
-        let span = btn.previousElementSibling;
-        if (!span || !span.classList.contains('credential-value')) {
-            span = btn.parentElement.previousElementSibling;
-        }
-        if (!span || !span.classList.contains('credential-value')) return;
-
-        const icon = btn.querySelector('i');
-        const raw = span.dataset.raw;
-
-        if (span.textContent === '••••••') {
-            try {
-                span.textContent = await window.Security.decrypt(raw);
-                icon.className = 'fa-solid fa-eye-slash';
-                btn.title = "Ocultar Senha";
-            } catch (e) {
-                console.error("Erro ao descriptografar:", e);
-                showToast("Erro ao exibir senha", "error");
-            }
-        } else {
-            span.textContent = '••••••';
-            icon.className = 'fa-solid fa-eye';
-            btn.title = "Ver Senha";
-        }
-    };
 
     window.togglePasswordVisibility = (inputId, btn) => {
         const input = document.getElementById(inputId);
@@ -2356,28 +2331,37 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     window.togglePassword = async (btn) => {
-        const row = btn.closest('.credential-row') || btn.closest('.server-info');
-        const valueSpan = row.querySelector('.credential-value') || row.querySelector('.pass-hidden');
+        // Handle both older credential-row style and new WebLaudo style
+        const container = btn.closest('.credential-field-row') || btn.closest('.credential-row') || btn.closest('.server-info');
+        if (!container) return;
+
+        const valueSpan = container.querySelector('.credential-value') ||
+            container.querySelector('.field-value') ||
+            container.querySelector('.pass-hidden') ||
+            document.getElementById('webLaudoPassText'); // Fallback for WebLaudo
+
+        if (!valueSpan) return;
+
         const icon = btn.querySelector('i');
         const isMasked = valueSpan.textContent === '••••••';
 
         if (isMasked) {
             const rawValue = valueSpan.dataset.raw;
             try {
-                const displayValue = Security.isEncrypted(rawValue)
-                    ? await Security.decrypt(rawValue)
+                const displayValue = window.Security.isEncrypted(rawValue)
+                    ? await window.Security.decrypt(rawValue)
                     : rawValue;
 
                 valueSpan.textContent = displayValue;
+                icon.className = 'fa-regular fa-eye-slash';
+                btn.title = 'Ocultar Senha';
             } catch (err) {
                 console.error('Erro ao descriptografar:', err);
-                valueSpan.textContent = rawValue;
+                showToast("Erro ao exibir senha", "error");
             }
-            icon.className = 'fa-solid fa-eye-slash';
-            btn.title = 'Ocultar Senha';
         } else {
             valueSpan.textContent = '••••••';
-            icon.className = 'fa-solid fa-eye';
+            icon.className = 'fa-regular fa-eye';
             btn.title = 'Visualizar Senha';
         }
     };
@@ -3072,6 +3056,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         webLaudoDisplay.style.display = 'none';
         webLaudoForm.style.display = 'block';
 
+        // Change button text to "Atualizar" when editing
+        saveWebLaudoBtn.innerHTML = '<i class="fa-solid fa-floppy-disk" style="margin-right: 8px;"></i> Atualizar WebLaudo';
+
         const isObject = typeof client.webLaudo === 'object';
         webLaudoInput.value = isObject ? client.webLaudo.url : client.webLaudo;
         if (document.getElementById('webLaudoUserInput'))
@@ -3081,6 +3068,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('webLaudoPassInput').value = pass ? await window.Security.decrypt(pass) : '';
         }
         webLaudoInput.focus();
+    };
+
+    window.cancelWebLaudoEdit = () => {
+        const id = urlClientIdInput.value;
+        const client = clients.find(c => c.id == id);
+        if (client) {
+            updateWebLaudoDisplay(client);
+        } else {
+            webLaudoDisplay.style.display = 'none';
+            webLaudoForm.style.display = 'block';
+            if (webLaudoInput) webLaudoInput.value = '';
+            if (document.getElementById('webLaudoUserInput')) document.getElementById('webLaudoUserInput').value = '';
+            if (document.getElementById('webLaudoPassInput')) document.getElementById('webLaudoPassInput').value = '';
+        }
+        // Reset button text
+        saveWebLaudoBtn.innerHTML = '<i class="fa-solid fa-floppy-disk" style="margin-right: 8px;"></i> Salvar WebLaudo';
     };
 
     async function handleDeleteWebLaudo() {

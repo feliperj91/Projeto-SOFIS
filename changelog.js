@@ -3,6 +3,17 @@
 
 window.SOFIS_CHANGELOG = [
     {
+        version: '2.0.4',
+        date: '2026-01-15',
+        title: 'Gestão Avançada de WebLaudo',
+        changes: [
+            { type: 'feat', text: 'Novo layout em blocos para visualização de credenciais (URL, Usuário e Senha).' },
+            { type: 'feat', text: 'Botões individuais de cópia e visualização direta de senha no card.' },
+            { type: 'fix', text: 'Correção crítica na renderização de clientes após migração de banco.' },
+            { type: 'imp', text: 'Botão de cancelar edição e padronização visual premium.' }
+        ]
+    },
+    {
         version: '2.0.3',
         date: '2026-01-14',
         title: 'Módulo de Servidores',

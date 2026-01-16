@@ -18,6 +18,8 @@
     --radius: 12px;
     --modal-bg-opacity: rgba(44, 57, 63, 0.7);
     --bg-darker: rgba(0, 0, 0, 0.2);
+
+    color-scheme: dark;
 }
 
 
@@ -1361,6 +1363,43 @@ button.btn-icon.btn-danger:hover {
     justify-content: flex-end;
     gap: 12px;
     margin-top: 30px;
+}
+
+/* Modern Date Inputs */
+input[type="date"] {
+    appearance: none;
+    -webkit-appearance: none;
+    background: var(--bg-darker);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text-primary);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.95rem;
+    outline: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    color-scheme: dark;
+    /* Extra insurance for dark mode picker */
+}
+
+input[type="date"]:focus {
+    border-color: var(--accent);
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow: 0 0 0 3px rgba(255, 160, 0, 0.1);
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1) sepia(100%) saturate(500%) hue-rotate(0deg);
+    /* Make it match --accent */
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+    transform: scale(1.1);
 }
 
 /* Toast */
