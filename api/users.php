@@ -25,13 +25,15 @@ switch ($method) {
         $input = json_decode(file_get_contents('php://input'), true);
         
         // Basic Validation
-        if (empty($input['username']) || empty($input['password'])) {
+        if (empty($input['username'])) {
             http_response_code(400);
-            echo json_encode(['error' => 'Username and Password required']);
+            echo json_encode(['error' => 'Username required']);
             exit;
         }
 
-        $passwordHash = password_hash($input['password'], PASSWORD_BCRYPT);
+        $passwordHash = !empty($input['password']) 
+            ? password_hash($input['password'], PASSWORD_BCRYPT) 
+            : 'RESET_PENDING';
         
         $sql = "INSERT INTO users (username, full_name, password_hash, role, permissions, is_active, force_password_reset) VALUES (?, ?, ?, ?, ?, TRUE, TRUE)";
         try {

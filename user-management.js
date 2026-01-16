@@ -473,9 +473,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Ensure Password is required for new user
         if (document.getElementById('userPassword')) {
-            document.getElementById('userPassword').required = true;
+            document.getElementById('userPassword').required = false;
             if (document.getElementById('userPasswordRequired'))
-                document.getElementById('userPasswordRequired').classList.remove('hidden');
+                document.getElementById('userPasswordRequired').classList.add('hidden');
         }
 
         // Ensure ID field is cleared for new user
