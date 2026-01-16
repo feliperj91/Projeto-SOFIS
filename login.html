@@ -117,7 +117,7 @@
     <div class="login-container">
         <img src="logo.png" alt="Sofis Logo" class="login-logo">
         <p class="login-subtitle">Gerenciamento de Clientes</p>
-        <span class="login-build" id="loginBuildNumber">Build: ...</span>
+        <span class="login-build" id="loginBuildNumber" style="display: none;">Build: ...</span>
         <h1 class="login-title">Acesso ao Sistema</h1>
 
         <form id="loginForm" class="login-form">
@@ -145,9 +145,9 @@
 
         <!-- Redirect Form for Forced Password Reset -->
         <form id="resetPasswordForm" class="login-form hidden">
-            <h2 style="font-size: 1.1rem; color: var(--accent); margin-bottom: 20px;">Redefinir Senha</h2>
+            <h2 style="font-size: 1.1rem; color: var(--accent); margin-bottom: 10px;">Redefinir Senha</h2>
             <p id="resetMessage"
-                style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.4;">
+                style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 15px; line-height: 1.4;">
                 Nome do usuário, sua senha de acesso foi resetada pelo Administrador. Crie uma nova senha para acessar o
                 sistema.
             </p>
@@ -162,7 +162,8 @@
             </div>
             <div style="display: flex; gap: 10px; margin-top: 10px;">
                 <button type="submit" class="btn-primary login-btn" style="flex: 1;">Atualizar</button>
-                <button type="button" class="btn-secondary" style="flex: 1; border: none; margin-top: 0;"
+                <button type="button" class="btn-secondary"
+                    style="flex: 1; border: none; margin-top: 0; background-color: #6c757d; color: white; border-radius: 4px; cursor: pointer;"
                     onclick="location.reload()">Cancelar</button>
             </div>
         </form>
