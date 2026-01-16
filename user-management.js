@@ -407,7 +407,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             btnReset.classList.remove('hidden');
             btnReset.onclick = async () => {
                 const confirmed = await window.showConfirm(
-                    `Deseja resetar a senha de ${u.full_name}? A nova senha será 'Sofis@123' e o usuário será obrigado a alterá-la no próximo login.`,
+                    `Deseja resetar a senha de ${u.full_name}? A nova senha será 'Sofis@123' e o usuário precisa alterá-la no próximo login.`,
                     'Resetar Senha',
                     'fa-rotate'
                 );
