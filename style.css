@@ -219,6 +219,25 @@ button {
     color: var(--text-primary);
 }
 
+.btn-secondary-solid {
+    background: #6c757d;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-secondary-solid:hover {
+    background: #5a6268;
+    transform: translateY(-1px);
+}
+
 .btn-icon {
     background: transparent;
     color: var(--text-secondary);

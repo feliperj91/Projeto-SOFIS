@@ -92,30 +92,43 @@ switch ($method) {
             exit;
         }
 
-        // Check if password update is requested
-        if (!empty($input['password'])) {
-            $passwordHash = password_hash($input['password'], PASSWORD_BCRYPT);
-            $sql = "UPDATE users SET full_name = ?, role = ?, permissions = ?, is_active = ?, force_password_reset = ?, password_hash = ? WHERE id = ?";
-            $params = [
-                $input['full_name'],
-                $input['role'],
-                json_encode($input['permissions'] ?? new stdClass()),
-                isset($input['is_active']) ? (bool)$input['is_active'] : true,
-                isset($input['force_password_reset']) ? (bool)$input['force_password_reset'] : false,
-                $passwordHash,
-                $_GET['id']
-            ];
-        } else {
-            $sql = "UPDATE users SET full_name = ?, role = ?, permissions = ?, is_active = ?, force_password_reset = ? WHERE id = ?";
-            $params = [
-                $input['full_name'],
-                $input['role'],
-                json_encode($input['permissions'] ?? new stdClass()),
-                isset($input['is_active']) ? (bool)$input['is_active'] : true,
-                isset($input['force_password_reset']) ? (bool)$input['force_password_reset'] : false,
-                $_GET['id']
-            ];
+        // Dynamic Update Builder (Partial Update)
+        $fields = [];
+        $params = [];
+
+        if (isset($input['full_name'])) {
+            $fields[] = "full_name = ?";
+            $params[] = $input['full_name'];
         }
+        if (isset($input['role'])) {
+            $fields[] = "role = ?";
+            $params[] = $input['role'];
+        }
+        if (isset($input['permissions'])) {
+            $fields[] = "permissions = ?";
+            $params[] = json_encode($input['permissions']);
+        }
+        if (isset($input['is_active'])) {
+            $fields[] = "is_active = ?";
+            $params[] = $input['is_active'] ? 'true' : 'false';
+        }
+        if (isset($input['force_password_reset'])) {
+            $fields[] = "force_password_reset = ?";
+            $params[] = $input['force_password_reset'] ? 'true' : 'false';
+        }
+        if (!empty($input['password'])) {
+            $fields[] = "password_hash = ?";
+            $params[] = password_hash($input['password'], PASSWORD_BCRYPT);
+        }
+
+        if (empty($fields)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'No fields to update']);
+            exit;
+        }
+
+        $sql = "UPDATE users SET " . implode(', ', $fields) . " WHERE id = ?";
+        $params[] = $_GET['id'];
 
         try {
             $stmt = $pdo->prepare($sql);

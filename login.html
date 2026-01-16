@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sofis - Login</title>
     <link rel="icon" type="image/x-icon" href="sofis.com.br-favicon.ico">
-    <link rel="stylesheet" href="style.css?v=1.6">
+    <link rel="stylesheet" href="style.css?v=1.7">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -162,8 +162,7 @@
             </div>
             <div style="display: flex; gap: 10px; margin-top: 10px;">
                 <button type="submit" class="btn-primary login-btn" style="flex: 1;">Atualizar</button>
-                <button type="button" class="btn-secondary"
-                    style="flex: 1; border: none; margin-top: 0; background-color: #6c757d; color: white; border-radius: 4px; cursor: pointer;"
+                <button type="button" class="btn-secondary-solid" style="flex: 1; margin-top: 0; cursor: pointer;"
                     onclick="location.reload()">Cancelar</button>
             </div>
         </form>
@@ -250,7 +249,7 @@
                     if (data && data.user) {
                         // CHECK: Forced Reset?
                         if (data.user.force_password_reset) {
-                            showToast('Troca de senha obrigatória identificada.', 'info');
+                            // showToast('Troca de senha obrigatória identificada.', 'info'); // Removed per user request
                             document.getElementById('loginForm').classList.add('hidden');
                             document.getElementById('resetPasswordForm').classList.remove('hidden');
 
