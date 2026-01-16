@@ -429,6 +429,8 @@ button.btn-icon.btn-danger:hover {
 .client-list-container.grid-mode .header-right {
     width: 100%;
     justify-content: space-between;
+    margin-top: 10px;
+    /* Alinha com o fundo do card na grade */
 }
 
 .client-list-container.grid-mode .divider-vertical {
@@ -449,20 +451,30 @@ button.btn-icon.btn-danger:hover {
 }
 
 .client-list-container.grid-mode .header-left {
-    padding-right: 80px;
+    padding-right: 95px !important;
+    /* Espaço para botões editar/excluir absolutos */
     align-items: flex-start !important;
-    flex-direction: row;
-    width: 100%;
+    flex-direction: row !important;
+    width: 100% !important;
+    gap: 12px !important;
+    position: relative;
 }
 
 .client-list-container.grid-mode .client-name-container {
     flex: 1;
     min-width: 0;
-    /* Permite que o container encolha e texto use ellipsis se necessário */
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    /* Alinhamento vertical centralizado para compensar a estrela */
+    gap: 1px !important;
 }
 
 .client-list-container.grid-mode .header-left .btn-star {
     margin-top: 0 !important;
+    flex-shrink: 0 !important;
+    transform: translateY(2px);
+    /* Alinha visualmente com a primeira linha do nome */
     height: 26px !important;
     width: 26px !important;
     padding: 0 !important;
@@ -503,6 +515,26 @@ button.btn-icon.btn-danger:hover {
     background: rgba(255, 82, 82, 0.1);
     color: #ff5252;
     border-color: rgba(255, 82, 82, 0.2);
+}
+
+/* Estabilização da informação de atualização no modo grade */
+.client-list-container.grid-mode .client-updated-info {
+    margin-top: 0 !important;
+    font-size: 11px !important;
+    /* Fixed px unit is more stable on zoom for small text */
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    opacity: 0.7 !important;
+    white-space: nowrap !important;
+    line-height: 1 !important;
+}
+
+.client-list-container.grid-mode .client-updated-info i {
+    font-size: 10px !important;
+    width: 12px;
+    text-align: center;
+    flex-shrink: 0;
 }
 
 /* Client Row (replaces Card) */
