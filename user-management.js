@@ -420,7 +420,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             btnReset.classList.remove('hidden');
             btnReset.onclick = async () => {
                 const confirmed = await window.showConfirm(
-                    `Deseja resetar a senha de ${u.full_name}? No próximo login, o sistema identificará o reset e solicitará ao usuário a criação de uma nova senha.`,
+                    `No próximo login, o sistema identificará o reset e solicitará ao usuário a criação de uma nova senha.`,
                     'Resetar Senha',
                     'fa-rotate'
                 );
@@ -428,7 +428,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     try {
                         const res = await window.api.users.update(u.id, { set_reset_mode: true });
                         window.showToast('Conta resetada. O usuário deverá redefinir a senha no login.', 'success');
-                        window.closeUserModal();
+                        // window.closeUserModal(); // Keep open as requested
                         await loadUsers(); // Refresh to show reset icon if needed
                     } catch (err) {
                         console.error('Erro reset:', err);
