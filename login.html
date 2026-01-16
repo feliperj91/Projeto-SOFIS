@@ -380,30 +380,28 @@
                                 return;
                             }
 
+                            localStorage.setItem('sofis_user', JSON.stringify({
+                                id: data.user.id,
+                                username: data.user.username,
+                                full_name: data.user.full_name,
+                                role: data.user.role || 'TECNICO',
+                                permissions: data.user.permissions // Store permissions if needed
+                            }));
+
+                            showToast('Login realizado com sucesso!');
+                            setTimeout(() => {
+                                window.location.href = 'index.html';
+                            }, 1000);
+                        } else {
+                            throw new Error('Dados de usuário inválidos.');
                         }
 
-                        localStorage.setItem('sofis_user', JSON.stringify({
-                            id: data.user.id,
-                            username: data.user.username,
-                            full_name: data.user.full_name,
-                            role: data.user.role || 'TECNICO',
-                            permissions: data.user.permissions // Store permissions if needed
-                        }));
-
-                        showToast('Login realizado com sucesso!');
-                        setTimeout(() => {
-                            window.location.href = 'index.html';
-                        }, 1000);
-                    } else {
-                        throw new Error('Dados de usuário inválidos.');
+                    } catch (err) {
+                        console.error('Erro no login:', err);
+                        const msg = err.message || 'Erro ao tentar realizar login. Tente novamente.';
+                        showToast(msg, 'error');
                     }
-
-                } catch (err) {
-                    console.error('Erro no login:', err);
-                    const msg = err.message || 'Erro ao tentar realizar login. Tente novamente.';
-                    showToast(msg, 'error');
-                }
-            });
+                });
 
             // Handle Password Reset Form
             const resetPasswordForm = document.getElementById('resetPasswordForm');
