@@ -514,6 +514,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const execUpdateInput = document.getElementById('execUpdateInput');
     const webLaudoInput = document.getElementById('webLaudoInput');
     const urlNotesInput = document.getElementById('urlNotesInput');
+    const urlUserInput = document.getElementById('urlUserInput');
+    const urlPassInput = document.getElementById('urlPassInput');
     const saveWebLaudoBtn = document.getElementById('saveWebLaudoBtn');
     const urlEntryModalTitle = document.getElementById('urlEntryModalTitle');
     const closeUrlModalBtn = document.getElementById('closeUrlModalBtn');
@@ -1493,7 +1495,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 vpns: client.vpns,
                 hosts: client.hosts,
                 urls: client.urls,
+                web_laudo: client.webLaudo,
                 inactive_contract: client.inactive_contract
+
             };
 
             // Timestamp IDs (13 digits) are temporary and should be treated as new creations
@@ -2296,6 +2300,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
+    window.togglePasswordVisibility = (inputId, btn) => {
+        const input = document.getElementById(inputId);
+        const icon = btn.querySelector('i');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.className = 'fa-solid fa-eye-slash';
+        } else {
+            input.type = 'password';
+            icon.className = 'fa-solid fa-eye';
+        }
+    };
+
     window.copyToClipboard = async (text) => {
         try {
             const valueToCopy = Security.isEncrypted(text)
@@ -2956,24 +2972,49 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const editBtn = document.getElementById('editWebLaudoBtn');
         const deleteBtn = document.getElementById('deleteWebLaudoBtn');
-        const saveBtn = document.getElementById('saveWebLaudoBtn');
+        const webLaudoUserText = document.getElementById('webLaudoUserText');
+        const webLaudoPassText = document.getElementById('webLaudoPassText');
 
         if (client.webLaudo) {
-            webLaudoText.textContent = client.webLaudo;
+            const isObject = typeof client.webLaudo === 'object';
+            const url = isObject ? client.webLaudo.url : client.webLaudo;
+            const user = isObject ? client.webLaudo.user : '';
+            const pass = isObject ? client.webLaudo.password : '';
+
+            webLaudoText.textContent = url;
+
+            if (user) {
+                webLaudoUserText.innerHTML = `<i class="fa-solid fa-user"></i> ${escapeHtml(user)}`;
+                webLaudoUserText.style.display = '';
+            } else {
+                webLaudoUserText.style.display = 'none';
+            }
+
+            if (pass) {
+                webLaudoPassText.innerHTML = `<i class="fa-solid fa-key"></i> <span class="credential-value" data-raw="${pass}">••••••</span> 
+                    <button class="btn-copy-small" onclick="togglePassword(this)" title="Ver Senha" style="border:none;background:none;padding:2px;cursor:pointer;color:var(--text-secondary);"><i class="fa-solid fa-eye" style="font-size:0.7rem;"></i></button>`;
+                webLaudoPassText.style.display = '';
+            } else {
+                webLaudoPassText.style.display = 'none';
+            }
+
             webLaudoDisplay.style.display = 'flex';
             webLaudoForm.style.display = 'none';
-            webLaudoInput.value = client.webLaudo;
+            webLaudoInput.value = url;
+            if (document.getElementById('webLaudoUserInput')) document.getElementById('webLaudoUserInput').value = user;
+            if (document.getElementById('webLaudoPassInput')) {
+                document.getElementById('webLaudoPassInput').value = ''; // Don't put encrypted pass in input directly
+            }
 
-            // Visibility of action buttons
             if (editBtn) editBtn.style.display = canEdit ? '' : 'none';
             if (deleteBtn) deleteBtn.style.display = canDelete ? '' : 'none';
         } else {
             webLaudoDisplay.style.display = 'none';
-            // Show form ONLY if has create permission
-            webLaudoForm.style.display = canCreate ? 'flex' : 'none';
+            webLaudoForm.style.display = canCreate ? 'block' : 'none';
             webLaudoInput.value = '';
+            if (document.getElementById('webLaudoUserInput')) document.getElementById('webLaudoUserInput').value = '';
+            if (document.getElementById('webLaudoPassInput')) document.getElementById('webLaudoPassInput').value = '';
 
-            // If no permission and no value, maybe show a message?
             if (!canCreate) {
                 webLaudoText.textContent = 'WebLaudo não configurado.';
                 webLaudoDisplay.style.display = 'flex';
@@ -2983,8 +3024,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    window.editWebLaudo = async () => {
+        const id = urlClientIdInput.value;
+        const client = clients.find(c => c.id == id);
+        if (!client) return;
+
+        webLaudoDisplay.style.display = 'none';
+        webLaudoForm.style.display = 'block';
+
+        const isObject = typeof client.webLaudo === 'object';
+        webLaudoInput.value = isObject ? client.webLaudo.url : client.webLaudo;
+        if (document.getElementById('webLaudoUserInput'))
+            document.getElementById('webLaudoUserInput').value = isObject ? (client.webLaudo.user || '') : '';
+        if (document.getElementById('webLaudoPassInput')) {
+            const pass = isObject ? (client.webLaudo.password || '') : '';
+            document.getElementById('webLaudoPassInput').value = pass ? await Security.decrypt(pass) : '';
+        }
+        webLaudoInput.focus();
+    };
+
     async function handleDeleteWebLaudo() {
-        // Permission Check
         if (window.Permissions && !window.Permissions.can('URLs', 'can_delete')) {
             showToast('🚫 Sem permissão para excluir WebLaudo.', 'error');
             return;
@@ -3071,6 +3130,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (bootstrapInput) bootstrapInput.value = '';
         if (execUpdateInput) execUpdateInput.value = '';
         if (urlNotesInput) urlNotesInput.value = '';
+        if (urlUserInput) urlUserInput.value = '';
+        if (urlPassInput) {
+            urlPassInput.value = '';
+            urlPassInput.type = 'password';
+        }
         const editIdx = document.getElementById('editingUrlIndex');
         if (editIdx) editIdx.value = '';
     }
@@ -3181,6 +3245,30 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <div class="server-notes-content">${escapeHtml(url.notes)}</div>
                         </div>` : ''
                 }
+                    ${url.user || url.password ? `
+                        <div class="server-info" style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                ${url.user ? `
+                                    <div>
+                                        <div class="server-info-label"><i class="fa-solid fa-user" style="color: var(--accent); margin-right: 6px;"></i> Usuário</div>
+                                        <div class="server-info-value" style="display: flex; justify-content: space-between; align-items: center; background: rgba(0, 0, 0, 0.2); padding: 8px 10px; border-radius: 6px;">
+                                            <span style="font-size: 0.85rem;">${escapeHtml(url.user)}</span>
+                                            <button class="btn-copy-small" onclick="copyToClipboard('${escapeHtml(url.user).replace(/'/g, "\\'")}')" title="Copiar"><i class="fa-regular fa-copy"></i></button>
+                                        </div>
+                                    </div>` : ''}
+                                ${url.password ? `
+                                    <div>
+                                        <div class="server-info-label"><i class="fa-solid fa-key" style="color: var(--accent); margin-right: 6px;"></i> Senha</div>
+                                        <div class="server-info-value" style="display: flex; justify-content: space-between; align-items: center; background: rgba(0, 0, 0, 0.2); padding: 8px 10px; border-radius: 6px;">
+                                            <span class="credential-value" data-raw="${url.password}">••••••</span>
+                                            <div style="display: flex; gap: 4px;">
+                                                <button class="btn-copy-small" onclick="copyToClipboard(this.parentElement.previousElementSibling.dataset.raw)" title="Copiar Senha"><i class="fa-regular fa-copy"></i></button>
+                                                <button class="btn-copy-small" onclick="togglePassword(this)" title="Ver Senha"><i class="fa-solid fa-eye"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>` : ''}
+                            </div>
+                        </div>` : ''}
                 </div >
             `;
         }).join('');
@@ -3233,7 +3321,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             bridgeDataAccess: bridgeDataAccessInput.value.trim(),
             bootstrap: bootstrapInput.value.trim(),
             execUpdate: execUpdateInput ? execUpdateInput.value.trim() : '',
-            notes: urlNotesInput ? urlNotesInput.value.trim() : ''
+            notes: urlNotesInput ? urlNotesInput.value.trim() : '',
+            user: urlUserInput ? urlUserInput.value.trim() : '',
+            password: urlPassInput ? await window.Security.encrypt(urlPassInput.value) : ''
         };
 
         if (editingIndex !== '') {
@@ -3272,6 +3362,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         bootstrapInput.value = url.bootstrap || '';
         execUpdateInput.value = url.execUpdate || '';
         urlNotesInput.value = url.notes || '';
+        urlUserInput.value = url.user || '';
+        urlPassInput.value = url.password ? await window.Security.decrypt(url.password) : '';
         document.getElementById('editingUrlIndex').value = index;
 
         urlEntryModalTitle.textContent = 'URLs de Sistema';
@@ -3322,8 +3414,23 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
 
-        const webLaudoBefore = client.webLaudo || '';
-        client.webLaudo = webLaudoInput.value.trim();
+        const url = webLaudoInput.value.trim();
+        if (!url) {
+            showToast('⚠️ A URL é obrigatória.', 'warning');
+            return;
+        }
+
+        const userInput = document.getElementById('webLaudoUserInput');
+        const passInput = document.getElementById('webLaudoPassInput');
+
+        const webLaudoBefore = JSON.parse(JSON.stringify(client.webLaudo || {}));
+
+        client.webLaudo = {
+            url: url,
+            user: userInput ? userInput.value.trim() : '',
+            password: passInput ? await Security.encrypt(passInput.value) : ''
+        };
+
         await saveToLocal(client.id);
         updateWebLaudoDisplay(client);
         applyClientFilter();

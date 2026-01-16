@@ -265,6 +265,36 @@ class SecurityUtil {
         return $urls;
     }
 
+    /**
+     * Encrypt WebLaudo object
+     */
+    public static function encryptWebLaudo($webLaudo) {
+        if (!is_array($webLaudo)) return $webLaudo;
+        if (isset($webLaudo['password'])) {
+            $webLaudo['password'] = self::encrypt($webLaudo['password']);
+        }
+        return $webLaudo;
+    }
+
+    /**
+     * Decrypt WebLaudo object
+     */
+    public static function decryptWebLaudo($webLaudo) {
+        if (!is_object($webLaudo) && !is_array($webLaudo)) return $webLaudo;
+        
+        if (is_object($webLaudo)) {
+            if (isset($webLaudo->password)) {
+                $webLaudo->password = self::decrypt($webLaudo->password);
+            }
+        } else {
+            if (isset($webLaudo['password'])) {
+                $webLaudo['password'] = self::decrypt($webLaudo['password']);
+            }
+        }
+        
+        return $webLaudo;
+    }
+
 
     public static function encryptHosts($hosts) {
         if (!is_array($hosts)) return $hosts;
