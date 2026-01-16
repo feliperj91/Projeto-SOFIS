@@ -148,8 +148,8 @@
             <h2 style="font-size: 1.1rem; color: var(--accent); margin-bottom: 20px;">Redefinir Senha</h2>
             <p id="resetMessage"
                 style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.4;">
-                Nome do usuário, sua senha de acesso foi resetada pelo Administrador. Crie uma nova senha para continuar
-                com o acesso ao sistema.
+                Nome do usuário, sua senha de acesso foi resetada pelo Administrador. Crie uma nova senha para acessar o
+                sistema.
             </p>
             <input type="hidden" id="resetUserId">
             <div class="form-group">
@@ -160,9 +160,11 @@
                 <label for="confirmNewPassword"><i class="fa-solid fa-check-double"></i> Confirmar Nova Senha</label>
                 <input type="password" id="confirmNewPassword" required placeholder="Confirme sua nova senha">
             </div>
-            <button type="submit" class="btn-primary login-btn">Atualizar e Entrar</button>
-            <button type="button" class="btn-secondary" style="width: 100%; margin-top: 10px; border: none;"
-                onclick="location.reload()">Cancelar</button>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button type="submit" class="btn-primary login-btn" style="flex: 1;">Atualizar</button>
+                <button type="button" class="btn-secondary" style="flex: 1; border: none; margin-top: 0;"
+                    onclick="location.reload()">Cancelar</button>
+            </div>
         </form>
     </div>
 
@@ -261,7 +263,7 @@
                             const firstName = data.user.full_name ? data.user.full_name.split(' ')[0] : (data.user.username || 'Usuário');
                             const resetMsg = document.getElementById('resetMessage');
                             if (resetMsg) {
-                                resetMsg.textContent = `${firstName}, sua senha de acesso foi resetada pelo Administrador. Crie uma nova senha para continuar com o acesso ao sistema.`;
+                                resetMsg.textContent = `${firstName}, sua senha de acesso foi resetada pelo Administrador. Crie uma nova senha para acessar o sistema.`;
                             }
                             return;
                         }
