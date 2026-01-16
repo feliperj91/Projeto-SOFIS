@@ -338,10 +338,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div class="user-card-header">
                         <div class="user-avatar">
                             ${initials}
-                            ${activeStatusHtml}
                         </div>
                         <div class="user-name-group">
-                            <h3>${u.full_name || 'N/A'}${resetStatusHtml}</h3>
+                            <h3>${activeStatusHtml} ${u.full_name || 'N/A'}</h3>
                             <span class="user-handle">@${u.username}</span>
                         </div>
                     </div>
@@ -350,7 +349,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                 </div>
                 <div class="user-info-bottom">
-                    <span class="badge-role ${roleClass}">${u.role || 'TÉCNICO'}</span>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <span class="badge-role ${roleClass}">${u.role || 'TÉCNICO'}</span>
+                        ${resetStatusHtml}
+                    </div>
                     <span class="user-date"><i class="fa-solid fa-calendar-days" style="color: var(--accent);"></i> ${creationDate}</span>
                 </div>
             `;

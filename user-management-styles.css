@@ -1133,13 +1133,14 @@ input:checked+.slider:before {
 /* User Status Indicator on Card */
 /* User Status Indicator on Card */
 .user-status-indicator {
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
-    width: 12px;
-    height: 12px;
+    display: inline-block;
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
-    z-index: 2;
+    margin-right: 6px;
+    vertical-align: middle;
+    transform: translateY(-1px);
+    /* Optical alignment */
 }
 
 .user-status-indicator.active {
@@ -1200,7 +1201,8 @@ input:checked+.slider:before {
     border-radius: 12px;
     font-size: 0.7rem;
     font-weight: 700;
-    margin-left: 10px;
+    margin-left: 0;
+    /* Handled by flex gap */
     vertical-align: middle;
     text-transform: uppercase;
     letter-spacing: 0.5px;
