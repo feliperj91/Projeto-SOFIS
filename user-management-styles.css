@@ -731,6 +731,8 @@
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
     max-width: 500px;
     width: 100%;
+    overflow-y: auto;
+    /* Ensure scrollbar only appears if needed */
 }
 
 #userModal .modal-header {
@@ -793,9 +795,9 @@
 }
 
 #userForm .modal-actions {
-    margin-top: 35px;
-    padding-top: 25px;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    margin-top: 20px;
+    padding-top: 0;
+    border-top: none;
     justify-content: flex-end;
     gap: 15px;
     display: flex;
@@ -1129,47 +1131,79 @@ input:checked+.slider:before {
 }
 
 /* User Status Indicator on Card */
+/* User Status Indicator on Card */
 .user-status-indicator {
     position: absolute;
-    bottom: 0px;
-    right: 0px;
-    width: 14px;
-    height: 14px;
+    bottom: 20px;
+    right: 20px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
-    border: 2px solid var(--card-bg);
+    z-index: 2;
 }
 
 .user-status-indicator.active {
-    background-color: var(--success);
-    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+    background-color: #00e676;
+    box-shadow: 0 0 0 0 rgba(0, 230, 118, 0.7);
+    animation: status-pulse-green 2s infinite;
 }
 
 .user-status-indicator.inactive {
-    background-color: var(--danger);
-    box-shadow: 0 0 0 2px rgba(255, 61, 0, 0.2);
+    background-color: #ff5252;
+    box-shadow: 0 0 0 0 rgba(255, 82, 82, 0.7);
+    animation: status-pulse-red 2s infinite;
 }
 
-/* Password Reset Warning on Card */
-.user-reset-warning {
-    color: var(--accent);
-    font-size: 0.9rem;
-    margin-left: 8px;
-    animation: pulse-warning 2s infinite;
-    cursor: help;
-}
-
-@keyframes pulse-warning {
+@keyframes status-pulse-green {
     0% {
-        opacity: 0.6;
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(0, 230, 118, 0.7);
     }
 
-    50% {
-        opacity: 1;
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 6px rgba(0, 230, 118, 0);
     }
 
     100% {
-        opacity: 0.6;
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(0, 230, 118, 0);
     }
+}
+
+@keyframes status-pulse-red {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(255, 82, 82, 0.7);
+    }
+
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 6px rgba(255, 82, 82, 0);
+    }
+
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(255, 82, 82, 0);
+    }
+}
+
+/* Badge Reset Status */
+.badge-reset-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 160, 0, 0.15);
+    border: 1px solid rgba(255, 160, 0, 0.3);
+    color: var(--accent);
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    margin-left: 10px;
+    vertical-align: middle;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 /* Modern Checkbox for 'Alterar Senha' */

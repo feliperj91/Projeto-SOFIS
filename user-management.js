@@ -330,7 +330,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 '<span class="user-status-indicator inactive" title="Conta Inativa"></span>';
 
             const resetStatusHtml = u.force_password_reset ?
-                '<i class="fa-solid fa-triangle-exclamation user-reset-warning" title="Senha Resetada/Troca Pendente"></i>' : '';
+                '<span class="badge-reset-status" title="Senha Resetada/Troca Pendente"><i class="fa-solid fa-triangle-exclamation"></i> Senha Pendente</span>' : '';
 
             // Restaurada a estrutura original
             card.innerHTML = `
