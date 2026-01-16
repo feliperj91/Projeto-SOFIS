@@ -187,34 +187,47 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Check if already logged in
-            if (localStorage.getItem('sofis_user')) {
-                window.location.href = 'index.html';
-                return;
-            }
+            console.log('Login Script Initializing...');
 
+            // DOM Elements
             const loginForm = document.getElementById('loginForm');
             const usernameInput = document.getElementById('username');
             const passwordInput = document.getElementById('password');
             const togglePasswordBtn = document.getElementById('togglePasswordBtn');
             const toast = document.getElementById('toast');
 
-            // Toggle Password Visibility
-            togglePasswordBtn.addEventListener('click', () => {
-                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-                passwordInput.setAttribute('type', type);
+            // Optional/New Elements
+            const passwordGroup = document.getElementById('passwordGroup');
+            const loginBtn = document.querySelector('.login-btn');
+            const resetPasswordForm = document.getElementById('resetPasswordForm');
+            const resetUserIdInput = document.getElementById('resetUserId');
 
-                const icon = togglePasswordBtn.querySelector('i');
-                if (type === 'text') {
-                    icon.classList.remove('fa-eye');
-                    icon.classList.add('fa-eye-slash');
-                } else {
-                    icon.classList.remove('fa-eye-slash');
-                    icon.classList.add('fa-eye');
-                }
-            });
+            // Safety Check
+            if (!loginForm || !usernameInput || !passwordInput) {
+                console.error('Critical elements missing in DOM');
+                return;
+            }
 
-            // Prevent spaces in username and validate
+            // Check if already logged in
+            if (localStorage.getItem('sofis_user')) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // --- Toggle Password Visibility ---
+            if (togglePasswordBtn) {
+                togglePasswordBtn.addEventListener('click', () => {
+                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordInput.setAttribute('type', type);
+
+                    const icon = togglePasswordBtn.querySelector('i');
+                    if (icon) {
+                        icon.className = type === 'text' ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+                    }
+                });
+            }
+
+            // --- Username Validation ---
             usernameInput.addEventListener('input', (e) => {
                 const regex = /^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]*$/;
                 if (!regex.test(e.target.value)) {
@@ -222,36 +235,51 @@
                     showToast('Espaços e acentos não são permitidos no usuário.', 'error');
                 }
             });
-            // --- Login Logic with Reset Mode Support ---
-            const passwordGroup = document.getElementById('passwordGroup');
-            const loginBtn = document.querySelector('.login-btn');
 
-            // UI Elements for Reset Mode
+            // --- Reset Mode Logic & UI Injection ---
             let isResetMode = false;
-
-            // Create new password fields dynamically or toggle visibility
-            // We already have passwordResetForm elements, let's look at re-using or creating new ones inline.
-            // Simpler: Just hide `passwordGroup` and inject new fields into loginForm if needed, or overlay.
-            // Let's create a container for "New Password" fields inside the login form that is hidden by default.
-
             const resetFieldsContainer = document.createElement('div');
             resetFieldsContainer.className = 'hidden';
+            resetFieldsContainer.style.marginTop = '15px';
             resetFieldsContainer.innerHTML = `
-        <div class="form-group">
-            <label for="newResetPassword"><i class="fa-solid fa-lock"></i> Nova Senha</label>
-            <input type="password" id="newResetPassword" placeholder="Digite sua nova senha" required>
-        </div>
-        <div class="form-group">
-            <label for="confirmResetPassword"><i class="fa-solid fa-check-double"></i> Confirmar Nova Senha</label>
-            <input type="password" id="confirmResetPassword" placeholder="Confirme sua nova senha" required>
-        </div>
-        <div class="alert alert-info" style="margin-top: 15px; font-size: 0.9rem; padding: 10px; border-radius: var(--radius); background-color: var(--accent-light); color: var(--accent); border: 1px solid var(--accent);">
-            <i class="fa-solid fa-circle-info"></i> Sua conta foi redefinida. Crie uma nova senha para continuar.
-        </div>
-    `;
+                <div class="form-group">
+                    <label for="newResetPassword"><i class="fa-solid fa-lock"></i> Nova Senha</label>
+                    <input type="password" id="newResetPassword" placeholder="Digite sua nova senha" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirmResetPassword"><i class="fa-solid fa-check-double"></i> Confirmar Nova Senha</label>
+                    <input type="password" id="confirmResetPassword" placeholder="Confirme sua nova senha" required>
+                </div>
+                <div class="alert alert-info" style="margin-top: 15px; font-size: 0.9rem; padding: 10px; border-radius: var(--radius); background-color: rgba(59, 130, 246, 0.1); color: var(--accent); border: 1px solid var(--accent);">
+                    <i class="fa-solid fa-circle-info"></i> Sua conta foi redefinida. Crie uma nova senha para continuar.
+                </div>
+            `;
 
-            // Insert after password group
-            passwordGroup.parentNode.insertBefore(resetFieldsContainer, passwordGroup.nextSibling);
+            if (passwordGroup && passwordGroup.parentNode) {
+                passwordGroup.parentNode.insertBefore(resetFieldsContainer, passwordGroup.nextSibling);
+            }
+
+            function enableResetMode() {
+                isResetMode = true;
+                if (passwordGroup) passwordGroup.classList.add('hidden');
+                resetFieldsContainer.classList.remove('hidden');
+                if (loginBtn) {
+                    loginBtn.innerText = 'Definir Senha';
+                    loginBtn.style.marginTop = '20px';
+                }
+                passwordInput.required = false;
+            }
+
+            function disableResetMode() {
+                isResetMode = false;
+                if (passwordGroup) passwordGroup.classList.remove('hidden');
+                resetFieldsContainer.classList.add('hidden');
+                if (loginBtn) {
+                    loginBtn.innerText = 'Entrar';
+                    loginBtn.style.marginTop = '50px';
+                }
+                passwordInput.required = true;
+            }
 
             // Check Status on Blur
             usernameInput.addEventListener('blur', async () => {
@@ -259,50 +287,36 @@
                 if (!username) return;
 
                 try {
+                    console.log('Checking reset status for:', username);
                     const res = await fetch(`api/auth.php?action=check_reset&username=${encodeURIComponent(username)}`);
-                    const data = await res.json();
-
-                    if (data.status === 'reset_pending') {
-                        enableResetMode();
-                    } else {
-                        disableResetMode();
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.status === 'reset_pending') {
+                            console.log('Reset pending identified');
+                            enableResetMode();
+                        } else {
+                            disableResetMode();
+                        }
                     }
                 } catch (e) {
-                    console.error(e);
+                    console.error('Error checking reset status:', e);
                 }
             });
 
-            function enableResetMode() {
-                isResetMode = true;
-                passwordGroup.classList.add('hidden'); // Hide old password field
-                resetFieldsContainer.classList.remove('hidden');
-                if (loginBtn) {
-                    loginBtn.innerText = 'Definir Senha';
-                    loginBtn.style.marginTop = '20px'; // Adjust margin for new fields
-                }
-                if (document.getElementById('password')) document.getElementById('password').required = false;
-            }
-
-            function disableResetMode() {
-                isResetMode = false;
-                passwordGroup.classList.remove('hidden');
-                resetFieldsContainer.classList.add('hidden');
-                if (loginBtn) {
-                    loginBtn.innerText = 'Entrar';
-                    loginBtn.style.marginTop = '50px'; // Reset margin
-                }
-                if (document.getElementById('password')) document.getElementById('password').required = true;
-            }
-
+            // --- Main Login/Reset Submit Handler ---
             loginForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
+                console.log('Form Submit detected. Reset Mode:', isResetMode);
 
                 const username = usernameInput.value.trim();
 
                 if (isResetMode) {
-                    // Handle Complete Reset
-                    const newPass = document.getElementById('newResetPassword').value;
-                    const confirmPass = document.getElementById('confirmResetPassword').value;
+                    // *** RESET FLOW ***
+                    const newPassInput = document.getElementById('newResetPassword');
+                    const confirmPassInput = document.getElementById('confirmResetPassword');
+
+                    const newPass = newPassInput ? newPassInput.value : '';
+                    const confirmPass = confirmPassInput ? confirmPassInput.value : '';
 
                     if (!newPass || !confirmPass) {
                         showToast('Preencha os campos de senha.', 'error');
@@ -312,8 +326,8 @@
                         showToast('As senhas não coincidem.', 'error');
                         return;
                     }
-                    if (newPass.length < 6) {
-                        showToast('A senha deve ter pelo menos 6 caracteres.', 'error');
+                    if (newPass.length < 4) {
+                        showToast('A senha deve ter pelo menos 4 caracteres.', 'error');
                         return;
                     }
 
@@ -332,11 +346,12 @@
                             showToast(data.error || 'Erro ao definir senha.', 'error');
                         }
                     } catch (err) {
+                        console.error('Reset error:', err);
                         showToast('Erro de conexão.', 'error');
                     }
 
                 } else {
-                    // Standard Login
+                    // *** STANDARD LOGIN FLOW ***
                     const password = passwordInput.value;
 
                     if (!username || !password) {
@@ -344,131 +359,122 @@
                         return;
                     }
 
-                    // Show loading state (optional: add visual feedback here)
-
                     try {
-                        // Check if API is available
                         if (!window.api || !window.api.auth) {
                             console.error('API service not loaded');
-                            showToast('Erro interno: Serviço de API indisponível.', 'error');
+                            showToast('Erro interno: API indisponível.', 'error');
                             return;
                         }
 
-                        // Authenticate via PHP Backend
                         const data = await window.api.auth.signIn(username, password);
+                        console.log('Login response:', data);
 
-                        // Success! Store user info (server response structure is { success: true, user: {...} })
                         if (data && data.user) {
-                            // CHECK: Forced Reset?
+                            // Check for Legacy Force Reset
                             if (data.user.force_password_reset) {
-                                // showToast('Troca de senha obrigatória identificada.', 'info'); // Removed per user request
-                                document.getElementById('loginForm').classList.add('hidden');
-                                document.getElementById('resetPasswordForm').classList.remove('hidden');
-
-                                // Hide the main title to save space
-                                document.querySelector('.login-title').style.display = 'none';
-
-                                // Set User ID for hidden input
-                                document.getElementById('resetUserId').value = data.user.id;
-
-                                // Set Dynamic Message
-                                const firstName = data.user.full_name ? data.user.full_name.split(' ')[0] : (data.user.username || 'Usuário');
-                                const resetMsg = document.getElementById('resetMessage');
-                                if (resetMsg) {
-                                    resetMsg.textContent = `${firstName}, sua senha de acesso foi resetada pelo Administrador. Crie uma nova senha para acessar o sistema.`;
+                                console.log('Legacy Force Reset logic triggered');
+                                loginForm.classList.add('hidden');
+                                if (resetPasswordForm) {
+                                    resetPasswordForm.classList.remove('hidden');
+                                    // Hide main title
+                                    const title = document.querySelector('.login-title');
+                                    if (title) title.style.display = 'none';
+                                    // Set hidden ID
+                                    if (resetUserIdInput) resetUserIdInput.value = data.user.id;
+                                    // Dynamic Msg
+                                    const firstName = data.user.full_name ? data.user.full_name.split(' ')[0] : (data.user.username || 'Usuário');
+                                    const resetMsg = document.getElementById('resetMessage');
+                                    if (resetMsg) {
+                                        resetMsg.textContent = `${firstName}, sua senha de acesso foi resetada pelo Administrador. Crie uma nova senha para acessar o sistema.`;
+                                    }
                                 }
                                 return;
                             }
 
+                            // Successful Login
                             localStorage.setItem('sofis_user', JSON.stringify({
                                 id: data.user.id,
                                 username: data.user.username,
                                 full_name: data.user.full_name,
                                 role: data.user.role || 'TECNICO',
-                                permissions: data.user.permissions // Store permissions if needed
+                                permissions: data.user.permissions
                             }));
 
                             showToast('Login realizado com sucesso!');
                             setTimeout(() => {
                                 window.location.href = 'index.html';
                             }, 1000);
+
                         } else {
                             throw new Error('Dados de usuário inválidos.');
                         }
 
                     } catch (err) {
-                        console.error('Erro no login:', err);
+                        console.error('Login error:', err);
                         const msg = err.message || 'Erro ao tentar realizar login. Tente novamente.';
                         showToast(msg, 'error');
                     }
                 }
             });
 
-            // Handle Password Reset Form
-            const resetPasswordForm = document.getElementById('resetPasswordForm');
-            resetPasswordForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const userId = document.getElementById('resetUserId').value;
-                const newPass = document.getElementById('newPassword').value;
-                const confirmPass = document.getElementById('confirmNewPassword').value;
+            // --- Legacy Reset Form Handler ---
+            if (resetPasswordForm) {
+                resetPasswordForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    if (!resetUserIdInput) return;
 
-                if (newPass !== confirmPass) {
-                    showToast('As senhas não coincidem.', 'error');
-                    return;
-                }
+                    const userId = resetUserIdInput.value;
+                    const newPass = document.getElementById('newPassword').value;
+                    const confirmPass = document.getElementById('confirmNewPassword').value;
 
-                if (newPass.length < 4) {
-                    showToast('A senha deve ter pelo menos 4 caracteres.', 'error');
-                    return;
-                }
-
-                try {
-                    // Update password via API
-                    await window.api.users.update(userId, {
-                        password: newPass,
-                        force_password_reset: false
-                    });
-
-                    showToast('Senha atualizada com sucesso! Entrando...');
-
-                    // Seamless Login Logic
-                    // We need the original username to re-authenticate
-                    const username = document.getElementById('username').value;
-
-                    if (username) {
-                        try {
-                            const loginData = await window.api.auth.signIn(username, newPass);
-
-                            if (loginData && loginData.user) {
-                                localStorage.setItem('sofis_user', JSON.stringify({
-                                    id: loginData.user.id,
-                                    username: loginData.user.username,
-                                    full_name: loginData.user.full_name,
-                                    role: loginData.user.role || 'TECNICO',
-                                    permissions: loginData.user.permissions
-                                }));
-
-                                setTimeout(() => window.location.href = 'index.html', 1000);
-                            } else {
-                                throw new Error('Falha na autenticação automática.');
-                            }
-                        } catch (loginErr) {
-                            // Fallback to manual login if auto-login fails
-                            console.error(loginErr);
-                            showToast('Senha alterada via login automático falhou. Por favor, logue manualmente.');
-                            setTimeout(() => location.reload(), 2000);
-                        }
-                    } else {
-                        // Fallback if username is lost
-                        setTimeout(() => location.reload(), 1500);
+                    if (newPass !== confirmPass) {
+                        showToast('As senhas não coincidem.', 'error');
+                        return;
+                    }
+                    if (newPass.length < 4) {
+                        showToast('A senha deve ter pelo menos 4 caracteres.', 'error');
+                        return;
                     }
 
-                } catch (err) {
-                    showToast('Erro ao atualizar senha: ' + err.message, 'error');
-                }
-            });
+                    try {
+                        await window.api.users.update(userId, {
+                            password: newPass,
+                            force_password_reset: false
+                        });
 
+                        showToast('Senha atualizada com sucesso! Entrando...');
+
+                        // Seamless Login (Legacy)
+                        const username = usernameInput.value;
+                        if (username) {
+                            try {
+                                const loginData = await window.api.auth.signIn(username, newPass);
+                                if (loginData && loginData.user) {
+                                    localStorage.setItem('sofis_user', JSON.stringify({
+                                        id: loginData.user.id,
+                                        username: loginData.user.username,
+                                        full_name: loginData.user.full_name,
+                                        role: loginData.user.role || 'TECNICO',
+                                        permissions: loginData.user.permissions
+                                    }));
+                                    setTimeout(() => window.location.href = 'index.html', 1000);
+                                }
+                            } catch (e) {
+                                setTimeout(() => location.reload(), 1500);
+                            }
+                        } else {
+                            setTimeout(() => location.reload(), 1500);
+                        }
+
+                    } catch (err) {
+                        showToast('Erro ao atualizar senha: ' + err.message, 'error');
+                    }
+                });
+            }
+
+            // --- Toast Utility ---
             function showToast(msg, type = 'success') {
+                if (!toast) return;
                 toast.textContent = msg;
                 toast.className = 'toast';
 
@@ -477,7 +483,7 @@
                     toast.style.backgroundColor = 'var(--danger)';
                 } else {
                     toast.classList.add('toast-success');
-                    toast.style.backgroundColor = ''; // Reset inline style
+                    toast.style.backgroundColor = '';
                 }
 
                 toast.classList.remove('hidden');
