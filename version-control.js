@@ -468,60 +468,65 @@
     window.loadVersionControls = loadVersionControls;
     window.renderVersionControls = renderVersionControls;
     window.handleVersionSubmit = handleVersionSubmit;
+    window.populateVersionClientSelect = populateVersionClientSelect;
+    window.populateResponsibleSelect = populateResponsibleSelect;
 
     // Cache for clients list
     let cachedClientsForVersion = [];
 
     // Unified function to get clients list
-    // Unified function to get clients list
-    async function getClientsForDropdown() {
-        // 1. Try Global Window Clients (fastest)
+    async function getClientsForDropdown(forceRefresh = false) {
+        if (forceRefresh) {
+            cachedClientsForVersion = [];
+        }
+
+        // 1. Try Global Window Clients (fastest and usually freshest)
         if (window.clients && window.clients.length > 0) {
+            console.log("✅ [VersionControl] Usando lista de clientes global (window.clients).");
             return window.clients;
         }
+
         // 2. Try Local Cache
         if (cachedClientsForVersion && cachedClientsForVersion.length > 0) {
             return cachedClientsForVersion;
         }
+
         // 3. Fetch from API
         try {
             console.log("🔄 Fetching clients for dropdown via API...");
-            // Use API clients list if window.clients is empty (unlikely if app initialized, but safe fallback)
-            // But window.api.clients.list() returns full client objects. We just need names.
             const data = await window.api.clients.list();
-
             if (data) {
                 cachedClientsForVersion = data;
                 return data;
             }
         } catch (e) {
             console.error("Erro ao buscar clientes:", e);
-            if (window.showToast) window.showToast("Erro de conexão ao buscar clientes.", "error");
         }
         return [];
     }
 
-    window.populateVersionClientSelect = async () => {
+    async function populateVersionClientSelect() {
         const select = document.getElementById('versionClientSelect');
         if (!select) return;
 
         const currentVal = select.value; // Store current value
         const isDisabled = select.disabled;
 
-        const clientsList = await getClientsForDropdown();
+        const clientsList = await getClientsForDropdown(true);
+        console.log(`🔍 [VersionControl] Populating client select. Clients in list: ${clientsList.length}`);
 
         // Get all unique client IDs that already have version records
         let clientsWithVersions = new Set();
         if (window.versionControls && window.versionControls.length > 0) {
             window.versionControls.forEach(vc => {
                 if (vc.client_id) {
-                    clientsWithVersions.add(vc.client_id);
+                    clientsWithVersions.add(String(vc.client_id));
                 }
             });
         }
 
-        // Filter out clients that already have ANY version record
-        const availableClients = clientsList.filter(c => !clientsWithVersions.has(c.id));
+        // Filter out clients that already have ANY version record (convert to string for safety)
+        const availableClients = clientsList.filter(c => !clientsWithVersions.has(String(c.id)));
 
         // Clear existing (keep default)
         select.innerHTML = '<option value="">Selecione o cliente...</option>';
@@ -536,6 +541,7 @@
 
         // Sort and Append
         availableClients.sort((a, b) => a.name.localeCompare(b.name)).forEach(c => {
+            console.log(`  - Adding to select: ${c.name} (id: ${c.id})`);
             const opt = document.createElement('option');
             opt.value = c.id;
             opt.textContent = c.name;
@@ -808,33 +814,8 @@
 
     let cachedUsersForResponsible = [];
 
-    async function getClientsForDropdown() {
-        // 1. Try Global Window Clients (fastest)
-        if (window.clients && window.clients.length > 0) {
-            console.log("✅ [VersionControl] Usando lista de clientes global (window.clients).");
-            return window.clients;
-        }
-        // 2. Try Local Cache
-        if (cachedClientsForVersion && cachedClientsForVersion.length > 0) {
-            return cachedClientsForVersion;
-        }
-        // 3. Fetch from API
-        try {
-            console.log("🔄 Fetching clients for dropdown...");
-            const data = await window.api.clients.list();
 
-            if (data) {
-                cachedClientsForVersion = data;
-                return data;
-            }
-        } catch (e) {
-            console.error("Erro ao buscar clientes:", e);
-            if (window.showToast) window.showToast("Erro de conexão ao buscar clientes.", "error");
-        }
-        return [];
-    }
-
-    window.populateResponsibleSelect = async () => {
+    async function populateResponsibleSelect() {
         const select = document.getElementById('versionResponsibleSelect');
         if (!select) return;
 

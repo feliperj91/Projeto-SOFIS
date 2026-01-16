@@ -34,9 +34,9 @@
     filter: brightness(1.2);
 }
 
-/* Estilo Inativo para Controle de Versão */
+/* Estilo Inativo para Controle de Versão - Sincronizado */
 .client-group-header.inactive-contract-version-header {
-    background: linear-gradient(135deg, #8B0000 0%, #500000 100%) !important;
+    background: linear-gradient(135deg, #5c1212 0%, #2d0a0a 100%) !important;
     border-bottom: 2px solid #ff4d4d !important;
 }
 
@@ -70,16 +70,17 @@
    VISUAL STYLES FOR INACTIVE CONTRACT ROW (Entire Card/Row)
    ========================================================================== */
 
-/* Dark Red Background for the Inactive Client Row */
+/* Vibrant Red Background for the Inactive Client Row - Standardized with Version Control */
 .client-row.inactive-contract-row {
-    background: linear-gradient(135deg, #3a0d0d 0%, #1a0505 100%) !important;
-    border-color: #8B0000 !important;
-    box-shadow: 0 4px 12px rgba(139, 0, 0, 0.2);
+    background: linear-gradient(135deg, #5c1212 0%, #2d0a0a 100%) !important;
+    border-color: #ff4d4d !important;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.15);
 }
 
 .client-row.inactive-contract-row:hover {
-    border-color: #ff4d4d !important;
-    box-shadow: 0 6px 16px rgba(139, 0, 0, 0.3);
+    border-color: #ff3d00 !important;
+    /* var(--danger) equivalent for more pop */
+    box-shadow: 0 6px 20px rgba(255, 61, 0, 0.25);
     transform: translateY(-2px);
 }
 
