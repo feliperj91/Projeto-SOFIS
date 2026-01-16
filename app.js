@@ -2353,7 +2353,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     : rawValue;
 
                 valueSpan.textContent = displayValue;
-                icon.className = 'fa-regular fa-eye-slash';
+                icon.className = 'fa-solid fa-eye-slash';
                 btn.title = 'Ocultar Senha';
             } catch (err) {
                 console.error('Erro ao descriptografar:', err);
@@ -2361,7 +2361,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         } else {
             valueSpan.textContent = '••••••';
-            icon.className = 'fa-regular fa-eye';
+            icon.className = 'fa-solid fa-eye';
             btn.title = 'Visualizar Senha';
         }
     };
@@ -2973,117 +2973,91 @@ document.addEventListener('DOMContentLoaded', async () => {
         urlModal.classList.remove('hidden');
     };
 
-    function updateWebLaudoDisplay(client) {
-        const P = window.Permissions;
-        const canEdit = P ? P.can('URLs', 'can_edit') : false;
-        const canDelete = P ? P.can('URLs', 'can_delete') : false;
-        const canCreate = P ? P.can('URLs', 'can_create') : false;
+    window.updateWebLaudoDisplay = (client) => {
+        const display = document.getElementById('webLaudoDisplay');
+        const form = document.getElementById('webLaudoForm');
+        const actions = document.getElementById('webLaudoActions');
+        const text = document.getElementById('webLaudoText');
+        const userText = document.getElementById('webLaudoUserText');
+        const passText = document.getElementById('webLaudoPassText');
+        const userRow = document.getElementById('webLaudoUserRow');
 
-        const editBtn = document.getElementById('editWebLaudoBtn');
-        const deleteBtn = document.getElementById('deleteWebLaudoBtn');
-        const webLaudoUserText = document.getElementById('webLaudoUserText');
-        const webLaudoPassText = document.getElementById('webLaudoPassText');
-        const webLaudoUserRow = document.getElementById('webLaudoUserRow');
-        const webLaudoPassRow = document.getElementById('webLaudoPassRow');
+        if (!client.webLaudo || (typeof client.webLaudo === 'string' && !client.webLaudo.trim())) {
+            display.style.display = 'none';
+            form.style.display = 'flex';
+            if (actions) actions.style.display = 'none';
 
-        if (client.webLaudo) {
-            const isObject = typeof client.webLaudo === 'object';
-            const url = isObject ? client.webLaudo.url : client.webLaudo;
-            const user = (isObject && client.webLaudo.user) ? client.webLaudo.user : '';
-            const pass = (isObject && client.webLaudo.password) ? client.webLaudo.password : '';
-
-            if (webLaudoText) webLaudoText.textContent = url || 'URL não informada';
-
-            if (user) {
-                if (webLaudoUserText) webLaudoUserText.textContent = user;
-                if (webLaudoUserRow) webLaudoUserRow.style.display = 'flex';
-            } else {
-                if (webLaudoUserRow) webLaudoUserRow.style.display = 'none';
-            }
-
-            if (pass) {
-                if (webLaudoPassText) {
-                    webLaudoPassText.dataset.raw = pass;
-                    webLaudoPassText.textContent = '••••••';
-
-                    // Reset eye icon
-                    const passContainer = webLaudoPassText.parentElement;
-                    const eyeIcon = passContainer.querySelector('.fa-eye, .fa-eye-slash');
-                    if (eyeIcon) {
-                        eyeIcon.classList.remove('fa-eye-slash');
-                        eyeIcon.classList.add('fa-eye');
-                    }
-                }
-                if (webLaudoPassRow) webLaudoPassRow.style.display = 'flex';
-            } else {
-                if (webLaudoPassRow) webLaudoPassRow.style.display = 'none';
-            }
-
-            if (webLaudoDisplay) webLaudoDisplay.style.display = 'block';
-            if (webLaudoForm) webLaudoForm.style.display = 'none';
-
-            // Populate form fields for next edit
-            if (webLaudoInput) webLaudoInput.value = url;
-            if (document.getElementById('webLaudoUserInput')) document.getElementById('webLaudoUserInput').value = user;
-            if (document.getElementById('webLaudoPassInput')) document.getElementById('webLaudoPassInput').value = '';
-
-            if (editBtn) editBtn.style.display = canEdit ? '' : 'none';
-            if (deleteBtn) deleteBtn.style.display = canDelete ? '' : 'none';
-        } else {
-            if (webLaudoDisplay) webLaudoDisplay.style.display = 'none';
-            if (webLaudoForm) webLaudoForm.style.display = canCreate ? 'block' : 'none';
-
-            if (webLaudoInput) webLaudoInput.value = '';
-            if (document.getElementById('webLaudoUserInput')) document.getElementById('webLaudoUserInput').value = '';
-            if (document.getElementById('webLaudoPassInput')) document.getElementById('webLaudoPassInput').value = '';
-
-            if (!canCreate) {
-                if (webLaudoText) webLaudoText.textContent = 'WebLaudo não configurado.';
-                if (webLaudoDisplay) webLaudoDisplay.style.display = 'block';
-                if (webLaudoUserRow) webLaudoUserRow.style.display = 'none';
-                if (webLaudoPassRow) webLaudoPassRow.style.display = 'none';
-                if (editBtn) editBtn.style.display = 'none';
-                if (deleteBtn) deleteBtn.style.display = 'none';
-            }
+            document.getElementById('webLaudoInput').value = '';
+            document.getElementById('webLaudoUserInput').value = '';
+            document.getElementById('webLaudoPassInput').value = '';
+            return;
         }
-    }
+
+        const data = typeof client.webLaudo === 'string' ? JSON.parse(client.webLaudo) : client.webLaudo;
+
+        display.style.display = 'flex';
+        form.style.display = 'none';
+        if (actions) actions.style.display = 'flex';
+
+        text.textContent = data.url || '---';
+        userText.textContent = data.user || '---';
+        userRow.style.display = data.user ? 'flex' : 'none';
+
+        passText.textContent = '••••••';
+        passText.dataset.raw = data.password || '';
+
+        // Reset eye icons
+        document.querySelectorAll('#webLaudoPassRow .btn-icon-tiny i').forEach(i => {
+            i.className = 'fa-solid fa-eye';
+        });
+    };
 
     window.editWebLaudo = async () => {
-        const id = urlClientIdInput.value;
-        const client = clients.find(c => c.id == id);
-        if (!client) return;
+        const display = document.getElementById('webLaudoDisplay');
+        const form = document.getElementById('webLaudoForm');
+        const actions = document.getElementById('webLaudoActions');
+        const client = window.currentClient;
 
-        webLaudoDisplay.style.display = 'none';
-        webLaudoForm.style.display = 'block';
+        if (!client || !client.webLaudo) return;
 
-        // Change button text to "Atualizar" when editing
-        saveWebLaudoBtn.innerHTML = '<i class="fa-solid fa-floppy-disk" style="margin-right: 8px;"></i> Atualizar WebLaudo';
+        const data = typeof client.webLaudo === 'string' ? JSON.parse(client.webLaudo) : client.webLaudo;
 
-        const isObject = typeof client.webLaudo === 'object';
-        webLaudoInput.value = isObject ? client.webLaudo.url : client.webLaudo;
-        if (document.getElementById('webLaudoUserInput'))
-            document.getElementById('webLaudoUserInput').value = isObject ? (client.webLaudo.user || '') : '';
-        if (document.getElementById('webLaudoPassInput')) {
-            const pass = isObject ? (client.webLaudo.password || '') : '';
-            document.getElementById('webLaudoPassInput').value = pass ? await window.Security.decrypt(pass) : '';
+        document.getElementById('webLaudoInput').value = data.url || '';
+        document.getElementById('webLaudoUserInput').value = data.user || '';
+
+        try {
+            if (data.password) {
+                document.getElementById('webLaudoPassInput').value = await window.Security.decrypt(data.password);
+            } else {
+                document.getElementById('webLaudoPassInput').value = '';
+            }
+        } catch (e) {
+            console.error("Erro ao descriptografar:", e);
+            document.getElementById('webLaudoPassInput').value = '';
         }
-        webLaudoInput.focus();
+
+        display.style.display = 'none';
+        form.style.display = 'flex';
+        if (actions) actions.style.display = 'none';
+        document.getElementById('saveWebLaudoBtn').innerHTML = '<i class="fa-solid fa-floppy-disk" style="margin-right: 8px;"></i> Atualizar WebLaudo';
     };
 
     window.cancelWebLaudoEdit = () => {
-        const id = urlClientIdInput.value;
-        const client = clients.find(c => c.id == id);
-        if (client) {
-            updateWebLaudoDisplay(client);
+        const client = window.currentClient;
+        const display = document.getElementById('webLaudoDisplay');
+        const form = document.getElementById('webLaudoForm');
+        const actions = document.getElementById('webLaudoActions');
+
+        if (client && client.webLaudo && (typeof client.webLaudo !== 'string' || client.webLaudo.trim() !== '')) {
+            display.style.display = 'flex';
+            form.style.display = 'none';
+            if (actions) actions.style.display = 'flex';
         } else {
-            webLaudoDisplay.style.display = 'none';
-            webLaudoForm.style.display = 'block';
-            if (webLaudoInput) webLaudoInput.value = '';
-            if (document.getElementById('webLaudoUserInput')) document.getElementById('webLaudoUserInput').value = '';
-            if (document.getElementById('webLaudoPassInput')) document.getElementById('webLaudoPassInput').value = '';
+            document.getElementById('webLaudoInput').value = '';
+            document.getElementById('webLaudoUserInput').value = '';
+            document.getElementById('webLaudoPassInput').value = '';
         }
-        // Reset button text
-        saveWebLaudoBtn.innerHTML = '<i class="fa-solid fa-floppy-disk" style="margin-right: 8px;"></i> Salvar WebLaudo';
+        document.getElementById('saveWebLaudoBtn').innerHTML = '<i class="fa-solid fa-floppy-disk" style="margin-right: 8px;"></i> Salvar WebLaudo';
     };
 
     async function handleDeleteWebLaudo() {
