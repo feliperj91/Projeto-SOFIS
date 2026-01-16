@@ -1128,7 +1128,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const hasServers = client.servers && client.servers.length > 0;
         const hasVpns = client.vpns && client.vpns.length > 0;
         const hasHosts = client.hosts && client.hosts.length > 0;
-        const urlCount = (client.urls ? client.urls.length : 0) + (client.webLaudo && client.webLaudo.trim() !== '' ? 1 : 0);
+        const urlCount = (client.urls ? client.urls.length : 0) + (client.webLaudo ? (typeof client.webLaudo === 'object' ? 1 : (client.webLaudo.trim() !== '' ? 1 : 0)) : 0);
         const hasUrls = urlCount > 0;
         const hasContacts = client.contacts && client.contacts.length > 0;
 
@@ -1269,7 +1269,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const hasServers = client.servers && client.servers.length > 0;
         const hasVpns = client.vpns && client.vpns.length > 0;
         const hasHosts = client.hosts && client.hosts.length > 0;
-        const urlCount = (client.urls ? client.urls.length : 0) + (client.webLaudo && client.webLaudo.trim() !== '' ? 1 : 0);
+        const urlCount = (client.urls ? client.urls.length : 0) + (client.webLaudo ? (typeof client.webLaudo === 'object' ? 1 : (client.webLaudo.trim() !== '' ? 1 : 0)) : 0);
         const hasUrls = urlCount > 0;
         const hasContacts = client.contacts && client.contacts.length > 0;
 
