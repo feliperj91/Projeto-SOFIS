@@ -37,8 +37,11 @@
             const lastUpdate = new Date(updatedAt);
             const now = new Date();
 
-            // Handle future dates gracefully
-            if (lastUpdate > now) {
+            // Compare only date part to handle "Today" even if time is future (midday UTC)
+            const lastDate = new Date(lastUpdate.getFullYear(), lastUpdate.getMonth(), lastUpdate.getDate());
+            const nowDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+            if (lastDate > nowDate) {
                 return 'Atualização agendada';
             }
 
@@ -223,7 +226,7 @@
                                 <div class="version-text-group">
                                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px;">
                                         <div style="display: flex; align-items: baseline;">
-                                            <span style="color: #ffffff; font-size: 0.75rem; margin-right: 5px; font-weight: 400;">Versão:</span>
+                                            <span style="color: #ffffff; font-size: 0.75rem; margin-right: 5px; font-weight: 400;">${(productsList.find(p => p.name === v.system)?.version_type === 'Build') ? 'Build:' : 'Versão:'}</span>
                                             <span class="version-number-display">${utils.escapeHtml(v.version)}</span>
                                         </div>
                                         ${v.has_alert ?
@@ -361,7 +364,7 @@
             }
 
             const productType = getSelectedProductType();
-            const minLength = productType === 'Build' ? 8 : 10;
+            const minLength = productType === 'Build' ? 11 : 10;
 
             // Strict Validation by Product Type
             if (productType === 'Build') {
@@ -1729,7 +1732,9 @@
                 const type = getSelectedProductType();
                 if (type === 'Build') {
                     // Numbers only
-                    e.target.value = e.target.value.replace(/[^0-9]/g, '');
+                    let v = e.target.value.replace(/[^0-9]/g, '');
+                    if (v.length > 11) v = v.substring(0, 11);
+                    e.target.value = v;
                 } else {
                     // Standard Pacote mask: YYYY.MM-XX
                     let v = e.target.value.replace(/\D/g, '');
@@ -1755,7 +1760,7 @@
 
         if (type === 'Build') {
             verInput.placeholder = 'Ex: 20250105006';
-            verInput.maxLength = 15;
+            verInput.maxLength = 11;
             verInput.title = 'Apenas números permitidos para o tipo Build';
             // If switched and has content, keep only numbers
             if (verInput.value) {
