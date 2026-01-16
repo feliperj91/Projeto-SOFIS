@@ -324,13 +324,24 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </button>`;
             }
 
+            // Status Indicators
+            const activeStatusHtml = u.is_active ?
+                '<span class="user-status-indicator active" title="Conta Ativa"></span>' :
+                '<span class="user-status-indicator inactive" title="Conta Inativa"></span>';
+
+            const resetStatusHtml = u.force_password_reset ?
+                '<i class="fa-solid fa-triangle-exclamation user-reset-warning" title="Senha Resetada/Troca Pendente"></i>' : '';
+
             // Restaurada a estrutura original
             card.innerHTML = `
                 <div class="user-info-top">
                     <div class="user-card-header">
-                        <div class="user-avatar">${initials}</div>
+                        <div class="user-avatar">
+                            ${initials}
+                            ${activeStatusHtml}
+                        </div>
                         <div class="user-name-group">
-                            <h3>${u.full_name || 'N/A'}</h3>
+                            <h3>${u.full_name || 'N/A'}${resetStatusHtml}</h3>
                             <span class="user-handle">@${u.username}</span>
                         </div>
                     </div>

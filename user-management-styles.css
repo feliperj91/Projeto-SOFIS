@@ -1070,3 +1070,157 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 #btnSearchLogs:active {
     transform: translateY(0) scale(0.95);
 }
+
+/* ===================================
+   NEW UI ELEMENTS (Standardization)
+   =================================== */
+
+/* Switch Toggle Style */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 46px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.1);
+    transition: .4s;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
+    background-color: #b0bec5;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked+.slider {
+    background-color: var(--accent);
+    border-color: var(--accent);
+}
+
+input:checked+.slider:before {
+    transform: translateX(22px);
+    background-color: #fff;
+}
+
+/* User Status Indicator on Card */
+.user-status-indicator {
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid var(--card-bg);
+}
+
+.user-status-indicator.active {
+    background-color: var(--success);
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+.user-status-indicator.inactive {
+    background-color: var(--danger);
+    box-shadow: 0 0 0 2px rgba(255, 61, 0, 0.2);
+}
+
+/* Password Reset Warning on Card */
+.user-reset-warning {
+    color: var(--accent);
+    font-size: 0.9rem;
+    margin-left: 8px;
+    animation: pulse-warning 2s infinite;
+    cursor: help;
+}
+
+@keyframes pulse-warning {
+    0% {
+        opacity: 0.6;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0.6;
+    }
+}
+
+/* Modern Checkbox for 'Alterar Senha' */
+.modern-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    transition: color 0.2s;
+}
+
+.modern-checkbox-label:hover {
+    color: var(--text-primary);
+}
+
+.modern-checkbox-label input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    background-color: rgba(255, 255, 255, 0.05);
+    margin: 0;
+    font: inherit;
+    color: currentColor;
+    width: 18px;
+    height: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    display: grid;
+    place-content: center;
+    transition: all 0.2s;
+}
+
+.modern-checkbox-label input[type="checkbox"]::before {
+    content: "";
+    width: 10px;
+    height: 10px;
+    transform: scale(0);
+    transition: 120ms transform ease-in-out;
+    box-shadow: inset 1em 1em #1a1a1a;
+    background-color: #1a1a1a;
+    transform-origin: center;
+    clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+}
+
+.modern-checkbox-label input[type="checkbox"]:checked {
+    background-color: var(--accent);
+    border-color: var(--accent);
+}
+
+.modern-checkbox-label input[type="checkbox"]:checked::before {
+    transform: scale(1);
+}

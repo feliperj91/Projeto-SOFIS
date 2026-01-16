@@ -1335,15 +1335,14 @@
             <form id="userForm">
                 <input type="hidden" id="userIdInput">
                 <div class="form-group"
-                    style="display: flex; align-items: center; justify-content: flex-start; gap: 15px; margin-bottom: 20px;">
-                    <label class="switch" style="transform: scale(0.9);">
+                    style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                    <label class="switch">
                         <input type="checkbox" id="userIsActive" checked>
                         <span class="slider round"></span>
                     </label>
                     <label for="userIsActive"
-                        style="margin-bottom: 0; cursor: pointer; color: var(--text-primary); font-weight: 500;">
-                        <i class="fa-solid fa-user-check" style="color: var(--accent); margin-right: 8px;"></i> Conta
-                        Ativa
+                        style="margin: 0; cursor: pointer; color: var(--text-primary); font-weight: 500; font-size: 1rem;">
+                        Conta Ativa
                     </label>
                 </div>
 
@@ -1377,11 +1376,9 @@
                     </div>
                 </div>
 
-                <div class="form-group" style="margin-top: -10px; margin-bottom: 20px;">
-                    <label
-                        style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 0.9rem; color: var(--text-secondary);">
-                        <input type="checkbox" id="userForceReset"
-                            style="width: 16px; height: 16px; accent-color: var(--accent);">
+                <div class="form-group" style="margin-top: -10px; margin-bottom: 25px;">
+                    <label class="modern-checkbox-label" for="userForceReset">
+                        <input type="checkbox" id="userForceReset">
                         Alterar senha no próximo login
                     </label>
                 </div>
