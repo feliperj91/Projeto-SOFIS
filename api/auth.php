@@ -116,7 +116,13 @@ if ($action === 'login') {
         $_SESSION['permissions'] = $user['permissions'];
         $_SESSION['full_name'] = $user['full_name'];
         
-        echo json_encode(['success' => true]);
+        echo json_encode(['success' => true, 'user' => [
+            'id' => $user['id'],
+            'username' => $username,
+            'full_name' => $user['full_name'],
+            'role' => $user['role'],
+            'permissions' => json_decode($user['permissions'])
+        ]]);
         
     } catch (PDOException $e) {
         http_response_code(500);

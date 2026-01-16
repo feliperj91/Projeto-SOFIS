@@ -340,6 +340,17 @@
                         const data = await res.json();
 
                         if (data.success) {
+                            // Set LocalStorage for immediate access
+                            if (data.user) {
+                                localStorage.setItem('sofis_user', JSON.stringify({
+                                    id: data.user.id,
+                                    username: data.user.username,
+                                    full_name: data.user.full_name,
+                                    role: data.user.role || 'TECNICO',
+                                    permissions: data.user.permissions
+                                }));
+                            }
+
                             showToast('Senha definida com sucesso! Entrando...', 'success');
                             setTimeout(() => window.location.href = 'index.html', 1500);
                         } else {
