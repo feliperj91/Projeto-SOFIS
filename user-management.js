@@ -29,6 +29,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             title: 'Guia Clientes e Contatos',
             items: [
                 { module: 'Gestão de Clientes', isHeader: true },
+                { module: 'Servidores' },
                 { module: 'Dados de Contato' },
                 { module: 'Logs e Atividades' }
             ]
@@ -37,8 +38,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             type: 'guide',
             title: 'Guia Infraestrutura',
             items: [
-                { module: 'Servidores', isHeader: true },
-                { module: 'Dados de Acesso (SQL)' },
+                { module: 'Dados de Acesso (SQL)', isHeader: true },
                 { module: 'Dados de Acesso (VPN)' },
                 { module: 'URLs' }
             ]
