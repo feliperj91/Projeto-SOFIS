@@ -128,7 +128,7 @@
                     title="Apenas letras, números e caracteres especiais permitidos">
             </div>
 
-            <div class="form-group">
+            <div class="form-group" id="passwordGroup">
                 <label for="password"><i class="fa-solid fa-lock"></i> Senha</label>
                 <div style="position: relative;">
                     <input type="password" id="password" required placeholder="Digite sua senha"
@@ -222,51 +222,164 @@
                     showToast('Espaços e acentos não são permitidos no usuário.', 'error');
                 }
             });
+            // --- Login Logic with Reset Mode Support ---
+            const passwordGroup = document.getElementById('passwordGroup');
+            const loginBtn = document.querySelector('.login-btn');
+
+            // UI Elements for Reset Mode
+            let isResetMode = false;
+
+            // Create new password fields dynamically or toggle visibility
+            // We already have passwordResetForm elements, let's look at re-using or creating new ones inline.
+            // Simpler: Just hide `passwordGroup` and inject new fields into loginForm if needed, or overlay.
+            // Let's create a container for "New Password" fields inside the login form that is hidden by default.
+
+            const resetFieldsContainer = document.createElement('div');
+            resetFieldsContainer.className = 'hidden';
+            resetFieldsContainer.innerHTML = `
+        <div class="form-group">
+            <label for="newResetPassword"><i class="fa-solid fa-lock"></i> Nova Senha</label>
+            <input type="password" id="newResetPassword" placeholder="Digite sua nova senha" required>
+        </div>
+        <div class="form-group">
+            <label for="confirmResetPassword"><i class="fa-solid fa-check-double"></i> Confirmar Nova Senha</label>
+            <input type="password" id="confirmResetPassword" placeholder="Confirme sua nova senha" required>
+        </div>
+        <div class="alert alert-info" style="margin-top: 15px; font-size: 0.9rem; padding: 10px; border-radius: var(--radius); background-color: var(--accent-light); color: var(--accent); border: 1px solid var(--accent);">
+            <i class="fa-solid fa-circle-info"></i> Sua conta foi redefinida. Crie uma nova senha para continuar.
+        </div>
+    `;
+
+            // Insert after password group
+            passwordGroup.parentNode.insertBefore(resetFieldsContainer, passwordGroup.nextSibling);
+
+            // Check Status on Blur
+            usernameInput.addEventListener('blur', async () => {
+                const username = usernameInput.value.trim();
+                if (!username) return;
+
+                try {
+                    const res = await fetch(`api/auth.php?action=check_reset&username=${encodeURIComponent(username)}`);
+                    const data = await res.json();
+
+                    if (data.status === 'reset_pending') {
+                        enableResetMode();
+                    } else {
+                        disableResetMode();
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
+            });
+
+            function enableResetMode() {
+                isResetMode = true;
+                passwordGroup.classList.add('hidden'); // Hide old password field
+                resetFieldsContainer.classList.remove('hidden');
+                if (loginBtn) {
+                    loginBtn.innerText = 'Definir Senha';
+                    loginBtn.style.marginTop = '20px'; // Adjust margin for new fields
+                }
+                if (document.getElementById('password')) document.getElementById('password').required = false;
+            }
+
+            function disableResetMode() {
+                isResetMode = false;
+                passwordGroup.classList.remove('hidden');
+                resetFieldsContainer.classList.add('hidden');
+                if (loginBtn) {
+                    loginBtn.innerText = 'Entrar';
+                    loginBtn.style.marginTop = '50px'; // Reset margin
+                }
+                if (document.getElementById('password')) document.getElementById('password').required = true;
+            }
 
             loginForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const username = usernameInput.value;
-                const password = passwordInput.value;
 
-                if (!username || !password) {
-                    showToast('Preencha os campos.', 'error');
-                    return;
-                }
+                const username = usernameInput.value.trim();
 
-                // Show loading state (optional: add visual feedback here)
+                if (isResetMode) {
+                    // Handle Complete Reset
+                    const newPass = document.getElementById('newResetPassword').value;
+                    const confirmPass = document.getElementById('confirmResetPassword').value;
 
-                try {
-                    // Check if API is available
-                    if (!window.api || !window.api.auth) {
-                        console.error('API service not loaded');
-                        showToast('Erro interno: Serviço de API indisponível.', 'error');
+                    if (!newPass || !confirmPass) {
+                        showToast('Preencha os campos de senha.', 'error');
+                        return;
+                    }
+                    if (newPass !== confirmPass) {
+                        showToast('As senhas não coincidem.', 'error');
+                        return;
+                    }
+                    if (newPass.length < 6) {
+                        showToast('A senha deve ter pelo menos 6 caracteres.', 'error');
                         return;
                     }
 
-                    // Authenticate via PHP Backend
-                    const data = await window.api.auth.signIn(username, password);
+                    try {
+                        const res = await fetch('api/auth.php?action=complete_reset', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ username, new_password: newPass })
+                        });
+                        const data = await res.json();
 
-                    // Success! Store user info (server response structure is { success: true, user: {...} })
-                    if (data && data.user) {
-                        // CHECK: Forced Reset?
-                        if (data.user.force_password_reset) {
-                            // showToast('Troca de senha obrigatória identificada.', 'info'); // Removed per user request
-                            document.getElementById('loginForm').classList.add('hidden');
-                            document.getElementById('resetPasswordForm').classList.remove('hidden');
+                        if (data.success) {
+                            showToast('Senha definida com sucesso! Entrando...', 'success');
+                            setTimeout(() => window.location.href = 'index.html', 1500);
+                        } else {
+                            showToast(data.error || 'Erro ao definir senha.', 'error');
+                        }
+                    } catch (err) {
+                        showToast('Erro de conexão.', 'error');
+                    }
 
-                            // Hide the main title to save space
-                            document.querySelector('.login-title').style.display = 'none';
+                } else {
+                    // Standard Login
+                    const password = passwordInput.value;
 
-                            // Set User ID for hidden input
-                            document.getElementById('resetUserId').value = data.user.id;
+                    if (!username || !password) {
+                        showToast('Preencha os campos.', 'error');
+                        return;
+                    }
 
-                            // Set Dynamic Message
-                            const firstName = data.user.full_name ? data.user.full_name.split(' ')[0] : (data.user.username || 'Usuário');
-                            const resetMsg = document.getElementById('resetMessage');
-                            if (resetMsg) {
-                                resetMsg.textContent = `${firstName}, sua senha de acesso foi resetada pelo Administrador. Crie uma nova senha para acessar o sistema.`;
-                            }
+                    // Show loading state (optional: add visual feedback here)
+
+                    try {
+                        // Check if API is available
+                        if (!window.api || !window.api.auth) {
+                            console.error('API service not loaded');
+                            showToast('Erro interno: Serviço de API indisponível.', 'error');
                             return;
+                        }
+
+                        // Authenticate via PHP Backend
+                        const data = await window.api.auth.signIn(username, password);
+
+                        // Success! Store user info (server response structure is { success: true, user: {...} })
+                        if (data && data.user) {
+                            // CHECK: Forced Reset?
+                            if (data.user.force_password_reset) {
+                                // showToast('Troca de senha obrigatória identificada.', 'info'); // Removed per user request
+                                document.getElementById('loginForm').classList.add('hidden');
+                                document.getElementById('resetPasswordForm').classList.remove('hidden');
+
+                                // Hide the main title to save space
+                                document.querySelector('.login-title').style.display = 'none';
+
+                                // Set User ID for hidden input
+                                document.getElementById('resetUserId').value = data.user.id;
+
+                                // Set Dynamic Message
+                                const firstName = data.user.full_name ? data.user.full_name.split(' ')[0] : (data.user.username || 'Usuário');
+                                const resetMsg = document.getElementById('resetMessage');
+                                if (resetMsg) {
+                                    resetMsg.textContent = `${firstName}, sua senha de acesso foi resetada pelo Administrador. Crie uma nova senha para acessar o sistema.`;
+                                }
+                                return;
+                            }
+
                         }
 
                         localStorage.setItem('sofis_user', JSON.stringify({

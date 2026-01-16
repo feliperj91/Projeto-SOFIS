@@ -418,23 +418,25 @@ document.addEventListener('DOMContentLoaded', async () => {
             btnReset.classList.remove('hidden');
             btnReset.onclick = async () => {
                 const confirmed = await window.showConfirm(
-                    `Deseja resetar a senha de ${u.full_name}? A nova senha será 'Sofis@123' e o usuário precisa alterá-la no próximo login.`,
+                    `Deseja resetar a senha de ${u.full_name}? No próximo login, o sistema identificará o reset e solicitará ao usuário a criação de uma nova senha.`,
                     'Resetar Senha',
                     'fa-rotate'
                 );
                 if (confirmed) {
-                    const passInput = document.getElementById('userPassword');
-                    if (passInput) {
-                        passInput.value = 'Sofis@123';
-                        passInput.type = 'text'; // Show it
-                        if (forceResetChk) forceResetChk.checked = true;
-                        window.showToast('Senha resetada no formulário. Clique em Salvar para aplicar.', 'info');
+                    try {
+                        const res = await window.api.users.update(u.id, { set_reset_mode: true });
+                        window.showToast('Conta resetada. O usuário deverá redefinir a senha no login.', 'success');
+                        window.closeUserModal();
+                        await loadUsers(); // Refresh to show reset icon if needed
+                    } catch (err) {
+                        console.error('Erro reset:', err);
+                        window.showToast('Erro ao resetar conta.', 'error');
                     }
                 }
             };
         }
 
-        // Password field always empty on edit for security by default, unless reset
+        // Password field always empty on edit for security by default
         if (document.getElementById('userPassword')) {
             document.getElementById('userPassword').value = '';
             document.getElementById('userPassword').required = false; // Not required on edit

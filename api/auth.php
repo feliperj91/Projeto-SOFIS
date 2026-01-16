@@ -64,6 +64,64 @@ if ($action === 'login') {
     } else {
         echo json_encode(['authenticated' => false]);
     }
+} elseif ($action === 'check_reset') {
+    $username = $_GET['username'] ?? '';
+    try {
+        $stmt = $pdo->prepare('SELECT password_hash FROM users WHERE username = ?');
+        $stmt->execute([$username]);
+        $user = $stmt->fetch();
+        
+        if ($user && $user['password_hash'] === 'RESET_PENDING') {
+            echo json_encode(['status' => 'reset_pending']);
+        } else {
+            echo json_encode(['status' => 'normal']);
+        }
+    } catch (PDOException $e) {
+        http_response_code(500);
+        echo json_encode(['error' => $e->getMessage()]);
+    }
+} elseif ($action === 'complete_reset') {
+    $input = json_decode(file_get_contents('php://input'), true);
+    $username = $input['username'] ?? '';
+    $newPassword = $input['new_password'] ?? '';
+    
+    if (empty($username) || empty($newPassword)) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Dados incompletos']);
+        exit;
+    }
+    
+    try {
+        // Double check status
+        $stmt = $pdo->prepare('SELECT id, password_hash, role, full_name, permissions, is_active FROM users WHERE username = ?');
+        $stmt->execute([$username]);
+        $user = $stmt->fetch();
+        
+        if (!$user || $user['password_hash'] !== 'RESET_PENDING') {
+            http_response_code(403);
+            echo json_encode(['error' => 'Esta conta não está em modo de redefinição ou não existe.']);
+            exit;
+        }
+        
+        // Update Password and Clear Reset Flag
+        $newHash = password_hash($newPassword, PASSWORD_BCRYPT);
+        // Force reset becomes false because user just defined the password
+        $upd = $pdo->prepare('UPDATE users SET password_hash = ?, force_password_reset = FALSE WHERE id = ?');
+        $upd->execute([$newHash, $user['id']]);
+        
+        // Auto-login logic
+        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['username'] = $username;
+        $_SESSION['role'] = $user['role'];
+        $_SESSION['permissions'] = $user['permissions'];
+        $_SESSION['full_name'] = $user['full_name'];
+        
+        echo json_encode(['success' => true]);
+        
+    } catch (PDOException $e) {
+        http_response_code(500);
+        echo json_encode(['error' => $e->getMessage()]);
+    }
 } else {
     http_response_code(400);
     echo json_encode(['error' => 'Invalid action']);

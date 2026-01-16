@@ -116,7 +116,12 @@ switch ($method) {
             $fields[] = "force_password_reset = ?";
             $params[] = $input['force_password_reset'] ? 'true' : 'false';
         }
-        if (!empty($input['password'])) {
+        if (isset($input['set_reset_mode']) && $input['set_reset_mode'] === true) {
+            $fields[] = "password_hash = ?";
+            $params[] = 'RESET_PENDING';
+            $fields[] = "force_password_reset = ?";
+            $params[] = 'true';
+        } elseif (!empty($input['password'])) {
             $fields[] = "password_hash = ?";
             $params[] = password_hash($input['password'], PASSWORD_BCRYPT);
         }
