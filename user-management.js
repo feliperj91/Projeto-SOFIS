@@ -349,7 +349,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                 </div>
                 <div class="user-info-bottom">
-                    <div style="display: flex; gap: 8px; align-items: center;">
+                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                         <span class="badge-role ${roleClass}">${u.role || 'TÉCNICO'}</span>
                         ${resetStatusHtml}
                     </div>
@@ -428,6 +428,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                     try {
                         const res = await window.api.users.update(u.id, { set_reset_mode: true });
                         window.showToast('Conta resetada. O usuário deverá redefinir a senha no login.', 'success');
+
+                        // Update hidden checkbox to prevent overwriting on save
+                        const forceResetChk = document.getElementById('userForceReset');
+                        if (forceResetChk) forceResetChk.checked = true;
+
                         // window.closeUserModal(); // Keep open as requested
                         await loadUsers(); // Refresh to show reset icon if needed
                     } catch (err) {
