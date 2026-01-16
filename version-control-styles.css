@@ -715,32 +715,6 @@
     text-align: left !important;
 }
 
-/* New class for action buttons to remove borders/bg */
-.btn-card-action {
-    background: transparent !important;
-    border: none !important;
-    color: var(--text-secondary);
-    cursor: pointer;
-    padding: 0;
-    transition: color 0.2s;
-    /* Match dimensions with filter button */
-    height: 32px;
-    width: 32px;
-    min-width: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.btn-card-action i {
-    font-size: 1.1rem !important;
-    /* Match filter icon size */
-}
-
-.btn-card-action:hover {
-    color: var(--text-primary);
-    transform: scale(1.1);
-}
 
 /* Composite Icon for History (File + Refresh) */
 .icon-history-composite {

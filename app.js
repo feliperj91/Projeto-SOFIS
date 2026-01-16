@@ -1456,7 +1456,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const nameClickAction = canEditContact ? `onclick="editContact('${client.id}', ${originalIndex});" title="Ver/Editar Contato" class="contact-name-display clickable"` : `class="contact-name-display"`;
             const editButton = canEditContact ? `
-                            <button class="btn-icon-small" onclick="editContact('${client.id}', ${originalIndex});" title="Editar Contato">
+                            <button class="btn-icon-card" onclick="editContact('${client.id}', ${originalIndex});" title="Editar Contato">
                                 <i class="fa-solid fa-pen"></i>
                             </button>` : '';
 
@@ -2515,12 +2515,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 : '';
 
             const editButton = canEditSQL ? `
-                            <button class="btn-icon" onclick="editServerRecord('${client.id}', ${originalIndex})" title="Editar">
+                            <button class="btn-icon-card" onclick="editServerRecord('${client.id}', ${originalIndex})" title="Editar">
                                 <i class="fa-solid fa-pen"></i>
                             </button>` : '';
 
             const deleteButton = canDeleteSQL ? `
-                            <button class="btn-icon btn-danger" onclick="deleteServerRecord('${client.id}', ${originalIndex})" title="Excluir">
+                            <button class="btn-icon-card btn-danger" onclick="deleteServerRecord('${client.id}', ${originalIndex})" title="Excluir">
                                 <i class="fa-solid fa-trash"></i>
                             </button>` : '';
 
@@ -2539,7 +2539,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <div class="server-credentials-title">
                             <i class="fa-solid fa-database" style="color: var(--accent);"></i> Nome do servidor
                         </div>
-                        <div class="server-info-value">${escapeHtml(server.sqlServer)}</div>
+                        <div class="server-info-value" style="display: flex; align-items: center; gap: 8px;">
+                            <span data-raw="${server.sqlServer.replace(/"/g, '&quot;')}">${escapeHtml(server.sqlServer)}</span>
+                            <button class="btn-copy-small" onclick="const raw = this.previousElementSibling.dataset.raw; copyToClipboard(raw); event.stopPropagation();" title="Copiar Nome do Servidor">
+                                <i class="fa-regular fa-copy"></i>
+                            </button>
+                        </div>
                     </div>
                     ${credentialsHTML}
                     ${notesHTML}
@@ -2733,12 +2738,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         listContainer.innerHTML = client.vpns.map((vpn, index) => {
             const editButton = canEdit ? `
-                            <button class="btn-icon" onclick="editVpnRecord('${client.id}', ${index})" title="Editar">
+                            <button class="btn-icon-card" onclick="editVpnRecord('${client.id}', ${index})" title="Editar">
                                 <i class="fa-solid fa-pen"></i>
                             </button>` : '';
 
             const deleteButton = canDelete ? `
-                            <button class="btn-icon btn-danger" onclick="deleteVpnRecord('${client.id}', ${index})" title="Excluir">
+                            <button class="btn-icon-card btn-danger" onclick="deleteVpnRecord('${client.id}', ${index})" title="Excluir">
                                 <i class="fa-solid fa-trash"></i>
                             </button>` : '';
 
@@ -3202,12 +3207,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             const environmentLabel = url.environment === 'producao' ? 'Produção' : 'Homologação';
 
             const editButton = canEdit ? `
-                            <button class="btn-icon" onclick="editUrlRecord('${client.id}', ${originalIndex})" title="Editar">
+                            <button class="btn-icon-card" onclick="editUrlRecord('${client.id}', ${originalIndex})" title="Editar">
                                 <i class="fa-solid fa-pen"></i>
                             </button>` : '';
 
             const deleteButton = canDelete ? `
-                            <button class="btn-icon btn-danger" onclick="deleteUrlRecord('${client.id}', ${originalIndex})" title="Excluir">
+                            <button class="btn-icon-card btn-danger" onclick="deleteUrlRecord('${client.id}', ${originalIndex})" title="Excluir">
                                 <i class="fa-solid fa-trash"></i>
                             </button>` : '';
 
@@ -4386,12 +4391,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 : '';
 
             const editButton = canEdit ? `
-                            <button class="btn-icon" onclick="editHostRecord('${client.id}', ${originalIndex})" title="Editar">
+                            <button class="btn-icon-card" onclick="editHostRecord('${client.id}', ${originalIndex})" title="Editar">
                                 <i class="fa-solid fa-pen"></i>
                             </button>` : '';
 
             const deleteButton = canDelete ? `
-                            <button class="btn-icon btn-danger" onclick="deleteHostRecord('${client.id}', ${originalIndex})" title="Excluir">
+                            <button class="btn-icon-card btn-danger" onclick="deleteHostRecord('${client.id}', ${originalIndex})" title="Excluir">
                                 <i class="fa-solid fa-trash"></i>
                             </button>` : '';
 

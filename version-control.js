@@ -1636,13 +1636,13 @@
                 actionsHtml = `
             < td class="action-cell" >
                 ${canEdit ? `
-                            <button class="btn-icon" onclick="window.editProduct('${p.id}')" title="Editar">
+                            <button class="btn-icon-card" onclick="window.editProduct('${p.id}')" title="Editar">
                                 <i class="fa-solid fa-pencil"></i>
                             </button>
                         ` : ''
                     }
                         ${canDelete ? `
-                            <button class="btn-icon btn-danger" onclick="window.deleteProduct('${p.id}')" title="Excluir">
+                            <button class="btn-icon-card btn-danger" onclick="window.deleteProduct('${p.id}')" title="Excluir">
                                 <i class="fa-solid fa-trash"></i>
                             </button>
                         ` : ''

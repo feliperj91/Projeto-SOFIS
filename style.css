@@ -732,6 +732,70 @@ button.btn-icon.btn-danger:hover {
     align-items: flex-start;
 }
 
+/* Premium Action Buttons (Square Style) */
+.btn-action-premium,
+.btn-copy-small,
+.btn-copy-tiny,
+.btn-icon-card,
+.btn-card-action,
+.btn-edit-version-small,
+.btn-weblaudo,
+.btn-weblaudo-action,
+.btn-weblaudo-copy {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: var(--text-secondary) !important;
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 6px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    flex-shrink: 0 !important;
+    padding: 0 !important;
+    text-decoration: none !important;
+}
+
+.btn-action-premium:hover,
+.btn-copy-small:hover,
+.btn-copy-tiny:hover,
+.btn-icon-card:hover,
+.btn-card-action:hover,
+.btn-edit-version-small:hover,
+.btn-weblaudo:hover,
+.btn-weblaudo-action:hover,
+.btn-weblaudo-copy:hover {
+    background: var(--accent) !important;
+    color: #000 !important;
+    border-color: var(--accent) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 160, 0, 0.4) !important;
+}
+
+.btn-action-premium.btn-danger:hover,
+.btn-icon-card.btn-danger:hover,
+.btn-edit-version-small.btn-danger:hover,
+.btn-weblaudo.btn-danger:hover {
+    background: var(--danger) !important;
+    color: #fff !important;
+    border-color: var(--danger) !important;
+    box-shadow: 0 4px 12px rgba(239, 83, 80, 0.4) !important;
+}
+
+.btn-action-premium i,
+.btn-copy-small i,
+.btn-copy-tiny i,
+.btn-icon-card i,
+.btn-card-action i,
+.btn-edit-version-small i,
+.btn-weblaudo i,
+.btn-weblaudo-action i,
+.btn-weblaudo-copy i {
+    font-size: 0.9rem !important;
+}
+
 .client-contact {
     font-size: 0.9rem;
     color: var(--text-secondary);
