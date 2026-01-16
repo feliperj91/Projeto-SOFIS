@@ -1334,15 +1334,23 @@
             </div>
             <form id="userForm">
                 <input type="hidden" id="userIdInput">
-                <div class="form-group" style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
-                    <label class="switch">
-                        <input type="checkbox" id="userIsActive" checked>
-                        <span class="slider round"></span>
-                    </label>
-                    <label for="userIsActive"
-                        style="margin: 0; cursor: pointer; color: var(--text-primary); font-weight: 500; font-size: 1rem;">
-                        Conta Ativa
-                    </label>
+                <div class="form-group"
+                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <button type="button" id="btnResetPassword" class="btn-secondary hidden"
+                        style="padding: 0 15px; font-size: 0.85rem;"
+                        title="Resetar para uma senha padrão e forçar troca">
+                        <i class="fa-solid fa-rotate"></i> Resetar Senha
+                    </button>
+                    <div style="display: flex; align-items: center; gap: 15px; margin-left: auto;">
+                        <label class="switch">
+                            <input type="checkbox" id="userIsActive" checked>
+                            <span class="slider round"></span>
+                        </label>
+                        <label for="userIsActive"
+                            style="margin: 0; cursor: pointer; color: var(--text-primary); font-weight: 500; font-size: 1rem;">
+                            Conta Ativa
+                        </label>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -1367,15 +1375,11 @@
                                 <i class="fa-solid fa-eye"></i>
                             </button>
                         </div>
-                        <button type="button" id="btnResetPassword" class="btn-secondary hidden"
-                            style="padding: 0 15px; font-size: 0.85rem;"
-                            title="Resetar para uma senha padrão e forçar troca">
-                            <i class="fa-solid fa-rotate"></i> Resetar
-                        </button>
+
                     </div>
                 </div>
 
-                <div class="form-group" style="margin-top: -10px; margin-bottom: 25px;">
+                <div class="form-group" style="display: none;">
                     <label class="modern-checkbox-label" for="userForceReset">
                         <input type="checkbox" id="userForceReset">
                         Alterar senha no próximo login
