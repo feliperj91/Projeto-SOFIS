@@ -145,9 +145,11 @@
 
         <!-- Redirect Form for Forced Password Reset -->
         <form id="resetPasswordForm" class="login-form hidden">
-            <h2 style="font-size: 1.1rem; color: var(--accent); margin-bottom: 20px;">Redefinição Obrigatória</h2>
-            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.4;">
-                Seu acesso foi configurado pelo administrador para exigir a troca de senha no primeiro login.
+            <h2 style="font-size: 1.1rem; color: var(--accent); margin-bottom: 20px;">Redefinir Senha</h2>
+            <p id="resetMessage"
+                style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.4;">
+                Nome do usuário, sua senha de acesso foi resetada pelo Administrador. Crie uma nova senha para continuar
+                com o acesso ao sistema.
             </p>
             <input type="hidden" id="resetUserId">
             <div class="form-group">
@@ -248,8 +250,19 @@
                             showToast('Troca de senha obrigatória identificada.', 'info');
                             document.getElementById('loginForm').classList.add('hidden');
                             document.getElementById('resetPasswordForm').classList.remove('hidden');
-                            document.querySelector('.login-title').textContent = 'Nova Senha';
+
+                            // Hide the main title to save space
+                            document.querySelector('.login-title').style.display = 'none';
+
+                            // Set User ID for hidden input
                             document.getElementById('resetUserId').value = data.user.id;
+
+                            // Set Dynamic Message
+                            const firstName = data.user.full_name ? data.user.full_name.split(' ')[0] : (data.user.username || 'Usuário');
+                            const resetMsg = document.getElementById('resetMessage');
+                            if (resetMsg) {
+                                resetMsg.textContent = `${firstName}, sua senha de acesso foi resetada pelo Administrador. Crie uma nova senha para continuar com o acesso ao sistema.`;
+                            }
                             return;
                         }
 
