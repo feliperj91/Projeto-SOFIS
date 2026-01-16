@@ -1471,9 +1471,7 @@
 <div class="version-card">
 <div class="v-card-header">
 <div style="display:flex;align-items:center;gap:8px;">
-${(sys.includes('Hemote')) ? '<img src="hemote-logo.jpg" style="height:20px;width:auto;">' : ''}
-${(sys.includes('Monetário')) ? '<img src="monetario-logo.jpg" style="height:20px;width:auto;">' : ''}
-${(!sys.includes('Hemote') && !sys.includes('Monetário')) ? '<img src="logo.png" style="height:18px;width:auto;opacity:0.8;">' : ''}
+<img src="logo.png" style="height:18px;width:auto;opacity:0.9;">
 <div class="v-card-title" style="color:${sysColor}">${sys}</div>
 </div>
 <i class="fa-solid fa-layer-group" style="color:${sysColor};opacity:0.3;"></i>
