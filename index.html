@@ -800,54 +800,85 @@
                         <span><i class="fa-solid fa-globe" style="margin-right: 8px;"></i>WebLaudo</span>
                     </label>
                     <div id="webLaudoDisplay"
-                        style="display: none; justify-content: space-between; align-items: center; background: var(--bg-darker); padding: 10px; border-radius: 8px;">
-                        <div id="webLaudoTextContainer"
-                            style="display: flex; flex-direction: column; gap: 4px; overflow: hidden; flex: 1;">
-                            <span id="webLaudoText"
-                                style="color: var(--text-primary); font-family: monospace; word-break: break-all; margin-right: 10px;"></span>
-                            <div id="webLaudoCreds" style="display: flex; gap: 15px; font-size: 0.8rem; opacity: 0.8;">
-                                <span id="webLaudoUserText"></span>
-                                <span id="webLaudoPassText"></span>
+                        style="display: none; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 15px; margin-top: 10px;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                            <div style="flex: 1; overflow: hidden;">
+                                <div id="webLaudoText"
+                                    style="color: var(--text-primary); font-family: monospace; font-size: 1rem; font-weight: 500; word-break: break-all; margin-bottom: 8px;">
+                                </div>
+                                <div id="webLaudoCreds" style="display: flex; flex-wrap: wrap; gap: 15px;">
+                                    <div id="webLaudoUserRow"
+                                        style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--text-secondary);">
+                                        <i class="fa-solid fa-user" style="color: var(--accent);"></i>
+                                        <span id="webLaudoUserText"></span>
+                                        <button type="button" class="btn-copy-tiny"
+                                            onclick="copyToClipboard(document.getElementById('webLaudoUserText').textContent)"
+                                            title="Copiar Usuário">
+                                            <i class="fa-regular fa-copy"></i>
+                                        </button>
+                                    </div>
+                                    <div id="webLaudoPassRow"
+                                        style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--text-secondary);">
+                                        <i class="fa-solid fa-key" style="color: var(--accent);"></i>
+                                        <span id="webLaudoPassText" class="credential-value"></span>
+                                        <div style="display: flex; gap: 4px;">
+                                            <button type="button" class="btn-copy-tiny"
+                                                onclick="copyToClipboard(this.parentElement.previousElementSibling)"
+                                                title="Copiar Senha">
+                                                <i class="fa-regular fa-copy"></i>
+                                            </button>
+                                            <button type="button" class="btn-copy-tiny" onclick="togglePassword(this)"
+                                                title="Ver Senha">
+                                                <i class="fa-solid fa-eye"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button type="button" class="btn-icon-small" title="Copiar URL"
+                                    onclick="copyToClipboard(document.getElementById('webLaudoText').textContent)">
+                                    <i class="fa-regular fa-copy"></i>
+                                </button>
+                                <button type="button" id="editWebLaudoBtn" class="btn-icon-small" title="Editar"><i
+                                        class="fa-solid fa-pen"></i></button>
+                                <button type="button" id="deleteWebLaudoBtn" class="btn-icon-small btn-danger"
+                                    title="Excluir"><i class="fa-solid fa-trash"></i></button>
                             </div>
                         </div>
-                        <div style="display: flex; gap: 8px; align-items: center;">
-                            <button type="button" class="btn-icon" title="Copiar"
-                                onclick="copyToClipboard(document.getElementById('webLaudoText').textContent)">
-                                <i class="fa-regular fa-copy"></i>
-                            </button>
-                            <button type="button" id="editWebLaudoBtn" class="btn-icon" title="Editar"><i
-                                    class="fa-solid fa-pen"></i></button>
-                            <button type="button" id="deleteWebLaudoBtn" class="btn-icon btn-danger" title="Excluir"><i
-                                    class="fa-solid fa-trash"></i></button>
-                        </div>
                     </div>
-                    <div id="webLaudoForm">
-                        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+
+                    <div id="webLaudoForm"
+                        style="display: none; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 15px; margin-top: 10px;">
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label style="font-size: 0.8rem; margin-bottom: 5px; display: block;">URL do
+                                WebLaudo</label>
                             <input type="text" id="webLaudoInput" placeholder="Ex: https://laudo.empresa.com"
-                                style="flex: 1;">
-                            <button type="button" id="saveWebLaudoBtn" class="btn-primary" style="padding: 0 15px;">
-                                <i class="fa-solid fa-floppy-disk"></i>
-                            </button>
+                                style="width: 100%;">
                         </div>
-                        <div class="server-form-grid" style="margin-top: 10px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                             <div class="form-group">
-                                <label for="webLaudoUserInput"
-                                    style="font-size: 0.8rem; margin-bottom: 5px;">Usuário</label>
+                                <label style="font-size: 0.8rem; margin-bottom: 5px; display: block;">Usuário</label>
                                 <input type="text" id="webLaudoUserInput" placeholder="Usuário">
                             </div>
                             <div class="form-group">
-                                <label for="webLaudoPassInput"
-                                    style="font-size: 0.8rem; margin-bottom: 5px;">Senha</label>
+                                <label style="font-size: 0.8rem; margin-bottom: 5px; display: block;">Senha</label>
                                 <div style="position: relative;">
                                     <input type="password" id="webLaudoPassInput" placeholder="Senha"
-                                        style="padding-right: 40px;">
+                                        style="padding-right: 40px; width: 100%;">
                                     <button type="button" class="btn-icon"
-                                        style="position: absolute; right: 5px; top: 50%; transform: translateY(-50%);"
+                                        style="position: absolute; right: 5px; top: 50%; transform: translateY(-50%); border: none; background: none;"
                                         onclick="togglePasswordVisibility('webLaudoPassInput', this)">
-                                        <i class="fa-solid fa-eye"></i>
+                                        <i class="fa-solid fa-eye" style="font-size: 0.9rem;"></i>
                                     </button>
                                 </div>
                             </div>
+                        </div>
+                        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                            <button type="button" id="saveWebLaudoBtn" class="btn-primary" style="padding: 8px 20px;">
+                                <i class="fa-solid fa-floppy-disk" style="margin-right: 8px;"></i> Salvar WebLaudo
+                            </button>
                         </div>
                     </div>
                 </div>

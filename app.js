@@ -765,12 +765,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (addUrlEntryBtn) addUrlEntryBtn.addEventListener('click', openUrlEntry);
     if (closeUrlModalBtn) closeUrlModalBtn.addEventListener('click', closeUrlModal);
     if (saveWebLaudoBtn) saveWebLaudoBtn.addEventListener('click', handleWebLaudoSave);
-    if (editWebLaudoBtn) editWebLaudoBtn.addEventListener('click', () => {
-        webLaudoDisplay.style.display = 'none';
-        webLaudoForm.style.display = 'flex';
-        webLaudoInput.focus();
-    });
-    if (deleteWebLaudoBtn) deleteWebLaudoBtn.addEventListener('click', handleDeleteWebLaudo);
+    if (editWebLaudoBtn) editWebLaudoBtn.addEventListener('click', () => editWebLaudo());
+    if (deleteWebLaudoBtn) deleteWebLaudoBtn.addEventListener('click', () => handleDeleteWebLaudo());
 
     // Contact Modal Listeners
     if (closeContactBtn) closeContactBtn.addEventListener('click', closeContactModal);
@@ -2300,6 +2296,32 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
+    window.togglePassword = async (btn) => {
+        let span = btn.previousElementSibling;
+        if (!span || !span.classList.contains('credential-value')) {
+            span = btn.parentElement.previousElementSibling;
+        }
+        if (!span || !span.classList.contains('credential-value')) return;
+
+        const icon = btn.querySelector('i');
+        const raw = span.dataset.raw;
+
+        if (span.textContent === '••••••') {
+            try {
+                span.textContent = await window.Security.decrypt(raw);
+                icon.className = 'fa-solid fa-eye-slash';
+                btn.title = "Ocultar Senha";
+            } catch (e) {
+                console.error("Erro ao descriptografar:", e);
+                showToast("Erro ao exibir senha", "error");
+            }
+        } else {
+            span.textContent = '••••••';
+            icon.className = 'fa-solid fa-eye';
+            btn.title = "Ver Senha";
+        }
+    };
+
     window.togglePasswordVisibility = (inputId, btn) => {
         const input = document.getElementById(inputId);
         const icon = btn.querySelector('i');
@@ -2312,21 +2334,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    window.copyToClipboard = async (text) => {
+    window.copyToClipboard = async (textOrElement) => {
         try {
-            const valueToCopy = Security.isEncrypted(text)
-                ? await Security.decrypt(text)
+            let text = '';
+            if (typeof textOrElement === 'string') {
+                text = textOrElement;
+            } else if (textOrElement instanceof HTMLElement) {
+                text = textOrElement.dataset.raw || textOrElement.textContent;
+            }
+
+            const valueToCopy = window.Security.isEncrypted(text)
+                ? await window.Security.decrypt(text)
                 : text;
 
-            navigator.clipboard.writeText(valueToCopy).then(() => {
-                showToast('📋 Copiado!', 'success');
-            });
+            await navigator.clipboard.writeText(valueToCopy);
+            showToast('📋 Copiado!', 'success');
         } catch (err) {
-            console.error('Erro ao copiar:', err);
-            // Fallback to copying whatever was passed if decryption fails
-            navigator.clipboard.writeText(text).then(() => {
-                showToast('📋 Copiado!', 'success');
-            });
+            console.error('Falha ao copiar:', err);
+            showToast('❌ Erro ao copiar.', 'error');
         }
     };
 
@@ -2974,50 +2999,57 @@ document.addEventListener('DOMContentLoaded', async () => {
         const deleteBtn = document.getElementById('deleteWebLaudoBtn');
         const webLaudoUserText = document.getElementById('webLaudoUserText');
         const webLaudoPassText = document.getElementById('webLaudoPassText');
+        const webLaudoUserRow = document.getElementById('webLaudoUserRow');
+        const webLaudoPassRow = document.getElementById('webLaudoPassRow');
 
         if (client.webLaudo) {
             const isObject = typeof client.webLaudo === 'object';
             const url = isObject ? client.webLaudo.url : client.webLaudo;
-            const user = isObject ? client.webLaudo.user : '';
-            const pass = isObject ? client.webLaudo.password : '';
+            const user = (isObject && client.webLaudo.user) ? client.webLaudo.user : '';
+            const pass = (isObject && client.webLaudo.password) ? client.webLaudo.password : '';
 
-            webLaudoText.textContent = url;
+            if (webLaudoText) webLaudoText.textContent = url || 'URL não informada';
 
             if (user) {
-                webLaudoUserText.innerHTML = `<i class="fa-solid fa-user"></i> ${escapeHtml(user)}`;
-                webLaudoUserText.style.display = '';
+                if (webLaudoUserText) webLaudoUserText.textContent = user;
+                if (webLaudoUserRow) webLaudoUserRow.style.display = 'flex';
             } else {
-                webLaudoUserText.style.display = 'none';
+                if (webLaudoUserRow) webLaudoUserRow.style.display = 'none';
             }
 
             if (pass) {
-                webLaudoPassText.innerHTML = `<i class="fa-solid fa-key"></i> <span class="credential-value" data-raw="${pass}">••••••</span> 
-                    <button class="btn-copy-small" onclick="togglePassword(this)" title="Ver Senha" style="border:none;background:none;padding:2px;cursor:pointer;color:var(--text-secondary);"><i class="fa-solid fa-eye" style="font-size:0.7rem;"></i></button>`;
-                webLaudoPassText.style.display = '';
+                if (webLaudoPassText) {
+                    webLaudoPassText.dataset.raw = pass;
+                    webLaudoPassText.textContent = '••••••';
+                }
+                if (webLaudoPassRow) webLaudoPassRow.style.display = 'flex';
             } else {
-                webLaudoPassText.style.display = 'none';
+                if (webLaudoPassRow) webLaudoPassRow.style.display = 'none';
             }
 
-            webLaudoDisplay.style.display = 'flex';
-            webLaudoForm.style.display = 'none';
-            webLaudoInput.value = url;
+            if (webLaudoDisplay) webLaudoDisplay.style.display = 'block';
+            if (webLaudoForm) webLaudoForm.style.display = 'none';
+
+            // Populate form fields for next edit
+            if (webLaudoInput) webLaudoInput.value = url;
             if (document.getElementById('webLaudoUserInput')) document.getElementById('webLaudoUserInput').value = user;
-            if (document.getElementById('webLaudoPassInput')) {
-                document.getElementById('webLaudoPassInput').value = ''; // Don't put encrypted pass in input directly
-            }
+            if (document.getElementById('webLaudoPassInput')) document.getElementById('webLaudoPassInput').value = '';
 
             if (editBtn) editBtn.style.display = canEdit ? '' : 'none';
             if (deleteBtn) deleteBtn.style.display = canDelete ? '' : 'none';
         } else {
-            webLaudoDisplay.style.display = 'none';
-            webLaudoForm.style.display = canCreate ? 'block' : 'none';
-            webLaudoInput.value = '';
+            if (webLaudoDisplay) webLaudoDisplay.style.display = 'none';
+            if (webLaudoForm) webLaudoForm.style.display = canCreate ? 'block' : 'none';
+
+            if (webLaudoInput) webLaudoInput.value = '';
             if (document.getElementById('webLaudoUserInput')) document.getElementById('webLaudoUserInput').value = '';
             if (document.getElementById('webLaudoPassInput')) document.getElementById('webLaudoPassInput').value = '';
 
             if (!canCreate) {
-                webLaudoText.textContent = 'WebLaudo não configurado.';
-                webLaudoDisplay.style.display = 'flex';
+                if (webLaudoText) webLaudoText.textContent = 'WebLaudo não configurado.';
+                if (webLaudoDisplay) webLaudoDisplay.style.display = 'block';
+                if (webLaudoUserRow) webLaudoUserRow.style.display = 'none';
+                if (webLaudoPassRow) webLaudoPassRow.style.display = 'none';
                 if (editBtn) editBtn.style.display = 'none';
                 if (deleteBtn) deleteBtn.style.display = 'none';
             }
@@ -3038,7 +3070,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('webLaudoUserInput').value = isObject ? (client.webLaudo.user || '') : '';
         if (document.getElementById('webLaudoPassInput')) {
             const pass = isObject ? (client.webLaudo.password || '') : '';
-            document.getElementById('webLaudoPassInput').value = pass ? await Security.decrypt(pass) : '';
+            document.getElementById('webLaudoPassInput').value = pass ? await window.Security.decrypt(pass) : '';
         }
         webLaudoInput.focus();
     };
@@ -3048,20 +3080,26 @@ document.addEventListener('DOMContentLoaded', async () => {
             showToast('🚫 Sem permissão para excluir WebLaudo.', 'error');
             return;
         }
-        const confirmed = await window.showConfirm('Tem certeza que deseja excluir o WebLaudo?', 'Excluir WebLaudo', 'fa-link-slash');
-        if (!confirmed) return;
+
         const id = urlClientIdInput.value;
         const client = clients.find(c => c.id == id);
-        if (!client) return;
+        if (!client || !client.webLaudo) return;
 
-        const oldWebLaudo = client.webLaudo || '';
-        client.webLaudo = '';
+        const confirmed = await window.showConfirm(`Deseja realmente excluir o WebLaudo do cliente "${client.name}"?`, 'Excluir WebLaudo', 'fa-trash');
+        if (!confirmed) return;
+
+        const oldWebLaudo = JSON.parse(JSON.stringify(client.webLaudo));
+        client.webLaudo = null;
         await saveToLocal(client.id);
-        updateWebLaudoDisplay(client);
+
+        const freshClient = clients.find(c => c.id == id) || client;
+        updateWebLaudoDisplay(freshClient);
+
         applyClientFilter();
         showToast('🗑️ WebLaudo removido com sucesso!', 'success');
         await registerAuditLog('EXCLUSÃO', 'Exclusão de WebLaudo', `Cliente: ${client.name}`, oldWebLaudo, null);
     }
+    window.handleDeleteWebLaudo = handleDeleteWebLaudo;
 
     function handleUrlSystemChange() {
         const bootstrapGroup = document.getElementById('bootstrapGroup');
@@ -3394,48 +3432,70 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function handleWebLaudoSave() {
-        const id = urlClientIdInput.value;
-        const client = clients.find(c => c.id == id);
-        if (!client) return;
+        const saveBtn = document.getElementById('saveWebLaudoBtn');
+        const originalBtnContent = saveBtn ? saveBtn.innerHTML : '';
 
-        const isNew = !client.webLaudo;
-        const P = window.Permissions;
+        try {
+            const id = urlClientIdInput.value;
+            const client = clients.find(c => c.id == id);
+            if (!client) return;
 
-        // Dynamic Permission Check
-        if (isNew) {
-            if (P && !P.can('URLs', 'can_create')) {
-                showToast('🚫 Sem permissão para cadastrar WebLaudo.', 'error');
+            if (saveBtn) {
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Salvando...';
+            }
+
+            const isNew = !client.webLaudo;
+            const P = window.Permissions;
+
+            // Dynamic Permission Check
+            if (isNew) {
+                if (P && !P.can('URLs', 'can_create')) {
+                    showToast('🚫 Sem permissão para cadastrar WebLaudo.', 'error');
+                    return;
+                }
+            } else {
+                if (P && !P.can('URLs', 'can_edit')) {
+                    showToast('🚫 Sem permissão para editar WebLaudo.', 'error');
+                    return;
+                }
+            }
+
+            const url = webLaudoInput.value.trim();
+            if (!url) {
+                showToast('⚠️ A URL é obrigatória.', 'warning');
                 return;
             }
-        } else {
-            if (P && !P.can('URLs', 'can_edit')) {
-                showToast('🚫 Sem permissão para editar WebLaudo.', 'error');
-                return;
+
+            const userInput = document.getElementById('webLaudoUserInput');
+            const passInput = document.getElementById('webLaudoPassInput');
+
+            const webLaudoBefore = JSON.parse(JSON.stringify(client.webLaudo || {}));
+
+            client.webLaudo = {
+                url: url,
+                user: userInput ? userInput.value.trim() : '',
+                password: (passInput && passInput.value) ? await window.Security.encrypt(passInput.value) : ''
+            };
+
+            await saveToLocal(client.id);
+
+            // Re-find client to ensure we have the fresh one from initialLoad (called by saveToLocal)
+            const freshClient = clients.find(c => c.id == id) || client;
+            updateWebLaudoDisplay(freshClient);
+
+            applyClientFilter();
+            showToast('✅ WebLaudo salvo com sucesso!', 'success');
+            await registerAuditLog('EDIÇÃO', 'Atualização de WebLaudo', `Cliente: ${client.name}`, webLaudoBefore, freshClient.webLaudo);
+        } catch (error) {
+            console.error("Erro ao salvar WebLaudo:", error);
+            showToast("❌ Erro ao salvar WebLaudo.", "error");
+        } finally {
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = originalBtnContent;
             }
         }
-
-        const url = webLaudoInput.value.trim();
-        if (!url) {
-            showToast('⚠️ A URL é obrigatória.', 'warning');
-            return;
-        }
-
-        const userInput = document.getElementById('webLaudoUserInput');
-        const passInput = document.getElementById('webLaudoPassInput');
-
-        const webLaudoBefore = JSON.parse(JSON.stringify(client.webLaudo || {}));
-
-        client.webLaudo = {
-            url: url,
-            user: userInput ? userInput.value.trim() : '',
-            password: passInput ? await Security.encrypt(passInput.value) : ''
-        };
-
-        await saveToLocal(client.id);
-        updateWebLaudoDisplay(client);
-        applyClientFilter();
-        showToast('✅ WebLaudo salvo com sucesso!', 'success');
-        await registerAuditLog('EDIÇÃO', 'Atualização de WebLaudo', `Cliente: ${client.name}`, webLaudoBefore, client.webLaudo);
     }
     window.handleWebLaudoSave = handleWebLaudoSave;
     window.closeUrlModal = closeUrlModal;
