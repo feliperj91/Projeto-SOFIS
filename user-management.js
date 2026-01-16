@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     function checkUserManagementAccess() {
         if (managementTabBtn && window.Permissions) {
             // Main tab access
-            const canAccess = window.Permissions.can('Gestão de Usuários', 'can_view');
+            const canAccess = window.Permissions.can('Usuários', 'can_view');
             managementTabBtn.style.display = canAccess ? 'block' : 'none';
         }
     }
@@ -37,7 +37,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             type: 'guide',
             title: 'Guia Infraestrutura',
             items: [
-                { module: 'Dados de Acesso (SQL)', isHeader: true },
+                { module: 'Servidores', isHeader: true },
+                { module: 'Dados de Acesso (SQL)' },
                 { module: 'Dados de Acesso (VPN)' },
                 { module: 'URLs' }
             ]
@@ -54,7 +55,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             type: 'guide',
             title: 'Guia Gerenciamento de Usuários',
             items: [
-                { module: 'Gestão de Usuários', isHeader: true }
+                { module: 'Usuários', isHeader: true },
+                { module: 'Permissões' },
+                { module: 'Logs de Auditoria' }
             ]
         }
     ];
@@ -106,13 +109,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- Initialization ---
     async function initUserManagement() {
         // Now checks specific sub-module for user creation
-        const canCreateUsers = window.Permissions.can('Gestão de Usuários', 'can_create');
+        const canCreateUsers = window.Permissions.can('Usuários', 'can_create');
         if (addNewUserBtn) addNewUserBtn.style.display = canCreateUsers ? 'flex' : 'none';
 
         // Check sub-tab visibility
         // Map all sub-features to the main permission
-        const canViewUsers = window.Permissions.can('Gestão de Usuários', 'can_view');
-        const canViewPerms = window.Permissions.can('Gestão de Usuários', 'can_view');
+        const canViewUsers = window.Permissions.can('Usuários', 'can_view');
+        const canViewPerms = window.Permissions.can('Permissões', 'can_view');
         const canViewLogs = window.Permissions.can('Logs e Atividades', 'can_view'); // Logs usually have their own module
 
         const tabUsers = document.querySelector('[data-mng-tab="users"]');
@@ -173,7 +176,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (logsControls) logsControls.classList.add('hidden');
 
             // Reset Add User Btn visibility (default to flex if perm allows, but hide on specific tabs)
-            const canCreateUsersData = window.Permissions.can('Gestão de Usuários', 'can_create');
+            const canCreateUsersData = window.Permissions.can('Usuários', 'can_create');
             if (addNewUserBtn) addNewUserBtn.style.display = canCreateUsersData ? 'flex' : 'none';
 
             if (currentMngTab === 'users') {
@@ -187,9 +190,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             } else if (currentMngTab === 'permissions') {
                 if (permissionsContainer) permissionsContainer.classList.remove('hidden');
 
+                // Check if user can edit permissions
+                const canEditPermissions = window.Permissions.can('Permissões', 'can_edit');
+
                 if (savePermissionsBtn) {
-                    savePermissionsBtn.classList.remove('hidden');
-                    savePermissionsBtn.disabled = true;
+                    // Show button only if user can edit
+                    if (canEditPermissions) {
+                        savePermissionsBtn.classList.remove('hidden');
+                        savePermissionsBtn.disabled = true;
+                    } else {
+                        savePermissionsBtn.classList.add('hidden');
+                    }
                 }
                 if (roleSelector) roleSelector.classList.remove('hidden');
 
@@ -279,8 +290,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const P = window.Permissions;
         // Use granular permissions
-        const canEdit = P && P.can('Gestão de Usuários', 'can_edit');
-        const canDelete = P && P.can('Gestão de Usuários', 'can_delete');
+        const canEdit = P && P.can('Usuários', 'can_edit');
+        const canDelete = P && P.can('Usuários', 'can_delete');
 
         if (list.length === 0) {
             usersListEl.innerHTML = `
@@ -604,7 +615,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     window.deleteUser = async (id) => {
         // Security Check
-        if (!window.Permissions.can('Gestão de Usuários', 'can_delete')) {
+        if (!window.Permissions.can('Usuários', 'can_delete')) {
             window.showToast('🚫 Acesso negado: Você não tem permissão para excluir usuários.', 'error');
             return;
         }
@@ -728,6 +739,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     document.getElementById('savePermissionsBtn')?.addEventListener('click', async () => {
+        // Permission Check
+        if (!window.Permissions.can('Permissões', 'can_edit')) {
+            window.showToast('🚫 Acesso negado: Você não tem permissão para editar permissões.', 'error');
+            return;
+        }
+
         const btn = document.getElementById('savePermissionsBtn');
         if (btn) btn.disabled = true; // Prevent double click
 
@@ -896,7 +913,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Print Handler
     // Print Handler with Fetch All Logic
     if (btnPrintLogs) {
+        // Check permission to export PDF
+        const canExportPDF = window.Permissions.can('Logs de Auditoria', 'can_export_pdf');
+        btnPrintLogs.style.display = canExportPDF ? '' : 'none';
+
         btnPrintLogs.addEventListener('click', async () => {
+            // Double-check permission on click
+            if (!window.Permissions.can('Logs de Auditoria', 'can_export_pdf')) {
+                window.showToast('🚫 Acesso negado: Você não tem permissão para exportar logs.', 'error');
+                return;
+            }
             // Re-fetch ALL logs matching current filters (without pagination)
             // We use the input values directly as they represent what the user presumably wants to print based on what they see or filtered last.
             // Ideally we should use the values from the *last search*, but using current input is standard behavior for "Print what I configured".

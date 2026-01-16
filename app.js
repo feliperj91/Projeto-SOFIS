@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
             if (managementTabBtn) {
-                managementTabBtn.style.display = P.can('Gestão de Usuários', 'can_view') ? '' : 'none';
+                managementTabBtn.style.display = P.can('Usuários', 'can_view') ? '' : 'none';
             }
         },
 
@@ -167,7 +167,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // 5. User Management - Tab Button
         const userMngBtn = document.getElementById('btnUserManagement');
         if (userMngBtn) {
-            userMngBtn.style.display = P.can('Gestão de Usuários', 'can_view') ? '' : 'none';
+            userMngBtn.style.display = P.can('Usuários', 'can_view') ? '' : 'none';
         }
 
         // 6. SQL/VPN/URL - Create
@@ -1261,8 +1261,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Granular Permissions for Sub-Modules
         const canViewContactsButton = P ? P.can('Dados de Contato', 'can_view') : false;
+        const canViewServers = P ? P.can('Servidores', 'can_view') : false;
         const canViewSQL = P ? P.can('Dados de Acesso (SQL)', 'can_view') : false;
-        const canViewServers = canViewSQL; // Reuse SQL permission for Servidores
         const canViewVPN = P ? P.can('Dados de Acesso (VPN)', 'can_view') : false;
         const canViewURL = P ? P.can('URLs', 'can_view') : false;
         const canViewLogs = P ? P.can('Logs e Atividades', 'can_view') : false;
@@ -1833,6 +1833,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     async function deleteClient(id) {
+        // Permission Check
+        if (window.Permissions && !window.Permissions.can('Gestão de Clientes', 'can_delete')) {
+            showToast('🚫 Acesso negado: Você não tem permissão para excluir clientes.', 'error');
+            return;
+        }
+
         const client = clients.find(c => c.id == id);
         if (!client) return;
 
@@ -1888,6 +1894,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.deleteClient = deleteClient;
 
     function editClient(id) {
+        // Permission Check
+        if (window.Permissions && !window.Permissions.can('Gestão de Clientes', 'can_edit')) {
+            showToast('🚫 Acesso negado: Você não tem permissão para editar clientes.', 'error');
+            return;
+        }
+
         const client = clients.find(c => c.id == id);
         if (!client) return;
 
@@ -2169,6 +2181,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     window.editContact = (clientId, contactIndex) => {
+        // Permission Check
+        if (window.Permissions && !window.Permissions.can('Dados de Contato', 'can_edit')) {
+            showToast('🚫 Acesso negado: Você não tem permissão para editar contatos.', 'error');
+            return;
+        }
+
         const client = clients.find(c => c.id == clientId);
         if (!client || !client.contacts || !client.contacts[contactIndex]) return;
 
@@ -2372,6 +2390,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.openServerData = (clientId) => {
         console.log("🟢 CLICK: openServerData for", clientId);
         try {
+            // Permission Check - View
+            if (window.Permissions && !window.Permissions.can('Dados de Acesso (SQL)', 'can_view')) {
+                showToast('🚫 Acesso negado: Você não tem permissão para visualizar dados de acesso SQL.', 'error');
+                return;
+            }
+
             const client = clients.find(c => c.id == clientId);
             if (!client) {
                 console.error("Client not found for ID:", clientId);
@@ -2652,6 +2676,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     window.editServerRecord = (clientId, index) => {
+        // Permission Check
+        if (window.Permissions && !window.Permissions.can('Dados de Acesso (SQL)', 'can_edit')) {
+            showToast('🚫 Acesso negado: Você não tem permissão para editar dados de acesso SQL.', 'error');
+            return;
+        }
+
         const client = clients.find(c => c.id == clientId);
         if (!client || !client.servers || !client.servers[index]) return;
 
@@ -2678,6 +2708,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     window.deleteServerRecord = async (clientId, index) => {
+        // Permission Check
+        if (window.Permissions && !window.Permissions.can('Dados de Acesso (SQL)', 'can_delete')) {
+            showToast('🚫 Acesso negado: Você não tem permissão para excluir dados de acesso SQL.', 'error');
+            return;
+        }
+
         const confirmed = await window.showConfirm('Tem certeza que deseja excluir este servidor?', 'Excluir Servidor', 'fa-server');
         if (!confirmed) return;
 
@@ -2838,6 +2874,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function openVpnData(clientId) {
+        // Permission Check - View
+        if (window.Permissions && !window.Permissions.can('Dados de Acesso (VPN)', 'can_view')) {
+            showToast('🚫 Acesso negado: Você não tem permissão para visualizar dados de acesso VPN.', 'error');
+            return;
+        }
+
         const client = clients.find(c => c.id == clientId);
         if (!client) return;
 
@@ -2861,6 +2903,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function editVpnRecord(clientId, index) {
+        // Permission Check
+        if (window.Permissions && !window.Permissions.can('Dados de Acesso (VPN)', 'can_edit')) {
+            showToast('🚫 Acesso negado: Você não tem permissão para editar dados de acesso VPN.', 'error');
+            return;
+        }
+
         const client = clients.find(c => c.id == clientId);
         if (!client || !client.vpns || !client.vpns[index]) return;
 
@@ -2875,6 +2923,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function deleteVpnRecord(clientId, index) {
+        // Permission Check
+        if (window.Permissions && !window.Permissions.can('Dados de Acesso (VPN)', 'can_delete')) {
+            showToast('🚫 Acesso negado: Você não tem permissão para excluir dados de acesso VPN.', 'error');
+            return;
+        }
+
         const confirmed = await window.showConfirm('Tem certeza que deseja excluir esta VPN?', 'Excluir VPN', 'fa-shield-halved');
         if (!confirmed) return;
         const client = clients.find(c => c.id == clientId);
@@ -4160,8 +4214,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!client) return;
 
             const P = window.Permissions;
-            // Using same permission category as SQL for now (closest match for 'Infra')
-            const canCreate = (P && P.can) ? P.can('Dados de Acesso (SQL)', 'can_create') : false;
+            // Permission Check - View
+            if (P && !P.can('Servidores', 'can_view')) {
+                showToast('🚫 Acesso negado: Você não tem permissão para visualizar servidores.', 'error');
+                return;
+            }
+
+            const canCreate = (P && P.can) ? P.can('Servidores', 'can_create') : false;
 
             const hClientIdInput = document.getElementById('hostClientId');
             const hAddBtn = document.getElementById('addHostEntryBtn');
@@ -4328,8 +4387,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!list) return;
 
         const P = window.Permissions;
-        const canEdit = P ? P.can('Dados de Acesso (SQL)', 'can_edit') : false;
-        const canDelete = P ? P.can('Dados de Acesso (SQL)', 'can_delete') : false;
+        const canEdit = P ? P.can('Servidores', 'can_edit') : false;
+        const canDelete = P ? P.can('Servidores', 'can_delete') : false;
 
         const filterValue = currentHostFilter;
         let filtered = client.hosts || [];
@@ -4501,6 +4560,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     window.editHostRecord = (clientId, index) => {
+        // Permission Check
+        if (window.Permissions && !window.Permissions.can('Servidores', 'can_edit')) {
+            showToast('🚫 Acesso negado: Você não tem permissão para editar servidores.', 'error');
+            return;
+        }
+
         const client = clients.find(c => c.id == clientId);
         if (!client || !client.hosts || !client.hosts[index]) return;
 
@@ -4532,6 +4597,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     window.deleteHostRecord = async (clientId, index) => {
+        // Permission Check
+        if (window.Permissions && !window.Permissions.can('Servidores', 'can_delete')) {
+            showToast('🚫 Acesso negado: Você não tem permissão para excluir servidores.', 'error');
+            return;
+        }
+
         const confirmed = await window.showConfirm('Tem certeza que deseja excluir este servidor?', 'Excluir Servidor', 'fa-server');
         if (!confirmed) return;
 
