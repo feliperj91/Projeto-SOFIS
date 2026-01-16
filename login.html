@@ -310,15 +310,46 @@
                 }
 
                 try {
-                    // We update the user via API. Since we just logged in (session exists in PHP), 
-                    // we can use the put method on users.php
+                    // Update password via API
                     await window.api.users.update(userId, {
                         password: newPass,
                         force_password_reset: false
                     });
 
-                    showToast('Senha atualizada! Por favor, realize o login novamente.');
-                    setTimeout(() => location.reload(), 1500);
+                    showToast('Senha atualizada com sucesso! Entrando...');
+
+                    // Seamless Login Logic
+                    // We need the original username to re-authenticate
+                    const username = document.getElementById('username').value;
+
+                    if (username) {
+                        try {
+                            const loginData = await window.api.auth.signIn(username, newPass);
+
+                            if (loginData && loginData.user) {
+                                localStorage.setItem('sofis_user', JSON.stringify({
+                                    id: loginData.user.id,
+                                    username: loginData.user.username,
+                                    full_name: loginData.user.full_name,
+                                    role: loginData.user.role || 'TECNICO',
+                                    permissions: loginData.user.permissions
+                                }));
+
+                                setTimeout(() => window.location.href = 'index.html', 1000);
+                            } else {
+                                throw new Error('Falha na autenticação automática.');
+                            }
+                        } catch (loginErr) {
+                            // Fallback to manual login if auto-login fails
+                            console.error(loginErr);
+                            showToast('Senha alterada via login automático falhou. Por favor, logue manualmente.');
+                            setTimeout(() => location.reload(), 2000);
+                        }
+                    } else {
+                        // Fallback if username is lost
+                        setTimeout(() => location.reload(), 1500);
+                    }
+
                 } catch (err) {
                     showToast('Erro ao atualizar senha: ' + err.message, 'error');
                 }
