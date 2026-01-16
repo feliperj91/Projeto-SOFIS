@@ -2332,13 +2332,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     window.togglePassword = async (btn) => {
         // Handle both older credential-row style and new WebLaudo style
-        const container = btn.closest('.credential-field-row') || btn.closest('.credential-row') || btn.closest('.server-info');
+        const container = btn.closest('.credential-field-row') || btn.closest('.credential-row') || btn.closest('.server-info') || btn.closest('.form-group');
         if (!container) return;
 
         const valueSpan = container.querySelector('.credential-value') ||
             container.querySelector('.field-value') ||
             container.querySelector('.pass-hidden') ||
-            document.getElementById('webLaudoPassText'); // Fallback for WebLaudo
+            document.getElementById('webLaudoPassText');
 
         if (!valueSpan) return;
 
@@ -2943,6 +2943,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const client = clients.find(c => c.id == clientId);
         if (!client) return;
 
+        window.currentClient = client;
         urlClientIdInput.value = clientId;
 
         // Permissions
@@ -2973,7 +2974,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         urlModal.classList.remove('hidden');
     };
 
-    window.updateWebLaudoDisplay = (client) => {
+    async function updateWebLaudoDisplay(client) {
         const display = document.getElementById('webLaudoDisplay');
         const form = document.getElementById('webLaudoForm');
         const actions = document.getElementById('webLaudoActions');
@@ -2983,36 +2984,39 @@ document.addEventListener('DOMContentLoaded', async () => {
         const userRow = document.getElementById('webLaudoUserRow');
 
         if (!client.webLaudo || (typeof client.webLaudo === 'string' && !client.webLaudo.trim())) {
-            display.style.display = 'none';
-            form.style.display = 'flex';
+            if (display) display.style.display = 'none';
+            if (form) form.style.display = 'flex';
             if (actions) actions.style.display = 'none';
 
-            document.getElementById('webLaudoInput').value = '';
-            document.getElementById('webLaudoUserInput').value = '';
-            document.getElementById('webLaudoPassInput').value = '';
+            if (document.getElementById('webLaudoInput')) document.getElementById('webLaudoInput').value = '';
+            if (document.getElementById('webLaudoUserInput')) document.getElementById('webLaudoUserInput').value = '';
+            if (document.getElementById('webLaudoPassInput')) document.getElementById('webLaudoPassInput').value = '';
             return;
         }
 
         const data = typeof client.webLaudo === 'string' ? JSON.parse(client.webLaudo) : client.webLaudo;
 
-        display.style.display = 'flex';
-        form.style.display = 'none';
+        if (display) display.style.display = 'flex';
+        if (form) form.style.display = 'none';
         if (actions) actions.style.display = 'flex';
 
-        text.textContent = data.url || '---';
-        userText.textContent = data.user || '---';
-        userRow.style.display = data.user ? 'flex' : 'none';
+        if (text) text.textContent = data.url || '---';
+        if (userText) userText.textContent = data.user || '---';
+        if (userRow) userRow.style.display = data.user ? 'flex' : 'none';
 
-        passText.textContent = '••••••';
-        passText.dataset.raw = data.password || '';
+        if (passText) {
+            passText.textContent = '••••••';
+            passText.dataset.raw = data.password || '';
+        }
 
-        // Reset eye icons
-        document.querySelectorAll('#webLaudoPassRow .btn-icon-tiny i').forEach(i => {
+        // Reset eye icons (using class 'btn-weblaudo-action' now)
+        document.querySelectorAll('#webLaudoPassRow .btn-weblaudo-action i').forEach(i => {
             i.className = 'fa-solid fa-eye';
         });
-    };
+    }
+    window.updateWebLaudoDisplay = updateWebLaudoDisplay;
 
-    window.editWebLaudo = async () => {
+    async function editWebLaudo() {
         const display = document.getElementById('webLaudoDisplay');
         const form = document.getElementById('webLaudoForm');
         const actions = document.getElementById('webLaudoActions');
@@ -3036,29 +3040,33 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('webLaudoPassInput').value = '';
         }
 
-        display.style.display = 'none';
-        form.style.display = 'flex';
+        if (display) display.style.display = 'none';
+        if (form) form.style.display = 'flex';
         if (actions) actions.style.display = 'none';
-        document.getElementById('saveWebLaudoBtn').innerHTML = '<i class="fa-solid fa-floppy-disk" style="margin-right: 8px;"></i> Atualizar WebLaudo';
-    };
+        const saveBtn = document.getElementById('saveWebLaudoBtn');
+        if (saveBtn) saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk" style="margin-right: 8px;"></i> Atualizar WebLaudo';
+    }
+    window.editWebLaudo = editWebLaudo;
 
-    window.cancelWebLaudoEdit = () => {
+    function cancelWebLaudoEdit() {
         const client = window.currentClient;
         const display = document.getElementById('webLaudoDisplay');
         const form = document.getElementById('webLaudoForm');
         const actions = document.getElementById('webLaudoActions');
 
         if (client && client.webLaudo && (typeof client.webLaudo !== 'string' || client.webLaudo.trim() !== '')) {
-            display.style.display = 'flex';
-            form.style.display = 'none';
+            if (display) display.style.display = 'flex';
+            if (form) form.style.display = 'none';
             if (actions) actions.style.display = 'flex';
         } else {
             document.getElementById('webLaudoInput').value = '';
             document.getElementById('webLaudoUserInput').value = '';
             document.getElementById('webLaudoPassInput').value = '';
         }
-        document.getElementById('saveWebLaudoBtn').innerHTML = '<i class="fa-solid fa-floppy-disk" style="margin-right: 8px;"></i> Salvar WebLaudo';
-    };
+        const saveBtn = document.getElementById('saveWebLaudoBtn');
+        if (saveBtn) saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk" style="margin-right: 8px;"></i> Salvar WebLaudo';
+    }
+    window.cancelWebLaudoEdit = cancelWebLaudoEdit;
 
     async function handleDeleteWebLaudo() {
         if (window.Permissions && !window.Permissions.can('URLs', 'can_delete')) {

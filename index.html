@@ -806,12 +806,12 @@
                             <i class="fa-solid fa-globe"></i> WebLaudo
                         </div>
                         <div id="webLaudoActions" style="display: flex; gap: 8px;">
-                            <button type="button" id="editWebLaudoBtn" class="btn-icon-small"
-                                title="Editar Credenciais">
+                            <button type="button" id="editWebLaudoBtn" class="btn-weblaudo" title="Editar Credenciais"
+                                onclick="editWebLaudo()">
                                 <i class="fa-solid fa-pen"></i>
                             </button>
-                            <button type="button" id="deleteWebLaudoBtn" class="btn-icon-small btn-danger"
-                                title="Excluir WebLaudo">
+                            <button type="button" id="deleteWebLaudoBtn" class="btn-weblaudo btn-danger"
+                                title="Excluir WebLaudo" onclick="handleDeleteWebLaudo()">
                                 <i class="fa-solid fa-trash"></i>
                             </button>
                         </div>
@@ -827,7 +827,7 @@
                                 style="display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.03); padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
                                 <span id="webLaudoText"
                                     style="flex: 1; color: var(--text-primary); font-family: 'Outfit', sans-serif; font-weight: 500; word-break: break-all;"></span>
-                                <button type="button" class="btn-copy-tiny"
+                                <button type="button" class="btn-weblaudo-copy"
                                     onclick="copyToClipboard(document.getElementById('webLaudoText').textContent)"
                                     title="Copiar URL">
                                     <i class="fa-solid fa-copy"></i>
@@ -843,7 +843,7 @@
                                     style="display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.03); padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
                                     <span id="webLaudoUserText"
                                         style="flex: 1; color: var(--text-primary); font-weight: 500;"></span>
-                                    <button type="button" class="btn-copy-tiny"
+                                    <button type="button" class="btn-weblaudo-copy"
                                         onclick="copyToClipboard(document.getElementById('webLaudoUserText').textContent)"
                                         title="Copiar Usuário">
                                         <i class="fa-solid fa-copy"></i>
@@ -859,17 +859,15 @@
                                     style="display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.03); padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
                                     <span id="webLaudoPassText" class="credential-value"
                                         style="flex: 1; color: var(--text-primary); font-family: monospace; letter-spacing: 2px;">••••••</span>
-                                    <div style="display: flex; gap: 7px;">
-                                        <button type="button" class="btn-icon-tiny" onclick="togglePassword(this)"
-                                            title="Mostrar/Ocultar Senha">
-                                            <i class="fa-solid fa-eye"></i>
-                                        </button>
-                                        <button type="button" class="btn-copy-tiny"
-                                            onclick="copyToClipboard(document.getElementById('webLaudoPassText'))"
-                                            title="Copiar Senha">
-                                            <i class="fa-solid fa-copy"></i>
-                                        </button>
-                                    </div>
+                                    <button type="button" class="btn-weblaudo-action" onclick="togglePassword(this)"
+                                        title="Mostrar/Ocultar Senha">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </button>
+                                    <button type="button" class="btn-weblaudo-copy"
+                                        onclick="copyToClipboard(document.getElementById('webLaudoPassText'))"
+                                        title="Copiar Senha">
+                                        <i class="fa-solid fa-copy"></i>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -895,7 +893,7 @@
                                 <div style="position: relative;">
                                     <input type="password" id="webLaudoPassInput" placeholder="Senha"
                                         style="padding-right: 40px; width: 100%;">
-                                    <button type="button" class="btn-icon"
+                                    <button type="button" class="btn-weblaudo-action"
                                         style="position: absolute; right: 5px; top: 50%; transform: translateY(-50%); border: none; background: none;"
                                         onclick="togglePasswordVisibility('webLaudoPassInput', this)">
                                         <i class="fa-solid fa-eye" style="font-size: 0.9rem;"></i>
@@ -908,7 +906,8 @@
                                 style="padding: 8px 20px; font-size: 0.9rem;" onclick="cancelWebLaudoEdit()">
                                 Cancelar
                             </button>
-                            <button type="button" id="saveWebLaudoBtn" class="btn-primary" style="padding: 8px 20px;">
+                            <button type="button" id="saveWebLaudoBtn" class="btn-primary" style="padding: 8px 20px;"
+                                onclick="handleWebLaudoSave()">
                                 <i class="fa-solid fa-floppy-disk" style="margin-right: 8px;"></i> Salvar WebLaudo
                             </button>
                         </div>
