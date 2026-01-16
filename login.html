@@ -187,7 +187,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('Login Script Initializing...');
+
 
             // DOM Elements
             const loginForm = document.getElementById('loginForm');
@@ -287,12 +287,10 @@
                 if (!username) return;
 
                 try {
-                    console.log('Checking reset status for:', username);
                     const res = await fetch(`api/auth.php?action=check_reset&username=${encodeURIComponent(username)}`);
                     if (res.ok) {
                         const data = await res.json();
                         if (data.status === 'reset_pending') {
-                            console.log('Reset pending identified');
                             enableResetMode();
                         } else {
                             disableResetMode();
@@ -306,7 +304,7 @@
             // --- Main Login/Reset Submit Handler ---
             loginForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                console.log('Form Submit detected. Reset Mode:', isResetMode);
+
 
                 const username = usernameInput.value.trim();
 
@@ -378,12 +376,9 @@
                         }
 
                         const data = await window.api.auth.signIn(username, password);
-                        console.log('Login response:', data);
-
                         if (data && data.user) {
                             // Check for Legacy Force Reset
                             if (data.user.force_password_reset) {
-                                console.log('Legacy Force Reset logic triggered');
                                 loginForm.classList.add('hidden');
                                 if (resetPasswordForm) {
                                     resetPasswordForm.classList.remove('hidden');
