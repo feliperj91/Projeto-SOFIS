@@ -30,17 +30,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             items: [
                 { module: 'Gestão de Clientes', isHeader: true },
                 { module: 'Servidores' },
+                { module: 'Dados de Acesso (SQL)' },
+                { module: 'Dados de Acesso (VPN)' },
+                { module: 'URLs' },
                 { module: 'Dados de Contato' },
                 { module: 'Logs e Atividades' }
-            ]
-        },
-        {
-            type: 'guide',
-            title: 'Guia Infraestrutura',
-            items: [
-                { module: 'Dados de Acesso (SQL)', isHeader: true },
-                { module: 'Dados de Acesso (VPN)' },
-                { module: 'URLs' }
             ]
         },
         {
