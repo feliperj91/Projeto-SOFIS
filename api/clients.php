@@ -110,6 +110,11 @@ try {
             if (isset($input['hosts']) && is_array($input['hosts'])) {
                 $input['hosts'] = SecurityUtil::encryptHosts($input['hosts']);
             }
+
+            // Encrypt WebLaudo data
+            if (isset($input['web_laudo'])) {
+                $input['web_laudo'] = SecurityUtil::encryptWebLaudo($input['web_laudo']);
+            }
             
             $sql = "INSERT INTO clients (name, document, contacts, servers, vpns, hosts, urls, notes, web_laudo, inactive_contract) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $stmt = $pdo->prepare($sql);
@@ -167,6 +172,11 @@ try {
             // Encrypt Hosts data
             if (isset($input['hosts']) && is_array($input['hosts'])) {
                 $input['hosts'] = SecurityUtil::encryptHosts($input['hosts']);
+            }
+            
+            // Encrypt WebLaudo data
+            if (isset($input['web_laudo'])) {
+                $input['web_laudo'] = SecurityUtil::encryptWebLaudo($input['web_laudo']);
             }
             
             $sql = "UPDATE clients SET name = ?, document = ?, contacts = ?, servers = ?, vpns = ?, hosts = ?, urls = ?, notes = ?, web_laudo = ?, inactive_contract = ? WHERE id = ?";
