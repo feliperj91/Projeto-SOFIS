@@ -14,8 +14,8 @@
 
     50% {
         opacity: 0.8;
-        transform: scale(1.1);
-        box-shadow: 0 0 0 6px rgba(220, 38, 38, 0);
+        transform: scale(1.05);
+        box-shadow: 0 0 0 4px rgba(220, 38, 38, 0);
     }
 }
 
@@ -45,21 +45,21 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 26px;
-    height: 26px;
+    width: 20px;
+    height: 20px;
     background: #850000;
     /* Vermelho escuro sólido e profundo */
     color: #ffffff;
-    border-radius: 8px;
+    border-radius: 6px;
     /* Cantos arredondados suavizados */
-    font-size: 1.25rem;
+    font-size: 1rem;
     font-family: "Times New Roman", Times, serif;
     font-weight: 900;
     /* Negrito forte */
     margin-left: 10px;
     animation: pulse-red 2s infinite;
     cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.1);
     /* Borda sutil para relevo */
     line-height: 1;

@@ -941,7 +941,7 @@
             const envDisplay = envLabels[h.version_controls?.environment] || h.version_controls?.environment?.toUpperCase() || 'N/A';
 
             return `
-            < div style = "background:rgba(255,255,255,0.03); padding:12px; border-radius:10px; margin-bottom:12px; border-left:4px solid var(--accent); border: 1px solid rgba(255,255,255,0.05); border-left-width: 4px;" >
+                <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:10px; margin-bottom:12px; border-left:4px solid var(--accent); border: 1px solid rgba(255,255,255,0.05); border-left-width: 4px;">
                     <div style="display:flex; justify-content:space-between; margin-bottom:8px; align-items: flex-start;">
                         <div>
                             <strong style="color:#ffffff; font-size:1.1rem; display:block;">${h.version_controls?.system}</strong>
@@ -959,7 +959,7 @@
                         <span style="font-weight: 400;">Responsável:</span> <span>${h.updated_by}</span>
                     </div>
                     ${h.notes && h.notes !== 'Versão inicial cadastrada' && h.notes !== 'Registro Inicial' && h.notes !== 'Registro de nova versão' ? `<div style="font-size:0.85rem; margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.05); color:#cfd8dc; border-radius:0;">${utils.escapeHtml(h.notes)}</div>` : ''}
-                </div >
+                </div>
             `;
         }).join('') || '<div style="text-align:center; opacity:0.5; padding:30px;">Nenhum registro encontrado para os filtros selecionados.</div>';
     }
@@ -1107,7 +1107,7 @@
             const parts = dateStr.split('/');
             if (parts.length === 3) {
                 // assume DD/MM/YYYY -> YYYY-MM-DD
-                return new Date(`${parts[2]} -${parts[1]} -${parts[0]} `);
+                return new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
             }
 
             return new Date(0);
@@ -1117,7 +1117,7 @@
         const groups = new Map();
 
         data.forEach(d => {
-            const key = `${d.client_id} -${d.system} `;
+            const key = `${d.client_id}-${d.system}`;
             if (!groups.has(key)) {
                 groups.set(key, []);
             }
@@ -1312,14 +1312,13 @@
 
         // Criar layout customizado: Pizza à esquerda + Barras à direita
         container.innerHTML = `
-            < div style = "display: flex; gap: 32px; align-items: center; height: 100%;" >
-                <div style="flex: 0 0 280px; position: relative;">
-                    <canvas id="systemPieChart"></canvas>
-                </div>
-                <div id="systemBars" style="flex: 1; display: flex; flex-direction: column; gap: 16px; justify-content: center;">
-                </div>
-            </div >
-            `;
+<div style="display:flex;gap:32px;align-items:center;height:100%;">
+<div style="flex:0 0 280px;position:relative;">
+<canvas id="systemPieChart"></canvas>
+</div>
+<div id="systemBars" style="flex:1;display:flex;flex-direction:column;gap:16px;justify-content:center;">
+</div>
+</div>`;
 
         const labels = Object.keys(counts);
         const values = Object.values(counts);
@@ -1375,17 +1374,16 @@
             const color = getPulseSystemColor(label);
 
             const barHtml = `
-            < div style = "display: flex; align-items: center; gap: 12px;" >
-                    <div style="width: 12px; height: 12px; border-radius: 50%; background: ${color}; flex-shrink: 0;"></div>
-                    <div style="flex: 1; min-width: 0;">
-                        <div style="font-size: 0.85rem; font-weight: 600; color: #374151; margin-bottom: 4px;">${label}</div>
-                        <div style="width: 100%; height: 8px; background: #f3f4f6; border-radius: 4px; overflow: hidden;">
-                            <div style="height: 100%; background: ${color}; border-radius: 4px; width: ${percentage}%; transition: width 0.6s ease;"></div>
-                        </div>
-                    </div>
-                    <div style="font-size: 0.85rem; font-weight: 700; color: #111827; min-width: 80px; text-align: right;">${value} (${percentage}%)</div>
-                </div >
-            `;
+<div style="display:flex;align-items:center;gap:12px;">
+<div style="width:12px;height:12px;border-radius:50%;background:${color};flex-shrink:0;"></div>
+<div style="flex:1;min-width:0;">
+<div style="font-size:0.85rem;font-weight:600;color:#374151;margin-bottom:4px;">${label}</div>
+<div style="width:100%;height:8px;background:#f3f4f6;border-radius:4px;overflow:hidden;">
+<div style="height:100%;background:${color};border-radius:4px;width:${percentage}%;transition:width 0.6s ease;"></div>
+</div>
+</div>
+<div style="font-size:0.85rem;font-weight:700;color:#111827;min-width:80px;text-align:right;">${value} (${percentage}%)</div>
+</div>`;
             barsContainer.innerHTML += barHtml;
         });
     }
@@ -1427,97 +1425,25 @@
         // CSS Inline para garantir layout dos cards
         const style = document.createElement('style');
         style.innerHTML = `
-                .versions - grid {
-            display: grid;
-            grid - template - columns: repeat(auto - fill, minmax(260px, 1fr));
-            gap: 16px;
-            padding: 4px;
-            max - height: 450px;
-            overflow - y: auto;
-        }
-            .version - card {
-            background: white;
-            border - radius: 12px;
-            padding: 16px;
-            box - shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            border: 1px solid #f3f4f6;
-            display: flex;
-            flex - direction: column;
-        }
-            .v - card - header {
-            display: flex;
-            justify - content: space - between;
-            align - items: center;
-            margin - bottom: 12px;
-            padding - bottom: 8px;
-            border - bottom: 1px solid #f9fafb;
-        }
-            .v - card - title {
-            font - weight: 700;
-            color: #111827;
-            font - size: 0.95rem;
-        }
-            .v - list {
-            display: flex;
-            flex - direction: column;
-            gap: 8px;
-        }
-            .v - item {
-            display: flex;
-            flex - direction: column; /* Coluna para caber clientes em baixo */
-            align - items: flex - start;
-            font - size: 0.85rem;
-            color: #4b5563;
-            padding: 6px 0;
-            border - bottom: 1px dashed #f3f4f6;
-        }
-            .v - item: last - child {
-            border - bottom: none;
-        }
-            .v - row - main {
-            display: flex;
-            justify - content: space - between;
-            align - items: center;
-            width: 100 %;
-        }
-            .v - version - text {
-            font - family: monospace;
-            font - weight: 600;
-            color: #374151;
-        }
-            .v - badge {
-            background: #8b5cf6;
-            color: white;
-            font - weight: 600;
-            font - size: 0.75rem;
-            min - width: 20px;
-            height: 20px;
-            display: flex;
-            align - items: center;
-            justify - content: center;
-            border - radius: 6px;
-            padding: 0 6px;
-        }
-            .v - clients - list {
-            font - size: 0.75rem;
-            color: #9ca3af;
-            margin - top: 4px;
-            line - height: 1.2;
-            word -break: break-word;
-        }
+.versions-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;padding:4px;max-height:450px;overflow-y:auto;}
+.version-card{background:white;border-radius:12px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.1);border:1px solid #f3f4f6;display:flex;flex-direction:column;}
+.v-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f9fafb;}
+.v-card-title{font-weight:700;color:#111827;font-size:0.95rem;}
+.v-list{display:flex;flex-direction:column;gap:8px;}
+.v-item{display:flex;flex-direction:column;align-items:flex-start;font-size:0.85rem;color:#4b5563;padding:6px 0;border-bottom:1px dashed #f3f4f6;}
+.v-item:last-child{border-bottom:none;}
+.v-row-main{display:flex;justify-content:space-between;align-items:center;width:100%;}
+.v-version-text{font-family:monospace;font-weight:600;color:#374151;}
+.v-badge{background:#8b5cf6;color:white;font-weight:600;font-size:0.75rem;min-width:20px;height:20px;display:flex;align-items:center;justify-content:center;border-radius:6px;padding:0 6px;}
+.v-clients-list{font-size:0.75rem;color:#9ca3af;margin-top:4px;line-height:1.2;word-break:break-word;}
         `;
         container.appendChild(style);
-
-        // Helper de cores (usando a função compartilhada)
-        // getPulseSystemColor já está definido no escopo superior
-
 
         // 2. Gerar HTML dos Cards
         const sortedSystems = Object.keys(systemVersions).sort();
 
         sortedSystems.forEach(sys => {
             const versionsObj = systemVersions[sys];
-            // Lista de versões ordenadas por contagem (decrescente) e depois por nome
             const versionsList = Object.entries(versionsObj)
                 .map(([v, clientSet]) => ({
                     version: v,
@@ -1527,38 +1453,32 @@
                 .sort((a, b) => b.count - a.count || b.version.localeCompare(a.version));
 
             const sysColor = getPulseSystemColor(sys);
-
             let listHtml = '';
             versionsList.forEach(item => {
                 listHtml += `
-            < div class="v-item" >
-                        <div class="v-row-main">
-                            <span class="v-version-text">${item.version}</span>
-                            <span class="v-badge" style="background-color: ${sysColor}">${item.count}</span>
-                        </div>
-                        <div class="v-clients-list">
-                            <i class="fa-regular fa-user" style="font-size: 10px; margin-right: 4px;"></i>
-                            ${item.clients}
-                        </div>
-                    </div >
-            `;
+<div class="v-item">
+<div class="v-row-main">
+<span class="v-version-text">${item.version}</span>
+<span class="v-badge" style="background-color:${sysColor}">${item.count}</span>
+</div>
+<div class="v-clients-list">
+<i class="fa-regular fa-user" style="font-size:10px;margin-right:4px;"></i>${item.clients}
+</div>
+</div>`;
             });
 
             const cardHtml = `
-            < div class="version-card" >
-                    <div class="v-card-header">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            ${(sys === 'Hemote Plus' || sys === 'Hemote Web') ? '<img src="hemote-logo.jpg" style="height: 20px; width: auto;">' : ''}
-                            ${(sys === 'Monetário') ? '<img src="monetario-logo.jpg" style="height: 20px; width: auto;">' : ''}
-                            <div class="v-card-title" style="color: ${sysColor}">${sys}</div>
-                        </div>
-                        <i class="fa-solid fa-layer-group" style="color: ${sysColor}; opacity: 0.5;"></i>
-                    </div>
-                    <div class="v-list">
-                        ${listHtml}
-                    </div>
-                </div >
-            `;
+<div class="version-card">
+<div class="v-card-header">
+<div style="display:flex;align-items:center;gap:8px;">
+${(sys === 'Hemote Plus' || sys === 'Hemote Web') ? '<img src="hemote-logo.jpg" style="height:20px;width:auto;">' : ''}
+${(sys === 'Monetário') ? '<img src="monetario-logo.jpg" style="height:20px;width:auto;">' : ''}
+<div class="v-card-title" style="color:${sysColor}">${sys}</div>
+</div>
+<i class="fa-solid fa-layer-group" style="color:${sysColor};opacity:0.5;"></i>
+</div>
+<div class="v-list">${listHtml}</div>
+</div>`;
 
             container.insertAdjacentHTML('beforeend', cardHtml);
         });
@@ -1623,7 +1543,7 @@
         if (actionsHeader) actionsHeader.style.display = hasActions ? '' : 'none';
 
         if (productsList.length === 0) {
-            tbody.innerHTML = `< tr > <td colspan="${hasActions ? 3 : 2}" style="text-align: center; color: var(--text-secondary); padding: 20px;">Nenhum produto cadastrado.</td></tr > `;
+            tbody.innerHTML = `<tr><td colspan="${hasActions ? 3 : 2}" style="text-align: center; color: var(--text-secondary); padding: 20px;">Nenhum produto cadastrado.</td></tr>`;
             return;
         }
 
@@ -1634,7 +1554,7 @@
             let actionsHtml = '';
             if (hasActions) {
                 actionsHtml = `
-            < td class="action-cell" >
+            <td class="action-cell">
                 ${canEdit ? `
                             <button class="btn-icon-card" onclick="window.editProduct('${p.id}')" title="Editar">
                                 <i class="fa-solid fa-pencil"></i>
@@ -1647,12 +1567,12 @@
                             </button>
                         ` : ''
                     }
-                    </td >
+                    </td>
             `;
             }
 
             tr.innerHTML = `
-            < td > ${utils.escapeHtml(p.name)}</td >
+            <td>${utils.escapeHtml(p.name)}</td>
                 <td><span class="badge-product-type ${typeClass}">${p.version_type}</span></td>
                 ${actionsHtml}
         `;

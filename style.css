@@ -451,6 +451,14 @@ button.btn-icon.btn-danger:hover {
 .client-list-container.grid-mode .header-left {
     padding-right: 80px;
     align-items: flex-start !important;
+    flex-direction: row;
+    width: 100%;
+}
+
+.client-list-container.grid-mode .client-name-container {
+    flex: 1;
+    min-width: 0;
+    /* Permite que o container encolha e texto use ellipsis se necessário */
 }
 
 .client-list-container.grid-mode .header-left .btn-star {
