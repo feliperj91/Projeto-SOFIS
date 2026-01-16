@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     localStorage.setItem('sofis_user', JSON.stringify({
                         id: session.user.id,
                         username: session.user.username,
-                        fullName: session.user.full_name,
+                        full_name: session.user.full_name,
                         role: session.user.role,
                         permissions: session.user.permissions
                     }));
@@ -352,9 +352,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (userDisplay && currentUser.username) {
             const roleInfo = P ? `[${P.userRole}]` : '';
+            const displayName = currentUser.full_name || currentUser.fullName || currentUser.username;
             userDisplay.innerHTML = `
                 <div class="user-info-badge">
-                    <i class="fa-solid fa-user"></i> <span>${currentUser.username}</span>
+                    <i class="fa-solid fa-user"></i> <span>${displayName}</span>
                     <small style="opacity: 0.7; font-size: 0.75rem; margin-left: 5px;">${roleInfo}</small>
                 </div>`;
         }

@@ -2977,3 +2977,113 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
 .inactive-icon-pulse {
     animation: pulse-icon-red 2s infinite ease-in-out;
 }
+
+/* =========================================
+   CONTACT MODAL PREMIUM STYLING
+   ========================================= */
+.contact-group-display {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    transition: all 0.3s ease;
+    position: relative;
+    border-left: 4px solid var(--accent);
+}
+
+.contact-group-display:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateX(4px);
+}
+
+.contact-header-display {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding-bottom: 8px;
+}
+
+.contact-name-display {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.contact-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.contact-item i {
+    color: var(--accent);
+    width: 20px;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.contact-value {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Copy Button - Fixed and Standardized */
+.btn-copy-tiny {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    opacity: 0.6;
+}
+
+.btn-copy-tiny:hover {
+    background: rgba(255, 160, 0, 0.1);
+    color: var(--accent);
+    border-color: var(--accent);
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.btn-copy-tiny i {
+    font-size: 0.85rem !important;
+    color: inherit !important;
+}
+
+/* Edit Button in Card */
+.btn-icon-card {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-icon-card:hover {
+    background: rgba(255, 160, 0, 0.1);
+    color: var(--accent);
+    border-color: var(--accent);
+}

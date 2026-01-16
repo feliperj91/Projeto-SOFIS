@@ -471,7 +471,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Generate Diff Details
                 const changes = [];
                 if (oldVal.username !== formData.username) changes.push(`Usuário de '${oldVal.username}' para '${formData.username}'`);
-                if (oldVal.role !== formData.role) changes.push(`Cargo de '${oldVal.role}' para '${formData.role}'`);
+                if (oldVal.role !== formData.role) changes.push(`Nível de acesso de '${oldVal.role}' para '${formData.role}'`);
                 if (updateData.password) changes.push('Senha atualizada');
 
                 details = `Alterações: ${changes.join(', ')}`;
