@@ -800,51 +800,81 @@
                         <span><i class="fa-solid fa-globe" style="margin-right: 8px;"></i>WebLaudo</span>
                     </label>
                     <div id="webLaudoDisplay"
-                        style="display: none; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 15px; margin-top: 10px;">
+                        style="display: none; background: rgba(0,0,0,0.25); border-radius: 12px; padding: 20px; margin-top: 15px; border: 1px solid rgba(255,255,255,0.05);">
                         <div
-                            style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-                            <div style="flex: 1; overflow: hidden;">
-                                <div id="webLaudoText"
-                                    style="color: var(--text-primary); font-family: monospace; font-size: 1rem; font-weight: 500; word-break: break-all; margin-bottom: 8px;">
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                            <div
+                                style="font-weight: 600; color: var(--accent); display: flex; align-items: center; gap: 10px; font-size: 1.1rem;">
+                                <i class="fa-solid fa-globe"></i> WebLaudo
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button type="button" id="editWebLaudoBtn" class="btn-icon-small"
+                                    title="Editar Credenciais">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                                <button type="button" id="deleteWebLaudoBtn" class="btn-icon-small btn-danger"
+                                    title="Excluir WebLaudo">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 18px;">
+                            <!-- URL row -->
+                            <div style="display: flex; flex-direction: column; gap: 6px;">
+                                <span
+                                    style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">URL
+                                    do Sistema</span>
+                                <div
+                                    style="display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.03); padding: 10px 14px; border-radius: 8px;">
+                                    <span id="webLaudoText"
+                                        style="flex: 1; color: var(--text-primary); font-family: 'Outfit', sans-serif; font-weight: 500; word-break: break-all;"></span>
+                                    <button type="button" class="btn-copy-tiny"
+                                        onclick="copyToClipboard(document.getElementById('webLaudoText').textContent)"
+                                        title="Copiar URL">
+                                        <i class="fa-regular fa-copy"></i>
+                                    </button>
                                 </div>
-                                <div id="webLaudoCreds" style="display: flex; flex-wrap: wrap; gap: 15px;">
-                                    <div id="webLaudoUserRow"
-                                        style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--text-secondary);">
-                                        <i class="fa-solid fa-user" style="color: var(--accent);"></i>
-                                        <span id="webLaudoUserText"></span>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                                <!-- User col -->
+                                <div id="webLaudoUserRow" style="display: flex; flex-direction: column; gap: 6px;">
+                                    <span
+                                        style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Usuário</span>
+                                    <div
+                                        style="display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.03); padding: 10px 14px; border-radius: 8px;">
+                                        <span id="webLaudoUserText"
+                                            style="flex: 1; color: var(--text-primary); font-weight: 500;"></span>
                                         <button type="button" class="btn-copy-tiny"
                                             onclick="copyToClipboard(document.getElementById('webLaudoUserText').textContent)"
                                             title="Copiar Usuário">
                                             <i class="fa-regular fa-copy"></i>
                                         </button>
                                     </div>
-                                    <div id="webLaudoPassRow"
-                                        style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--text-secondary);">
-                                        <i class="fa-solid fa-key" style="color: var(--accent);"></i>
-                                        <span id="webLaudoPassText" class="credential-value"></span>
-                                        <div style="display: flex; gap: 4px;">
+                                </div>
+
+                                <!-- Password col -->
+                                <div id="webLaudoPassRow" style="display: flex; flex-direction: column; gap: 6px;">
+                                    <span
+                                        style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Senha</span>
+                                    <div
+                                        style="display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.03); padding: 10px 14px; border-radius: 8px;">
+                                        <span id="webLaudoPassText"
+                                            style="flex: 1; color: var(--text-primary); font-family: monospace; letter-spacing: 2px;">••••••</span>
+                                        <div style="display: flex; gap: 5px;">
+                                            <button type="button" class="btn-icon-tiny" onclick="togglePassword(this)"
+                                                title="Mostrar/Ocultar Senha">
+                                                <i class="fa-regular fa-eye"></i>
+                                            </button>
                                             <button type="button" class="btn-copy-tiny"
-                                                onclick="copyToClipboard(this.parentElement.previousElementSibling)"
+                                                onclick="copyToClipboard(document.getElementById('webLaudoPassText'))"
                                                 title="Copiar Senha">
                                                 <i class="fa-regular fa-copy"></i>
-                                            </button>
-                                            <button type="button" class="btn-copy-tiny" onclick="togglePassword(this)"
-                                                title="Ver Senha">
-                                                <i class="fa-solid fa-eye"></i>
                                             </button>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div style="display: flex; gap: 8px;">
-                                <button type="button" class="btn-icon-small" title="Copiar URL"
-                                    onclick="copyToClipboard(document.getElementById('webLaudoText').textContent)">
-                                    <i class="fa-regular fa-copy"></i>
-                                </button>
-                                <button type="button" id="editWebLaudoBtn" class="btn-icon-small" title="Editar"><i
-                                        class="fa-solid fa-pen"></i></button>
-                                <button type="button" id="deleteWebLaudoBtn" class="btn-icon-small btn-danger"
-                                    title="Excluir"><i class="fa-solid fa-trash"></i></button>
                             </div>
                         </div>
                     </div>

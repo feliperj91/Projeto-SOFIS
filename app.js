@@ -3021,6 +3021,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (webLaudoPassText) {
                     webLaudoPassText.dataset.raw = pass;
                     webLaudoPassText.textContent = '••••••';
+
+                    // Reset eye icon
+                    const passContainer = webLaudoPassText.parentElement;
+                    const eyeIcon = passContainer.querySelector('.fa-eye, .fa-eye-slash');
+                    if (eyeIcon) {
+                        eyeIcon.classList.remove('fa-eye-slash');
+                        eyeIcon.classList.add('fa-eye');
+                    }
                 }
                 if (webLaudoPassRow) webLaudoPassRow.style.display = 'flex';
             } else {
