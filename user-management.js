@@ -353,7 +353,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <span class="badge-role ${roleClass}">${u.role || 'TÉCNICO'}</span>
                         ${resetStatusHtml}
                     </div>
-                    <span class="user-date"><i class="fa-solid fa-calendar-days" style="color: var(--accent);"></i> ${creationDate}</span>
                 </div>
             `;
             usersListEl.appendChild(card);
