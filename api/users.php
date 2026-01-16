@@ -6,14 +6,19 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 switch ($method) {
     case 'GET':
-        // Return sensitive info (hash) only if needed, usually we hide it.
-        $stmt = $pdo->query('SELECT id, username, full_name, role, permissions, is_active, force_password_reset, created_at FROM users ORDER BY username ASC');
-        $users = $stmt->fetchAll();
-        // Decode JSON permissions for frontend use
-        foreach ($users as &$u) {
-            $u['permissions'] = json_decode($u['permissions']);
+        try {
+            // Return sensitive info (hash) only if needed, usually we hide it.
+            $stmt = $pdo->query('SELECT id, username, full_name, role, permissions, is_active, force_password_reset, created_at FROM users ORDER BY username ASC');
+            $users = $stmt->fetchAll();
+            // Decode JSON permissions for frontend use
+            foreach ($users as &$u) {
+                $u['permissions'] = json_decode($u['permissions']);
+            }
+            echo json_encode($users);
+        } catch (PDOException $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Erro ao listar usuários: ' . $e->getMessage()]);
         }
-        echo json_encode($users);
         break;
 
     case 'POST':
@@ -112,9 +117,14 @@ switch ($method) {
             ];
         }
 
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute($params);
-        echo json_encode(['success' => true]);
+        try {
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($params);
+            echo json_encode(['success' => true]);
+        } catch (PDOException $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Erro ao atualizar usuário: ' . $e->getMessage()]);
+        }
         break;
 
     case 'DELETE':
@@ -123,9 +133,14 @@ switch ($method) {
             echo json_encode(['error' => 'ID missing']);
             exit;
         }
-        $stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
-        $stmt->execute([$_GET['id']]);
-        echo json_encode(['success' => true]);
+        try {
+            $stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
+            $stmt->execute([$_GET['id']]);
+            echo json_encode(['success' => true]);
+        } catch (PDOException $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Erro ao excluir usuário: ' . $e->getMessage()]);
+        }
         break;
 }
 ?>
