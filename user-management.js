@@ -877,8 +877,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             const filters = {
                 limit: logsPerPage,
                 offset: (page - 1) * logsPerPage,
-                start: new Date(startDate + 'T00:00:00').toISOString(),
-                end: new Date(endDate + 'T23:59:59.999').toISOString()
+                start: `${startDate} 00:00:00`,
+                end: `${endDate} 23:59:59`
             };
 
             if (logSearchInput && logSearchInput.value.trim()) {
@@ -953,8 +953,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Prepare Filters for Print (No limit/pagination)
                 const filters = {
                     limit: 1000, // Reasonable limit for print
-                    start: new Date(startDate + 'T00:00:00').toISOString(),
-                    end: new Date(endDate + 'T23:59:59.999').toISOString()
+                    start: `${startDate} 00:00:00`,
+                    end: `${endDate} 23:59:59`
                 };
 
                 if (logSearchInput && logSearchInput.value.trim()) {
