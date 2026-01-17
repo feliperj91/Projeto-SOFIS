@@ -34,6 +34,7 @@ if ($method === 'GET') {
                                ON CONFLICT (role_name, module) 
                                DO UPDATE SET can_view = EXCLUDED.can_view, can_create = EXCLUDED.can_create, can_edit = EXCLUDED.can_edit, can_delete = EXCLUDED.can_delete");
         
+        $affectedRoles = [];
         foreach ($input as $perm) {
             $stmt->execute([
                 $perm['role_name'],
@@ -43,9 +44,36 @@ if ($method === 'GET') {
                 $perm['can_edit'] ? 't' : 'f',
                 $perm['can_delete'] ? 't' : 'f'
             ]);
+            // Track which roles were affected
+            if (!in_array($perm['role_name'], $affectedRoles)) {
+                $affectedRoles[] = $perm['role_name'];
+            }
         }
+        
+        // Sync permissions to users table for all affected roles
+        foreach ($affectedRoles as $role) {
+            $syncStmt = $pdo->prepare("
+                UPDATE users 
+                SET permissions = (
+                    SELECT json_object_agg(
+                        module,
+                        json_build_object(
+                            'can_view', can_view,
+                            'can_create', can_create,
+                            'can_edit', can_edit,
+                            'can_delete', can_delete
+                        )
+                    )::text
+                    FROM role_permissions
+                    WHERE role_name = :role
+                )
+                WHERE role = :role
+            ");
+            $syncStmt->execute(['role' => $role]);
+        }
+        
         $pdo->commit();
-        echo json_encode(['success' => true]);
+        echo json_encode(['success' => true, 'synced_roles' => $affectedRoles]);
     } catch (Exception $e) {
         $pdo->rollBack();
         http_response_code(500);
