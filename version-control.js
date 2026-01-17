@@ -1155,7 +1155,8 @@
         const notes = document.getElementById('editHistoryNotes').value;
 
         try {
-            const response = await fetch(`/Projeto-SOFIS-1/api/version-history.php?id=${historyId}`, {
+            // Use relative path to avoid project folder naming issues
+            const response = await fetch(`api/version-history.php?id=${historyId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
@@ -1172,8 +1173,17 @@
             });
 
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || 'Falha ao editar histórico');
+                // Try to parse as JSON, fallback to text if fails (to debug HTML errors)
+                const text = await response.text();
+                let errorMsg = 'Falha ao editar histórico';
+                try {
+                    const json = JSON.parse(text);
+                    errorMsg = json.error || errorMsg;
+                } catch (e) {
+                    console.error("API Error (Not JSON):", text);
+                    console.log("Response Status:", response.status);
+                }
+                throw new Error(errorMsg);
             }
 
             if (window.showToast) window.showToast('✅ Histórico atualizado com sucesso!', 'success');
@@ -1214,15 +1224,24 @@
                 throw new Error('API não disponível');
             }
 
-            // Delete history record
-            const response = await fetch(`/Projeto-SOFIS-1/api/version-history.php?id=${historyId}`, {
+            // Delete history record using relative path
+            const response = await fetch(`api/version-history.php?id=${historyId}`, {
                 method: 'DELETE',
                 credentials: 'include'
             });
 
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || 'Falha ao excluir histórico');
+                // Try to parse as JSON, fallback to text if fails (to debug HTML errors)
+                const text = await response.text();
+                let errorMsg = 'Falha ao excluir histórico';
+                try {
+                    const json = JSON.parse(text);
+                    errorMsg = json.error || errorMsg;
+                } catch (e) {
+                    console.error("API Error (Not JSON):", text);
+                    console.log("Response Status:", response.status);
+                }
+                throw new Error(errorMsg);
             }
 
             if (window.showToast) window.showToast('🗑️ Histórico excluído com sucesso!', 'success');
