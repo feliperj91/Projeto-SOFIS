@@ -13,9 +13,11 @@ if ($method === 'GET') {
         }
         // Simplified Logic: Get history for all versions of this client
         $sql = "
-            SELECT vh.*, vc.system, vc.environment, vc.updated_at as vc_updated_at
+            SELECT vh.*, vc.system, vc.environment, vc.updated_at as vc_updated_at,
+                   COALESCE(u.full_name, vh.updated_by) as updated_by_name
             FROM version_history vh
             JOIN version_controls vc ON vh.version_control_id = vc.id
+            LEFT JOIN users u ON vh.updated_by = u.username
             WHERE vc.client_id = ?
             ORDER BY vh.created_at DESC
         ";
@@ -30,13 +32,15 @@ if ($method === 'GET') {
                 'id' => $row['id'],
                 'version_control_id' => $row['version_control_id'],
                 'new_version' => $row['new_version'],
-                'updated_by' => $row['updated_by'],
+                'updated_by' => $row['updated_by'],  // Keep original for ownership check
+                'updated_by_name' => $row['updated_by_name'], // Display name
                 'notes' => $row['notes'],
                 'created_at' => $row['created_at'],
                 'version_controls' => [
                     'system' => $row['system'],
                     'environment' => $row['environment'],
-                    'updated_at' => $row['vc_updated_at']
+                    'updated_at' => $row['vc_updated_at'],
+                    'client_id' => $_GET['client_id']
                 ]
             ];
         }

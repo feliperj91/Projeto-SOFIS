@@ -241,10 +241,6 @@
                                 </div>
                                 <!-- Actions Group: Icons (Aligned Right) -->
                                 <div class="version-actions-group">
-                                    ${canDeleteVersion ? `
-                                    <button class="btn-edit-version-small btn-danger" onclick="window.deleteVersionControl('${v.id}', '${v.system}', '${group.name}')" title="Excluir" style="margin-left:5px;">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>` : ''}
                                 </div>
                             </div>
                         </div>
@@ -962,7 +958,7 @@
                         <span style="font-weight: 400;">Data da Atualização:</span> <span>${h.version_controls?.updated_at ? new Date(h.version_controls.updated_at).toLocaleDateString('pt-BR') : 'N/A'}</span>
                     </div>
                     <div style="font-size:0.9rem; color:#fff; font-family:'Outfit', sans-serif;">
-                        <span style="font-weight: 400;">Responsável:</span> <span>${h.updated_by}</span>
+                        <span style="font-weight: 400;">Responsável:</span> <span>${h.updated_by_name || h.updated_by}</span>
                     </div>
                     ${h.notes && h.notes !== 'Versão inicial cadastrada' && h.notes !== 'Registro Inicial' && h.notes !== 'Registro de nova versão' ? `<div style="font-size:0.85rem; margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.05); color:#cfd8dc; border-radius:0;">${utils.escapeHtml(h.notes)}</div>` : ''}
                     ${actionButtons}
