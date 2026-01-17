@@ -3,17 +3,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     const managementTabBtn = document.getElementById('btnUserManagement');
 
     // Auth Guard for Management Tab
-    function checkUserManagementAccess() {
-        if (managementTabBtn && window.Permissions) {
-            // Main tab access
-            const canAccess = window.Permissions.can('Usuários', 'can_view');
-            managementTabBtn.style.display = canAccess ? 'block' : 'none';
-        }
-    }
-
     document.addEventListener('permissions-loaded', checkUserManagementAccess);
     // Check if already loaded
     if (window.Permissions && window.Permissions.rules) checkUserManagementAccess();
+
+    // Auth Guard for Management Tab & Internal Controls
+    function checkUserManagementAccess() {
+        if (window.Permissions) {
+            // Main tab access
+            const managementTabBtn = document.getElementById('btnUserManagement');
+            if (managementTabBtn) {
+                const canAccess = window.Permissions.can('Usuários', 'can_view');
+                managementTabBtn.style.display = canAccess ? 'block' : 'none';
+            }
+
+            // PDF Print Button Visibility
+            const btnPrintLogs = document.getElementById('btnPrintLogs');
+            if (btnPrintLogs) {
+                // Check permission to export PDF (uses view permission)
+                const canExportPDF = window.Permissions.can('Logs de Auditoria', 'can_view');
+                if (canExportPDF) {
+                    btnPrintLogs.classList.remove('hidden');
+                    btnPrintLogs.style.display = 'flex';
+                } else {
+                    btnPrintLogs.classList.add('hidden');
+                    btnPrintLogs.style.display = 'none';
+                }
+            }
+        }
+    }
 
     // --- State & Constants ---
     let usersList = [];
@@ -908,21 +926,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Print Handler
     // Print Handler with Fetch All Logic
     if (btnPrintLogs) {
-        // Check permission to export PDF
-        // Check permission to export PDF (uses view permission)
-        const canExportPDF = window.Permissions.can('Logs de Auditoria', 'can_view');
-        if (canExportPDF) {
-            btnPrintLogs.classList.remove('hidden');
-            btnPrintLogs.style.display = 'flex'; // Ensure flex display for styling
-        } else {
-            btnPrintLogs.classList.add('hidden');
-            btnPrintLogs.style.display = 'none';
-        }
-
         btnPrintLogs.addEventListener('click', async () => {
             // Double-check permission on click
-            if (!window.Permissions.can('Logs de Auditoria', 'can_export_pdf')) {
-                window.showToast('🚫 Acesso negado: Você não tem permissão para exportar logs.', 'error');
+            if (!window.Permissions.can('Logs de Auditoria', 'can_view')) {
+                window.showToast('🚫 Acesso negado: Você não tem permissão para visualizar logs.', 'error');
                 return;
             }
             // Re-fetch ALL logs matching current filters (without pagination)
