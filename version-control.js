@@ -921,8 +921,22 @@
             'homologacao': 'HOMOLOGAÇÃO'
         };
 
+        // Permission checks
+        const P = window.Permissions;
+        const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username;
+
         list.innerHTML = data.map(h => {
             const envDisplay = envLabels[h.version_controls?.environment] || h.version_controls?.environment?.toUpperCase() || 'N/A';
+            const isOwnLog = h.updated_by === currentUser;
+            const canEdit = P && P.can('Controle de Versões', 'can_edit') && isOwnLog;
+            const canDelete = P && P.can('Controle de Versões', 'can_delete') && isOwnLog;
+
+            const actionButtons = (canEdit || canDelete) ? `
+                <div style="display: flex; gap: 6px; margin-top: 8px;">
+                    ${canEdit ? `<button class="btn-icon-small" onclick="editVersionHistory('${h.id}')" title="Editar"><i class="fa-solid fa-pen"></i></button>` : ''}
+                    ${canDelete ? `<button class="btn-icon-small btn-danger-outline" onclick="deleteVersionHistory('${h.id}', '${h.version_controls?.system}', '${h.new_version}')" title="Excluir"><i class="fa-solid fa-trash"></i></button>` : ''}
+                </div>
+            ` : '';
 
             return `
                 <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:10px; margin-bottom:12px; border-left:4px solid var(--accent); border: 1px solid rgba(255,255,255,0.05); border-left-width: 4px;">
@@ -943,6 +957,7 @@
                         <span style="font-weight: 400;">Responsável:</span> <span>${h.updated_by}</span>
                     </div>
                     ${h.notes && h.notes !== 'Versão inicial cadastrada' && h.notes !== 'Registro Inicial' && h.notes !== 'Registro de nova versão' ? `<div style="font-size:0.85rem; margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.05); color:#cfd8dc; border-radius:0;">${utils.escapeHtml(h.notes)}</div>` : ''}
+                    ${actionButtons}
                 </div>
             `;
         }).join('') || '<div style="text-align:center; opacity:0.5; padding:30px;">Nenhum registro encontrado para os filtros selecionados.</div>';
@@ -996,6 +1011,64 @@
 
     window.closeVersionHistoryModal = () => {
         document.getElementById('versionHistoryModal').classList.add('hidden');
+    };
+
+    // Edit Version History
+    window.editVersionHistory = async (historyId) => {
+        const P = window.Permissions;
+        if (!P || !P.can('Controle de Versões', 'can_edit')) {
+            if (window.showToast) window.showToast('🚫 Sem permissão para editar histórico.', 'error');
+            return;
+        }
+
+        if (window.showToast) window.showToast('⚠️ Funcionalidade em desenvolvimento', 'warning');
+        // TODO: Implementar modal de edição
+    };
+
+    // Delete Version History
+    window.deleteVersionHistory = async (historyId, systemName, versionNumber) => {
+        const P = window.Permissions;
+        if (!P || !P.can('Controle de Versões', 'can_delete')) {
+            if (window.showToast) window.showToast('🚫 Sem permissão para excluir histórico.', 'error');
+            return;
+        }
+
+        const confirmed = await window.showConfirm(
+            `Deseja realmente excluir este registro do histórico de "${systemName}" versão "${versionNumber}"?`,
+            'Ex cluir Histórico',
+            'fa-trash'
+        );
+
+        if (!confirmed) return;
+
+        try {
+            if (!window.api || !window.api.versions) {
+                throw new Error('API não disponível');
+            }
+
+            // Delete history record
+            const response = await fetch(`/Projeto-SOFIS-1/api/version-history.php?id=${historyId}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Falha ao excluir histórico');
+            }
+
+            if (window.showToast) window.showToast('🗑️ Histórico excluído com sucesso!', 'success');
+
+            // Reload current history modal
+            const modal = document.getElementById('versionHistoryModal');
+            const clientIdMatch = currentHistoryData[0]?.version_controls?.client_id;
+            if (clientIdMatch) {
+                await window.openClientVersionsHistory(clientIdMatch);
+            }
+        } catch (error) {
+            console.error('Erro ao excluir histórico:', error);
+            if (window.showToast) window.showToast(`❌ ${error.message}`, 'error');
+        }
     };
 
 
