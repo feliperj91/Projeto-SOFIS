@@ -54,13 +54,35 @@ if ($action === 'login') {
     echo json_encode(['success' => true]);
 } elseif ($action === 'check') {
     if (isset($_SESSION['user_id'])) {
-        echo json_encode(['authenticated' => true, 'user' => [
-            'id' => $_SESSION['user_id'],
-            'username' => $_SESSION['username'],
-            'full_name' => $_SESSION['full_name'],
-            'role' => $_SESSION['role'],
-            'permissions' => json_decode($_SESSION['permissions'] ?? '{}')
-        ]]);
+        try {
+            // Reload permissions from database on every check
+            // This allows instant permission updates with just F5
+            $stmt = $pdo->prepare('SELECT permissions FROM users WHERE id = ?');
+            $stmt->execute([$_SESSION['user_id']]);
+            $user = $stmt->fetch();
+            
+            // Update session with fresh permissions
+            if ($user && $user['permissions']) {
+                $_SESSION['permissions'] = $user['permissions'];
+            }
+            
+            echo json_encode(['authenticated' => true, 'user' => [
+                'id' => $_SESSION['user_id'],
+                'username' => $_SESSION['username'],
+                'full_name' => $_SESSION['full_name'],
+                'role' => $_SESSION['role'],
+                'permissions' => json_decode($_SESSION['permissions'] ?? '{}')
+            ]]);
+        } catch (PDOException $e) {
+            // Fallback to cached permissions if DB query fails
+            echo json_encode(['authenticated' => true, 'user' => [
+                'id' => $_SESSION['user_id'],
+                'username' => $_SESSION['username'],
+                'full_name' => $_SESSION['full_name'],
+                'role' => $_SESSION['role'],
+                'permissions' => json_decode($_SESSION['permissions'] ?? '{}')
+            ]]);
+        }
     } else {
         echo json_encode(['authenticated' => false]);
     }
