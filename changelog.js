@@ -3,6 +3,27 @@
 
 window.SOFIS_CHANGELOG = [
     {
+        version: '2.0.6',
+        date: '2026-01-17',
+        title: 'Estabilização de Permissões',
+        changes: [
+            { type: 'fix', text: 'Correção crítica na permissão de visualização e exportação de Logs.' },
+            { type: 'fix', text: 'Correção de busca de logs (Case insensitive e filtro por Ação).' },
+            { type: 'fix', text: 'Correção do modal de edição de histórico de versões.' },
+            { type: 'imp', text: 'Padronização visual (botões) e usabilidade de máscaras.' }
+        ]
+    },
+    {
+        version: '2.0.5',
+        date: '2026-01-16',
+        title: 'Sistema de Permissões Granular',
+        changes: [
+            { type: 'feat', text: 'Implementação de controle de acesso granular por módulo.' },
+            { type: 'feat', text: 'Separação de permissões para Servidores, Usuários, Permissões e Logs.' },
+            { type: 'sec', text: 'Reforço de segurança no backend para validação de ações.' }
+        ]
+    },
+    {
         version: '2.0.4',
         date: '2026-01-15',
         title: 'Gestão Avançada de WebLaudo',
