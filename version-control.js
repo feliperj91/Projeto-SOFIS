@@ -1034,8 +1034,19 @@
 
         // Populate form
         document.getElementById('editHistoryId').value = historyId;
+        document.getElementById('editHistoryControlId').value = historyRecord.version_control_id;
+        document.getElementById('editHistoryProduct').value = historyRecord.version_controls?.system || '';
+        document.getElementById('editHistoryEnvironment').value = historyRecord.version_controls?.environment || 'producao';
         document.getElementById('editHistoryVersion').value = historyRecord.new_version || '';
         document.getElementById('editHistoryNotes').value = historyRecord.notes || '';
+
+        // Format date to YYYY-MM-DD for input[type="date"]
+        const updateDate = historyRecord.version_controls?.updated_at || '';
+        if (updateDate) {
+            const dateObj = new Date(updateDate);
+            const formattedDate = dateObj.toISOString().split('T')[0];
+            document.getElementById('editHistoryUpdateDate').value = formattedDate;
+        }
 
         // Open modal
         const modal = document.getElementById('editHistoryModal');
@@ -1054,7 +1065,10 @@
         event.preventDefault();
 
         const historyId = document.getElementById('editHistoryId').value;
+        const controlId = document.getElementById('editHistoryControlId').value;
         const newVersion = document.getElementById('editHistoryVersion').value;
+        const environment = document.getElementById('editHistoryEnvironment').value;
+        const updateDate = document.getElementById('editHistoryUpdateDate').value;
         const notes = document.getElementById('editHistoryNotes').value;
 
         try {
@@ -1065,7 +1079,10 @@
                 },
                 credentials: 'include',
                 body: JSON.stringify({
+                    version_control_id: controlId,
                     new_version: newVersion,
+                    environment: environment,
+                    updated_at: updateDate,
                     notes: notes
                 })
             });

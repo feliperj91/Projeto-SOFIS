@@ -78,15 +78,26 @@ if ($method === 'DELETE') {
         exit;
     }
     
-    // Update the history record
+    // Update the history record and related version_controls
     $input = json_decode(file_get_contents('php://input'), true);
     
+    // Update version_history table
     $stmt = $pdo->prepare("UPDATE version_history SET new_version = ?, notes = ? WHERE id = ?");
     $stmt->execute([
         $input['new_version'],
         $input['notes'],
         $historyId
     ]);
+    
+    // Update version_controls table (environment and updated_at)
+    if (isset($input['version_control_id'])) {
+        $controlStmt = $pdo->prepare("UPDATE version_controls SET environment = ?, updated_at = ? WHERE id = ?");
+        $controlStmt->execute([
+            $input['environment'],
+            $input['updated_at'],
+            $input['version_control_id']
+        ]);
+    }
     
     echo json_encode(['success' => true]);
 }
