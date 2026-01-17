@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Map all sub-features to the main permission
         const canViewUsers = window.Permissions.can('Usuários', 'can_view');
         const canViewPerms = window.Permissions.can('Permissões', 'can_view');
-        const canViewLogs = window.Permissions.can('Logs e Atividades', 'can_view'); // Logs usually have their own module
+        const canViewLogs = window.Permissions.can('Logs de Auditoria', 'can_view'); // Correct module name for System Audit Logs
 
         const tabUsers = document.querySelector('[data-mng-tab="users"]');
         const tabPerms = document.querySelector('[data-mng-tab="permissions"]');
