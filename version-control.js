@@ -1033,17 +1033,28 @@
         }
 
         // Load products in select
-        await loadProducts();
         const productSelect = document.getElementById('editHistoryProduct');
-        if (productSelect && window.products) {
-            productSelect.innerHTML = '<option value="">Selecione um produto...</option>';
-            window.products.forEach(p => {
-                const opt = document.createElement('option');
-                opt.value = p.name;
-                opt.textContent = p.name;
-                opt.setAttribute('data-type', p.version_type);
-                productSelect.appendChild(opt);
-            });
+        if (productSelect) {
+            try {
+                // Ensure api is available
+                if (window.api && window.api.products) {
+                    const products = await window.api.products.list();
+
+                    productSelect.innerHTML = '<option value="">Selecione um produto...</option>';
+
+                    if (products && Array.isArray(products)) {
+                        products.forEach(p => {
+                            const opt = document.createElement('option');
+                            opt.value = p.name;
+                            opt.textContent = p.name;
+                            opt.setAttribute('data-type', p.version_type);
+                            productSelect.appendChild(opt);
+                        });
+                    }
+                }
+            } catch (err) {
+                console.error("Error loading products for edit modal:", err);
+            }
         }
 
         // Populate form

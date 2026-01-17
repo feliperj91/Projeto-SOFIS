@@ -1279,7 +1279,10 @@
         <div class="modal-content" style="max-width: 700px;">
             <div class="modal-header">
                 <h2><i class="fa-solid fa-pen"></i> Editar Histórico</h2>
-                <button class="modal-close-btn" onclick="closeEditHistoryModal()">×</button>
+                <button type="button" class="btn-icon" onclick="closeEditHistoryModal()" title="Fechar"
+                    style="color: var(--text-secondary); font-size: 1.2rem;">
+                    <i class="fa-solid fa-times"></i>
+                </button>
             </div>
             <form id="editHistoryForm" onsubmit="submitEditHistory(event)">
                 <input type="hidden" id="editHistoryId">
@@ -1326,12 +1329,14 @@
                         placeholder="Observações sobre esta atualização..."></textarea>
                 </div>
 
-                <div class="modal-actions">
-                    <button type="button" class="btn-secondary" onclick="closeEditHistoryModal()">
-                        <i class="fa-solid fa-times"></i> Cancelar
+                <div class="modal-actions"
+                    style="display: flex; justify-content: flex-end; gap: 12px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05);">
+                    <button type="button" class="btn-outline-danger" onclick="closeEditHistoryModal()"
+                        style="min-width: 120px;">
+                        Cancelar
                     </button>
-                    <button type="submit" class="btn-primary">
-                        <i class="fa-solid fa-save"></i> Salvar Alterações
+                    <button type="submit" class="btn-primary" style="min-width: 120px;">
+                        Salvar
                     </button>
                 </div>
             </form>
