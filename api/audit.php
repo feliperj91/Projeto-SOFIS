@@ -12,6 +12,7 @@ if ($method === 'GET') {
     $type = $_GET['type'] ?? null;
     $start = $_GET['start'] ?? null;
     $end = $_GET['end'] ?? null;
+    $clientName = $_GET['client_name'] ?? null;
 
     $sql = "SELECT * FROM audit_logs WHERE 1=1";
     $params = [];
@@ -20,6 +21,7 @@ if ($method === 'GET') {
     if ($type) { $sql .= " AND operation_type = ?"; $params[] = $type; }
     if ($start) { $sql .= " AND created_at >= ?"; $params[] = $start; }
     if ($end) { $sql .= " AND created_at <= ?"; $params[] = $end; }
+    if ($clientName) { $sql .= " AND client_name = ?"; $params[] = $clientName; }
 
     $sql .= " ORDER BY created_at DESC LIMIT $limit OFFSET $offset";
 
@@ -41,6 +43,46 @@ if ($method === 'GET') {
         json_encode($input['old_value'] ?? null),
         json_encode($input['new_value'] ?? null)
     ]);
+    
+    echo json_encode(['success' => true]);
+
+} elseif ($method === 'DELETE') {
+    session_start();
+    
+    $logId = $_GET['id'] ?? null;
+    if (!$logId) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Log ID is required']);
+        exit;
+    }
+    
+    $currentUser = $_SESSION['username'] ?? null;
+    if (!$currentUser) {
+        http_response_code(401);
+        echo json_encode(['error' => 'Unauthorized']);
+        exit;
+    }
+    
+    // Verify ownership - only allow deleting own logs
+    $stmt = $pdo->prepare("SELECT username FROM audit_logs WHERE id = ?");
+    $stmt->execute([$logId]);
+    $log = $stmt->fetch();
+    
+    if (!$log) {
+        http_response_code(404);
+        echo json_encode(['error' => 'Log not found']);
+        exit;
+    }
+    
+    if ($log['username'] !== $currentUser) {
+        http_response_code(403);
+        echo json_encode(['error' => 'You can only delete your own logs']);
+        exit;
+    }
+    
+    // Delete the log
+    $stmt = $pdo->prepare("DELETE FROM audit_logs WHERE id = ?");
+    $stmt->execute([$logId]);
     
     echo json_encode(['success' => true]);
 }

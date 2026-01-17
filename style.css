@@ -317,6 +317,18 @@ button.btn-icon.btn-danger:hover {
     background: rgba(239, 68, 68, 0.1);
 }
 
+.btn-danger-outline {
+    color: var(--danger);
+    border: 1px solid var(--danger);
+    background: transparent;
+}
+
+.btn-danger-outline:hover {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: var(--danger);
+}
+
+
 .modal-actions {
     display: flex;
     justify-content: flex-end;

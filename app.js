@@ -161,7 +161,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // 4. Controle de Versões - Buttons
         const pulseBtn = document.getElementById('pulseDashboardBtn');
         const addVersionBtn = document.getElementById('addVersionBtn');
-        if (pulseBtn) pulseBtn.style.display = P.can('Controle de Versões', 'can_view') ? '' : 'none';
+        if (pulseBtn) pulseBtn.style.display = P.can('Dashboard', 'can_view') ? '' : 'none';
         if (addVersionBtn) addVersionBtn.style.display = P.can('Controle de Versões', 'can_create') ? '' : 'none';
 
         // 5. User Management - Tab Button
@@ -180,10 +180,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         const btnAddURL = document.getElementById('addUrlEntryBtn');
         if (btnAddURL) btnAddURL.style.display = P.can('URLs', 'can_create') ? '' : 'none';
 
-        // 7. Controle de Versões - Produtos
+        // 7. Produtos
         const btnMngProducts = document.getElementById('productActionButtons');
         if (btnMngProducts) {
-            btnMngProducts.style.display = P.can('Controle de Versões - Produtos', 'can_view') ? '' : 'none';
+            btnMngProducts.style.display = P.can('Produtos', 'can_view') ? '' : 'none';
         }
     };
 
@@ -3060,6 +3060,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (form) form.style.display = 'none';
         if (actions) actions.style.display = 'flex';
 
+        // Permission checks for edit/delete buttons
+        const P = window.Permissions;
+        const canEdit = P ? P.can('URLs', 'can_edit') : false;
+        const canDelete = P ? P.can('URLs', 'can_delete') : false;
+
+        const editBtn = document.getElementById('editWebLaudoBtn');
+        const deleteBtn = document.getElementById('deleteWebLaudoBtn');
+
+        if (editBtn) editBtn.style.display = canEdit ? '' : 'none';
+        if (deleteBtn) deleteBtn.style.display = canDelete ? '' : 'none';
+
         if (text) text.textContent = data.url || '---';
         if (userText) userText.textContent = data.user || '---';
         if (userRow) userRow.style.display = data.user ? 'flex' : 'none';
@@ -3672,6 +3683,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (historyModal) {
             historyModalTitle.innerHTML = `Histórico: <span style="color: var(--accent); font-weight: bold;">${client.name}</span>`;
             historyList.innerHTML = '<div style="text-align:center; padding: 20px;"><i class="fa-solid fa-circle-notch fa-spin"></i> Carregando...</div>';
+            historyModal.dataset.clientId = clientId; // Store for reload
             historyModal.classList.remove('hidden');
         }
 
@@ -3710,13 +3722,30 @@ document.addEventListener('DOMContentLoaded', async () => {
             const opClass = `op-${opTypeRaw}`;
             const opLabel = (log.operation_type || 'AÇÃO').toUpperCase();
 
+            // Permission checks
+            const P = window.Permissions;
+            const currentUser = sessionStorage.getItem('username') || localStorage.getItem('username');
+            const isOwnLog = log.username === currentUser;
+            const canEdit = P && P.can('Logs e Atividades', 'can_edit') && isOwnLog;
+            const canDelete = P && P.can('Logs e Atividades', 'can_delete') && isOwnLog;
+
             const item = document.createElement('div');
             item.className = 'activity-item';
+
+            const actionButtons = (canEdit || canDelete) ? `
+                <div class="activity-actions" style="display: flex; gap: 8px;">
+                    ${canEdit ? `<button class="btn-icon-small" onclick="editClientLog('${log.id}')" title="Editar"><i class="fa-solid fa-pen"></i></button>` : ''}
+                    ${canDelete ? `<button class="btn-icon-small btn-danger-outline" onclick="deleteClientLog('${log.id}')" title="Excluir"><i class="fa-solid fa-trash"></i></button>` : ''}
+                </div>
+            ` : '';
 
             item.innerHTML = `
                 <div class="activity-item-header">
                     <span class="activity-user"><i class="fa-solid fa-user"></i> ${escapeHtml(log.username || 'Sistema')}</span>
-                    <span class="activity-time">${dateStr} às ${timeStr}</span>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        ${actionButtons}
+                        <span class="activity-time">${dateStr} às ${timeStr}</span>
+                    </div>
                 </div>
                 <div class="activity-action">
                     <span class="activity-op-badge ${opClass}">${opLabel}</span>
@@ -3730,6 +3759,56 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
     }
+
+    // Edit Client Log
+    window.editClientLog = async (logId) => {
+        const P = window.Permissions;
+        if (!P || !P.can('Logs e Atividades', 'can_edit')) {
+            showToast('🚫 Sem permissão para editar logs.', 'error');
+            return;
+        }
+
+        showToast('⚠️ Funcionalidade em desenvolvimento', 'warning');
+        // TODO: Implementar modal de edição
+    };
+
+    // Delete Client Log
+    window.deleteClientLog = async (logId) => {
+        const P = window.Permissions;
+        if (!P || !P.can('Logs e Atividades', 'can_delete')) {
+            showToast('🚫 Sem permissão para excluir logs.', 'error');
+            return;
+        }
+
+        const confirmed = await window.showConfirm(
+            'Deseja realmente excluir este registro do histórico?',
+            'Excluir Log',
+            'fa-trash'
+        );
+
+        if (!confirmed) return;
+
+        try {
+            const response = await fetch(`/Projeto-SOFIS-1/api/audit.php?id=${logId}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+
+            if (!response.ok) throw new Error('Falha ao excluir log');
+
+            showToast('🗑️ Log excluído com sucesso!', 'success');
+
+            // Recarrega o histórico do cliente atual
+            const currentClientId = historyModal?.dataset?.clientId;
+            if (currentClientId) {
+                window.openClientHistory(currentClientId);
+            }
+        } catch (error) {
+            console.error('Erro ao excluir log:', error);
+            showToast('❌ Erro ao excluir log.', 'error');
+        }
+    };
+
 
     if (closeHistoryModalBtn) {
         closeHistoryModalBtn.addEventListener('click', () => {

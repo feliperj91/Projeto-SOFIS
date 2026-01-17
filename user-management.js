@@ -42,7 +42,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             title: 'Guia Controle de Versões',
             items: [
                 { module: 'Controle de Versões', isHeader: true },
-                { module: 'Controle de Versões - Produtos' }
+                { module: 'Dashboard' },
+                { module: 'Produtos' }
             ]
         },
         {
