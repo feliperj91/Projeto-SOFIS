@@ -932,9 +932,17 @@
             const canDelete = P && P.can('Controle de Versões', 'can_delete') && isOwnLog;
 
             const actionButtons = (canEdit || canDelete) ? `
-                <div style="display: flex; gap: 6px; margin-top: 8px;">
-                    ${canEdit ? `<button class="btn-icon-small" onclick="editVersionHistory('${h.id}')" title="Editar"><i class="fa-solid fa-pen"></i></button>` : ''}
-                    ${canDelete ? `<button class="btn-icon-small btn-danger-outline" onclick="deleteVersionHistory('${h.id}', '${h.version_controls?.system}', '${h.new_version}')" title="Excluir"><i class="fa-solid fa-trash"></i></button>` : ''}
+                <div style="display: flex; gap: 8px; margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05);">
+                    ${canEdit ? `
+                        <button class="btn-icon" onclick="editVersionHistory('${h.id}')" title="Editar" style="color: var(--text-secondary);">
+                            <i class="fa-solid fa-pencil"></i>
+                        </button>
+                    ` : ''}
+                    ${canDelete ? `
+                        <button class="btn-icon btn-danger" onclick="deleteVersionHistory('${h.id}', '${h.version_controls?.system}', '${h.new_version}')" title="Excluir">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    ` : ''}
                 </div>
             ` : '';
 
