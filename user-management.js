@@ -909,8 +909,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Print Handler with Fetch All Logic
     if (btnPrintLogs) {
         // Check permission to export PDF
-        const canExportPDF = window.Permissions.can('Logs de Auditoria', 'can_export_pdf');
-        btnPrintLogs.style.display = canExportPDF ? '' : 'none';
+        // Check permission to export PDF (uses view permission)
+        const canExportPDF = window.Permissions.can('Logs de Auditoria', 'can_view');
+        if (canExportPDF) {
+            btnPrintLogs.classList.remove('hidden');
+            btnPrintLogs.style.display = 'flex'; // Ensure flex display for styling
+        } else {
+            btnPrintLogs.classList.add('hidden');
+            btnPrintLogs.style.display = 'none';
+        }
 
         btnPrintLogs.addEventListener('click', async () => {
             // Double-check permission on click
