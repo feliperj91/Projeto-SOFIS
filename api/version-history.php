@@ -1,5 +1,6 @@
 <?php
 // api/version-history.php
+header('Content-Type: application/json');
 require 'db.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
@@ -102,4 +103,3 @@ if ($method === 'DELETE') {
     
     echo json_encode(['success' => true]);
 }
-?>
