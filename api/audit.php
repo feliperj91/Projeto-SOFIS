@@ -17,7 +17,13 @@ if ($method === 'GET') {
     $sql = "SELECT * FROM audit_logs WHERE 1=1";
     $params = [];
 
-    if ($user) { $sql .= " AND (username LIKE ? OR details LIKE ?)"; $params[] = "%$user%"; $params[] = "%$user%"; }
+    if ($user) { 
+        // Case-insensitive search across username, details, and action
+        $sql .= " AND (username ILIKE ? OR details ILIKE ? OR action ILIKE ?)"; 
+        $params[] = "%$user%"; 
+        $params[] = "%$user%"; 
+        $params[] = "%$user%"; 
+    }
     if ($type) { $sql .= " AND operation_type = ?"; $params[] = $type; }
     if ($start) { $sql .= " AND created_at >= ?"; $params[] = $start; }
     if ($end) { $sql .= " AND created_at <= ?"; $params[] = $end; }
