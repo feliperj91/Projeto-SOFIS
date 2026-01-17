@@ -1186,6 +1186,18 @@
                 throw new Error(errorMsg);
             }
 
+            // Audit Log
+            if (window.registerAuditLog) {
+                // We construct a simple detail string. Old value is not readily available without another fetch, so we pass null.
+                await window.registerAuditLog(
+                    'EDIÇÃO',
+                    'Edição de Histórico de Versão',
+                    `Produto: ${product}, Versão: ${newVersion}, Ambiente: ${environment}`,
+                    null,
+                    { product, newVersion, environment, updateDate, notes }
+                );
+            }
+
             if (window.showToast) window.showToast('✅ Histórico atualizado com sucesso!', 'success');
 
             // Close modal
@@ -1242,6 +1254,17 @@
                     console.log("Response Status:", response.status);
                 }
                 throw new Error(errorMsg);
+            }
+
+            // Audit Log
+            if (window.registerAuditLog) {
+                await window.registerAuditLog(
+                    'EXCLUSÃO',
+                    'Exclusão de Histórico de Versão',
+                    `Produto: ${systemName}, Versão: ${versionNumber}`,
+                    { id: historyId, system: systemName, version: versionNumber },
+                    null
+                );
             }
 
             if (window.showToast) window.showToast('🗑️ Histórico excluído com sucesso!', 'success');

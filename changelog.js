@@ -3,6 +3,16 @@
 
 window.SOFIS_CHANGELOG = [
     {
+        version: '2.0.7',
+        date: '2026-01-17',
+        title: 'Refinamento de Auditoria e Segurança',
+        changes: [
+            { type: 'sec', text: 'Implementação de logs de auditoria para operações de Histórico de Versões (Edição/Exclusão).' },
+            { type: 'sec', text: 'Detalhamento aprimorado em logs de usuários (detecção de reset de senha e mudança de status).' },
+            { type: 'doc', text: 'Auditoria completa de cobertura de logs do sistema.' }
+        ]
+    },
+    {
         version: '2.0.6',
         date: '2026-01-17',
         title: 'Estabilização de Permissões',

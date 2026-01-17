@@ -560,9 +560,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 // Generate Diff Details
                 const changes = [];
-                if (oldVal.username !== formData.username) changes.push(`Usuário de '${oldVal.username}' para '${formData.username}'`);
-                if (oldVal.role !== formData.role) changes.push(`Nível de acesso de '${oldVal.role}' para '${formData.role}'`);
-                if (updateData.password) changes.push('Senha atualizada');
+                if (oldVal.username !== formData.username) changes.push(`Usuário: '${oldVal.username}' -> '${formData.username}'`);
+                if (oldVal.role !== formData.role) changes.push(`Role: '${oldVal.role}' -> '${formData.role}'`);
+                if (updateData.password) changes.push('Senha alterada manualmente');
+                if (!!oldVal.is_active !== !!formData.is_active) changes.push(formData.is_active ? 'Conta Reativada' : 'Conta Desativada');
+                if (!!oldVal.force_password_reset !== !!formData.force_password_reset && formData.force_password_reset) changes.push('Reset de Senha Solicitado');
 
                 details = `Alterações: ${changes.join(', ')}`;
 
