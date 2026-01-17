@@ -1032,6 +1032,20 @@
             return;
         }
 
+        // Load products in select
+        await loadProducts();
+        const productSelect = document.getElementById('editHistoryProduct');
+        if (productSelect && window.products) {
+            productSelect.innerHTML = '<option value="">Selecione um produto...</option>';
+            window.products.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.name;
+                opt.textContent = p.name;
+                opt.setAttribute('data-type', p.version_type);
+                productSelect.appendChild(opt);
+            });
+        }
+
         // Populate form
         document.getElementById('editHistoryId').value = historyId;
         document.getElementById('editHistoryControlId').value = historyRecord.version_control_id;
@@ -1047,6 +1061,18 @@
             const formattedDate = dateObj.toISOString().split('T')[0];
             document.getElementById('editHistoryUpdateDate').value = formattedDate;
         }
+
+        // Add event listener for product change (apply mask)
+        productSelect.onchange = () => {
+            const selectedOption = productSelect.options[productSelect.selectedIndex];
+            const versionType = selectedOption?.getAttribute('data-type');
+            const versionInput = document.getElementById('editHistoryVersion');
+
+            if (versionType && versionInput) {
+                // Apply version mask based on product type
+                applyVersionMask(versionInput, versionType);
+            }
+        };
 
         // Open modal
         const modal = document.getElementById('editHistoryModal');
@@ -1066,6 +1092,7 @@
 
         const historyId = document.getElementById('editHistoryId').value;
         const controlId = document.getElementById('editHistoryControlId').value;
+        const product = document.getElementById('editHistoryProduct').value;
         const newVersion = document.getElementById('editHistoryVersion').value;
         const environment = document.getElementById('editHistoryEnvironment').value;
         const updateDate = document.getElementById('editHistoryUpdateDate').value;
@@ -1080,6 +1107,7 @@
                 credentials: 'include',
                 body: JSON.stringify({
                     version_control_id: controlId,
+                    system: product,
                     new_version: newVersion,
                     environment: environment,
                     updated_at: updateDate,

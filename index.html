@@ -1289,8 +1289,9 @@
                     <label for="editHistoryProduct">
                         <i class="fa-solid fa-cube"></i> Produto<span class="required">*</span>
                     </label>
-                    <input type="text" id="editHistoryProduct" required placeholder="Ex: Hemote Plus" readonly
-                        style="background: rgba(255,255,255,0.05); cursor: not-allowed;">
+                    <select id="editHistoryProduct" required>
+                        <option value="">Carregando produtos...</option>
+                    </select>
                 </div>
 
                 <div class="form-group">
@@ -1325,8 +1326,10 @@
                         placeholder="Observações sobre esta atualização..."></textarea>
                 </div>
 
-                <div class="modal-footer">
-                    <button type="button" class="btn-secondary" onclick="closeEditHistoryModal()">Cancelar</button>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeEditHistoryModal()">
+                        <i class="fa-solid fa-times"></i> Cancelar
+                    </button>
                     <button type="submit" class="btn-primary">
                         <i class="fa-solid fa-save"></i> Salvar Alterações
                     </button>

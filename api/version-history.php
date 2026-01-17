@@ -89,10 +89,11 @@ if ($method === 'DELETE') {
         $historyId
     ]);
     
-    // Update version_controls table (environment and updated_at)
+    // Update version_controls table (system, environment and updated_at)
     if (isset($input['version_control_id'])) {
-        $controlStmt = $pdo->prepare("UPDATE version_controls SET environment = ?, updated_at = ? WHERE id = ?");
+        $controlStmt = $pdo->prepare("UPDATE version_controls SET system = ?, environment = ?, updated_at = ? WHERE id = ?");
         $controlStmt->execute([
+            $input['system'],
             $input['environment'],
             $input['updated_at'],
             $input['version_control_id']
