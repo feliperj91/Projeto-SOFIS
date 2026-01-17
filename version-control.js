@@ -1017,6 +1017,36 @@
         document.getElementById('versionHistoryModal').classList.add('hidden');
     };
 
+    // Helper: Apply Version Mask
+    function applyVersionMask(input, type) {
+        if (!input) return;
+
+        // Remove existing listener if possible (override oninput)
+        input.oninput = (e) => {
+            const val = e.target.value;
+
+            if (type === 'Build' || type === 'build') {
+                // Numbers only, max 11 chars
+                let v = val.replace(/[^0-9]/g, '');
+                if (v.length > 11) v = v.substring(0, 11);
+                e.target.value = v;
+            } else {
+                // Standard Pacote mask: YYYY.MM-XX
+                let v = val.replace(/\D/g, '');
+                if (v.length > 8) v = v.substring(0, 8);
+
+                let masked = v;
+                if (v.length > 4) {
+                    masked = v.substring(0, 4) + '.' + v.substring(4);
+                }
+                if (v.length > 6) {
+                    masked = v.substring(0, 4) + '.' + v.substring(4, 6) + '-' + v.substring(6);
+                }
+                e.target.value = masked;
+            }
+        };
+    }
+
     // Edit Version History
     window.editVersionHistory = async (historyId) => {
         const P = window.Permissions;
@@ -1073,17 +1103,32 @@
             document.getElementById('editHistoryUpdateDate').value = formattedDate;
         }
 
-        // Add event listener for product change (apply mask)
-        productSelect.onchange = () => {
-            const selectedOption = productSelect.options[productSelect.selectedIndex];
-            const versionType = selectedOption?.getAttribute('data-type');
-            const versionInput = document.getElementById('editHistoryVersion');
+        // Apply initial mask
+        const versionInput = document.getElementById('editHistoryVersion');
+        if (productSelect && versionInput) {
+            // We need to wait for select to be populated above, but since we set value programmatically:
+            // Let's find the option that matches the value
+            setTimeout(() => {
+                const selectedOption = Array.from(productSelect.options).find(opt => opt.value === productSelect.value);
+                if (selectedOption) {
+                    const type = selectedOption.getAttribute('data-type');
+                    applyVersionMask(versionInput, type);
+                }
+            }, 100);
+        }
 
-            if (versionType && versionInput) {
-                // Apply version mask based on product type
-                applyVersionMask(versionInput, versionType);
-            }
-        };
+        // Add event listener for product change
+        if (productSelect) {
+            productSelect.onchange = () => {
+                const selectedOption = productSelect.options[productSelect.selectedIndex];
+                const versionType = selectedOption?.getAttribute('data-type');
+
+                if (versionInput) {
+                    versionInput.value = ''; // Clean input
+                    applyVersionMask(versionInput, versionType);
+                }
+            };
+        }
 
         // Open modal
         const modal = document.getElementById('editHistoryModal');
