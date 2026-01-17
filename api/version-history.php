@@ -43,5 +43,51 @@ if ($method === 'DELETE') {
     $stmt->execute([$historyId]);
     
     echo json_encode(['success' => true]);
+
+} elseif ($method === 'PUT') {
+    session_start();
+    
+    $historyId = $_GET['id'] ?? null;
+    if (!$historyId) {
+        http_response_code(400);
+        echo json_encode(['error' => 'History ID is required']);
+        exit;
+    }
+    
+    $currentUser = $_SESSION['username'] ?? null;
+    if (!$currentUser) {
+        http_response_code(401);
+        echo json_encode(['error' => 'Unauthorized']);
+        exit;
+    }
+    
+    // Verify ownership - only allow editing own history entries
+    $stmt = $pdo->prepare("SELECT updated_by FROM version_history WHERE id = ?");
+    $stmt->execute([$historyId]);
+    $history = $stmt->fetch();
+    
+    if (!$history) {
+        http_response_code(404);
+        echo json_encode(['error' => 'History record not found']);
+        exit;
+    }
+    
+    if ($history['updated_by'] !== $currentUser) {
+        http_response_code(403);
+        echo json_encode(['error' => 'You can only edit your own version history']);
+        exit;
+    }
+    
+    // Update the history record
+    $input = json_decode(file_get_contents('php://input'), true);
+    
+    $stmt = $pdo->prepare("UPDATE version_history SET new_version = ?, notes = ? WHERE id = ?");
+    $stmt->execute([
+        $input['new_version'],
+        $input['notes'],
+        $historyId
+    ]);
+    
+    echo json_encode(['success' => true]);
 }
 ?>

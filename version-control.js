@@ -1025,9 +1025,72 @@
             return;
         }
 
-        if (window.showToast) window.showToast('⚠️ Funcionalidade em desenvolvimento', 'warning');
-        // TODO: Implementar modal de edição
+        // Find the history record in currentHistoryData
+        const historyRecord = currentHistoryData.find(h => h.id == historyId);
+        if (!historyRecord) {
+            if (window.showToast) window.showToast('❌ Registro não encontrado.', 'error');
+            return;
+        }
+
+        // Populate form
+        document.getElementById('editHistoryId').value = historyId;
+        document.getElementById('editHistoryVersion').value = historyRecord.new_version || '';
+        document.getElementById('editHistoryNotes').value = historyRecord.notes || '';
+
+        // Open modal
+        const modal = document.getElementById('editHistoryModal');
+        if (modal) modal.classList.remove('hidden');
     };
+
+    // Close Edit History Modal
+    window.closeEditHistoryModal = () => {
+        const modal = document.getElementById('editHistoryModal');
+        if (modal) modal.classList.add('hidden');
+        document.getElementById('editHistoryForm').reset();
+    };
+
+    // Submit Edit History
+    window.submitEditHistory = async (event) => {
+        event.preventDefault();
+
+        const historyId = document.getElementById('editHistoryId').value;
+        const newVersion = document.getElementById('editHistoryVersion').value;
+        const notes = document.getElementById('editHistoryNotes').value;
+
+        try {
+            const response = await fetch(`/Projeto-SOFIS-1/api/version-history.php?id=${historyId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    new_version: newVersion,
+                    notes: notes
+                })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Falha ao editar histórico');
+            }
+
+            if (window.showToast) window.showToast('✅ Histórico atualizado com sucesso!', 'success');
+
+            // Close modal
+            window.closeEditHistoryModal();
+
+            // Reload history
+            const clientIdMatch = currentHistoryData[0]?.version_controls?.client_id;
+            if (clientIdMatch) {
+                await window.openClientVersionsHistory(clientIdMatch);
+            }
+        } catch (error) {
+            console.error('Erro ao editar histórico:', error);
+            if (window.showToast) window.showToast(`❌ ${error.message}`, 'error');
+        }
+    };
+
 
     // Delete Version History
     window.deleteVersionHistory = async (historyId, systemName, versionNumber) => {
@@ -1865,5 +1928,13 @@
         const opt = sysSelect.options[sysSelect.selectedIndex];
         return opt ? opt.getAttribute('data-type') : null;
     }
+
+    // Close modal when clicking outside
+    window.addEventListener('click', (e) => {
+        const modal = document.getElementById('editHistoryModal');
+        if (e.target === modal) {
+            window.closeEditHistoryModal();
+        }
+    });
 
 })();
