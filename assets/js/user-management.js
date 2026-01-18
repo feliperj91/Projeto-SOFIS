@@ -441,8 +441,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Reset Password Button Logic
         const btnReset = document.getElementById('btnResetPassword');
         if (btnReset) {
-            // Check Permission
-            const canReset = window.Permissions.can('Reset de Senha', 'can_edit');
+            // Check Permission - Uses View permission as established in schema
+            const canReset = window.Permissions.can('Reset de Senha', 'can_view');
 
             if (canReset) {
                 btnReset.classList.remove('hidden');
@@ -752,9 +752,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <td class="${indentClass}">${label}</td>
                     <td><span class="badge-role ${roleClass}">${role}</span></td>
                     <td><input type="checkbox" class="perm-checkbox" data-mod="${mod}" data-prop="can_view" ${p.can_view ? 'checked' : ''}></td>
-                    <td><input type="checkbox" ${disabledCreate} data-mod="${mod}" data-prop="can_create" ${p.can_create ? 'checked' : ''}></td>
-                    <td><input type="checkbox" ${disabledEdit} data-mod="${mod}" data-prop="can_edit" ${p.can_edit ? 'checked' : ''}></td>
-                    <td><input type="checkbox" ${disabledDelete} data-mod="${mod}" data-prop="can_delete" ${p.can_delete ? 'checked' : ''}></td>
+                    <td><input type="checkbox" ${disabledCreate} data-mod="${mod}" data-prop="can_create" ${!shouldDisableCreateDelete && p.can_create ? 'checked' : ''}></td>
+                    <td><input type="checkbox" ${disabledEdit} data-mod="${mod}" data-prop="can_edit" ${!shouldDisableAll && p.can_edit ? 'checked' : ''}></td>
+                    <td><input type="checkbox" ${disabledDelete} data-mod="${mod}" data-prop="can_delete" ${!shouldDisableCreateDelete && p.can_delete ? 'checked' : ''}></td>
                 `;
                 permissionsTableBody.appendChild(tr);
             });
