@@ -146,35 +146,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             btnActivity.style.display = P.can('Logs e Atividades', 'can_view') ? '' : 'none';
         }
 
-        // 2. Clientes e Contatos
-        const canViewClients = P.can('Gestão de Clientes', 'can_view');
-
-        // Hide/Show Search & Content
-        const clientSearch = document.getElementById('client-search-bar');
-        const clientFilter = document.querySelector('#contactsTab .filter-chips-container');
-        const clientList = document.getElementById('clientList');
-
-        if (clientSearch) clientSearch.style.display = canViewClients ? '' : 'none';
-        if (clientFilter) clientFilter.style.display = canViewClients ? 'flex' : 'none';
-        if (clientList) clientList.style.display = canViewClients ? '' : 'none';
-
-        // Access Denied Message
-        let clientDenied = document.getElementById('clientAccessDenied');
-        if (!canViewClients) {
-            if (!clientDenied) {
-                clientDenied = document.createElement('div');
-                clientDenied.id = 'clientAccessDenied';
-                clientDenied.className = 'access-denied-container';
-                clientDenied.innerHTML = `
-                    <i class="fa-solid fa-lock" style="font-size: 3rem; color: var(--text-secondary); margin-bottom: 15px;"></i>
-                    <p style="color: var(--text-secondary);">Você não tem permissão para visualizar clientes.</p>
-                `;
-                document.getElementById('contactsTab').appendChild(clientDenied);
-            }
-            clientDenied.style.display = 'flex';
-        } else if (clientDenied) {
-            clientDenied.style.display = 'none';
-        }
+        // 2. Clientes e Contatos (Global) - Create
 
         // Create Button
         const btnAddClient = document.getElementById('addClientBtn');
