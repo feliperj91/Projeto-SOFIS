@@ -65,6 +65,25 @@ const api = {
             });
         },
         async signOut() {
+            try {
+                const userStr = localStorage.getItem('sofis_user');
+                if (userStr) {
+                    const u = JSON.parse(userStr);
+                    // Tentar logar o logout
+                    if (api && api.logs) {
+                        await api.logs.create({
+                            action_type: 'SECURITY',
+                            action: 'Logout',
+                            details: `Logout efetuado: ${u.full_name || u.username} (@${u.username})`,
+                            user_id: u.id,
+                            target_id: null
+                        });
+                    }
+                }
+            } catch (e) {
+                console.error('Erro ao registrar log de logout:', e);
+            }
+
             await fetch(`${API_BASE}/auth.php?action=logout`);
             localStorage.removeItem('sofis_user');
             window.location.href = 'login.html';

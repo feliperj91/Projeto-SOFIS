@@ -347,6 +347,18 @@
                                     role: data.user.role || 'TECNICO',
                                     permissions: data.user.permissions
                                 }));
+
+                                // Log Login Automatico
+                                try {
+                                    if (window.api && window.api.logs) {
+                                        await window.api.logs.create({
+                                            action_type: 'SECURITY',
+                                            action: 'Login',
+                                            details: `Login automático após reset de senha: ${data.user.full_name || data.user.username}`,
+                                            user_id: data.user.id
+                                        });
+                                    }
+                                } catch (e) { console.error(e); }
                             }
 
                             showToast('Senha definida com sucesso! Entrando...', 'success');
@@ -405,6 +417,18 @@
                                 role: data.user.role || 'TECNICO',
                                 permissions: data.user.permissions
                             }));
+
+                            // Audit Log Login
+                            try {
+                                if (window.api && window.api.logs) {
+                                    await window.api.logs.create({
+                                        action_type: 'SECURITY',
+                                        action: 'Login',
+                                        details: `Login efetuado: ${data.user.full_name || data.user.username}`,
+                                        user_id: data.user.id
+                                    });
+                                }
+                            } catch (e) { console.error('Login Log Error:', e); }
 
                             showToast('Login realizado com sucesso!');
                             setTimeout(() => {
