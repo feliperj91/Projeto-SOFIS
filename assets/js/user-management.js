@@ -733,13 +733,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // - Logs de Auditoria: Apenas Visualizar
                 // - Reset de Senha: Apenas Visualizar (que permite visualizar e resetar)
                 const isDashboard = mod === 'Dashboard';
-                const isUserManagementHeader = mod === 'Gerenciamento de Usuários' && item.isHeader;
+                const isUserManagementHeader = (mod === 'Gerenciamento de Usuários' || mod === 'Gestão de Usuários') && item.isHeader;
+                const isClientsHeader = mod === 'Gestão de Clientes' && item.isHeader;
                 const isPermissions = mod === 'Permissões';
                 const isLogs = mod === 'Logs de Auditoria';
                 const isResetPassword = mod === 'Reset de Senha';
 
-                // Criar e Excluir desabilitados para: Dashboard, Cabeçalho User Management, Permissões, Logs e Reset
-                const shouldDisableAll = isDashboard || isUserManagementHeader || isLogs || isResetPassword;
+                // Criar e Excluir desabilitados para: Dashboard, Cabeçalhos, Permissões, Logs e Reset
+                const shouldDisableAll = isDashboard || isUserManagementHeader || isClientsHeader || isLogs || isResetPassword;
                 const shouldDisableCreateDelete = shouldDisableAll || isPermissions;
 
                 const disabledCreate = shouldDisableCreateDelete ? 'disabled class="perm-checkbox-disabled"' : 'class="perm-checkbox"';
