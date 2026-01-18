@@ -1,0 +1,685 @@
+/* ===================================
+   USER MANAGEMENT FIX - Sobrescreve estilos inline
+   =================================== */
+
+/* Toolbar Container */
+.management-toolbar-container {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 15px !important;
+    margin-bottom: 20px !important;
+    flex-wrap: wrap !important;
+    background: transparent !important;
+    padding: 0 !important;
+}
+
+/* Subtabs (Esquerda) */
+.management-subtabs {
+    display: flex !important;
+    gap: 8px !important;
+    flex-shrink: 0 !important;
+}
+
+.mng-tab-btn {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 10px 18px !important;
+    background: var(--card-bg) !important;
+    border: 2px solid var(--border) !important;
+    border-radius: 8px !important;
+    color: var(--text-secondary) !important;
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.mng-tab-btn:hover:not(.active) {
+    border-color: var(--accent) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(255, 160, 0, 0.2) !important;
+    color: var(--text-primary) !important;
+}
+
+.mng-tab-btn.active {
+    background: linear-gradient(135deg, var(--accent), var(--accent-hover)) !important;
+    border-color: var(--accent) !important;
+    color: #000000 !important;
+    font-weight: 600 !important;
+    box-shadow: 0 4px 12px rgba(255, 160, 0, 0.3) !important;
+}
+
+.mng-tab-btn.active i {
+    color: #000000 !important;
+}
+
+/* Centro - Controles */
+.management-center-controls {
+    flex: 1 !important;
+    display: flex !important;
+    justify-content: center !important;
+}
+
+/* Search Group */
+#user-search-group {
+    width: 100% !important;
+    max-width: 600px !important;
+    display: flex !important;
+    align-items: center !important;
+    background-color: var(--bg-card) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 8px !important;
+    padding: 0 12px !important;
+    height: 40px !important;
+}
+
+#user-search-group .search-icon {
+    color: var(--text-secondary) !important;
+    margin-right: 10px !important;
+}
+
+#userSearchInput {
+    width: 100% !important;
+    border: none !important;
+    background: transparent !important;
+    color: var(--text-primary) !important;
+    outline: none !important;
+    font-size: 0.95rem !important;
+    padding: 0 !important;
+}
+
+#userSearchInput::placeholder {
+    color: var(--text-secondary) !important;
+    opacity: 0.6 !important;
+}
+
+#clearUserSearch {
+    background: transparent !important;
+    border: none !important;
+    color: var(--text-secondary) !important;
+    cursor: pointer !important;
+    padding: 4px !important;
+    border-radius: 4px !important;
+    transition: all 0.2s ease !important;
+}
+
+#clearUserSearch:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Seletor de Cargos */
+#shared-mng-controls {
+    display: flex !important;
+    gap: 8px !important;
+    justify-content: center !important;
+    width: 100% !important;
+}
+
+.role-text-btn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    padding: 8px 16px !important;
+    background: var(--card-bg) !important;
+    border: 2px solid var(--border) !important;
+    border-radius: 8px !important;
+    color: var(--text-secondary) !important;
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    position: relative !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+}
+
+.role-text-btn:hover:not(.active) {
+    border-color: var(--accent) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(255, 160, 0, 0.2) !important;
+    color: var(--text-primary) !important;
+}
+
+.role-text-btn.active {
+    background: linear-gradient(135deg, var(--accent), var(--accent-hover)) !important;
+    border-color: var(--accent) !important;
+    color: #000000 !important;
+    font-weight: 600 !important;
+    box-shadow: 0 4px 12px rgba(255, 160, 0, 0.3) !important;
+}
+
+/* Logs Controls */
+#logs-controls {
+    display: flex !important;
+    gap: 8px !important;
+    align-items: center !important;
+    width: 100% !important;
+    justify-content: center !important;
+}
+
+#logs-controls .search-input-group {
+    flex: 1 !important;
+    max-width: 400px !important;
+    display: flex !important;
+    align-items: center !important;
+    background-color: var(--bg-card) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 8px !important;
+    padding: 0 12px !important;
+    height: 40px !important;
+}
+
+#logs-controls .search-icon {
+    color: var(--text-secondary) !important;
+    margin-right: 10px !important;
+}
+
+#logSearchInput {
+    width: 100% !important;
+    border: none !important;
+    background: transparent !important;
+    color: var(--text-primary) !important;
+    outline: none !important;
+}
+
+.log-input {
+    width: auto !important;
+    height: 40px !important;
+    background-color: var(--bg-card) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 8px !important;
+    color: var(--text-primary) !important;
+    padding: 0 10px !important;
+}
+
+/* Ações (Direita) */
+.management-actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+
+#savePermissionsBtn {
+    height: 40px !important;
+    padding: 0 20px !important;
+    background: #27ae60 !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 12px rgba(39, 174, 96, 0.25) !important;
+}
+
+#savePermissionsBtn:hover:not(:disabled) {
+    background: #2ecc71 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 16px rgba(39, 174, 96, 0.35) !important;
+}
+
+#savePermissionsBtn:disabled {
+    background: rgba(39, 174, 96, 0.3) !important;
+    color: rgba(255, 255, 255, 0.5) !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+#addNewUserBtn {
+    height: 40px !important;
+    padding: 0 20px !important;
+    background: var(--accent) !important;
+    color: #000000 !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 12px rgba(255, 160, 0, 0.25) !important;
+}
+
+#addNewUserBtn:hover {
+    background: var(--accent-hover) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 16px rgba(255, 160, 0, 0.35) !important;
+}
+
+#addNewUserBtn i {
+    color: #000000 !important;
+}
+
+/* Botão de Buscar Logs */
+#btnSearchLogs {
+    height: 40px !important;
+    padding: 0 20px !important;
+    background: var(--accent) !important;
+    color: #000000 !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    transition: all 0.3s ease !important;
+}
+
+#btnSearchLogs:hover {
+    background: var(--accent-hover) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* Botão de Imprimir Logs */
+#btnPrintLogs {
+    height: 40px !important;
+    padding: 0 20px !important;
+    background: var(--card-bg) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 8px !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    transition: all 0.3s ease !important;
+}
+
+#btnPrintLogs:hover {
+    border-color: var(--accent) !important;
+    color: var(--accent) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* Management Body */
+#management-body {
+    margin-top: 20px !important;
+}
+
+/* Users Container */
+#users-container {
+    display: block !important;
+}
+
+#users-container.hidden {
+    display: none !important;
+}
+
+/* Permissions Container */
+#permissions-container {
+    display: block !important;
+}
+
+#permissions-container.hidden {
+    display: none !important;
+}
+
+/* Logs Container */
+#logs-container {
+    display: block !important;
+}
+
+#logs-container.hidden {
+    display: none !important;
+}
+
+/* Users Grid */
+.users-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 20px !important;
+}
+
+@media (max-width: 1300px) {
+    .users-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+@media (max-width: 850px) {
+    .users-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* User Card */
+.user-card {
+    background: var(--card-bg) !important;
+    border-radius: 12px !important;
+    padding: 20px !important;
+    position: relative !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    transition: transform 0.3s, box-shadow 0.3s !important;
+}
+
+.user-card:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+.user-info-top {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    margin-bottom: 15px !important;
+}
+
+.user-card-header {
+    display: flex !important;
+    align-items: center !important;
+}
+
+.user-avatar {
+    width: 48px !important;
+    height: 48px !important;
+    background: var(--accent) !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 1.2rem !important;
+    font-weight: 700 !important;
+    color: #000000 !important;
+    margin-right: 15px !important;
+    flex-shrink: 0 !important;
+}
+
+.user-name-group h3 {
+    margin: 0 !important;
+    font-size: 1.15rem !important;
+    font-weight: 600 !important;
+    color: white !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+.user-name-group .user-handle {
+    display: block !important;
+    font-size: 0.85rem !important;
+    color: var(--text-secondary) !important;
+    margin-top: 4px !important;
+}
+
+.user-card-actions {
+    display: flex !important;
+    gap: 8px !important;
+}
+
+.user-card-actions .btn-icon {
+    background: transparent !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: var(--text-secondary) !important;
+    cursor: pointer !important;
+    padding: 8px !important;
+    border-radius: 6px !important;
+    transition: all 0.3s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 32px !important;
+    height: 32px !important;
+}
+
+.user-card-actions .btn-icon:hover {
+    background: rgba(255, 160, 0, 0.1) !important;
+    color: var(--accent) !important;
+    border-color: rgba(255, 160, 0, 0.2) !important;
+}
+
+.user-info-bottom {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-top: 10px !important;
+}
+
+/* Status Indicators */
+.user-status-indicator {
+    display: inline-block !important;
+    width: 8px !important;
+    height: 8px !important;
+    border-radius: 50% !important;
+    margin-right: 8px !important;
+}
+
+.user-status-indicator.active {
+    background: #27ae60 !important;
+    box-shadow: 0 0 8px rgba(39, 174, 96, 0.5) !important;
+}
+
+.user-status-indicator.inactive {
+    background: #e74c3c !important;
+    box-shadow: 0 0 8px rgba(231, 76, 60, 0.5) !important;
+}
+
+.badge-reset-status {
+    padding: 4px 10px !important;
+    border-radius: 12px !important;
+    font-size: 0.7rem !important;
+    font-weight: 600 !important;
+    background: rgba(255, 193, 7, 0.15) !important;
+    color: #ffc107 !important;
+    border: 1px solid rgba(255, 193, 7, 0.3) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+}
+
+/* Badge Roles */
+.badge-role {
+    padding: 4px 12px !important;
+    border-radius: 15px !important;
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+}
+
+.badge-administrador {
+    background: rgba(239, 83, 80, 0.15) !important;
+    color: #ef5350 !important;
+    border: 1px solid rgba(239, 83, 80, 0.3) !important;
+}
+
+.badge-analista {
+    background: rgba(41, 182, 246, 0.15) !important;
+    color: #29b6f6 !important;
+    border: 1px solid rgba(41, 182, 246, 0.3) !important;
+}
+
+.badge-tecnico {
+    background: rgba(102, 187, 106, 0.15) !important;
+    color: #66bb6a !important;
+    border: 1px solid rgba(102, 187, 106, 0.3) !important;
+}
+
+/* Permissions Table */
+.permissions-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+}
+
+.permissions-table th {
+    background: rgba(0, 0, 0, 0.3) !important;
+    text-align: center !important;
+    padding: 20px 15px !important;
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    color: var(--text-secondary) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1.2px !important;
+}
+
+.permissions-table th:first-child,
+.permissions-table th:nth-child(2) {
+    text-align: left !important;
+}
+
+.permissions-table td {
+    padding: 18px 15px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03) !important;
+    font-size: 0.95rem !important;
+    vertical-align: middle !important;
+    text-align: center !important;
+}
+
+.permissions-table td:first-child,
+.permissions-table td:nth-child(2) {
+    text-align: left !important;
+}
+
+.permissions-table td:first-child {
+    font-weight: 700 !important;
+    color: var(--text-primary) !important;
+}
+
+.permission-header-item {
+    padding-left: 20px !important;
+    color: #fff !important;
+    font-weight: 700 !important;
+}
+
+.permission-sub-item {
+    padding-left: 45px !important;
+    color: var(--text-secondary) !important;
+    font-weight: 400 !important;
+    position: relative !important;
+}
+
+.permission-sub-item::before {
+    content: '└─' !important;
+    position: absolute !important;
+    left: 25px !important;
+    opacity: 0.3 !important;
+}
+
+.permission-header-row {
+    background: rgba(255, 255, 255, 0.02) !important;
+}
+
+.permission-row:hover td {
+    background: rgba(255, 255, 255, 0.03) !important;
+}
+
+/* Custom Checkbox */
+.perm-checkbox {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    width: 24px !important;
+    height: 24px !important;
+    border: 2px solid rgba(255, 160, 0, 0.3) !important;
+    border-radius: 6px !important;
+    background: rgba(255, 160, 0, 0.05) !important;
+    cursor: pointer !important;
+    position: relative !important;
+    transition: all 0.3s !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 auto !important;
+}
+
+.perm-checkbox:checked {
+    background: var(--accent) !important;
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 10px rgba(255, 160, 0, 0.3) !important;
+}
+
+.perm-checkbox:checked::after {
+    content: '\f00c' !important;
+    font-family: 'Font Awesome 6 Free' !important;
+    font-weight: 900 !important;
+    color: #000000 !important;
+    font-size: 0.85rem !important;
+}
+
+/* Logs Table */
+.logs-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+}
+
+.logs-table th {
+    background: rgba(0, 0, 0, 0.3) !important;
+    text-align: left !important;
+    padding: 15px !important;
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    color: var(--text-secondary) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1.2px !important;
+}
+
+.logs-table td {
+    padding: 15px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03) !important;
+    font-size: 0.9rem !important;
+    color: var(--text-primary) !important;
+}
+
+.logs-table tr:hover td {
+    background: rgba(255, 255, 255, 0.02) !important;
+}
+
+/* Pagination */
+.logs-pagination-controls {
+    display: flex !important;
+    justify-content: center !important;
+    gap: 10px !important;
+    margin-top: 15px !important;
+}
+
+.logs-pagination-controls button {
+    padding: 8px 16px !important;
+    background: var(--card-bg) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 6px !important;
+    color: var(--text-primary) !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+}
+
+.logs-pagination-controls button:hover:not(:disabled) {
+    border-color: var(--accent) !important;
+    color: var(--accent) !important;
+}
+
+.logs-pagination-controls button:disabled {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center !important;
+    padding: 60px 20px !important;
+    color: var(--text-secondary) !important;
+}
+
+.empty-state i {
+    font-size: 3rem !important;
+    margin-bottom: 15px !important;
+    opacity: 0.5 !important;
+}
+
+.empty-state p {
+    font-size: 1.1rem !important;
+    margin: 0 !important;
+}
