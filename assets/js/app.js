@@ -2964,19 +2964,39 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.warn('🔒 Permissions system not ready, defaulting to DENY for Observações.');
         }
 
+        const notesForm = document.getElementById('notesForm');
+        const modalActions = notesForm.querySelector('.modal-actions');
         const cancelBtn = document.getElementById('cancelNotesBtn');
         const saveBtn = document.querySelector('#notesForm button[type="submit"]');
 
+        console.log('🔒 Debug Observações:', {
+            canEdit,
+            modalActionsFound: !!modalActions,
+            cancelBtnFound: !!cancelBtn,
+            saveBtnFound: !!saveBtn
+        });
+
         if (!canEdit) {
             // Modo Visualização
-            if (cancelBtn) cancelBtn.style.display = 'none';
-            if (saveBtn) saveBtn.style.display = 'none';
+            if (modalActions) {
+                modalActions.style.setProperty('display', 'none', 'important');
+                modalActions.classList.add('hidden');
+            } else {
+                // Fallback para botões individuais
+                if (cancelBtn) cancelBtn.style.display = 'none';
+                if (saveBtn) saveBtn.style.display = 'none';
+            }
             clientNoteInput.readOnly = true;
             clientNoteInput.classList.add('read-only-field'); // Opcional: adicionar estilo visual
         } else {
             // Modo Edição
-            if (cancelBtn) cancelBtn.style.display = '';
-            if (saveBtn) saveBtn.style.display = '';
+            if (modalActions) {
+                modalActions.style.display = ''; // Restaura padrão (flex/block)
+                modalActions.classList.remove('hidden');
+            } else {
+                if (cancelBtn) cancelBtn.style.display = '';
+                if (saveBtn) saveBtn.style.display = '';
+            }
             clientNoteInput.readOnly = false;
             clientNoteInput.classList.remove('read-only-field');
         }
