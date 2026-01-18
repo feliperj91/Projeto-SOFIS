@@ -724,9 +724,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const isDashboard = mod === 'Dashboard';
                 const isHeaderItem = item.isHeader;
                 const isPermissions = mod === 'Permissões';
+                const isLogs = mod === 'Logs de Auditoria';
+                const isResetPassword = mod === 'Reset de Senha';
 
-                // Criar e Excluir desabilitados para: Dashboard, Headers e Permissões
-                const shouldDisableAll = isDashboard || isHeaderItem;
+                // Criar e Excluir desabilitados para: Dashboard, Headers, Permissões, Logs e Reset
+                const shouldDisableAll = isDashboard || isHeaderItem || isLogs || isResetPassword;
                 const shouldDisableCreateDelete = shouldDisableAll || isPermissions;
 
                 const disabledCreate = shouldDisableCreateDelete ? 'disabled class="perm-checkbox-disabled"' : 'class="perm-checkbox"';

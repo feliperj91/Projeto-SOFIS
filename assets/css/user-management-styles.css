@@ -137,6 +137,47 @@
     color: var(--text-secondary);
 }
 
+/* Botões de Logs */
+#btnSearchLogs,
+#btnPrintLogs {
+    height: 40px;
+    padding: 0 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+#btnSearchLogs {
+    background: var(--accent);
+    color: #000000;
+    box-shadow: 0 4px 12px rgba(255, 160, 0, 0.25);
+}
+
+#btnSearchLogs:hover {
+    background: var(--accent-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(255, 160, 0, 0.35);
+}
+
+#btnPrintLogs {
+    background: var(--card-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+}
+
+#btnPrintLogs:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(-2px);
+}
+
 /* Management Body */
 #management-body {
     margin-top: 20px;
