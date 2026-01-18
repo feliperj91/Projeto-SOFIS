@@ -68,9 +68,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             type: 'guide',
             title: 'Guia Gerenciamento de Usuários',
             items: [
-                { module: 'Usuários', isHeader: true },
+                { module: 'Gestão de Usuários', label: 'Gerenciamento de Usuários', isHeader: true },
+                { module: 'Usuários' },
                 { module: 'Permissões' },
-                { module: 'Logs de Auditoria' }
+                { module: 'Logs de Auditoria' },
+                { module: 'Reset de Senha' }
             ]
         }
     ];
@@ -365,7 +367,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </div>
                         <div class="user-name-group">
                             <h3>${activeStatusHtml} ${u.full_name || 'N/A'}</h3>
-                            <span class="user-handle">@${u.username}</span>
+                            <span class="user-handle">Login: ${u.username}</span>
                         </div>
                     </div>
                     <div class="user-card-actions">
@@ -440,7 +442,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Reset Password Button Logic
         const btnReset = document.getElementById('btnResetPassword');
         if (btnReset) {
-            btnReset.classList.remove('hidden');
+            // Check Permission
+            const canReset = window.Permissions.can('Reset de Senha', 'can_edit');
+
+            if (canReset) {
+                btnReset.classList.remove('hidden');
+            } else {
+                btnReset.classList.add('hidden');
+            }
+
             btnReset.onclick = async () => {
                 const confirmed = await window.showConfirm(
                     `No próximo login, o sistema identificará o reset e solicitará ao usuário a criação de uma nova senha.`,

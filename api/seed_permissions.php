@@ -12,8 +12,12 @@ $roles = [
         'Dados de Acesso (VPN)'        => [1,1,1,1],
         'URLs'                         => [1,1,1,1],
         'Gestão de Usuários'           => [1,1,1,1],
+        'Usuários'                     => [1,1,1,1],
+        'Permissões'                   => [1,1,1,1],
+        'Logs de Auditoria'            => [1,1,1,1],
+        'Reset de Senha'               => [1,1,1,1],
         'Controle de Versões'          => [1,1,1,1],
-        'Controle de Versões - Produtos' => [1,1,1,1]
+        'Produtos' => [1,1,1,1]
     ],
     'TECNICO' => [
         'Logs e Atividades'            => [1,0,0,0],
@@ -23,8 +27,12 @@ $roles = [
         'Dados de Acesso (VPN)'        => [1,1,1,0],
         'URLs'                         => [1,1,1,0],
         'Gestão de Usuários'           => [0,0,0,0],
+        'Usuários'                     => [0,0,0,0],
+        'Permissões'                   => [0,0,0,0],
+        'Logs de Auditoria'            => [0,0,0,0],
+        'Reset de Senha'               => [0,0,0,0],
         'Controle de Versões'          => [1,1,1,0],
-        'Controle de Versões - Produtos' => [1,1,1,0]
+        'Produtos' => [1,1,1,0]
     ],
     'ANALISTA' => [
         'Logs e Atividades'            => [1,1,0,0],
@@ -34,8 +42,12 @@ $roles = [
         'Dados de Acesso (VPN)'        => [1,0,0,0],
         'URLs'                         => [1,0,0,0],
         'Gestão de Usuários'           => [0,0,0,0],
+        'Usuários'                     => [0,0,0,0],
+        'Permissões'                   => [0,0,0,0],
+        'Logs de Auditoria'            => [0,0,0,0],
+        'Reset de Senha'               => [0,0,0,0],
         'Controle de Versões'          => [1,1,1,0],
-        'Controle de Versões - Produtos' => [1,1,1,0]
+        'Produtos' => [1,1,1,0]
     ]
 ];
 

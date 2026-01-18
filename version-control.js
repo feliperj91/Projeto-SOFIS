@@ -1800,8 +1800,8 @@
         if (!tbody) return;
         tbody.innerHTML = '';
 
-        const canEdit = window.Permissions?.can('Controle de Versões - Produtos', 'can_edit');
-        const canDelete = window.Permissions?.can('Controle de Versões - Produtos', 'can_delete');
+        const canEdit = window.Permissions?.can('Produtos', 'can_edit');
+        const canDelete = window.Permissions?.can('Produtos', 'can_delete');
         const hasActions = canEdit || canDelete;
 
         // Sync header visibility
@@ -1847,15 +1847,15 @@
     }
 
     window.openProductManagement = async () => {
-        if (window.Permissions && !window.Permissions.can('Controle de Versões - Produtos', 'can_view')) {
+        if (window.Permissions && !window.Permissions.can('Produtos', 'can_view')) {
             if (window.showToast) window.showToast('🚫 Sem permissão para gerenciar produtos.', 'error');
             return;
         }
         await loadProducts();
 
         // Check if can create or edit to show/hide the form
-        const canCreate = window.Permissions?.can('Controle de Versões - Produtos', 'can_create');
-        const canEdit = window.Permissions?.can('Controle de Versões - Produtos', 'can_edit');
+        const canCreate = window.Permissions?.can('Produtos', 'can_create');
+        const canEdit = window.Permissions?.can('Produtos', 'can_edit');
         const form = document.getElementById('productForm');
         if (form) {
             form.style.display = (canCreate || canEdit) ? 'flex' : 'none';
@@ -1898,7 +1898,7 @@
     }
 
     window.editProduct = (id) => {
-        if (window.Permissions && !window.Permissions.can('Controle de Versões - Produtos', 'can_edit')) {
+        if (window.Permissions && !window.Permissions.can('Produtos', 'can_edit')) {
             if (window.showToast) window.showToast('🚫 Sem permissão para editar produtos.', 'error');
             return;
         }
@@ -1914,7 +1914,7 @@
     };
 
     window.deleteProduct = async (id) => {
-        if (!window.Permissions?.can('Controle de Versões - Produtos', 'can_delete')) {
+        if (!window.Permissions?.can('Produtos', 'can_delete')) {
             if (window.showToast) window.showToast('🚫 Sem permissão para excluir produtos.', 'error');
             return;
         }
@@ -1941,8 +1941,8 @@
     document.getElementById('productForm')?.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        const canCreate = window.Permissions?.can('Controle de Versões - Produtos', 'can_create');
-        const canEdit = window.Permissions?.can('Controle de Versões - Produtos', 'can_edit');
+        const canCreate = window.Permissions?.can('Produtos', 'can_create');
+        const canEdit = window.Permissions?.can('Produtos', 'can_edit');
 
         const id = document.getElementById('productId').value;
         if (id && !canEdit) {
