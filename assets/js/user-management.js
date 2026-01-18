@@ -723,11 +723,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Dashboard e Headers: apenas "Visualizar" é funcional
                 const isDashboard = mod === 'Dashboard';
                 const isHeaderItem = item.isHeader;
-                const shouldDisable = isDashboard || isHeaderItem;
+                const isPermissions = mod === 'Permissões';
 
-                const disabledCreate = shouldDisable ? 'disabled class="perm-checkbox-disabled"' : 'class="perm-checkbox"';
-                const disabledEdit = shouldDisable ? 'disabled class="perm-checkbox-disabled"' : 'class="perm-checkbox"';
-                const disabledDelete = shouldDisable ? 'disabled class="perm-checkbox-disabled"' : 'class="perm-checkbox"';
+                // Criar e Excluir desabilitados para: Dashboard, Headers e Permissões
+                const shouldDisableAll = isDashboard || isHeaderItem;
+                const shouldDisableCreateDelete = shouldDisableAll || isPermissions;
+
+                const disabledCreate = shouldDisableCreateDelete ? 'disabled class="perm-checkbox-disabled"' : 'class="perm-checkbox"';
+                const disabledEdit = shouldDisableAll ? 'disabled class="perm-checkbox-disabled"' : 'class="perm-checkbox"';
+                const disabledDelete = shouldDisableCreateDelete ? 'disabled class="perm-checkbox-disabled"' : 'class="perm-checkbox"';
 
                 const tr = document.createElement('tr');
                 tr.className = item.isHeader ? 'permission-header-row' : 'permission-row';
