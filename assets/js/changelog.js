@@ -3,6 +3,18 @@
 
 window.SOFIS_CHANGELOG = [
     {
+        version: '2.0.9',
+        date: '2026-01-18',
+        title: 'Correção de Interface e Melhorias de UX',
+        changes: [
+            { type: 'fix', text: 'Correção crítica de estilos na página de Gerenciamento de Usuários (remoção de estilos inline).' },
+            { type: 'feat', text: 'Checkboxes de permissões não funcionais agora exibem indicador visual de desabilitado (ícone 🚫).' },
+            { type: 'feat', text: 'Adicionados botões de Buscar e Imprimir na interface de Logs (apenas ícones, design limpo).' },
+            { type: 'imp', text: 'Reorganização da estrutura HTML da toolbar de usuários para layout correto.' },
+            { type: 'style', text: 'Melhorias visuais em checkboxes desabilitados (Dashboard, Permissões, Logs, Reset de Senha).' }
+        ]
+    },
+    {
         version: '2.0.8',
         date: '2026-01-18',
         title: 'Manutenção e Limpeza',
