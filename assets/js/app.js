@@ -590,6 +590,31 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Initial Render
+    // Global Favorites State
+    window.userFavorites = new Set();
+
+    async function loadUserFavorites() {
+        const user = JSON.parse(localStorage.getItem('sofis_user') || '{}');
+        if (!user.username) {
+            console.warn('⚠️ Usuário não identificado para carregar favoritos.');
+            return;
+        }
+
+        try {
+            if (window.api && window.api.favorites) {
+                const favs = await window.api.favorites.list(user.username);
+                window.userFavorites.clear();
+                if (Array.isArray(favs)) {
+                    favs.forEach(f => window.userFavorites.add(f.client_id));
+                }
+                console.log(`⭐ Favoritos carregados para [${user.username}]: ${window.userFavorites.size}`);
+            }
+        } catch (e) {
+            console.error('❌ Erro ao carregar favoritos:', e);
+            // Non-blocking error
+        }
+    }
+
     // Renderização Inicial
     async function initialLoad() {
         renderSkeleton();
