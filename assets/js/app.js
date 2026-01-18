@@ -248,26 +248,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         const user = JSON.parse(localStorage.getItem('sofis_user') || '{}');
         const username = user.username || 'Sistema';
 
-        // Helper to mask sensitive fields in objects
+        // Helper to mask sensitive fields in objects (JSON storage).
+        // Relaxed masking: only passwords.
         const sanitize = (obj) => {
             if (!obj || typeof obj !== 'object') return obj;
             try {
                 const s = JSON.parse(JSON.stringify(obj)); // Deep copy
 
                 const mask = (item) => {
+                    // Mask passwords everywhere
                     if (item.password) item.password = '********';
+                    if (item.pass) item.pass = '********';
+
+                    // Specific sub-structures
                     if (item.credentials && Array.isArray(item.credentials)) {
                         item.credentials.forEach(c => {
                             if (c.password) c.password = '********';
-                            if (c.user) c.user = '********';
+                            // Do NOT mask username
                         });
                     }
-                    if (item.phones && Array.isArray(item.phones)) {
-                        item.phones = item.phones.map(() => '********');
+                    if (item.webLaudo) {
+                        if (typeof item.webLaudo === 'object') {
+                            if (item.webLaudo.password) item.webLaudo.password = '********';
+                        }
                     }
-                    if (item.emails && Array.isArray(item.emails)) {
-                        item.emails = item.emails.map(() => '********');
-                    }
+                    // Do NOT mask phones/emails anymore as per requirement for clear logs
                 };
 
                 if (Array.isArray(s)) {
@@ -279,6 +284,52 @@ document.addEventListener('DOMContentLoaded', async () => {
             } catch (e) {
                 return obj;
             }
+        };
+
+        // Helper to generate readable text diff
+        const generateDiff = (oldObj, newObj) => {
+            if (!oldObj || !newObj) return '';
+            const changes = [];
+
+            // Helper to check keys
+            const allKeys = new Set([...Object.keys(oldObj), ...Object.keys(newObj)]);
+
+            allKeys.forEach(key => {
+                // Skip internal keys or irrelevant ones
+                if (['credentials', 'vpns', 'servers', 'urls', 'contacts', 'updatedAt'].includes(key)) return;
+
+                const oVal = oldObj[key];
+                const nVal = newObj[key];
+
+                if ((typeof nVal !== 'object' && typeof oVal !== 'object') && nVal !== oVal) {
+                    // Check for passwords
+                    if (key.toLowerCase().includes('password') || key.toLowerCase().includes('senha') || key.toLowerCase().includes('pass')) {
+                        changes.push(`${key}: (alterada)`);
+                    } else {
+                        // Skip empty to empty changes
+                        if (!oVal && !nVal) return;
+                        changes.push(`${key}: '${oVal || ''}' -> '${nVal || ''}'`);
+                    }
+                }
+            });
+
+            // Specific Array Handling
+            // Credentials (SQL)
+            if (newObj.credentials && oldObj.credentials) {
+                const oCreds = oldObj.credentials || [];
+                const nCreds = newObj.credentials || [];
+                if (JSON.stringify(oCreds) !== JSON.stringify(nCreds)) {
+                    nCreds.forEach((nc, i) => {
+                        const oc = oCreds[i];
+                        if (!oc) { changes.push(`+ Nova Credencial (${nc.user})`); return; }
+                        if (nc.user !== oc.user) changes.push(`User SQL: ${oc.user} -> ${nc.user}`);
+                        if (nc.password !== oc.password) changes.push(`Senha SQL (${nc.user}): (alterada)`);
+                    });
+                    if (oCreds.length > nCreds.length) changes.push(`${oCreds.length - nCreds.length} credencial(is) SQL removida(s)`);
+                }
+            }
+
+            return changes.join(', ');
         };
 
         if (window.api && window.api.logs) {
@@ -293,6 +344,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
                 }
 
+                // Auto-generate diff for EDIT operations
+                if (opType === 'EDIÇÃO' && oldVal && newVal) {
+                    const diff = generateDiff(oldVal, newVal);
+                    if (diff) {
+                        details += ` | Alt: [${diff}]`;
+                    }
+                }
+
                 await window.api.logs.create({
                     username: username,
                     operation_type: opType,
@@ -302,6 +361,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     new_value: sanitize(newVal),
                     client_name: cName || null
                 });
+
                 // Refresh activity feed if sidebar is open or after an action
                 if (typeof fetchRecentActivities === 'function') await fetchRecentActivities();
             } catch (err) {
