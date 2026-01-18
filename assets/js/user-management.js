@@ -706,6 +706,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             guide.items.forEach(item => {
                 const mod = item.module;
                 const label = item.label || mod;
+
+                // Ocultar linha de Produtos se o usuário logado não tiver permissão de visualização
+                if (mod === 'Produtos' && window.Permissions && !window.Permissions.can('Produtos', 'can_view')) {
+                    return; // Pula esta linha
+                }
+
                 const p = permData.find(x => x.module === mod) || {
                     can_view: false, can_create: false, can_edit: false, can_delete: false
                 };
@@ -721,13 +727,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const indentClass = item.isHeader ? 'permission-header-item' : 'permission-sub-item';
 
                 // Dashboard e Headers: apenas "Visualizar" é funcional
+                // EXCETO "Gerenciamento de Usuários" que deve ter todos os checkboxes funcionais
                 const isDashboard = mod === 'Dashboard';
-                const isHeaderItem = item.isHeader;
+                const isUserManagement = mod === 'Gerenciamento de Usuários';
+                const isHeaderItem = item.isHeader && !isUserManagement; // Excluir Gerenciamento de Usuários
                 const isPermissions = mod === 'Permissões';
                 const isLogs = mod === 'Logs de Auditoria';
                 const isResetPassword = mod === 'Reset de Senha';
 
-                // Criar e Excluir desabilitados para: Dashboard, Headers, Permissões, Logs e Reset
+                // Criar e Excluir desabilitados para: Dashboard, Headers (exceto User Management), Permissões, Logs e Reset
                 const shouldDisableAll = isDashboard || isHeaderItem || isLogs || isResetPassword;
                 const shouldDisableCreateDelete = shouldDisableAll || isPermissions;
 
