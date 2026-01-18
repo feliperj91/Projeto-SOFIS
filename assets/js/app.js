@@ -2955,20 +2955,30 @@ document.addEventListener('DOMContentLoaded', async () => {
         notesModalTitle.innerHTML = `Observações - <span style="color: var(--accent);">${client.name}</span>`;
         clientNoteInput.value = client.notes || '';
 
-        // Permission Check for Edit
-        const canEdit = window.Permissions ? window.Permissions.can('Gestão de Clientes', 'can_edit') : true;
+        // Permission Check for Edit (Default to FALSE for security)
+        let canEdit = false;
+        if (window.Permissions && window.Permissions.can) {
+            canEdit = window.Permissions.can('Gestão de Clientes', 'can_edit');
+            console.log(`🔒 Checking Permissions for Observações: can_edit=${canEdit}`);
+        } else {
+            console.warn('🔒 Permissions system not ready, defaulting to DENY for Observações.');
+        }
 
         const cancelBtn = document.getElementById('cancelNotesBtn');
         const saveBtn = document.querySelector('#notesForm button[type="submit"]');
 
         if (!canEdit) {
+            // Modo Visualização
             if (cancelBtn) cancelBtn.style.display = 'none';
             if (saveBtn) saveBtn.style.display = 'none';
             clientNoteInput.readOnly = true;
+            clientNoteInput.classList.add('read-only-field'); // Opcional: adicionar estilo visual
         } else {
+            // Modo Edição
             if (cancelBtn) cancelBtn.style.display = '';
             if (saveBtn) saveBtn.style.display = '';
             clientNoteInput.readOnly = false;
+            clientNoteInput.classList.remove('read-only-field');
         }
 
         notesModal.classList.remove('hidden');
@@ -2980,6 +2990,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function handleNotesSubmit(e) {
         e.preventDefault();
+
+        // 🛡️ Security Check at Action Level
+        if (window.Permissions && !window.Permissions.can('Gestão de Clientes', 'can_edit')) {
+            showToast('🚫 Acesso negado: Você não tem permissão para editar observações.', 'error');
+            closeNotesModal(); // Fecha para evitar confusão
+            return;
+        }
+
         const id = notesClientIdInput.value;
         const client = clients.find(c => c.id == id);
 
