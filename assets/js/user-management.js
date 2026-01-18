@@ -1036,7 +1036,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <td>${dateStr}</td>
                             <td>${log.username || '-'}</td>
                             <td>${log.action || '-'}</td>
-                            <td>${log.details || '-'}</td>
+                            <td>${formatLogDetails(log.details || '-')}</td>
                             <td>${typeLabel}</td>
                         </tr>
                     `;
@@ -1125,6 +1125,81 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    function formatLogDetails(details) {
+        if (!details || details === '-') return '-';
+
+        // 1. Context vs Changes
+        const parts = details.split(' | Alt:');
+
+        // Format Context (Left part)
+        // Bold keys like "Cliente:", "Sistema:"
+        let contextHtml = parts[0].trim().replace(/([a-zA-ZãõçÃÕÇ ]+):/g, '<b>$1:</b>');
+
+        let changesHtml = '';
+
+        // Format Changes (Right part)
+        if (parts.length > 1) {
+            let diffRaw = parts[1].trim();
+            // Remove outer []
+            if (diffRaw.startsWith('[') && diffRaw.endsWith(']')) {
+                diffRaw = diffRaw.substring(1, diffRaw.length - 1);
+            }
+
+            // Split by comma respecting quotes
+            // Regex explain: Match comma only if not followed by odd number of quotes (simple approach)
+            const splitRegex = /,(?=(?:(?:[^']*'){2})*[^']*$)/;
+            const changes = diffRaw.split(splitRegex).map(c => c.trim()).filter(c => c);
+
+            const keyMap = {
+                'user': 'Usuário',
+                'password': 'Senha',
+                'pass': 'Senha',
+                'notes': 'Obs',
+                'environment': 'Ambiente',
+                'system': 'Sistema',
+                'bridgeDataAccess': 'Bridge',
+                'bootstrap': 'Bootstrap',
+                'execUpdate': 'Exec Update',
+                'sqlServer': 'Servidor SQL',
+                'webLaudo': 'WebLaudo',
+                'url': 'Url'
+            };
+
+            if (changes.length > 0) {
+                // Use a flex container for chips
+                changesHtml += '<div style="margin-top:4px; display:flex; flex-wrap:wrap; gap:4px;">';
+
+                changes.forEach(change => {
+                    // change is like "key: val" or "key: 'old' -> 'new'"
+                    // Extract key
+                    const keyMatch = change.match(/^([^:]+):/);
+                    if (keyMatch) {
+                        const rawKey = keyMatch[1].trim();
+                        const content = change.substring(rawKey.length + 1).trim();
+
+                        // Map key
+                        const label = keyMap[rawKey] || rawKey.charAt(0).toUpperCase() + rawKey.slice(1);
+
+                        // Clean quotes from content for display
+                        // e.g. "'old' -> 'new'" => "old -> new"
+                        const cleanContent = content.replace(/'/g, '');
+
+                        // Style chip
+                        changesHtml += `<span style="background:rgba(0,0,0,0.05); border:1px solid rgba(0,0,0,0.1); padding:2px 6px; border-radius:4px; font-size:0.85em; white-space:nowrap;">
+                            <b>${label}:</b> ${cleanContent}
+                        </span>`;
+                    } else {
+                        // Fallback
+                        changesHtml += `<span style="font-size:0.85em;">${change}</span>`;
+                    }
+                });
+                changesHtml += '</div>';
+            }
+        }
+
+        return `<div class="log-formatted">${contextHtml}${changesHtml}</div>`;
+    }
+
     function renderAuditLogs(logs) {
         if (!logsTableBody) return;
         logsTableBody.innerHTML = '';
@@ -1174,7 +1249,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <td><span class="log-date">${dateStr}</span></td>
                 <td><span class="log-user">@${log.username}</span></td>
                 <td><span class="log-action">${log.action}</span></td>
-                <td><div class="log-details" title="${log.details || ''}">${log.details || '-'}</div></td>
+                <td><div class="log-details" title="${(log.details || '').replace(/"/g, '&quot;')}">${formatLogDetails(log.details || '-')}</div></td>
                 <td>${badgeHtml}</td>
             `;
             logsTableBody.appendChild(tr);
