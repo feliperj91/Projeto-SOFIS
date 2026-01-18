@@ -2955,6 +2955,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         notesModalTitle.innerHTML = `Observações - <span style="color: var(--accent);">${client.name}</span>`;
         clientNoteInput.value = client.notes || '';
 
+        // Permission Check for Edit
+        const canEdit = window.Permissions ? window.Permissions.can('Gestão de Clientes', 'can_edit') : true;
+
+        const cancelBtn = document.getElementById('cancelNotesBtn');
+        const saveBtn = document.querySelector('#notesForm button[type="submit"]');
+
+        if (!canEdit) {
+            if (cancelBtn) cancelBtn.style.display = 'none';
+            if (saveBtn) saveBtn.style.display = 'none';
+            clientNoteInput.readOnly = true;
+        } else {
+            if (cancelBtn) cancelBtn.style.display = '';
+            if (saveBtn) saveBtn.style.display = '';
+            clientNoteInput.readOnly = false;
+        }
+
         notesModal.classList.remove('hidden');
     };
 
