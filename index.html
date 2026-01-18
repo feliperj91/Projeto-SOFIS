@@ -12,7 +12,6 @@
     <link rel="stylesheet" href="assets/css/credential-styles.css?v=2.5">
     <link rel="stylesheet" href="assets/css/version-control-styles.css?v=6.4">
     <link rel="stylesheet" href="assets/css/user-management-styles.css?v=2.1">
-    <link rel="stylesheet" href="assets/css/user-management-fix.css?v=1.0">
     <link rel="stylesheet" href="assets/css/pulse-dashboard.css?v=2.0">
     <link rel="stylesheet" href="assets/css/form-fixes.css?v=1.0">
     <link rel="stylesheet" href="assets/css/inactive-contract-styles.css?v=2.0.2">
@@ -173,12 +172,10 @@
         <!-- User Management Tab Content -->
         <main id="managementTab" class="tab-content">
             <!-- Toolbar Unificada: Abas - Pesquisa - Ações -->
-            <!-- Toolbar Unificada: Abas - Pesquisa - Ações -->
-            <div class="management-toolbar-container"
-                style="display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
+            <div class="management-toolbar-container">
 
                 <!-- 1. Abas (Esquerda) -->
-                <div class="management-subtabs" style="display: flex; gap: 8px;">
+                <div class="management-subtabs">
                     <button class="mng-tab-btn active" data-mng-tab="users">
                         <i class="fa-solid fa-users"></i><span>Usuários</span>
                     </button>
@@ -191,24 +188,19 @@
                 </div>
 
                 <!-- 2. Área Central (Pesquisa e Filtros) -->
-                <div class="management-center-controls" style="flex: 1; display: flex; justify-content: center;">
+                <div class="management-center-controls">
 
                     <!-- Busca de Usuários -->
-                    <div id="user-search-group" class="search-input-group"
-                        style="width: 100%; max-width: 600px; display: flex; align-items: center; background-color: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 0 12px; height: 40px;">
-                        <i class="fa-solid fa-magnifying-glass search-icon"
-                            style="color: var(--text-secondary); margin-right: 10px;"></i>
-                        <input type="text" id="userSearchInput" placeholder="Pesquisar usuário..."
-                            style="width: 100%; border: none; background: transparent; color: var(--text-primary); outline: none;">
-                        <button id="clearUserSearch" class="btn-clear hidden" title="Limpar pesquisa" tabindex="-1"
-                            style="background: transparent; border: none; color: var(--text-secondary); cursor: pointer;">
+                    <div id="user-search-group" class="search-input-group">
+                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                        <input type="text" id="userSearchInput" placeholder="Pesquisar usuário...">
+                        <button id="clearUserSearch" class="btn-clear hidden" title="Limpar pesquisa" tabindex="-1">
                             <i class="fa-solid fa-xmark"></i>
                         </button>
                     </div>
 
-                    <!-- Seletor de Cargos (Permissões) - REINSERIDO -->
-                    <div id="shared-mng-controls" class="hidden"
-                        style="display: flex; gap: 8px; justify-content: center; width: 100%;">
+                    <!-- Seletor de Cargos (Permissões) -->
+                    <div id="shared-mng-controls" class="hidden">
                         <button class="role-text-btn active"
                             data-role="ADMINISTRADOR"><span>ADMINISTRADOR</span></button>
                         <button class="role-text-btn" data-role="ANALISTA"><span>ANALISTA</span></button>
@@ -216,69 +208,62 @@
                     </div>
 
                     <!-- Filtros de Logs (Escondido por padrão) -->
-                    <div id="logs-controls" class="logs-controls-group hidden"
-                        style="display: flex; gap: 8px; align-items: center; width: 100%; justify-content: center;">
-
-                        <!-- Barra Pesquisa Log (Estilo igual Usuários) -->
-                        <div class="search-input-group"
-                            style="flex: 1; max-width: 400px; display: flex; align-items: center; background-color: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 0 12px; height: 40px;">
-                            <i class="fa-solid fa-magnifying-glass search-icon"
-                                style="color: var(--text-secondary); margin-right: 10px;"></i>
-                            <input type="text" id="logSearchInput" placeholder="Pesquisar log..."
-                                style="width: 100%; border: none; background: transparent; color: var(--text-primary); outline: none;">
+                    <div id="logs-controls" class="logs-controls-group hidden">
+                        <!-- Barra Pesquisa Log -->
+                        <div class="search-input-group">
+                            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                            <input type="text" id="logSearchInput" placeholder="Pesquisar log...">
                         </div>
 
-                        <input type="date" id="logStartDate" class="log-input" title="Data Inicial"
-                            style="width: auto; height: 40px; background-color: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); padding: 0 10px;">
-                        <span style="color: var(--text-secondary);">-</span>
-                        <input type="date" id="logEndDate" class="log-input" title="Data Final"
-                            style="width: auto; height: 40px; background-color: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); padding: 0 10px;">
+                        <input type="date" id="logStartDate" class="log-input" title="Data Inicial">
+                        <span class="date-separator">-</span>
+                        <input type="date" id="logEndDate" class="log-input" title="Data Final">
 
-
-                        <select id="logTypeSelect" class="log-input"
-                            style="width: auto; height: 40px; background-color: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); padding: 0 10px;">
+                        <select id="logTypeSelect" class="log-input">
                             <option value="">Todos</option>
                             <option value="SECURITY">Segurança</option>
                             <option value="CRIACAO">Criação</option>
                             <option value="EDICAO">Edição</option>
                             <option value="EXCLUSAO">Exclusão</option>
                         </select>
-                        <!-- 3. Ações (Direita) -->
-                        <div class="management-actions" style="display: flex; align-items: center; gap: 10px;">
-                            <button id="savePermissionsBtn" class="btn-flat-green hidden" disabled
-                                style="height: 40px; padding: 0 20px;">
-                                <i class="fa-regular fa-floppy-disk"></i> SALVAR
-                            </button>
-                            <button id="addNewUserBtn" class="btn-primary" style="height: 40px;">
-                                <i class="fa-solid fa-plus"></i> NOVO USUÁRIO
-                            </button>
-                        </div>
                     </div>
+                </div>
 
-                    <!-- Management Content Body -->
-                    <div id="management-body">
-                        <!-- User Grid -->
-                        <div id="users-container" class="mng-panel-active">
-                            <div id="usersList" class="users-grid">
-                                <!-- User cards will be rendered here -->
-                            </div>
-                        </div>
+                <!-- 3. Ações (Direita) -->
+                <div class="management-actions">
+                    <button id="savePermissionsBtn" class="btn-flat-green hidden" disabled>
+                        <i class="fa-regular fa-floppy-disk"></i> SALVAR
+                    </button>
+                    <button id="addNewUserBtn" class="btn-primary">
+                        <i class="fa-solid fa-plus"></i> NOVO USUÁRIO
+                    </button>
+                </div>
+            </div>
 
-                        <!-- Permissions Table -->
-                        <div id="permissions-container" class="hidden">
-                            <table class="permissions-table">
-                                <thead>
-                                    <tr>
-                                        <th>MÓDULO</th>
-                                        <th>GRUPO REQUISITADO</th>
-                                        <th>VISUALIZAR</th>
-                                        <th>CRIAR</th>
-                                        <th>EDITAR</th>
-                                        <th>EXCLUIR</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="permissionsTableBody">
-                                    <!-- Rows like:
+            <!-- Management Content Body -->
+            <div id="management-body">
+                <!-- User Grid -->
+                <div id="users-container" class="mng-panel-active">
+                    <div id="usersList" class="users-grid">
+                        <!-- User cards will be rendered here -->
+                    </div>
+                </div>
+
+                <!-- Permissions Table -->
+                <div id="permissions-container" class="hidden">
+                    <table class="permissions-table">
+                        <thead>
+                            <tr>
+                                <th>MÓDULO</th>
+                                <th>GRUPO REQUISITADO</th>
+                                <th>VISUALIZAR</th>
+                                <th>CRIAR</th>
+                                <th>EDITAR</th>
+                                <th>EXCLUIR</th>
+                            </tr>
+                        </thead>
+                        <tbody id="permissionsTableBody">
+                            <!-- Rows like:
                             <tr>
                                 <td>Logs e Atividades</td>
                                 <td><span class="badge-role badge-admin">ADMINISTRADOR</span></td>
@@ -286,36 +271,36 @@
                                 ...
                             </tr> 
                             -->
-                                </tbody>
-                            </table>
-                        </div>
+                        </tbody>
+                    </table>
+                </div>
 
-                        <!-- Logs Table -->
-                        <div id="logs-container" class="hidden">
-                            <div class="table-responsive">
-                                <table class="logs-table">
-                                    <thead>
-                                        <tr>
-                                            <th>DATA</th>
-                                            <th>USUÁRIO</th>
-                                            <th>AÇÃO</th>
-                                            <th>DETALHES</th>
-                                            <th>TIPO</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="logsTableBody">
-                                        <!-- Logs will be rendered here -->
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div class="logs-pagination-controls"
-                                style="display: flex; justify-content: center; gap: 10px; margin-top: 15px;">
-                                <button id="prevLogsBtn" class="btn-secondary" disabled>Anterior</button>
-                                <span id="logsPageInfo" style="align-self: center;">Página 1</span>
-                                <button id="nextLogsBtn" class="btn-secondary">Próximo</button>
-                            </div>
-                        </div>
+                <!-- Logs Table -->
+                <div id="logs-container" class="hidden">
+                    <div class="table-responsive">
+                        <table class="logs-table">
+                            <thead>
+                                <tr>
+                                    <th>DATA</th>
+                                    <th>USUÁRIO</th>
+                                    <th>AÇÃO</th>
+                                    <th>DETALHES</th>
+                                    <th>TIPO</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logsTableBody">
+                                <!-- Logs will be rendered here -->
+                            </tbody>
+                        </table>
                     </div>
+                    <div class="logs-pagination-controls"
+                        style="display: flex; justify-content: center; gap: 10px; margin-top: 15px;">
+                        <button id="prevLogsBtn" class="btn-secondary" disabled>Anterior</button>
+                        <span id="logsPageInfo" style="align-self: center;">Página 1</span>
+                        <button id="nextLogsBtn" class="btn-secondary">Próximo</button>
+                    </div>
+                </div>
+            </div>
         </main>
 
         <!-- Modal Form -->

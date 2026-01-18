@@ -2,6 +2,150 @@
    USER MANAGEMENT STYLES
    =================================== */
 
+/* Management Toolbar Container - Flexbox Layout */
+.management-toolbar-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+/* Management Subtabs */
+.management-subtabs {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+/* Management Center Controls */
+.management-center-controls {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+/* Management Actions */
+.management-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+/* Search Input Group */
+#user-search-group {
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    align-items: center;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0 12px;
+    height: 40px;
+}
+
+#user-search-group .search-icon {
+    color: var(--text-secondary);
+    margin-right: 10px;
+}
+
+#userSearchInput {
+    width: 100%;
+    border: none;
+    background: transparent;
+    color: var(--text-primary);
+    outline: none;
+    font-size: 0.95rem;
+}
+
+#userSearchInput::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.6;
+}
+
+#clearUserSearch {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+#clearUserSearch:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+/* Shared Management Controls (Role Selector) */
+#shared-mng-controls {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    width: 100%;
+}
+
+/* Logs Controls */
+#logs-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    width: 100%;
+    justify-content: center;
+}
+
+#logs-controls .search-input-group {
+    flex: 1;
+    max-width: 400px;
+    display: flex;
+    align-items: center;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0 12px;
+    height: 40px;
+}
+
+#logs-controls .search-icon {
+    color: var(--text-secondary);
+    margin-right: 10px;
+}
+
+#logSearchInput {
+    width: 100%;
+    border: none;
+    background: transparent;
+    color: var(--text-primary);
+    outline: none;
+}
+
+.log-input {
+    width: auto;
+    height: 40px;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-primary);
+    padding: 0 10px;
+}
+
+.date-separator {
+    color: var(--text-secondary);
+}
+
+/* Management Body */
+#management-body {
+    margin-top: 20px;
+}
+
+/* ===================================
+   LEGACY STYLES (Manter para compatibilidade)
+   =================================== */
+
 /* Management Toolbar - Two Rows Layout */
 .management-toolbar {
     display: flex;
