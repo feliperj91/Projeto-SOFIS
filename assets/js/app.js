@@ -586,11 +586,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Custom Filter State
     let currentServerFilter = 'all';
     let currentUrlFilter = 'all';
+    let currentUrlProductFilter = 'all';
 
     const serverFilterBtn = document.getElementById('serverFilterBtn');
     const serverFilterMenu = document.getElementById('serverFilterMenu');
     const urlFilterBtn = document.getElementById('urlFilterBtn');
     const urlFilterMenu = document.getElementById('urlFilterMenu');
+    const urlProductFilterBtn = document.getElementById('urlProductFilterBtn');
+    const urlProductFilterMenu = document.getElementById('urlProductFilterMenu');
+    const urlProductFilterLabel = document.getElementById('urlProductFilterLabel');
 
     const webLaudoDisplay = document.getElementById('webLaudoDisplay');
     const webLaudoForm = document.getElementById('webLaudoForm');
@@ -908,10 +912,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    if (urlProductFilterBtn) {
+        urlProductFilterBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            urlProductFilterMenu.classList.toggle('active');
+            if (urlFilterMenu) urlFilterMenu.classList.remove('active');
+            if (serverFilterMenu) serverFilterMenu.classList.remove('active');
+        });
+    }
+
     // Close menus on click outside
     document.addEventListener('click', () => {
         if (serverFilterMenu) serverFilterMenu.classList.remove('active');
         if (urlFilterMenu) urlFilterMenu.classList.remove('active');
+        if (urlProductFilterMenu) urlProductFilterMenu.classList.remove('active');
     });
 
     // Handle Filter Item Clicks
@@ -3164,6 +3178,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Reset filter state
         currentUrlFilter = 'all';
+        currentUrlProductFilter = 'all';
+        if (urlProductFilterLabel) urlProductFilterLabel.textContent = 'Todos';
+        if (urlProductFilterBtn) {
+            urlProductFilterBtn.classList.remove('filter-btn-active');
+            urlProductFilterBtn.style.background = 'rgba(255, 255, 255, 0.05)';
+        }
         if (urlFilterBtn) urlFilterBtn.classList.remove('filter-btn-active');
         if (urlFilterMenu) {
             urlFilterMenu.querySelectorAll('.dropdown-item').forEach(i => {
@@ -3175,6 +3195,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateWebLaudoDisplay(client);
 
         clearUrlForm();
+        populateUrlProductFilter(client);
         renderUrlList(client);
         urlModal.classList.remove('hidden');
     };
@@ -3386,6 +3407,63 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (editIdx) editIdx.value = '';
     }
 
+    function populateUrlProductFilter(client) {
+        if (!urlProductFilterMenu) return;
+
+        if (!client.urls || client.urls.length === 0) {
+            urlProductFilterMenu.innerHTML = '';
+            return;
+        }
+
+        // 1. Get unique product names
+        const products = [...new Set(client.urls.map(u => u.system).filter(s => s))].sort();
+
+        // 2. Build Menu HTML
+        let html = `
+            <div class="dropdown-item ${currentUrlProductFilter === 'all' ? 'selected' : ''}" data-value="all">
+                <span>Todos</span>
+                <i class="fa-solid fa-check check-icon"></i>
+            </div>
+        `;
+
+        products.forEach(prod => {
+            const isSelected = currentUrlProductFilter === prod;
+            html += `
+                <div class="dropdown-item ${isSelected ? 'selected' : ''}" data-value="${prod}">
+                    <span>${prod}</span>
+                    <i class="fa-solid fa-check check-icon"></i>
+                </div>
+            `;
+        });
+
+        urlProductFilterMenu.innerHTML = html;
+
+        // 3. Add Listeners
+        urlProductFilterMenu.querySelectorAll('.dropdown-item').forEach(item => {
+            item.addEventListener('click', () => {
+                currentUrlProductFilter = item.dataset.value;
+
+                // Update UI Selected
+                urlProductFilterMenu.querySelectorAll('.dropdown-item').forEach(i => i.classList.remove('selected'));
+                item.classList.add('selected');
+
+                // Update Label e Estilo do Botão
+                if (urlProductFilterLabel) urlProductFilterLabel.textContent = currentUrlProductFilter === 'all' ? 'Todos' : currentUrlProductFilter;
+
+                if (currentUrlProductFilter !== 'all') {
+                    urlProductFilterBtn.classList.add('filter-btn-active');
+                    urlProductFilterBtn.style.background = 'var(--primary-dark)';
+                } else {
+                    urlProductFilterBtn.classList.remove('filter-btn-active');
+                    urlProductFilterBtn.style.background = 'rgba(255, 255, 255, 0.05)';
+                }
+
+                renderUrlList(client);
+                urlProductFilterMenu.classList.remove('active');
+            });
+        });
+    }
+
     function renderUrlList(client) {
         const listContainer = document.getElementById('urlsList');
         if (!listContainer) return;
@@ -3400,6 +3478,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (filterValue !== 'all') {
             filteredUrls = filteredUrls.filter(u => u.environment === filterValue);
+        }
+
+        if (currentUrlProductFilter !== 'all') {
+            filteredUrls = filteredUrls.filter(u => u.system === currentUrlProductFilter);
         }
 
         if (filteredUrls.length === 0) {

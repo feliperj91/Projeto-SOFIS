@@ -746,6 +746,23 @@
                         <span class="modal-subtitle" id="urlModalClientName"></span>
                     </div>
                     <div style="display: flex; gap: 10px; align-items: center;">
+                        <div class="custom-dropdown" id="urlProductFilterDropdown"
+                            style="margin-right: 10px; min-width: 160px;">
+                            <button type="button" class="filter-icon-btn" id="urlProductFilterBtn"
+                                title="Filtrar por Produto"
+                                style="width: 100%; justify-content: space-between; padding: 0 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.05);">
+                                <div style="display: flex; align-items: center; gap: 8px; overflow: hidden;">
+                                    <i class="fa-solid fa-box-open" style="color: var(--accent);"></i>
+                                    <span id="urlProductFilterLabel"
+                                        style="font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px;">Todos</span>
+                                </div>
+                                <i class="fa-solid fa-chevron-down"
+                                    style="font-size: 0.8rem; margin-left: 8px; color: rgba(255,255,255,0.5);"></i>
+                            </button>
+                            <div class="dropdown-menu" id="urlProductFilterMenu">
+                                <!-- Dinâmico -->
+                            </div>
+                        </div>
                         <div class="custom-dropdown" id="urlFilterDropdown">
                             <button type="button" class="filter-icon-btn" id="urlFilterBtn"
                                 title="Filtrar por Ambiente">
