@@ -720,11 +720,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const roleClass = `badge-${role.toLowerCase()}`;
                 const indentClass = item.isHeader ? 'permission-header-item' : 'permission-sub-item';
 
-                // Dashboard: apenas "Visualizar" é funcional
+                // Dashboard e Headers: apenas "Visualizar" é funcional
                 const isDashboard = mod === 'Dashboard';
-                const disabledCreate = isDashboard ? 'disabled class="perm-checkbox-disabled"' : '';
-                const disabledEdit = isDashboard ? 'disabled class="perm-checkbox-disabled"' : '';
-                const disabledDelete = isDashboard ? 'disabled class="perm-checkbox-disabled"' : '';
+                const isHeaderItem = item.isHeader;
+                const shouldDisable = isDashboard || isHeaderItem;
+
+                const disabledCreate = shouldDisable ? 'disabled class="perm-checkbox-disabled"' : 'class="perm-checkbox"';
+                const disabledEdit = shouldDisable ? 'disabled class="perm-checkbox-disabled"' : 'class="perm-checkbox"';
+                const disabledDelete = shouldDisable ? 'disabled class="perm-checkbox-disabled"' : 'class="perm-checkbox"';
 
                 const tr = document.createElement('tr');
                 tr.className = item.isHeader ? 'permission-header-row' : 'permission-row';
