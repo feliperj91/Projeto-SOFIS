@@ -11,10 +11,39 @@ document.addEventListener('DOMContentLoaded', async () => {
     function checkUserManagementAccess() {
         if (window.Permissions) {
             // Main tab access
-            const managementTabBtn = document.getElementById('btnUserManagement');
             if (managementTabBtn) {
                 const canAccess = window.Permissions.can('Gestão de Usuários', 'can_view');
                 managementTabBtn.style.display = canAccess ? 'block' : 'none';
+
+                // Handle Content Logic (Search Bar, Lists, etc)
+                const mngToolbar = document.querySelector('.management-toolbar-container');
+                const mngBody = document.getElementById('management-body');
+                const mngTab = document.getElementById('managementTab');
+
+                if (mngTab) {
+                    if (!canAccess) {
+                        if (mngToolbar) mngToolbar.style.display = 'none';
+                        if (mngBody) mngBody.style.display = 'none';
+
+                        let userDenied = document.getElementById('userAccessDenied');
+                        if (!userDenied) {
+                            userDenied = document.createElement('div');
+                            userDenied.id = 'userAccessDenied';
+                            userDenied.className = 'access-denied-container';
+                            userDenied.innerHTML = `
+                                <i class="fa-solid fa-lock" style="font-size: 3rem; color: var(--text-secondary); margin-bottom: 15px;"></i>
+                                <p style="color: var(--text-secondary);">Você não tem permissão para visualizar usuários.</p>
+                            `;
+                            mngTab.appendChild(userDenied);
+                        }
+                        userDenied.style.display = 'flex';
+                    } else {
+                        if (mngToolbar) mngToolbar.style.display = ''; // Restore flex/default
+                        if (mngBody) mngBody.style.display = '';
+                        const userDenied = document.getElementById('userAccessDenied');
+                        if (userDenied) userDenied.style.display = 'none';
+                    }
+                }
             }
 
             // PDF Print Button Visibility
