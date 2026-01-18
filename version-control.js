@@ -866,39 +866,41 @@
         document.getElementById('versionHistoryTitle').innerHTML = `Histórico: <span style="color:var(--accent)">${utils.escapeHtml(clientName)}</span>`;
         modal.classList.remove('hidden');
 
-        // Reset filters
-        const sysFilter = document.getElementById('historySystemFilter');
-        const envFilter = document.getElementById('historyEnvFilter');
-        if (sysFilter) sysFilter.value = 'all';
-        if (envFilter) envFilter.value = 'all';
-
-        // Populate System Filter dynamically
-        if (sysFilter) {
-            sysFilter.innerHTML = '<option value="all">Todos os Produtos</option>';
-
-            // Get unique systems that this client has versions for
-            const clientSystems = [...new Set(versionControls
-                .filter(v => v.client_id === clientId)
-                .map(v => v.system)
-            )].filter(s => s && s.trim() !== ''); // Remove null/undefined/empty
-
-            // Sort alphabetically
-            clientSystems.sort((a, b) => a.localeCompare(b));
-
-            // Add each system as an option
-            clientSystems.forEach((systemName) => {
-                const opt = document.createElement('option');
-                opt.value = systemName;
-                opt.textContent = systemName;
-                sysFilter.appendChild(opt);
-            });
-        }
-
         renderHistoryLoading();
 
         try {
             const data = await window.api.versions.history(clientId);
             currentHistoryData = data || [];
+
+            // Populate System Filter dynamically based on History Data
+            const sysFilter = document.getElementById('historySystemFilter');
+            if (sysFilter) {
+                // Keep selected value if any, or default to all
+                const currentSelection = sysFilter.value;
+
+                sysFilter.innerHTML = '<option value="all">Todos os Produtos</option>';
+
+                // Get unique systems from history
+                const uniqueSystems = [...new Set(currentHistoryData.map(h => h.version_controls?.system))].filter(s => s && s.trim() !== '');
+
+                // Sort alphabetically
+                uniqueSystems.sort((a, b) => a.localeCompare(b));
+
+                // Add options
+                uniqueSystems.forEach(sys => {
+                    const opt = document.createElement('option');
+                    opt.value = sys;
+                    opt.textContent = sys;
+                    sysFilter.appendChild(opt);
+                });
+
+                // Restore selection if valid, otherwise 'all'
+                if (uniqueSystems.includes(currentSelection)) {
+                    sysFilter.value = currentSelection;
+                } else {
+                    sysFilter.value = 'all';
+                }
+            }
             window.filterHistory(); // Apply limits immediately
         } catch (e) {
             document.getElementById('versionHistoryList').innerHTML = '<div style="color:var(--danger); text-align:center; padding:20px;">Erro ao carregar dados.</div>';
