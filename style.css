@@ -2750,7 +2750,7 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
     border: 1px solid rgba(52, 152, 219, 0.3);
 }
 
-.change-badge.pref {
+.change-badge.perf {
     background: rgba(155, 89, 182, 0.15);
     color: #9b59b6;
     border: 1px solid rgba(155, 89, 182, 0.3);
@@ -2760,6 +2760,18 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
     background: rgba(255, 160, 0, 0.15);
     color: var(--accent);
     border: 1px solid rgba(255, 160, 0, 0.3);
+}
+
+.change-badge.sec {
+    background: rgba(255, 87, 34, 0.15);
+    color: #FF5722;
+    border: 1px solid rgba(255, 87, 34, 0.3);
+}
+
+.change-badge.doc {
+    background: rgba(96, 125, 139, 0.15);
+    color: #CFD8DC;
+    border: 1px solid rgba(96, 125, 139, 0.3);
 }
 
 /* Clickable Build Number */

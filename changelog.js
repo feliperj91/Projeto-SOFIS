@@ -3,6 +3,16 @@
 
 window.SOFIS_CHANGELOG = [
     {
+        version: '2.0.8',
+        date: '2026-01-18',
+        title: 'Manutenção e Limpeza',
+        changes: [
+            { type: 'refactor', text: 'Reversão de funcionalidade experimental de Perfis Dinâmicos.' },
+            { type: 'style', text: 'Correção de estilos para badges de Segurança (SEC) e Documentação (DOC).' },
+            { type: 'imp', text: 'Limpeza de código e otimização de scripts de migração.' }
+        ]
+    },
+    {
         version: '2.0.7',
         date: '2026-01-17',
         title: 'Refinamento de Auditoria e Segurança',
