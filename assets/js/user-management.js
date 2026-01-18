@@ -720,15 +720,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const roleClass = `badge-${role.toLowerCase()}`;
                 const indentClass = item.isHeader ? 'permission-header-item' : 'permission-sub-item';
 
+                // Dashboard: apenas "Visualizar" é funcional
+                const isDashboard = mod === 'Dashboard';
+                const disabledCreate = isDashboard ? 'disabled class="perm-checkbox-disabled"' : '';
+                const disabledEdit = isDashboard ? 'disabled class="perm-checkbox-disabled"' : '';
+                const disabledDelete = isDashboard ? 'disabled class="perm-checkbox-disabled"' : '';
+
                 const tr = document.createElement('tr');
                 tr.className = item.isHeader ? 'permission-header-row' : 'permission-row';
                 tr.innerHTML = `
                     <td class="${indentClass}">${label}</td>
                     <td><span class="badge-role ${roleClass}">${role}</span></td>
                     <td><input type="checkbox" class="perm-checkbox" data-mod="${mod}" data-prop="can_view" ${p.can_view ? 'checked' : ''}></td>
-                    <td><input type="checkbox" class="perm-checkbox" data-mod="${mod}" data-prop="can_create" ${p.can_create ? 'checked' : ''}></td>
-                    <td><input type="checkbox" class="perm-checkbox" data-mod="${mod}" data-prop="can_edit" ${p.can_edit ? 'checked' : ''}></td>
-                    <td><input type="checkbox" class="perm-checkbox" data-mod="${mod}" data-prop="can_delete" ${p.can_delete ? 'checked' : ''}></td>
+                    <td><input type="checkbox" ${disabledCreate} data-mod="${mod}" data-prop="can_create" ${p.can_create ? 'checked' : ''}></td>
+                    <td><input type="checkbox" ${disabledEdit} data-mod="${mod}" data-prop="can_edit" ${p.can_edit ? 'checked' : ''}></td>
+                    <td><input type="checkbox" ${disabledDelete} data-mod="${mod}" data-prop="can_delete" ${p.can_delete ? 'checked' : ''}></td>
                 `;
                 permissionsTableBody.appendChild(tr);
             });
