@@ -137,21 +137,19 @@
     color: var(--text-secondary);
 }
 
-/* Botões de Logs */
-#btnSearchLogs,
-#btnPrintLogs {
+/* Botões de Logs - Apenas Ícones */
+.btn-icon-only {
+    width: 40px;
     height: 40px;
-    padding: 0 20px;
+    padding: 0;
     border: none;
     border-radius: 8px;
-    font-size: 0.9rem;
-    font-weight: 600;
+    font-size: 1rem;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 8px;
+    justify-content: center;
     transition: all 0.3s ease;
-    white-space: nowrap;
 }
 
 #btnSearchLogs {
@@ -177,6 +175,7 @@
     color: var(--accent);
     transform: translateY(-2px);
 }
+
 
 /* Management Body */
 #management-body {
