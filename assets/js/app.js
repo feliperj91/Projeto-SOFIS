@@ -605,13 +605,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const favs = await window.api.favorites.list(user.username);
                 window.userFavorites.clear();
                 if (Array.isArray(favs)) {
-                    favs.forEach(f => window.userFavorites.add(f.client_id));
+                    favs.forEach(f => {
+                        // PHP fetchAll(PDO::FETCH_COLUMN) returns simple array of values [1, 2, 3]
+                        // fetchAll(PDO::FETCH_ASSOC) would return [{client_id: 1}, ...]
+                        // Handle both just in case
+                        const id = (typeof f === 'object' && f !== null) ? f.client_id : f;
+                        window.userFavorites.add(id);
+                    });
                 }
-                console.log(`⭐ Favoritos carregados para [${user.username}]: ${window.userFavorites.size}`);
+                console.log(`⭐ Favoritos carregados para [${user.username}]: ${window.userFavorites.size}`, window.userFavorites);
             }
         } catch (e) {
             console.error('❌ Erro ao carregar favoritos:', e);
-            // Non-blocking error
         }
     }
 
@@ -631,12 +636,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             const dbClients = await window.api.clients.list();
 
             if (dbClients && Array.isArray(dbClients)) {
+
+                // Primeiro carrega favoritos para ter o set pronto
+                await loadUserFavorites();
+
                 clients = dbClients.map(c => ({
                     id: c.id,
                     name: c.name,
                     seqId: c.seq_id || c.id, // Fallback if no seq_id
                     updatedAt: c.updated_at,
-                    isFavorite: false, // will load later
+                    isFavorite: window.userFavorites.has(c.id), // Direct check
                     notes: c.notes,
                     webLaudo: c.web_laudo,
                     // arrays are already decoded by API PHP
@@ -647,12 +656,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     urls: c.urls || [],
                     inactive_contract: c.inactive_contract || null
                 }));
-
-                // Load user favorites and apply
-                await loadUserFavorites();
-                clients.forEach(c => {
-                    c.isFavorite = window.userFavorites.has(c.id);
-                });
 
             } else {
                 clients = [];
@@ -3003,14 +3006,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (!canEdit) {
             // Modo Visualização
+            console.log('🔒 Aplicando restrições visuais: Ocultando botões.');
             if (modalActions) {
                 modalActions.style.setProperty('display', 'none', 'important');
                 modalActions.classList.add('hidden');
-            } else {
-                // Fallback para botões individuais
-                if (cancelBtn) cancelBtn.style.display = 'none';
-                if (saveBtn) saveBtn.style.display = 'none';
             }
+            // Redundância: Ocultar botões individuais também
+            if (cancelBtn) cancelBtn.style.display = 'none';
+            if (saveBtn) saveBtn.style.display = 'none';
+
             clientNoteInput.readOnly = true;
             clientNoteInput.classList.add('read-only-field'); // Opcional: adicionar estilo visual
         } else {
