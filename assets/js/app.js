@@ -3376,7 +3376,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function openUrlEntry() {
         clearUrlForm();
-        urlEntryModalTitle.textContent = 'URLs de Sistema';
+        urlEntryModalTitle.textContent = 'URLs de Produto';
         document.getElementById('editingUrlIndex').value = '';
         urlEntryModal.classList.remove('hidden');
 
@@ -3488,7 +3488,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             listContainer.innerHTML = `
                 <div class="servers-grid-empty">
                     <i class="fa-solid fa-link" style="font-size: 3rem; opacity: 0.3; margin-bottom: 12px; display: block;"></i>
-                    <p>${filterValue === 'all' ? 'Nenhum sistema cadastrado ainda.' : 'Nenhum sistema encontrado para este filtro.'}</p>
+                    <p>${filterValue === 'all' ? 'Nenhum produto cadastrado ainda.' : 'Nenhum produto encontrado para este filtro.'}</p>
                 </div>
             `;
             return;
@@ -3523,7 +3523,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                     <div class="server-info">
                         <div class="server-info-label">
-                            <i class="fa-solid fa-window-maximize" style="color: var(--accent); margin-right: 6px;"></i> Sistema
+                            <i class="fa-solid fa-window-maximize" style="color: var(--accent); margin-right: 6px;"></i> Produto
                         </div>
                         <div class="server-info-value" style="font-weight: 600; color: var(--accent);">${escapeHtml(url.system)}</div>
                     </div>
@@ -3634,7 +3634,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
         if (!urlSystemSelect.value) {
-            showToast('⚠️ O sistema é obrigatório.', 'error');
+            showToast('⚠️ O produto é obrigatório.', 'error');
             urlSystemSelect.focus();
             return;
         }
@@ -3668,8 +3668,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderUrlList(client);
         closeUrlEntryModal();
         const opType = editingIndex !== '' ? 'EDIÇÃO' : 'CRIAÇÃO';
-        const actionLabel = editingIndex !== '' ? 'Edição de URL de Sistema' : 'Adição de URL de Sistema';
-        await registerAuditLog(opType, actionLabel, `Cliente: ${client.name}, Sistema: ${urlRecord.system}, Ambiente: ${urlRecord.environment}`, urlBefore, urlRecord);
+        const actionLabel = editingIndex !== '' ? 'Edição de URL de Produto' : 'Adição de URL de Produto';
+        await registerAuditLog(opType, actionLabel, `Cliente: ${client.name}, Produto: ${urlRecord.system}, Ambiente: ${urlRecord.environment}`, urlBefore, urlRecord);
     }
 
     window.editUrlRecord = async (clientId, index) => {
@@ -3695,7 +3695,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         urlPassInput.value = url.password ? await window.Security.decrypt(url.password) : '';
         document.getElementById('editingUrlIndex').value = index;
 
-        urlEntryModalTitle.textContent = 'URLs de Sistema';
+        urlEntryModalTitle.textContent = 'URLs de Produto';
         urlEntryModal.classList.remove('hidden');
 
         // Trigger change to update bootstrap visibility
@@ -3708,7 +3708,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             showToast('🚫 Sem permissão para excluir URLs.', 'error');
             return;
         }
-        const confirmed = await window.showConfirm('Tem certeza que deseja excluir este sistema?', 'Excluir Sistema', 'fa-laptop-code');
+        const confirmed = await window.showConfirm('Tem certeza que deseja excluir este produto?', 'Excluir Produto', 'fa-laptop-code');
         if (!confirmed) return;
         const client = clients.find(c => c.id == clientId);
         if (!client || !client.urls) return;
@@ -3719,7 +3719,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderClients(clients);
         renderUrlList(client);
         showToast(`🗑️ URL do cliente "${client.name}" removida com sucesso!`, 'success');
-        await registerAuditLog('EXCLUSÃO', 'Exclusão de URL de Sistema', `Cliente: ${client.name}, Sistema: ${deletedUrl.system}, Ambiente: ${deletedUrl.environment}`, deletedUrl, null);
+        await registerAuditLog('EXCLUSÃO', 'Exclusão de URL de Produto', `Cliente: ${client.name}, Produto: ${deletedUrl.system}, Ambiente: ${deletedUrl.environment}`, deletedUrl, null);
     }
 
     async function handleWebLaudoSave() {

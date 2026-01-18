@@ -1156,13 +1156,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 'pass': 'Senha',
                 'notes': 'Obs',
                 'environment': 'Ambiente',
-                'system': 'Sistema',
+                'system': 'Produto',
                 'bridgeDataAccess': 'Bridge',
                 'bootstrap': 'Bootstrap',
                 'execUpdate': 'Exec Update',
                 'sqlServer': 'Servidor SQL',
                 'webLaudo': 'WebLaudo',
-                'url': 'Url'
+                'url': 'URL'
             };
 
             if (changes.length > 0) {
