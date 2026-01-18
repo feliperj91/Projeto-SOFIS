@@ -42,6 +42,10 @@ fi
 print_info "Iniciando instalação do Sistema SOFIS..."
 echo ""
 
+# Determinar diretório raiz do projeto
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SOURCE_DIR="$(dirname "$SCRIPT_DIR")"
+
 # ============================================================================
 # 1. ATUALIZAR SISTEMA
 # ============================================================================
@@ -102,11 +106,12 @@ print_info "Configurando diretório do projeto..."
 
 PROJECT_DIR="/var/www/sofis"
 mkdir -p $PROJECT_DIR
+mkdir -p $PROJECT_DIR/config
 
 # Copiar arquivos do projeto
 print_info "Copiando arquivos do projeto..."
-# Assumindo que os arquivos estão no diretório atual
-cp -r ./* $PROJECT_DIR/ 2>/dev/null || print_warning "Alguns arquivos podem não ter sido copiados"
+# Copiar arquivos do projeto (da raiz)
+cp -r "$SOURCE_DIR"/* $PROJECT_DIR/ 2>/dev/null || print_warning "Alguns arquivos podem não ter sido copiados"
 
 # Configurar permissões
 chown -R www-data:www-data $PROJECT_DIR

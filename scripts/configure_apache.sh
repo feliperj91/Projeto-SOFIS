@@ -7,6 +7,8 @@ echo "🔧 Configurando Apache para SOFIS..."
 
 # Copiar arquivo de configuração
 echo "📁 Copiando arquivo de configuração..."
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR/.."
 cp sofis.conf /etc/apache2/sites-available/sofis.conf
 
 # Habilitar o site

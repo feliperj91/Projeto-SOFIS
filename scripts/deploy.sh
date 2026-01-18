@@ -4,7 +4,8 @@
 # Útil após um git pull para aplicar as alterações
 
 TARGET_DIR="/var/www/html/sofis"
-SOURCE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SOURCE_DIR="$(dirname "$SCRIPT_DIR")"
 
 echo "🔄 Iniciando deploy para $TARGET_DIR..."
 

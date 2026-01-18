@@ -5,13 +5,13 @@
 (function () {
     console.log("🚀 [SOFIS] Version Control Premium Module v7.1 Loaded");
 
-    // Internal state
+    // Estado interno
     let versionControls = [];
     window.currentVersionFilter = 'all';
     let sofis_isUpdating = false;
     let sofis_isSaving = false;
 
-    // Helper functions
+    // Funções auxiliares
     const utils = {
         escapeHtml: (text) => {
             if (!text) return '';
@@ -53,9 +53,9 @@
         }
     };
 
-    // Core Logic
+    // Lógica Central
     async function loadVersionControls() {
-        if (sofis_isUpdating) console.log("⚠️ Update already in progress...");
+        if (sofis_isUpdating) console.log("⚠️ Atualização já em andamento...");
         sofis_isUpdating = true;
 
         // Cache Buster
@@ -68,7 +68,7 @@
                 return;
             }
 
-            console.log("🔄 Loading Version Controls (Fresh via API)...");
+            console.log("🔄 Carregando Controle de Versões (Recente via API)...");
 
             const data = await window.api.versions.list();
 
@@ -87,7 +87,7 @@
     }
 
     function renderVersionControls() {
-        // Removed re-entrancy guard "sofis_isRendering" to ensure always renders the current state
+        // Removido guarda de reentrada "sofis_isRendering" para garantir que sempre renderize o estado atual
         try {
             const list = document.getElementById('versionList');
             if (!list) return;
@@ -125,9 +125,9 @@
                 filtered = filtered.filter(v => utils.getStatus(v.updated_at) === window.currentVersionFilter);
             }
 
-            // Environment Filter Logic
+            // Lógica de Filtro de Ambiente
             if (window.currentEnvFilter && window.currentEnvFilter !== 'all') {
-                // Removed global logic as per user request
+                // Lógica global removida conforme solicitação do usuário
             }
 
             if (filtered.length === 0) {
@@ -135,18 +135,18 @@
                 return;
             }
 
-            // Grouping by client
+            // Agrupamento por cliente
             const grouped = {};
             filtered.forEach(v => {
                 const name = v.clients?.name || 'Desconhecido';
-                // Use clients.id as fallback if client_id is missing/null, ensuring we have a valid reference
+                // Usar clients.id como fallback se client_id estiver faltando/nulo, garantindo referência válida
                 const cId = v.client_id || v.clients?.id;
 
                 if (!grouped[name]) grouped[name] = { id: cId, name, versionsMap: {} };
 
-                // Keep only the most recent version for each [system + environment] combination
-                // Note: filtered array is already sorted by updated_at desc.
-                // So the first one we encounter is the latest.
+                // Manter apenas a versão mais recente para cada combinação [sistema + ambiente]
+                // Nota: array filtrado já está ordenado por updated_at desc.
+                // Então o primeiro que encontramos é o mais recente.
                 const key = `${v.system}_${v.environment}`;
                 const existing = grouped[name].versionsMap[key];
 
@@ -155,7 +155,7 @@
                 }
             });
 
-            // Sort by Favorite then Client Name
+            // Ordenar por Favorito e depois Nome do Cliente
             Object.values(grouped).sort((a, b) => {
                 const isFavA = window.userFavorites && window.userFavorites.has(a.id);
                 const isFavB = window.userFavorites && window.userFavorites.has(b.id);
@@ -185,7 +185,7 @@
         const canDeleteVersion = P ? P.can('Controle de Versões', 'can_delete') : false;
         const canEditClient = P ? P.can('Gestão de Clientes', 'can_edit') : false;
 
-        // General status of the card based on items
+        // Estado geral do cartão baseado nos itens
         let overallStatus = 'recent';
         group.versions.forEach(v => {
             const s = utils.getStatus(v.updated_at);
@@ -197,13 +197,13 @@
         const hasProd = group.versions.some(v => v.environment === 'producao');
         const hasHomol = group.versions.some(v => v.environment === 'homologacao');
 
-        // Default to production unless only homologation exists
+        // Padrão para produção a menos que apenas homologação exista
         let activeFilter = 'producao';
         if (!hasProd && hasHomol) {
             activeFilter = 'homologacao';
         }
 
-        // Building row HTML precisely as the reference image
+        // Construindo HTML da linha exatamente como a imagem de referência
         const versionsHtml = group.versions.map(v => {
             const status = utils.getStatus(v.updated_at);
             const timeInfo = utils.getTimeInfo(v.updated_at);
@@ -249,7 +249,7 @@
             `;
         }).join('');
 
-        // Check for inactive contract using global client list
+        // Verificar contrato inativo usando lista global de clientes
         const clientRef = window.clients ? window.clients.find(c => c.id == group.id) : null;
         const isInactive = clientRef && clientRef.inactive_contract && clientRef.inactive_contract.active;
         const inactiveClass = isInactive ? 'inactive-contract-version-header' : '';
@@ -435,11 +435,11 @@
                 // Sutil delay para garantir a consistência do banco antes de ler
                 await new Promise(r => setTimeout(r, 300));
 
-                // Force reload of EVERYTHING
+                // Forçar recarregamento de TUDO
                 console.log('🔄 Recarregando lista de versões após salvar...');
                 await loadVersionControls();
 
-                // Ensure render happens even if loadVersionControls doesn't trigger it
+                // Garantir renderização mesmo se loadVersionControls não acionar
                 renderVersionControls();
 
                 if (window.calculateAndRenderPulse) window.calculateAndRenderPulse();
@@ -460,7 +460,7 @@
         }
     }
 
-    // logHistory moved to backend
+    // logHistory movido para o backend
 
 
     // EXPORTS
@@ -470,10 +470,10 @@
     window.populateVersionClientSelect = populateVersionClientSelect;
     window.populateResponsibleSelect = populateResponsibleSelect;
 
-    // Cache for clients list
+    // Cache para lista de clientes
     let cachedClientsForVersion = [];
 
-    // Unified function to get clients list
+    // Função unificada para obter lista de clientes
     async function getClientsForDropdown(forceRefresh = false) {
         if (forceRefresh) {
             cachedClientsForVersion = [];
@@ -485,12 +485,12 @@
             return window.clients;
         }
 
-        // 2. Try Local Cache
+        // 2. Tentar Cache Local
         if (cachedClientsForVersion && cachedClientsForVersion.length > 0) {
             return cachedClientsForVersion;
         }
 
-        // 3. Fetch from API
+        // 3. Buscar da API
         try {
             console.log("🔄 Fetching clients for dropdown via API...");
             const data = await window.api.clients.list();
@@ -514,7 +514,7 @@
         const clientsList = await getClientsForDropdown(true);
         console.log(`🔍 [VersionControl] Populating client select. Clients in list: ${clientsList.length}`);
 
-        // Get all unique client IDs that already have version records
+        // Obter todos os IDs de clientes únicos que já possuem registros de versão
         let clientsWithVersions = new Set();
         if (window.versionControls && window.versionControls.length > 0) {
             window.versionControls.forEach(vc => {
@@ -524,7 +524,7 @@
             });
         }
 
-        // Filter out clients that already have ANY version record (convert to string for safety)
+        // Filtrar clientes que já possuem QUALQUER registro de versão (converter para string por segurança)
         const availableClients = clientsList.filter(c => !clientsWithVersions.has(String(c.id)));
 
         // Clear existing (keep default)
@@ -538,7 +538,7 @@
             return;
         }
 
-        // Sort and Append
+        // Ordenar e Anexar
         availableClients.sort((a, b) => a.name.localeCompare(b.name)).forEach(c => {
             console.log(`  - Adding to select: ${c.name} (id: ${c.id})`);
             const opt = document.createElement('option');
@@ -1741,7 +1741,7 @@
 <div class="version-card">
 <div class="v-card-header">
 <div style="display:flex;align-items:center;gap:8px;">
-<img src="logo.png" style="height:18px;width:auto;opacity:0.9;">
+<img src="assets/images/logo.png" style="height:18px;width:auto;opacity:0.9;">
 <div class="v-card-title" style="color:${sysColor}">${sys}</div>
 </div>
 <i class="fa-solid fa-layer-group" style="color:${sysColor};opacity:0.3;"></i>

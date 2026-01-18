@@ -3,8 +3,9 @@
 # Script para atualizar o schema do banco de dados na VM Linux
 # Execute este script a partir da raiz do projeto: ./update_db_linux.sh
 
-# Garante que estamos no diretório do script (ou raiz se estiver na raiz)
-cd "$(dirname "$0")"
+# Garante que estamos no diretório "pai" para acessar api/
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR/.."
 
 echo "=========================================="
 echo " SOFIS - Atualização de Banco de Dados"

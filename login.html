@@ -5,12 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sofis - Login</title>
-    <link rel="icon" type="image/x-icon" href="sofis.com.br-favicon.ico">
-    <link rel="stylesheet" href="style.css?v=1.8">
+    <link rel="icon" type="image/x-icon" href="assets/images/sofis.com.br-favicon.ico">
+    <link rel="stylesheet" href="assets/css/style.css?v=1.8">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="build-config.js"></script>
+    <script src="assets/js/build-config.js"></script>
     <style>
         body {
             display: flex;
@@ -30,7 +30,7 @@
             left: -20px;
             right: -20px;
             bottom: -20px;
-            background-image: url('login-bg-new.png');
+            background-image: url('assets/images/login-bg-new.png');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -115,7 +115,7 @@
 
 <body>
     <div class="login-container">
-        <img src="logo.png" alt="Sofis Logo" class="login-logo">
+        <img src="assets/images/logo.png" alt="Sofis Logo" class="login-logo">
         <p class="login-subtitle">Gerenciamento de Clientes</p>
         <span class="login-build" id="loginBuildNumber" style="display: none;">Build: ...</span>
         <h1 class="login-title">Acesso ao Sistema</h1>
@@ -170,13 +170,13 @@
     </div>
 
     <!-- Bottom Right Logo -->
-    <img src="logo_corner.png" alt="Logo Canto" class="corner-logo">
+    <img src="assets/images/logo_corner.png" alt="Logo Canto" class="corner-logo">
 
     <div id="toast" class="toast hidden"></div>
 
-    <script src="security.js?v=1.2"></script>
+    <script src="assets/js/security.js?v=1.2"></script>
 
-    <script src="api-service.js?v=1.2"></script>
+    <script src="assets/js/api-service.js?v=1.2"></script>
     <script>
         // Update Build Number Dynamically
         if (window.SOFIS_BUILD) {

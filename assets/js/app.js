@@ -1,5 +1,5 @@
-console.log("🚀 APP VERSION: FORCE_PERMISSIONS_FIX LOADED");
-// --- Global Modal Utilities ---
+console.log("🚀 VERSÃO APP: FORCE_PERMISSIONS_FIX CARREGADO");
+// --- Utilitários Globais de Modal ---
 window.openModal = function (modalId) {
     if (modalId === 'clientModal') modalId = 'modal'; // Mapping for compatibility
     const el = document.getElementById(modalId);
@@ -50,7 +50,7 @@ window.closeModal = function (modalId) {
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // --- Permissions System ---
+    // --- Sistema de Permissões ---
     window.Permissions = {
         userRole: 'TECNICO',
         rules: {},
@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    // --- Global Permission Enforcement ---
+    // --- Aplicação Global de Permissões ---
     window.applyPermissions = () => {
         const P = window.Permissions;
         if (!P) return;
@@ -243,7 +243,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
     let currentView = localStorage.getItem('sofis_view_mode') || 'list'; // 'list' or 'grid'
 
-    // --- Audit Log Helper ---
+    // --- Auxiliar de Log de Auditoria ---
     async function registerAuditLog(opType, action, details = '', oldVal = null, newVal = null) {
         const user = JSON.parse(localStorage.getItem('sofis_user') || '{}');
         const username = user.username || 'Sistema';
@@ -310,7 +310,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // DOM Elements
+    // Elementos DOM
     const clientList = document.getElementById('clientList');
     const modal = document.getElementById('modal');
     const form = document.getElementById('clientForm');
@@ -326,7 +326,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const listViewBtn = document.getElementById('listViewBtn');
     const gridViewBtn = document.getElementById('gridViewBtn');
 
-    // Toast Notification Function
+    // Função de Notificação Toast
     function showToast(msg, type = 'success') {
         if (!toast) return;
 
@@ -346,7 +346,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     window.showToast = showToast;
 
-    // Display current user
+    // Exibir usuário atual
     window.updateUserDisplay = () => {
         const userDisplay = document.getElementById('currentUserDisplay');
         const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}');
@@ -370,7 +370,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (window.applyPermissions) window.applyPermissions();
     });
 
-    // Modern Confirmation & Alert System
+    // Sistema Moderno de Confirmação e Alerta
     window.showConfirm = function (message, title = 'Confirmação', icon = 'fa-question', isAlert = false) {
         return new Promise((resolve) => {
             const modal = document.getElementById('confirmModal');
@@ -590,14 +590,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Initial Render
-    // Initial Render
+    // Renderização Inicial
     async function initialLoad() {
         renderSkeleton();
 
         try {
-            // Check API availability
+            // Verificar disponibilidade da API
             if (!window.api || !window.api.clients) {
-                console.error('API service unavailable');
+                console.error('Serviço de API indisponível');
                 clients = [];
                 return;
             }
@@ -1308,7 +1308,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                      <div class="row-actions">
                           ${canViewContactsButton ? `
                           <button class="${contactBtnClass} btn-with-badge" onclick="event.stopPropagation(); openContactData('${client.id}');" title="Ver Contatos">
-                             <img src="contact-icon.png" class="contact-icon-img ${hasContacts ? 'vpn-icon-success' : ''}" alt="Contatos">
+                             <img src="assets/images/contact-icon.png" class="contact-icon-img ${hasContacts ? 'vpn-icon-success' : ''}" alt="Contatos">
                              ${hasContacts ? `<span class="btn-badge">${client.contacts.length}</span>` : ''}
                          </button>
                          ` : ''}
@@ -1330,7 +1330,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                           ${canViewVPN ? `
                           <button class="${vpnBtnClass} btn-with-badge perm-infra-vpn" onclick="openVpnData('${client.id}'); event.stopPropagation();" title="Dados de Acesso VPN">
-                             <img src="vpn-icon.png" class="${vpnIconClass}" alt="VPN">
+                             <img src="assets/images/vpn-icon.png" class="${vpnIconClass}" alt="VPN">
                              ${hasVpns ? `<span class="btn-badge">${client.vpns.length}</span>` : ''}
                          </button>
                          ` : ''}
@@ -2768,7 +2768,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!client.vpns || client.vpns.length === 0) {
             listContainer.innerHTML = `
                 <div class="servers-grid-empty">
-                    <img src="vpn-icon.png" class="vpn-icon-img" style="width: 48px; height: 48px; opacity: 0.5; margin-bottom: 15px;" alt="VPN">
+                    <img src="assets/images/vpn-icon.png" class="vpn-icon-img" style="width: 48px; height: 48px; opacity: 0.5; margin-bottom: 15px;" alt="VPN">
                     <p>Nenhuma VPN cadastrada ainda.</p>
                 </div>
             `;

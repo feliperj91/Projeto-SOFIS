@@ -1,5 +1,5 @@
 // api-service.js
-// Replaces supabase-client.js for Local PHP/Apache/Postgres architecture
+// Substitui supabase-client.js para arquitetura Local PHP/Apache/Postgres
 
 const API_BASE = 'api';
 
@@ -7,7 +7,7 @@ async function request(endpoint, options = {}) {
     const url = `${API_BASE}/${endpoint}`;
     try {
         const res = await fetch(url, options);
-        // Helper to safely read JSON or get text if it fails
+        // Helper para ler JSON com segurança ou obter texto se falhar
         const text = await res.text();
 
         let data;
@@ -15,7 +15,7 @@ async function request(endpoint, options = {}) {
             data = JSON.parse(text);
         } catch (e) {
             console.error(`[API] Non-JSON response from ${url}:`, text);
-            // This is likely a PHP Fatal Error or Warning printed as HTML
+            // Provavelmente um erro fatal do PHP ou aviso impresso como HTML
             throw new Error(`Erro no servidor (Resposta inválida). Verifique o console.`);
         }
 
@@ -71,7 +71,7 @@ const api = {
         },
         async checkSession() {
             try {
-                // We use raw fetch here to handle the specific case of 401/403 not being an exception we want to bubble up as an alert
+                // Usamos fetch nativo aqui para lidar com casos específicos de 401/403 sem gerar alerta de erro
                 const res = await fetch(`${API_BASE}/auth.php?action=check`);
                 const text = await res.text();
                 try {
@@ -212,7 +212,7 @@ const api = {
 };
 
 window.api = api;
-// Compatibility Shim
+// Shim de Compatibilidade
 window.supabaseClient = {
-    from: () => { throw new Error("Supabase is removed. Use window.api instead."); }
+    from: () => { throw new Error("Supabase foi removido. Use window.api em vez disso."); }
 };

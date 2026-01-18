@@ -2,12 +2,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const user = JSON.parse(localStorage.getItem('sofis_user') || '{}');
     const managementTabBtn = document.getElementById('btnUserManagement');
 
-    // Auth Guard for Management Tab
+    // Guarda de Autenticação para Aba de Gestão
     document.addEventListener('permissions-loaded', checkUserManagementAccess);
-    // Check if already loaded
+    // Verificar se já carregou
     if (window.Permissions && window.Permissions.rules) checkUserManagementAccess();
 
-    // Auth Guard for Management Tab & Internal Controls
+    // Guarda de Autenticação para Aba de Gestão e Controles Internos
     function checkUserManagementAccess() {
         if (window.Permissions) {
             // Main tab access
@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 managementTabBtn.style.display = canAccess ? 'block' : 'none';
             }
 
-            // PDF Print Button Visibility
+            // Visibilidade do Botão de Impressão PDF
             const btnPrintLogs = document.getElementById('btnPrintLogs');
             if (btnPrintLogs) {
                 // Check permission to export PDF (uses view permission)
@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // --- State & Constants ---
+    // --- Estado & Constantes ---
     let usersList = [];
     let currentMngTab = 'users';
     let currentSelectedRole = 'ADMINISTRADOR';
@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const logTypeSelect = document.getElementById('logTypeSelect');
     const btnSearchLogs = document.getElementById('btnSearchLogs');
 
-    // Toggle Password Visibility
+    // Alternar Visibilidade da Senha
     const toggleUserPasswordBtn = document.getElementById('toggleUserPasswordBtn');
     const userPasswordInput = document.getElementById('userPassword');
 
@@ -120,14 +120,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // --- Initialization ---
-    // --- Initialization ---
+    // --- Inicialização ---
     async function initUserManagement() {
         // Now checks specific sub-module for user creation
         const canCreateUsers = window.Permissions.can('Usuários', 'can_create');
         if (addNewUserBtn) addNewUserBtn.style.display = canCreateUsers ? 'flex' : 'none';
 
-        // Check sub-tab visibility
-        // Map all sub-features to the main permission
+        // Verificar visibilidade das sub-abas
+        // Mapear todas as sub-features para a permissão principal
         const canViewUsers = window.Permissions.can('Usuários', 'can_view');
         const canViewPerms = window.Permissions.can('Permissões', 'can_view');
         const canViewLogs = window.Permissions.can('Logs de Auditoria', 'can_view'); // Correct module name for System Audit Logs
@@ -167,7 +167,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // --- Tab Logic ---
+    // --- Lógica de Abas ---
     mngSubTabBtns.forEach(btn => {
         btn.addEventListener('click', async (e) => {
             currentMngTab = btn.dataset.mngTab;
@@ -246,7 +246,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
-    // Role Text Click Logic
+    // Lógica de Clique nos Textos de Role
     if (roleTextBtns) {
         roleTextBtns.forEach(btn => {
             btn.addEventListener('click', async (e) => {
@@ -270,7 +270,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // --- User CRUD ---
+    // --- CRUD de Usuários ---
     function renderSkeletons() {
         if (!usersListEl) return;
         usersListEl.innerHTML = '';
@@ -685,7 +685,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    // --- Permissions Logic ---
+    // --- Lógica de Permissões ---
     async function loadPermissions(role) {
         if (!window.api || !window.api.permissions) return;
         try {
