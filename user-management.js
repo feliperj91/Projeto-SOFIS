@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Main tab access
             const managementTabBtn = document.getElementById('btnUserManagement');
             if (managementTabBtn) {
-                const canAccess = window.Permissions.can('Usuários', 'can_view');
+                const canAccess = window.Permissions.can('Gestão de Usuários', 'can_view');
                 managementTabBtn.style.display = canAccess ? 'block' : 'none';
             }
 

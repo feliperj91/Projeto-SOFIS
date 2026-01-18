@@ -924,8 +924,9 @@
         list.innerHTML = data.map(h => {
             const envDisplay = envLabels[h.version_controls?.environment] || h.version_controls?.environment?.toUpperCase() || 'N/A';
             const isOwnLog = h.updated_by === currentUser;
-            const canEdit = P && P.can('Controle de Versões', 'can_edit') && isOwnLog;
-            const canDelete = P && P.can('Controle de Versões', 'can_delete') && isOwnLog;
+            const isAdmin = P && P.userRole === 'ADMINISTRADOR';
+            const canEdit = P && P.can('Controle de Versões', 'can_edit') && (isOwnLog || isAdmin);
+            const canDelete = P && P.can('Controle de Versões', 'can_delete') && (isOwnLog || isAdmin);
 
             const actionButtons = (canEdit || canDelete) ? `
                 <div style="display: flex; gap: 8px; margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05);">

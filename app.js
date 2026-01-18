@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
             if (managementTabBtn) {
-                managementTabBtn.style.display = P.can('Usuários', 'can_view') ? '' : 'none';
+                managementTabBtn.style.display = P.can('Gestão de Usuários', 'can_view') ? '' : 'none';
             }
         },
 
@@ -167,7 +167,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // 5. User Management - Tab Button
         const userMngBtn = document.getElementById('btnUserManagement');
         if (userMngBtn) {
-            userMngBtn.style.display = P.can('Usuários', 'can_view') ? '' : 'none';
+            userMngBtn.style.display = P.can('Gestão de Usuários', 'can_view') ? '' : 'none';
         }
 
         // 6. SQL/VPN/URL - Create
