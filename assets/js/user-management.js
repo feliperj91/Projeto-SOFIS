@@ -726,15 +726,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const roleClass = `badge-${role.toLowerCase()}`;
                 const indentClass = item.isHeader ? 'permission-header-item' : 'permission-sub-item';
 
-                // Apenas Dashboard, Permissões, Logs e Reset de Senha têm restrições
-                // Todos os cabeçalhos de módulos (Gerenciamento de Usuários, Controle de Versões, Gestão de Clientes) são funcionais
+                // Restrições específicas:
+                // - Dashboard: Apenas Visualizar
+                // - Cabeçalho "Gerenciamento de Usuários": Apenas Visualizar (sub-itens são funcionais)
+                // - Permissões: Apenas Visualizar e Editar
+                // - Logs de Auditoria: Apenas Visualizar
+                // - Reset de Senha: Apenas Visualizar (que permite visualizar e resetar)
                 const isDashboard = mod === 'Dashboard';
+                const isUserManagementHeader = mod === 'Gerenciamento de Usuários' && item.isHeader;
                 const isPermissions = mod === 'Permissões';
                 const isLogs = mod === 'Logs de Auditoria';
                 const isResetPassword = mod === 'Reset de Senha';
 
-                // Criar e Excluir desabilitados apenas para: Dashboard, Permissões, Logs e Reset
-                const shouldDisableAll = isDashboard || isLogs || isResetPassword;
+                // Criar e Excluir desabilitados para: Dashboard, Cabeçalho User Management, Permissões, Logs e Reset
+                const shouldDisableAll = isDashboard || isUserManagementHeader || isLogs || isResetPassword;
                 const shouldDisableCreateDelete = shouldDisableAll || isPermissions;
 
                 const disabledCreate = shouldDisableCreateDelete ? 'disabled class="perm-checkbox-disabled"' : 'class="perm-checkbox"';
