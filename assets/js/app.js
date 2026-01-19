@@ -3626,8 +3626,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                                     <i class="fa-regular fa-copy"></i>
                                 </button>
                             </div>
-                        </div>` : ''
-                }
+                        </div>` : ''}
+
                     ${(url.credentials && url.credentials.length > 0) || url.user || url.password ? `
                         <div class="server-info" style="margin-top: 15px; padding-top: 15px;">
                             ${(url.credentials || (url.user ? [{ user: url.user, password: url.password }] : [])).map(cred => `
@@ -3651,8 +3651,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                                     </div>
                                 </div>
                             `).join('')}
-                        </div>
-                        ` : ''}
+                        </div>` : ''}
+
                     ${url.bootstrap ? `
                         <div class="server-info">
                             <div class="server-info-label">
@@ -3664,8 +3664,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                                     <i class="fa-regular fa-copy"></i>
                                 </button>
                             </div>
-                        </div>` : ''
-                }
+                        </div>` : ''}
+
                     ${url.execUpdate ? `
                         <div class="server-info">
                             <div class="server-info-label">
@@ -3677,8 +3677,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                                     <i class="fa-regular fa-copy"></i>
                                 </button>
                             </div>
-                        </div>` : ''
-                }
+                        </div>` : ''}
+
                     ${(url.execCredentials && url.execCredentials.length > 0) || url.execUser || url.execPassword ? `
                         <div class="server-info" style="margin-top: 15px; padding-top: 15px;">
                             ${(url.execCredentials || (url.execUser ? [{ user: url.execUser, password: url.execPassword }] : [])).map(cred => `
@@ -3702,18 +3702,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                                     </div>
                                 </div>
                             `).join('')}
-                        </div>` : ''
-                }
+                        </div>` : ''}
+
                     ${url.notes ? `
                         <div class="server-notes">
                             <div class="server-notes-title">
                                 <i class="fa-solid fa-comment-dots" style="color: var(--accent); margin-right: 6px;"></i> Observações
                             </div>
                             <div class="server-notes-content">${escapeHtml(url.notes)}</div>
-                        </div>` : ''
-                }
-                </div >
-        `;
+                        </div>` : ''}
+                </div>
+            `;
         }).join('');
     }
 
@@ -4904,7 +4903,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const credentialsHTML = host.credentials && host.credentials.length > 0
                 ? `
-        < div class="server-credentials" >
+        <div class="server-credentials">
             <div class="server-credentials-title">
                 <i class="fa-solid fa-key" style="color: var(--accent);"></i> Credenciais
             </div>
@@ -4928,31 +4927,30 @@ document.addEventListener('DOMContentLoaded', async () => {
                                     </button>
                                 </div>
                             </div>
-                        `).join('')
-                }
-                    </div >
+                        `).join('')}
+                    </div>
         `
                 : '';
 
             const notesHTML = host.notes
-                ? `< div class="server-notes" >
+                ? `<div class="server-notes">
                     <div class="server-notes-title"><i class="fa-solid fa-comment-dots" style="color: var(--accent); margin-right: 6px;"></i> Observações</div>
                     <div class="server-notes-content">${escapeHtml(host.notes)}</div>
-                   </div > `
+                   </div>`
                 : '';
 
             const editButton = canEdit ? `
-        < button class="btn-icon-card" onclick = "editHostRecord('${client.id}', ${originalIndex})" title = "Editar" >
+        <button class="btn-icon-card" onclick="editHostRecord('${client.id}', ${originalIndex})" title="Editar">
             <i class="fa-solid fa-pen"></i>
-                            </button > ` : '';
+                            </button>` : '';
 
             const deleteButton = canDelete ? `
-        < button class="btn-icon-card btn-danger" onclick = "deleteHostRecord('${client.id}', ${originalIndex})" title = "Excluir" >
+        <button class="btn-icon-card btn-danger" onclick="deleteHostRecord('${client.id}', ${originalIndex})" title="Excluir">
             <i class="fa-solid fa-trash"></i>
-                            </button > ` : '';
+                            </button>` : '';
 
             return `
-        < div class="server-card" >
+        <div class="server-card">
                     <div class="server-card-header">
                         <div style="display: flex; gap: 8px; align-items: center;">
                             <span class="server-environment ${environmentClass}">${environmentLabel}</span>
@@ -4972,10 +4970,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 <i class="fa-regular fa-copy"></i>
                             </button>
                         </div>
-                    </div >
+                    </div>
         ${credentialsHTML}
                     ${notesHTML}
-                </div >
+                </div>
         `;
         }).join('');
     }
