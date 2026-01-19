@@ -226,7 +226,10 @@
                                 <div class="version-text-group">
                                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px;">
                                         <div style="display: flex; align-items: baseline;">
-                                            <span style="color: #ffffff; font-size: 0.75rem; margin-right: 5px; font-weight: 400;">${(productsList.find(p => p.name === v.system)?.version_type === 'Build') ? 'Build:' : 'Versão:'}</span>
+                    ${P && P.can('Produtos', 'can_view') ?
+                    `<span>${(productsList.find(p => p.name === v.system)?.version_type === 'Build') ? 'Build:' : 'Versão:'}</span>` :
+                    `<span>${(productsList.find(p => p.name === v.system)?.version_type === 'Build') ? 'Build:' : 'Versão:'}</span>`
+                }
                                             <span class="version-number-display">${utils.escapeHtml(v.version)}</span>
                                         </div>
                                         ${v.has_alert ?
@@ -282,7 +285,7 @@
                         <i class="fa-solid fa-rotate"></i>
                     </button>` : ''}
                     
-                    ${P && P.can('Controle de Versões', 'can_view') ? `
+                    ${P && P.can('Controle de Versões', 'can_view') && P.can('Produtos', 'can_view') ? `
                     <button class="btn-card-action" onclick="window.openProductManagement()" title="Gerenciar Produtos">
                         <i class="fa-solid fa-cube"></i>
                     </button>` : ''}

@@ -707,10 +707,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const mod = item.module;
                 const label = item.label || mod;
 
-                // Ocultar linha de Produtos se o usuário logado não tiver permissão de visualização
-                if (mod === 'Produtos' && window.Permissions && !window.Permissions.can('Produtos', 'can_view')) {
-                    return; // Pula esta linha
-                }
+
 
                 const p = permData.find(x => x.module === mod) || {
                     can_view: false, can_create: false, can_edit: false, can_delete: false
@@ -740,7 +737,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const isResetPassword = mod === 'Reset de Senha';
 
                 // Criar e Excluir desabilitados para: Dashboard, Cabeçalhos, Permissões, Logs e Reset
-                const shouldDisableAll = isDashboard || isUserManagementHeader || isClientsHeader || isLogs || isResetPassword;
+                const shouldDisableAll = isDashboard || isUserManagementHeader || isLogs || isResetPassword;
                 const shouldDisableCreateDelete = shouldDisableAll || isPermissions;
 
                 const disabledCreate = shouldDisableCreateDelete ? 'disabled class="perm-checkbox-disabled"' : 'class="perm-checkbox"';
