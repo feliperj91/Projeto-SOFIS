@@ -3345,15 +3345,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.handleDeleteWebLaudo = handleDeleteWebLaudo;
 
     function handleUrlSystemChange() {
-        const execCredentialsGroup = document.getElementById('execCredentialsGroup');
+        const execCredentialsContainer = document.getElementById('execCredentialsContainer');
         if (urlSystemSelect.value === 'Hemote Web') {
             bootstrapGroup.style.display = 'none';
             execUpdateGroup.style.display = 'none';
-            if (execCredentialsGroup) execCredentialsGroup.style.display = 'none';
+            if (execCredentialsContainer) execCredentialsContainer.style.display = 'none';
         } else {
             bootstrapGroup.style.display = 'block';
             execUpdateGroup.style.display = 'block';
-            if (execCredentialsGroup) execCredentialsGroup.style.display = 'grid';
+            if (execCredentialsContainer) execCredentialsContainer.style.display = 'block';
         }
     }
 
@@ -3405,6 +3405,72 @@ document.addEventListener('DOMContentLoaded', async () => {
         clearUrlForm();
     }
 
+    window.removeUrlCredentialField = function (btn) {
+        btn.closest('.credential-field-group').remove();
+    };
+
+    function addUrlCredentialField(user = '', password = '') {
+        const list = document.getElementById('urlCredentialList');
+        if (!list) return;
+
+        const div = document.createElement('div');
+        div.className = 'credential-field-group';
+        div.innerHTML = `
+            <div class="credential-fields-container">
+                <div class="credential-field-item">
+                    <label class="credential-label-text"><i class="fa-solid fa-user" style="color: var(--accent); margin-right: 5px;"></i> Usuário</label>
+                    <input type="text" class="url-user-input" placeholder="Digite o usuário" value="${escapeHtml(user)}">
+                </div>
+                <div class="credential-field-item">
+                    <label class="credential-label-text"><i class="fa-solid fa-key" style="color: var(--accent); margin-right: 5px;"></i> Senha</label>
+                    <div style="position: relative; width: 100%;">
+                        <input type="password" class="url-pass-input" placeholder="Digite a senha" value="${escapeHtml(password)}" style="padding-right: 35px; width: 100%;">
+                        <button type="button" onclick="const i = this.previousElementSibling; i.type = i.type === 'password' ? 'text' : 'password'; this.querySelector('i').className = i.type === 'password' ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-secondary); cursor: pointer;" tabindex="-1" title="Visualizar Senha">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <button type="button" class="btn-remove-credential" onclick="removeUrlCredentialField(this)" title="Remover Credencial" tabindex="-1">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
+        `;
+        list.appendChild(div);
+    }
+
+    window.removeExecCredentialField = function (btn) {
+        btn.closest('.credential-field-group').remove();
+    };
+
+    function addExecCredentialField(user = '', password = '') {
+        const list = document.getElementById('execCredentialList');
+        if (!list) return;
+
+        const div = document.createElement('div');
+        div.className = 'credential-field-group';
+        div.innerHTML = `
+            <div class="credential-fields-container">
+                <div class="credential-field-item">
+                    <label class="credential-label-text"><i class="fa-solid fa-user" style="color: var(--accent); margin-right: 5px;"></i> Usuário</label>
+                    <input type="text" class="exec-user-input" placeholder="Digite o usuário" value="${escapeHtml(user)}">
+                </div>
+                <div class="credential-field-item">
+                    <label class="credential-label-text"><i class="fa-solid fa-key" style="color: var(--accent); margin-right: 5px;"></i> Senha</label>
+                    <div style="position: relative; width: 100%;">
+                        <input type="password" class="exec-pass-input" placeholder="Digite a senha" value="${escapeHtml(password)}" style="padding-right: 35px; width: 100%;">
+                        <button type="button" onclick="const i = this.previousElementSibling; i.type = i.type === 'password' ? 'text' : 'password'; this.querySelector('i').className = i.type === 'password' ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-secondary); cursor: pointer;" tabindex="-1" title="Visualizar Senha">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <button type="button" class="btn-remove-credential" onclick="removeExecCredentialField(this)" title="Remover Credencial" tabindex="-1">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
+        `;
+        list.appendChild(div);
+    }
+
     function clearUrlForm() {
         if (urlEnvironmentSelect) urlEnvironmentSelect.value = '';
         if (urlSystemSelect) urlSystemSelect.value = '';
@@ -3412,18 +3478,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (bootstrapInput) bootstrapInput.value = '';
         if (execUpdateInput) execUpdateInput.value = '';
         if (urlNotesInput) urlNotesInput.value = '';
-        if (urlUserInput) urlUserInput.value = '';
-        if (urlPassInput) {
-            urlPassInput.value = '';
-            urlPassInput.type = 'password';
+
+        const urlList = document.getElementById('urlCredentialList');
+        if (urlList) {
+            urlList.innerHTML = '';
+            addUrlCredentialField();
         }
-        const execUser = document.getElementById('execUpdateUserInput');
-        if (execUser) execUser.value = '';
-        const execPass = document.getElementById('execUpdatePassInput');
-        if (execPass) {
-            execPass.value = '';
-            execPass.type = 'password';
+
+        const execList = document.getElementById('execCredentialList');
+        if (execList) {
+            execList.innerHTML = '';
+            addExecCredentialField();
         }
+
         const editIdx = document.getElementById('editingUrlIndex');
         if (editIdx) editIdx.value = '';
     }
@@ -3561,31 +3628,30 @@ document.addEventListener('DOMContentLoaded', async () => {
                             </div>
                         </div>` : ''
                 }
-                    ${url.user || url.password ? `
-                        <div class="server-info" style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                                ${url.user ? `
+                    ${(url.credentials && url.credentials.length > 0) || url.user || url.password ? `
+                        <div class="server-info" style="margin-top: 15px; padding-top: 15px;">
+                            ${(url.credentials || (url.user ? [{ user: url.user, password: url.password }] : [])).map(cred => `
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 10px;">
                                     <div>
                                         <div class="server-info-label"><i class="fa-solid fa-user" style="color: var(--accent); margin-right: 6px;"></i> Usuário</div>
                                         <div class="server-info-value" style="display: flex; justify-content: space-between; align-items: center; background: rgba(0, 0, 0, 0.2); padding: 8px 10px; border-radius: 6px;">
-                                            <span style="font-size: 0.85rem;">${escapeHtml(url.user)}</span>
-                                            <button class="btn-copy-small" onclick="copyToClipboard('${escapeHtml(url.user).replace(/'/g, "\\'")}')" title="Copiar"><i class="fa-regular fa-copy"></i></button>
+                                            <span style="font-size: 0.85rem;">${escapeHtml(cred.user || '')}</span>
+                                            <button class="btn-copy-small" onclick="copyToClipboard('${escapeHtml(cred.user || '').replace(/'/g, "\\'")}')" title="Copiar"><i class="fa-regular fa-copy"></i></button>
                                         </div>
-                                    </div>` : ''}
-                                ${url.password ? `
+                                    </div>
                                     <div>
                                         <div class="server-info-label"><i class="fa-solid fa-key" style="color: var(--accent); margin-right: 6px;"></i> Senha</div>
                                         <div class="server-info-value" style="display: flex; justify-content: space-between; align-items: center; background: rgba(0, 0, 0, 0.2); padding: 8px 10px; border-radius: 6px;">
-                                            <span class="credential-value" data-raw="${url.password}">••••••</span>
+                                            <span class="credential-value" data-raw="${cred.password || ''}">••••••</span>
                                             <div style="display: flex; gap: 4px;">
-                                                <button class="btn-copy-small" onclick="copyToClipboard(this.parentElement.previousElementSibling.dataset.raw)" title="Copiar Senha"><i class="fa-regular fa-copy"></i></button>
                                                 <button class="btn-copy-small" onclick="togglePassword(this)" title="Ver Senha"><i class="fa-solid fa-eye"></i></button>
+                                                <button class="btn-copy-small" onclick="copyToClipboard(this.parentElement.previousElementSibling.dataset.raw)" title="Copiar Senha"><i class="fa-regular fa-copy"></i></button>
                                             </div>
                                         </div>
-                                    </div>` : ''}
-                            </div>
+                                    </div>
+                                </div>
+                            `).join('')}
                         </div>
-                        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0;">
                         ` : ''}
                     ${url.bootstrap ? `
                         <div class="server-info">
@@ -3613,30 +3679,31 @@ document.addEventListener('DOMContentLoaded', async () => {
                             </div>
                         </div>` : ''
                 }
-                    ${url.execUser || url.execPassword ? `
-                        <div class="server-info" style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                                ${url.execUser ? `
+                    ${(url.execCredentials && url.execCredentials.length > 0) || url.execUser || url.execPassword ? `
+                        <div class="server-info" style="margin-top: 15px; padding-top: 15px;">
+                            ${(url.execCredentials || (url.execUser ? [{ user: url.execUser, password: url.execPassword }] : [])).map(cred => `
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 10px;">
                                     <div>
-                                        <div class="server-info-label"><i class="fa-solid fa-user" style="color: var(--accent); margin-right: 6px;"></i> Usuário Exec</div>
+                                        <div class="server-info-label"><i class="fa-solid fa-user" style="color: var(--accent); margin-right: 6px;"></i> Usuário</div>
                                         <div class="server-info-value" style="display: flex; justify-content: space-between; align-items: center; background: rgba(0, 0, 0, 0.2); padding: 8px 10px; border-radius: 6px;">
-                                            <span style="font-size: 0.85rem;">${escapeHtml(url.execUser)}</span>
-                                            <button class="btn-copy-small" onclick="copyToClipboard('${escapeHtml(url.execUser).replace(/'/g, "\\'")}')" title="Copiar"><i class="fa-regular fa-copy"></i></button>
+                                            <span style="font-size: 0.85rem;">${escapeHtml(cred.user || '')}</span>
+                                            <button class="btn-copy-small" onclick="copyToClipboard('${escapeHtml(cred.user || '').replace(/'/g, "\\'")}')" title="Copiar"><i class="fa-regular fa-copy"></i></button>
                                         </div>
-                                    </div>` : ''}
-                                ${url.execPassword ? `
+                                    </div>
                                     <div>
-                                        <div class="server-info-label"><i class="fa-solid fa-key" style="color: var(--accent); margin-right: 6px;"></i> Senha Exec</div>
+                                        <div class="server-info-label"><i class="fa-solid fa-key" style="color: var(--accent); margin-right: 6px;"></i> Senha</div>
                                         <div class="server-info-value" style="display: flex; justify-content: space-between; align-items: center; background: rgba(0, 0, 0, 0.2); padding: 8px 10px; border-radius: 6px;">
-                                            <span class="credential-value" data-raw="${url.execPassword}">••••••</span>
+                                            <span class="credential-value" data-raw="${cred.password || ''}">••••••</span>
                                             <div style="display: flex; gap: 4px;">
-                                                <button class="btn-copy-small" onclick="copyToClipboard(this.parentElement.previousElementSibling.dataset.raw)" title="Copiar Senha"><i class="fa-regular fa-copy"></i></button>
                                                 <button class="btn-copy-small" onclick="togglePassword(this)" title="Ver Senha"><i class="fa-solid fa-eye"></i></button>
+                                                <button class="btn-copy-small" onclick="copyToClipboard(this.parentElement.previousElementSibling.dataset.raw)" title="Copiar Senha"><i class="fa-regular fa-copy"></i></button>
                                             </div>
                                         </div>
-                                    </div>` : ''}
-                            </div>
-                        </div>` : ''}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>` : ''
+                }
                     ${url.notes ? `
                         <div class="server-notes">
                             <div class="server-notes-title">
@@ -3646,7 +3713,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </div>` : ''
                 }
                 </div >
-            `;
+        `;
         }).join('');
     }
 
@@ -3691,6 +3758,32 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
+        const urlCredDivs = document.getElementById('urlCredentialList').querySelectorAll('.credential-field-group');
+        const urlCredentials = [];
+        for (const div of urlCredDivs) {
+            const u = div.querySelector('.url-user-input').value.trim();
+            const p = div.querySelector('.url-pass-input').value.trim();
+            if (u || p) {
+                urlCredentials.push({
+                    user: u,
+                    password: await window.Security.encrypt(p)
+                });
+            }
+        }
+
+        const execCredDivs = document.getElementById('execCredentialList').querySelectorAll('.credential-field-group');
+        const execCredentials = [];
+        for (const div of execCredDivs) {
+            const u = div.querySelector('.exec-user-input').value.trim();
+            const p = div.querySelector('.exec-pass-input').value.trim();
+            if (u || p) {
+                execCredentials.push({
+                    user: u,
+                    password: await window.Security.encrypt(p)
+                });
+            }
+        }
+
         const urlRecord = {
             environment: urlEnvironmentSelect.value,
             system: urlSystemSelect.value,
@@ -3698,10 +3791,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             bootstrap: bootstrapInput.value.trim(),
             execUpdate: execUpdateInput ? execUpdateInput.value.trim() : '',
             notes: urlNotesInput ? urlNotesInput.value.trim() : '',
-            user: urlUserInput ? urlUserInput.value.trim() : '',
-            password: urlPassInput ? await window.Security.encrypt(urlPassInput.value) : '',
-            execUser: document.getElementById('execUpdateUserInput').value.trim(),
-            execPassword: await window.Security.encrypt(document.getElementById('execUpdatePassInput').value)
+            credentials: urlCredentials,
+            execCredentials: execCredentials,
+            // Deprecated fields, kept for safety or cleared
+            user: null, // urlUserInput ? urlUserInput.value.trim() : '',
+            password: null, // urlPassInput ? await window.Security.encrypt(urlPassInput.value) : '',
+            execUser: null,
+            execPassword: null
         };
 
         if (editingIndex !== '') {
@@ -3718,7 +3814,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         closeUrlEntryModal();
         const opType = editingIndex !== '' ? 'EDIÇÃO' : 'CRIAÇÃO';
         const actionLabel = editingIndex !== '' ? 'Edição de URL de Produto' : 'Adição de URL de Produto';
-        await registerAuditLog(opType, actionLabel, `Cliente: ${client.name}, Produto: ${urlRecord.system}, Ambiente: ${urlRecord.environment}`, urlBefore, urlRecord);
+        await registerAuditLog(opType, actionLabel, `Cliente: ${client.name}, Produto: ${urlRecord.system}, Ambiente: ${urlRecord.environment} `, urlBefore, urlRecord);
     }
 
     window.editUrlRecord = async (clientId, index) => {
@@ -3740,12 +3836,42 @@ document.addEventListener('DOMContentLoaded', async () => {
         bootstrapInput.value = url.bootstrap || '';
         execUpdateInput.value = url.execUpdate || '';
         urlNotesInput.value = url.notes || '';
-        urlUserInput.value = url.user || '';
-        urlPassInput.value = url.password ? await window.Security.decrypt(url.password) : '';
-        const execUserInput = document.getElementById('execUpdateUserInput');
-        if (execUserInput) execUserInput.value = url.execUser || '';
-        const execPassInput = document.getElementById('execUpdatePassInput');
-        if (execPassInput) execPassInput.value = url.execPassword ? await window.Security.decrypt(url.execPassword) : '';
+
+        // Populate URL Credentials
+        const urlList = document.getElementById('urlCredentialList');
+        if (urlList) {
+            urlList.innerHTML = '';
+            if (url.credentials && url.credentials.length > 0) {
+                for (const cred of url.credentials) {
+                    const dec = await window.Security.decrypt(cred.password);
+                    addUrlCredentialField(cred.user, dec);
+                }
+            } else if (url.user || url.password) {
+                // Migration support
+                const dec = await window.Security.decrypt(url.password);
+                addUrlCredentialField(url.user, dec);
+            } else {
+                addUrlCredentialField();
+            }
+        }
+
+        // Populate Exec Credentials
+        const execList = document.getElementById('execCredentialList');
+        if (execList) {
+            execList.innerHTML = '';
+            if (url.execCredentials && url.execCredentials.length > 0) {
+                for (const cred of url.execCredentials) {
+                    const dec = await window.Security.decrypt(cred.password);
+                    addExecCredentialField(cred.user, dec);
+                }
+            } else if (url.execUser || url.execPassword) {
+                // Migration support
+                const dec = await window.Security.decrypt(url.execPassword);
+                addExecCredentialField(url.execUser, dec);
+            } else {
+                addExecCredentialField();
+            }
+        }
         document.getElementById('editingUrlIndex').value = index;
 
         urlEntryModalTitle.textContent = 'URLs de Produto';
@@ -3772,7 +3898,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderClients(clients);
         renderUrlList(client);
         showToast(`🗑️ URL do cliente "${client.name}" removida com sucesso!`, 'success');
-        await registerAuditLog('EXCLUSÃO', 'Exclusão de URL de Produto', `Cliente: ${client.name}, Produto: ${deletedUrl.system}, Ambiente: ${deletedUrl.environment}`, deletedUrl, null);
+        await registerAuditLog('EXCLUSÃO', 'Exclusão de URL de Produto', `Cliente: ${client.name}, Produto: ${deletedUrl.system}, Ambiente: ${deletedUrl.environment} `, deletedUrl, null);
     }
 
     async function handleWebLaudoSave() {
@@ -3830,7 +3956,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             applyClientFilter();
             showToast('✅ WebLaudo salvo com sucesso!', 'success');
-            await registerAuditLog('EDIÇÃO', 'Atualização de WebLaudo', `Cliente: ${client.name}`, webLaudoBefore, freshClient.webLaudo);
+            await registerAuditLog('EDIÇÃO', 'Atualização de WebLaudo', `Cliente: ${client.name} `, webLaudoBefore, freshClient.webLaudo);
         } catch (error) {
             console.error("Erro ao salvar WebLaudo:", error);
             showToast("❌ Erro ao salvar WebLaudo.", "error");
@@ -3916,29 +4042,29 @@ document.addEventListener('DOMContentLoaded', async () => {
             const item = document.createElement('div');
             item.className = 'activity-item';
 
-            const opClass = `op-${(activity.operation_type || 'update').toLowerCase()}`;
+            const opClass = `op - ${(activity.operation_type || 'update').toLowerCase()} `;
             const opLabel = activity.operation_type || 'Ação';
 
             item.innerHTML = `
-                <div class="activity-item-header">
+        < div class="activity-item-header" >
                     <span class="activity-user"><i class="fa-solid fa-user"></i> ${escapeHtml(activity.username)}</span>
                     <span class="activity-time">${dateStr} às ${timeStr}</span>
-                </div>
-                <div class="activity-action">
-                    <span class="activity-op-badge ${opClass}">${opLabel}</span>
-                    <div style="display: flex; flex-direction: column; gap: 4px; flex: 1;">
-                        <span style="font-weight: 500;">${escapeHtml(activity.action)}</span>
-                        ${activity.client_name ? `
+                </div >
+        <div class="activity-action">
+            <span class="activity-op-badge ${opClass}">${opLabel}</span>
+            <div style="display: flex; flex-direction: column; gap: 4px; flex: 1;">
+                <span style="font-weight: 500;">${escapeHtml(activity.action)}</span>
+                ${activity.client_name ? `
                             <div style="display: flex; align-items: center; gap: 6px;">
                                 <span class="server-client-badge" style="font-size: 0.65rem; padding: 2px 6px;">
                                     ${escapeHtml(activity.client_name)}
                                 </span>
                             </div>
                         ` : ''}
-                    </div>
-                </div>
+            </div>
+        </div>
                 ${activity.details ? `<div class="activity-details">${escapeHtml(activity.details)}</div>` : ''}
-            `;
+    `;
             activityList.appendChild(item);
         });
     }
@@ -3999,7 +4125,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const timeStr = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
             const opTypeRaw = (log.operation_type || 'UPDATE').toLowerCase();
-            const opClass = `op-${opTypeRaw}`;
+            const opClass = `op - ${opTypeRaw} `;
             const opLabel = (log.operation_type || 'AÇÃO').toUpperCase();
 
             // Permission checks
@@ -4013,20 +4139,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             item.className = 'activity-item';
 
             const actionButtons = (canEdit || canDelete) ? `
-                <div class="activity-actions" style="display: flex; gap: 8px;">
-                    ${canEdit ? `<button class="btn-icon-small" onclick="editClientLog('${log.id}')" title="Editar"><i class="fa-solid fa-pen"></i></button>` : ''}
+        < div class="activity-actions" style = "display: flex; gap: 8px;" >
+            ${canEdit ? `<button class="btn-icon-small" onclick="editClientLog('${log.id}')" title="Editar"><i class="fa-solid fa-pen"></i></button>` : ''}
                     ${canDelete ? `<button class="btn-icon-small btn-danger-outline" onclick="deleteClientLog('${log.id}')" title="Excluir"><i class="fa-solid fa-trash"></i></button>` : ''}
-                </div>
-            ` : '';
+                </div >
+        ` : '';
 
             item.innerHTML = `
-                <div class="activity-item-header">
+        < div class="activity-item-header" >
                     <span class="activity-user"><i class="fa-solid fa-user"></i> ${escapeHtml(log.username || 'Sistema')}</span>
                     <div style="display: flex; align-items: center; gap: 12px;">
                         ${actionButtons}
                         <span class="activity-time">${dateStr} às ${timeStr}</span>
                     </div>
-                </div>
+                </div >
                 <div class="activity-action">
                     <span class="activity-op-badge ${opClass}">${opLabel}</span>
                     ${escapeHtml(log.action)}
@@ -4034,7 +4160,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="activity-details">
                     ${escapeHtml(log.details.replace(/Cliente:\s*[^,]+(,\s*)?/, ''))}
                 </div>
-            `;
+    `;
             historyList.appendChild(item);
         });
 
@@ -4069,7 +4195,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!confirmed) return;
 
         try {
-            const response = await fetch(`/Projeto-SOFIS-1/api/audit.php?id=${logId}`, {
+            const response = await fetch(`/ Projeto - SOFIS - 1 / api / audit.php ? id = ${logId} `, {
                 method: 'DELETE',
                 credentials: 'include'
             });
@@ -4128,7 +4254,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Update content sections
             tabContents.forEach(content => {
                 content.classList.remove('active');
-                if (content.id === `${tabId}Tab`) {
+                if (content.id === `${tabId} Tab`) {
                     content.classList.add('active');
                 }
             });
@@ -4327,7 +4453,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Removed redundant audit log - already covered by "Edição de Cliente"
         } else {
-            showToast(`Erro: Cliente não encontrado (ID: ${id})`, 'error');
+            showToast(`Erro: Cliente não encontrado(ID: ${id})`, 'error');
         }
     };
 
@@ -4424,7 +4550,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             // Audit Log
-            await registerAuditLog('EDIÇÃO', 'Inativação de Contrato', `Cliente: ${client.name}`, null, inactiveData);
+            await registerAuditLog('EDIÇÃO', 'Inativação de Contrato', `Cliente: ${client.name} `, null, inactiveData);
 
             if (window.showToast) window.showToast('Contrato marcado como inativo.', 'success');
             document.getElementById('inactiveContractModal').classList.add('hidden');
@@ -4460,7 +4586,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             // Audit Log
-            await registerAuditLog('EDIÇÃO', 'Reativação de Contrato', `Cliente: ${client.name}`, client.inactive_contract, null);
+            await registerAuditLog('EDIÇÃO', 'Reativação de Contrato', `Cliente: ${client.name} `, client.inactive_contract, null);
 
             if (window.showToast) window.showToast('Contrato reativado com sucesso!', 'success');
             document.getElementById('inactiveContractModal').classList.add('hidden');
@@ -4713,7 +4839,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const div = document.createElement('div');
         div.className = 'credential-field-group';
         div.innerHTML = `
-            <div class="credential-fields-container">
+        < div class="credential-fields-container" >
                 <div class="credential-field-item">
                     <label class="credential-label-text"><i class="fa-solid fa-user" style="color: var(--accent); margin-right: 5px;"></i> Usuário<span class="required">*</span></label>
                     <input type="text" class="server-user-input" placeholder="Digite o usuário" value="${escapeHtml(user)}" required>
@@ -4730,7 +4856,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <button type="button" class="btn-remove-credential" onclick="removeHostCredentialField(this)" title="Remover Credencial" tabindex="-1">
                     <i class="fa-solid fa-trash"></i>
                 </button>
-            </div>
+            </div >
         `;
         hostCredentialList.appendChild(div);
     }
@@ -4763,11 +4889,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (filtered.length === 0) {
             list.innerHTML = `
-                <div class="servers-grid-empty">
+        < div class="servers-grid-empty" >
                     <i class="fa-solid fa-server"></i>
                     <p>${filterValue === 'all' ? 'Nenhum servidor cadastrado ainda.' : 'Nenhum servidor encontrado para este filtro.'}</p>
-                </div>
-            `;
+                </div >
+        `;
             return;
         }
 
@@ -4778,10 +4904,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const credentialsHTML = host.credentials && host.credentials.length > 0
                 ? `
-                    <div class="server-credentials">
-                        <div class="server-credentials-title">
-                            <i class="fa-solid fa-key" style="color: var(--accent);"></i> Credenciais
-                        </div>
+        < div class="server-credentials" >
+            <div class="server-credentials-title">
+                <i class="fa-solid fa-key" style="color: var(--accent);"></i> Credenciais
+            </div>
                         ${host.credentials.map(cred => `
                             <div class="credential-item">
                                 <div class="credential-row">
@@ -4802,30 +4928,31 @@ document.addEventListener('DOMContentLoaded', async () => {
                                     </button>
                                 </div>
                             </div>
-                        `).join('')}
-                    </div>
-                `
+                        `).join('')
+                }
+                    </div >
+        `
                 : '';
 
             const notesHTML = host.notes
-                ? `<div class="server-notes">
+                ? `< div class="server-notes" >
                     <div class="server-notes-title"><i class="fa-solid fa-comment-dots" style="color: var(--accent); margin-right: 6px;"></i> Observações</div>
                     <div class="server-notes-content">${escapeHtml(host.notes)}</div>
-                   </div>`
+                   </div > `
                 : '';
 
             const editButton = canEdit ? `
-                            <button class="btn-icon-card" onclick="editHostRecord('${client.id}', ${originalIndex})" title="Editar">
-                                <i class="fa-solid fa-pen"></i>
-                            </button>` : '';
+        < button class="btn-icon-card" onclick = "editHostRecord('${client.id}', ${originalIndex})" title = "Editar" >
+            <i class="fa-solid fa-pen"></i>
+                            </button > ` : '';
 
             const deleteButton = canDelete ? `
-                            <button class="btn-icon-card btn-danger" onclick="deleteHostRecord('${client.id}', ${originalIndex})" title="Excluir">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>` : '';
+        < button class="btn-icon-card btn-danger" onclick = "deleteHostRecord('${client.id}', ${originalIndex})" title = "Excluir" >
+            <i class="fa-solid fa-trash"></i>
+                            </button > ` : '';
 
             return `
-                <div class="server-card">
+        < div class="server-card" >
                     <div class="server-card-header">
                         <div style="display: flex; gap: 8px; align-items: center;">
                             <span class="server-environment ${environmentClass}">${environmentLabel}</span>
@@ -4845,11 +4972,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 <i class="fa-regular fa-copy"></i>
                             </button>
                         </div>
-                    </div>
-                    ${credentialsHTML}
+                    </div >
+        ${credentialsHTML}
                     ${notesHTML}
-                </div>
-            `;
+                </div >
+        `;
         }).join('');
     }
 
@@ -4920,7 +5047,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const opType = (editingIndex !== '') ? 'EDIÇÃO' : 'CRIAÇÃO';
             const actionLabel = (editingIndex !== '') ? 'Edição de Servidor' : 'Adição de Servidor';
-            await registerAuditLog(opType, actionLabel, `Cliente: ${client.name}, Servidor: ${hostRecord.name}`, hostBefore, hostRecord);
+            await registerAuditLog(opType, actionLabel, `Cliente: ${client.name}, Servidor: ${hostRecord.name} `, hostBefore, hostRecord);
         } catch (error) {
             console.error(error);
             showToast('Erro ao salvar servidor: ' + error.message, 'error');
@@ -4987,7 +5114,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderClients(clients);
         renderHostsList(client);
         showToast(`🗑️ Servidor excluído com sucesso!`, 'success');
-        await registerAuditLog('EXCLUSÃO', 'Exclusão de Servidor', `Cliente: ${client.name}, Servidor: ${deletedHost.name}`, deletedHost, null);
+        await registerAuditLog('EXCLUSÃO', 'Exclusão de Servidor', `Cliente: ${client.name}, Servidor: ${deletedHost.name} `, deletedHost, null);
     };
 
     // Event Listeners for Host Modals
@@ -4999,6 +5126,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (document.getElementById('addHostEntryBtn'))
         document.getElementById('addHostEntryBtn').onclick = openHostEntry;
+
+    if (document.getElementById('addUrlCredentialBtn'))
+        document.getElementById('addUrlCredentialBtn').onclick = () => addUrlCredentialField();
+
+    if (document.getElementById('addExecCredentialBtn'))
+        document.getElementById('addExecCredentialBtn').onclick = () => addExecCredentialField();
 
     if (document.getElementById('closeHostEntryModal'))
         document.getElementById('closeHostEntryModal').onclick = closeHostEntryModal;

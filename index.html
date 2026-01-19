@@ -987,31 +987,13 @@
                         <input type="text" id="bridgeDataAccessInput" required placeholder="URL">
                     </div>
 
-                    <div class="server-form-grid" style="margin-bottom: 20px;">
-                        <div class="form-group">
-                            <label for="urlUserInput">
-                                <span><i class="fa-solid fa-user" style="color: var(--accent);"></i> Usuário</span>
-                            </label>
-                            <input type="text" id="urlUserInput" placeholder="Usuário">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="urlPassInput">
-                                <span><i class="fa-solid fa-lock" style="color: var(--accent);"></i> Senha</span>
-                            </label>
-                            <div style="position: relative;">
-                                <input type="password" id="urlPassInput" placeholder="Senha"
-                                    style="padding-right: 40px;">
-                                <button type="button" class="btn-icon"
-                                    style="position: absolute; right: 5px; top: 50%; transform: translateY(-50%);"
-                                    onclick="togglePasswordVisibility('urlPassInput', this)">
-                                    <i class="fa-solid fa-eye"></i>
-                                </button>
-                            </div>
-                        </div>
+                    <div id="urlCredentialList" style="margin-bottom: 20px;">
+                        <!-- Dynamic credentials will be added here -->
                     </div>
-
-                    <hr style="border: 0; border-top: 1px solid var(--border); margin: 0 0 20px 0;">
+                    <button type="button" class="btn-secondary" id="addUrlCredentialBtn"
+                        style="margin-bottom: 20px; width: 100%;">
+                        <i class="fa-solid fa-plus"></i> Adicionar Usuário/Senha
+                    </button>
 
                     <div id="bootstrapGroup" class="form-group">
                         <label for="bootstrapInput">
@@ -1028,28 +1010,14 @@
                         <input type="text" id="execUpdateInput" placeholder="Caminho de atualização do bootstrap">
                     </div>
 
-                    <div id="execCredentialsGroup" class="server-form-grid" style="margin-bottom: 20px;">
-                        <div class="form-group">
-                            <label for="execUpdateUserInput">
-                                <span><i class="fa-solid fa-user" style="color: var(--accent);"></i> Usuário Exec</span>
-                            </label>
-                            <input type="text" id="execUpdateUserInput" placeholder="Usuário">
+                    <div id="execCredentialsContainer">
+                        <div id="execCredentialList" style="margin-bottom: 20px;">
+                            <!-- Dynamic exec credentials will be added here -->
                         </div>
-
-                        <div class="form-group">
-                            <label for="execUpdatePassInput">
-                                <span><i class="fa-solid fa-lock" style="color: var(--accent);"></i> Senha Exec</span>
-                            </label>
-                            <div style="position: relative;">
-                                <input type="password" id="execUpdatePassInput" placeholder="Senha"
-                                    style="padding-right: 40px;">
-                                <button type="button" class="btn-icon"
-                                    style="position: absolute; right: 5px; top: 50%; transform: translateY(-50%);"
-                                    onclick="togglePasswordVisibility('execUpdatePassInput', this)">
-                                    <i class="fa-solid fa-eye"></i>
-                                </button>
-                            </div>
-                        </div>
+                        <button type="button" class="btn-secondary" id="addExecCredentialBtn"
+                            style="margin-bottom: 20px; width: 100%;">
+                            <i class="fa-solid fa-plus"></i> Adicionar Usuário/Senha Exec
+                        </button>
                     </div>
 
                     <div class="form-group">
