@@ -3723,7 +3723,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username || 'anônimo';
                 if (cred.is_private && cred.owner !== currentUser) return '';
 
-                const privacyIcon = cred.is_private ? `<i class="fa-solid fa-lock" style="color: #ff5252; margin-left: auto; font-size: 0.7rem;" title="Individual"></i>` : '';
+                const privacyIcon = cred.is_private ? `<i class="fa-solid fa-lock" style="color: #ff5252; font-size: 0.7rem;" title="Individual"></i>` : '';
 
                 return `
                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 10px;">
@@ -3754,7 +3754,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     ${url.bootstrap ? `
                         <div class="server-info">
                             <div class="server-info-label">
-                                <i class="fa-solid fa-bolt" style="color: var(--accent); margin-right: 6px;"></i> Bootstrap
+                                <i class="fa-solid fa-bolt" style="color: var(--accent); margin-right: 6px;"></i> BootStrap (WebUpdate)
                             </div>
                             <div class="server-info-value" style="display: flex; justify-content: space-between; align-items: center; background: rgba(0, 0, 0, 0.2); padding: 10px; border-radius: 8px;">
                                 <span style="font-family: monospace; color: var(--text-primary); word-break: break-all; margin-right: 10px; font-size: 0.75rem;">${escapeHtml(url.bootstrap)}</span>
@@ -3767,7 +3767,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     ${url.execUpdate ? `
                         <div class="server-info">
                             <div class="server-info-label">
-                                <i class="fa-solid fa-download" style="color: var(--accent); margin-right: 6px;"></i> Atualização de Executáveis
+                                <i class="fa-solid fa-download" style="color: var(--accent); margin-right: 6px;"></i> Atualização de Executáveis (Link de Download)
                             </div>
                             <div class="server-info-value" style="display: flex; justify-content: space-between; align-items: center; background: rgba(0, 0, 0, 0.2); padding: 10px; border-radius: 8px;">
                                 <span style="font-family: monospace; color: var(--text-primary); word-break: break-all; margin-right: 10px; font-size: 0.75rem;">${escapeHtml(url.execUpdate)}</span>
