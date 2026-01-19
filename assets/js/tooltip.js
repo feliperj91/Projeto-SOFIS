@@ -77,7 +77,7 @@
     }
 
     function initTooltips() {
-        // ONLY handle data-tooltip elements (explicit tooltips)
+        // Handle data-tooltip elements
         document.querySelectorAll('[data-tooltip]').forEach(element => {
             if (initializedElements.has(element)) return;
             initializedElements.add(element);
@@ -88,6 +88,33 @@
 
             element.addEventListener('mouseenter', function () {
                 createTooltip(this, text, variant, position);
+            });
+
+            element.addEventListener('mouseleave', function () {
+                removeTooltip(this);
+            });
+
+            element.addEventListener('click', function () {
+                removeTooltip(this);
+            });
+        });
+
+        // Handle native title attribute elements
+        document.querySelectorAll('[title]:not([data-tooltip]):not([data-tooltip-converted])').forEach(element => {
+            const titleText = element.getAttribute('title');
+            if (!titleText || titleText.trim() === '') return;
+
+            // Mark as converted and remove title to prevent native tooltip
+            element.setAttribute('data-tooltip-converted', 'true');
+            element.setAttribute('data-original-title', titleText);
+            element.removeAttribute('title');
+
+            if (initializedElements.has(element)) return;
+            initializedElements.add(element);
+
+            element.addEventListener('mouseenter', function () {
+                const text = this.getAttribute('data-original-title');
+                createTooltip(this, text, 'default', 'bottom');
             });
 
             element.addEventListener('mouseleave', function () {
