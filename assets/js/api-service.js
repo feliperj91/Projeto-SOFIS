@@ -239,11 +239,11 @@ const api = {
                 body: JSON.stringify(role)
             });
         },
-        async update(oldName, newName) {
+        async update(oldName, newName, description = '') {
             return await request(`roles.php?name=${encodeURIComponent(oldName)}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: newName })
+                body: JSON.stringify({ name: newName, description: description })
             });
         },
         async delete(name) {

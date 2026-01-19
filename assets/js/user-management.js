@@ -169,12 +169,27 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (btnEdit) btnEdit.onclick = () => window.editRoleName(currentSelectedRole);
             if (btnCopy) btnCopy.onclick = () => window.openCopyPermModal(currentSelectedRole);
 
+            // Atualizar ícone de info (tooltip)
+            const updateRoleInfo = (rName) => {
+                const role = rolesList.find(r => r.name === rName);
+                const infoIcon = document.getElementById('roleInfoIcon');
+                if (infoIcon) {
+                    const desc = role && role.description ? role.description : 'Sem descrição disponível para este grupo.';
+                    infoIcon.title = desc;
+                    infoIcon.style.opacity = role && role.description ? '1' : '0.4';
+                }
+            };
+
+            updateRoleInfo(currentSelectedRole);
+
             roleDropdown.onchange = async (e) => {
                 currentSelectedRole = e.target.value;
                 const isSys = ['ADMINISTRADOR', 'TECNICO', 'ANALISTA'].includes(currentSelectedRole);
 
                 if (btnDelete) btnDelete.classList.toggle('hidden', isSys || !canDeleteGroups);
                 if (btnEdit) btnEdit.classList.toggle('hidden', isSys || !canEditGroups);
+
+                updateRoleInfo(currentSelectedRole);
 
                 if (currentMngTab === 'users') {
                     const filtered = usersList.filter(u => u.roles && u.roles.includes(currentSelectedRole));
@@ -251,11 +266,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         const role = rolesList.find(r => r.name === roleName);
         if (!role) return;
 
-        document.getElementById('roleModalTitle').innerText = 'Editar Nome do Grupo';
+        document.getElementById('roleModalTitle').innerText = 'Editar Grupo';
         document.getElementById('editRoleOldName').value = roleName;
         document.getElementById('roleName').value = roleName;
-        document.getElementById('roleDescGroup').classList.add('hidden'); // Esconder desc na edição por simplicidade
-        document.getElementById('btnSubmitRole').innerText = 'Salvar Alteração';
+
+        // Agora mostramos a descrição na edição
+        document.getElementById('roleDescription').value = role.description || '';
+        document.getElementById('roleDescGroup').classList.remove('hidden');
+
+        document.getElementById('btnSubmitRole').innerText = 'Salvar Alterações';
 
         if (roleModal) roleModal.classList.remove('hidden');
     };
@@ -351,7 +370,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             try {
                 if (oldName) {
                     // Update
-                    await window.api.roles.update(oldName, name);
+                    await window.api.roles.update(oldName, name, description);
 
                     if (window.registerAuditLog) {
                         await window.registerAuditLog(

@@ -76,17 +76,18 @@ switch ($method) {
         try {
             $pdo->beginTransaction();
 
-            // 1. Atualizar user_roles
-            $stmt1 = $pdo->prepare("UPDATE user_roles SET name = ? WHERE name = ?");
-            $stmt1->execute([$newName, $oldName]);
+            // 1. Atualizar user_roles (name e description)
+            $stmt1 = $pdo->prepare("UPDATE user_roles SET name = ?, description = ? WHERE name = ?");
+            $stmt1->execute([$newName, $input['description'] ?? '', $oldName]);
 
             // 2. Atualizar role_permissions
             $stmt2 = $pdo->prepare("UPDATE role_permissions SET role_name = ? WHERE role_name = ?");
             $stmt2->execute([$newName, $oldName]);
 
-            // 3. Atualizar tabela users (coluna role)
-            $stmt3 = $pdo->prepare("UPDATE users SET role = ? WHERE role = ?");
-            $stmt3->execute([$newName, $oldName]);
+            // 3. Atualizar tabela users (coluna roles que é text[])
+            // Usamos array_replace para trocar o nome do cargo dentro do array de cargos dos usuários
+            $stmt3 = $pdo->prepare("UPDATE users SET roles = array_replace(roles, ?, ?) WHERE ? = ANY(roles)");
+            $stmt3->execute([$oldName, $newName, $oldName]);
 
             $pdo->commit();
             echo json_encode(['success' => true]);
@@ -112,8 +113,8 @@ switch ($method) {
         }
 
         try {
-            // Verificar se existem usuários vinculados
-            $checkUsers = $pdo->prepare("SELECT count(*) FROM users WHERE role = ?");
+            // Verificar se existem usuários vinculados (usando a nova coluna roles text[])
+            $checkUsers = $pdo->prepare("SELECT count(*) FROM users WHERE ? = ANY(roles)");
             $checkUsers->execute([$name]);
             $count = $checkUsers->fetchColumn();
             
