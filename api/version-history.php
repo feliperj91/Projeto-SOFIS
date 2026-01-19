@@ -22,6 +22,7 @@ try {
         }
         
         $currentUser = $_SESSION['username'] ?? null;
+        $userRole = $_SESSION['role'] ?? null;
         if (!$currentUser) {
             http_response_code(401);
             echo json_encode(['error' => 'Unauthorized']);
@@ -39,9 +40,9 @@ try {
             exit;
         }
         
-        if ($history['updated_by'] !== $currentUser) {
+        if ($history['updated_by'] !== $currentUser && $userRole !== 'ADMINISTRADOR') {
             http_response_code(403);
-            echo json_encode(['error' => 'You can only delete your own version history']);
+            echo json_encode(['error' => 'Sua permissão não permite excluir registros de outros usuários.']);
             exit;
         }
         
@@ -62,6 +63,7 @@ try {
         }
         
         $currentUser = $_SESSION['username'] ?? null;
+        $userRole = $_SESSION['role'] ?? null;
         if (!$currentUser) {
             http_response_code(401);
             echo json_encode(['error' => 'Unauthorized']);
@@ -79,9 +81,9 @@ try {
             exit;
         }
         
-        if ($history['updated_by'] !== $currentUser) {
+        if ($history['updated_by'] !== $currentUser && $userRole !== 'ADMINISTRADOR') {
             http_response_code(403);
-            echo json_encode(['error' => 'You can only edit your own version history']);
+            echo json_encode(['error' => 'Sua permissão não permite editar registros de outros usuários.']);
             exit;
         }
         
