@@ -398,7 +398,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             addNewUserBtn.style.display = (currentMngTab === 'users' && canCreateUsers) ? 'flex' : 'none';
         }
 
-        const btnCreateGroup = document.getElementById('addNewRoleBtn'); // Note checking if id is correct or using btnAddNewRole
+        const btnAddNewRole = document.getElementById('btnAddNewRole');
         if (btnAddNewRole) btnAddNewRole.classList.toggle('hidden', !canCreateGroups);
 
         // Verificar visibilidade das sub-abas
@@ -492,7 +492,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         savePermissionsBtn.classList.add('hidden');
                     }
                 }
-                if (roleSelector) roleSelector.classList.remove('hidden');
+                if (roleSelector) roleSelector.classList.toggle('hidden', !canViewPerms);
 
                 await loadPermissions(currentSelectedRole);
 
@@ -659,7 +659,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const filtered = usersList.filter(u =>
             u.full_name?.toLowerCase().includes(query) ||
-            u.username?.toLowerCase().includes(query)
+            u.username?.toLowerCase().includes(query) ||
+            u.role?.toLowerCase().includes(query)
         );
         renderUsers(filtered);
     });
