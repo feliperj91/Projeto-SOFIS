@@ -1398,6 +1398,35 @@ document.addEventListener('DOMContentLoaded', async () => {
                             ${(client.inactive_contract && client.inactive_contract.active) ? `<span class="inactive-info-icon" title="Contrato Inativo">i</span>` : ''}
                         </div>
                         ${client.updatedAt && canViewLogs ? `
+    // --- Privacy Toggle Logic ---
+    window.toggleIndividualPrivacy = async (checkbox) => {
+        const isChecked = checkbox.checked;
+
+        // Reset check first to handle AFTER confirmation
+        checkbox.checked = !isChecked;
+
+        if (isChecked) {
+            // User wants to ENABLE privacy
+            const confirmed = await window.showConfirm(
+                'Ao ativar esta opção, SOMENTE VOCÊ terá acesso a essas credenciais. Outros usuários, mesmo administradores, não poderão visualizá-las. Deseja continuar?',
+                'Tornar Privado',
+                'fa-lock'
+            );
+            if (confirmed) {
+                checkbox.checked = true;
+            }
+        } else {
+            // User wants to DISABLE privacy
+            const confirmed = await window.showConfirm(
+                'Ao desativar esta opção, TODOS os usuários com permissão poderão visualizar essas credenciais. Deseja continuar?',
+                'Tornar Público',
+                'fa-lock-open'
+            );
+            if (confirmed) {
+                checkbox.checked = false;
+            }
+        }
+    };
                             <div class="client-updated-info clickable" onclick="openClientHistory('${client.id}'); event.stopPropagation();" title="Ver Histórico de Alterações" style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 2px; font-weight: normal; display: flex; align-items: center; gap: 4px; cursor: pointer; width: fit-content;">
                                 <i class="fa-solid fa-clock-rotate-left" style="font-size: 0.65rem; color: var(--accent);"></i>
                                 <span class="hover-underline">Atualizado: ${new Date(client.updatedAt).toLocaleDateString('pt-BR')} ${new Date(client.updatedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
@@ -2925,6 +2954,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         listContainer.innerHTML = client.vpns.map((vpn, index) => {
+            const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username || 'anônimo';
+
+            // Privacy Check
+            if (vpn.is_private && vpn.owner !== currentUser) {
+                // Return nothing (hide) or a locked card placeholder?
+                // User requested "only user has access", implying invisibility.
+                return '';
+            }
+
             const editButton = canEdit ? `
                             <button class="btn-icon-card" onclick="editVpnRecord('${client.id}', ${index})" title="Editar">
                                 <i class="fa-solid fa-pen"></i>
@@ -2935,11 +2973,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 <i class="fa-solid fa-trash"></i>
                             </button>` : '';
 
+            const privacyIcon = vpn.is_private ? `<i class="fa-solid fa-lock" style="color: #ff5252; margin-left: auto;" title="Individual (Privado)"></i>` : '';
+
             return `
                 <div class="server-card">
                     <div class="server-card-header">
-                        <div style="display: flex; gap: 8px; align-items: center;">
+                        <div style="display: flex; gap: 8px; align-items: center; width: 100%;">
                             <span class="server-environment producao">VPN</span>
+                            ${privacyIcon}
                         </div>
                         <div class="server-card-actions">
                             ${editButton}
@@ -2999,12 +3040,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
+        const vpnNotes = vpnNotesInput.value.trim();
+        const isPrivate = document.getElementById('vpnIndividualPrivacy')?.checked || false;
+        const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username || 'anônimo';
+
         const vpnBefore = (editingIndex !== '') ? JSON.parse(JSON.stringify(client.vpns[parseInt(editingIndex)])) : null;
 
         const vpnRecord = {
             user: vpnUser,
             password: await window.Security.encrypt(vpnPass),
-            notes: vpnNotesInput.value.trim()
+            notes: vpnNotes,
+            is_private: isPrivate,
+            owner: currentUser
         };
 
         if (editingIndex !== '') {
@@ -3064,9 +3111,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!client || !client.vpns || !client.vpns[index]) return;
 
         const vpn = client.vpns[index];
-        vpnUserInput.value = vpn.user;
-        vpnPassInput.value = await window.Security.decrypt(vpn.password);
-        vpnNotesInput.value = vpn.notes || '';
+        if (vpnUserInput) vpnUserInput.value = vpn.user;
+        if (vpnPassInput) {
+            const decPass = await window.Security.decrypt(vpn.password);
+            vpnPassInput.value = decPass;
+        }
+        if (vpnNotesInput) vpnNotesInput.value = vpn.notes || '';
+        if (document.getElementById('vpnIndividualPrivacy')) {
+            document.getElementById('vpnIndividualPrivacy').checked = !!vpn.is_private;
+        }
+
         document.getElementById('editingVpnIndex').value = index;
 
         vpnEntryModalTitle.textContent = 'Editar Acesso VPN';
@@ -3434,7 +3488,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         btn.closest('.credential-field-group').remove();
     };
 
-    function addUrlCredentialField(user = '', password = '') {
+    function addUrlCredentialField(user = '', password = '', isPrivate = false) {
         const list = document.getElementById('urlCredentialList');
         if (!list) return;
 
@@ -3443,7 +3497,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         div.innerHTML = `
             <div class="credential-fields-container">
                 <div class="credential-field-item">
-                    <label class="credential-label-text"><i class="fa-solid fa-user" style="color: var(--accent); margin-right: 5px;"></i> Usuário</label>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                        <label class="credential-label-text"><i class="fa-solid fa-user" style="color: var(--accent); margin-right: 5px;"></i> Usuário</label>
+                        <div class="checkbox-wrapper-individual">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.75rem; font-weight: 700; color: #ff5252;">
+                                <input type="checkbox" class="url-private-check" onchange="window.toggleIndividualPrivacy(this)" ${isPrivate ? 'checked' : ''}>
+                                <i class="fa-solid fa-lock" style="font-size: 0.7rem;"></i> INDIVIDUAL
+                            </label>
+                        </div>
+                    </div>
                     <input type="text" class="url-user-input" placeholder="Digite o usuário" value="${escapeHtml(user)}">
                 </div>
                 <div class="credential-field-item">
@@ -3655,10 +3717,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     ${(url.credentials && url.credentials.length > 0) || url.user || url.password ? `
                         <div class="server-info" style="margin-top: 15px; padding-top: 15px;">
-                            ${(url.credentials || (url.user ? [{ user: url.user, password: url.password }] : [])).map(cred => `
+                            ${(url.credentials || (url.user ? [{ user: url.user, password: url.password }] : [])).map(cred => {
+                // Privacy Check
+                const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username || 'anônimo';
+                if (cred.is_private && cred.owner !== currentUser) return '';
+
+                const privacyIcon = cred.is_private ? `<i class="fa-solid fa-lock" style="color: #ff5252; margin-left: auto; font-size: 0.7rem;" title="Individual"></i>` : '';
+
+                return `
                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 10px;">
                                     <div>
-                                        <div class="server-info-label"><i class="fa-solid fa-user" style="color: var(--accent); margin-right: 6px;"></i> Usuário</div>
+                                        <div class="server-info-label" style="display:flex; align-items:center; gap:5px;">
+                                            <i class="fa-solid fa-user" style="color: var(--accent);"></i> Usuário
+                                            ${privacyIcon}
+                                        </div>
                                         <div class="server-info-value" style="display: flex; justify-content: space-between; align-items: center; background: rgba(0, 0, 0, 0.2); padding: 8px 10px; border-radius: 6px;">
                                             <span style="font-size: 0.85rem;">${escapeHtml(cred.user || '')}</span>
                                             <button class="btn-copy-small" onclick="copyToClipboard('${escapeHtml(cred.user || '').replace(/'/g, "\\'")}')" title="Copiar"><i class="fa-regular fa-copy"></i></button>
@@ -3675,7 +3747,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                         </div>
                                     </div>
                                 </div>
-                            `).join('')}
+                            `}).join('')}
                         </div>` : ''}
 
                     ${url.bootstrap ? `
@@ -3781,16 +3853,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             bridgeDataAccessInput.focus();
             return;
         }
-
+        // Dynamic Credentials
         const urlCredDivs = document.getElementById('urlCredentialList').querySelectorAll('.credential-field-group');
         const urlCredentials = [];
+        const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username || 'anônimo';
+
         for (const div of urlCredDivs) {
             const u = div.querySelector('.url-user-input').value.trim();
             const p = div.querySelector('.url-pass-input').value.trim();
+            const isPrivate = div.querySelector('.url-private-check')?.checked || false;
+
             if (u || p) {
                 urlCredentials.push({
                     user: u,
-                    password: await window.Security.encrypt(p)
+                    password: await window.Security.encrypt(p),
+                    is_private: isPrivate,
+                    owner: currentUser
                 });
             }
         }
@@ -3863,20 +3941,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Populate URL Credentials
         const urlList = document.getElementById('urlCredentialList');
-        if (urlList) {
-            urlList.innerHTML = '';
-            if (url.credentials && url.credentials.length > 0) {
-                for (const cred of url.credentials) {
-                    const dec = await window.Security.decrypt(cred.password);
-                    addUrlCredentialField(cred.user, dec);
-                }
-            } else if (url.user || url.password) {
-                // Migration support
-                const dec = await window.Security.decrypt(url.password);
-                addUrlCredentialField(url.user, dec);
-            } else {
-                addUrlCredentialField();
+        urlList.innerHTML = '';
+        if (url.credentials && url.credentials.length > 0) {
+            for (const cred of url.credentials) {
+                const decPass = await window.Security.decrypt(cred.password);
+                addUrlCredentialField(cred.user, decPass, cred.is_private);
             }
+        } else if (url.user || url.password) {
+            // Backward compatibility
+            const decPass = await window.Security.decrypt(url.password);
+            addUrlCredentialField(url.user, decPass, false);
+        } else {
+            addUrlCredentialField();
         }
 
         // Populate Exec Credentials

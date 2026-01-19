@@ -708,10 +708,22 @@
                     <input type="hidden" id="editingVpnIndex">
 
                     <div class="form-group">
-                        <label for="vpnUserInput"><span><i class="fa-solid fa-user"
-                                    style="color: var(--accent); margin-right: 5px;"></i>
-                                Usuário <span class="required">*</span></span></label>
-                        <input type="text" id="vpnUserInput" required placeholder="Digite o usuário">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                            <label for="vpnUserInput" style="margin-bottom: 0;">
+                                <i class="fa-solid fa-user" style="color: var(--accent); margin-right: 5px;"></i>
+                                Usuário<span class="required">*</span>
+                            </label>
+                            <div class="checkbox-wrapper-individual">
+                                <label
+                                    style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 700; color: #ff5252;">
+                                    <input type="checkbox" id="vpnIndividualPrivacy"
+                                        onchange="window.toggleIndividualPrivacy(this)">
+                                    <i class="fa-solid fa-lock"></i> INDIVIDUAL
+                                </label>
+                            </div>
+                        </div>
+                        <input type="text" id="vpnUserInput" placeholder="Digite o usuário" required>
                     </div>
 
                     <div class="form-group">
