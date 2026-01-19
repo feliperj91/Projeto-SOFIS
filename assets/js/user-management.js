@@ -175,8 +175,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const infoIcon = document.getElementById('roleInfoIcon');
                 if (infoIcon) {
                     const desc = role && role.description ? role.description : 'Sem descrição disponível para este grupo.';
-                    infoIcon.title = desc;
+                    infoIcon.title = 'Clique para ver detalhes';
                     infoIcon.style.opacity = role && role.description ? '1' : '0.4';
+                    infoIcon.onclick = () => window.viewRoleInfo(rName);
                 }
             };
 
@@ -258,23 +259,33 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- Lógica de Edição e Cópia ---
     window.editRoleName = function (roleName) {
-        if (!window.Permissions.can('Grupos de Acesso', 'can_edit')) {
-            window.showToast('🚫 Acesso negado: Você não tem permissão para editar grupos.', 'error');
-            return;
-        }
+        window.viewRoleInfo(roleName);
+    };
 
+    window.viewRoleInfo = function (roleName) {
         const role = rolesList.find(r => r.name === roleName);
         if (!role) return;
 
-        document.getElementById('roleModalTitle').innerText = 'Editar Grupo';
-        document.getElementById('editRoleOldName').value = roleName;
-        document.getElementById('roleName').value = roleName;
+        const canEdit = window.Permissions.can('Grupos de Acesso', 'can_edit');
+        const isSystem = ['ADMINISTRADOR', 'TECNICO', 'ANALISTA'].includes(roleName);
+        const isReadOnly = !canEdit || isSystem;
 
-        // Agora mostramos a descrição na edição
+        document.getElementById('roleModalTitle').innerText = isReadOnly ? 'Detalhes do Grupo' : 'Editar Grupo';
+        document.getElementById('editRoleOldName').value = isReadOnly ? '' : roleName;
+        document.getElementById('roleName').value = roleName;
+        document.getElementById('roleName').readOnly = isReadOnly;
+
+        // Agora mostramos a descrição na edição/visão
         document.getElementById('roleDescription').value = role.description || '';
+        document.getElementById('roleDescription').readOnly = isReadOnly;
+
         document.getElementById('roleDescGroup').classList.remove('hidden');
 
-        document.getElementById('btnSubmitRole').innerText = 'Salvar Alterações';
+        const btnSubmit = document.getElementById('btnSubmitRole');
+        if (btnSubmit) {
+            btnSubmit.classList.toggle('hidden', isReadOnly);
+            btnSubmit.innerText = 'Salvar Alterações';
+        }
 
         if (roleModal) roleModal.classList.remove('hidden');
     };
@@ -352,10 +363,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         btnAddNewRole.addEventListener('click', () => {
             document.getElementById('roleModalTitle').innerText = 'Novo Grupo de Acesso';
             document.getElementById('editRoleOldName').value = '';
-            document.getElementById('roleName').value = '';
-            document.getElementById('roleDescription').value = '';
+
+            const nameInput = document.getElementById('roleName');
+            const descInput = document.getElementById('roleDescription');
+
+            nameInput.value = '';
+            nameInput.readOnly = false;
+
+            descInput.value = '';
+            descInput.readOnly = false;
+
             document.getElementById('roleDescGroup').classList.remove('hidden');
-            document.getElementById('btnSubmitRole').innerText = 'Criar Grupo';
+
+            const btnSubmit = document.getElementById('btnSubmitRole');
+            if (btnSubmit) {
+                btnSubmit.classList.remove('hidden');
+                btnSubmit.innerText = 'Criar Grupo';
+            }
+
             if (roleModal) roleModal.classList.remove('hidden');
         });
     }
