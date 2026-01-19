@@ -986,15 +986,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const isLogs = mod === 'Logs de Auditoria';
                 const isResetPassword = mod === 'Reset de Senha';
 
-                // - Dashboard, Logs, Reset, Cabeçalho Gestão de Clientes: Somente Visualizar
+                // - Dashboard, Logs, Reset: Somente Visualizar
                 // - Cabeçalho Gerenciamento de Usuários, Permissões: Visualizar e Editar apenas
-                const isOnlyView = isDashboard || isLogs || isResetPassword || isClientsHeader;
+                // - Cabeçalho Gestão de Clientes: Visualizar e Criar
+                const isOnlyView = isDashboard || isLogs || isResetPassword;
                 const isViewEdit = isPermissions || isUserManagementHeader;
-                const isLimited = isOnlyView || isViewEdit;
+                const isViewCreate = isClientsHeader;
 
-                const disabledCreate = isLimited ? 'disabled class="perm-checkbox-disabled"' : 'class="perm-checkbox"';
-                const disabledEdit = isOnlyView ? 'disabled class="perm-checkbox-disabled"' : 'class="perm-checkbox"';
-                const disabledDelete = isLimited ? 'disabled class="perm-checkbox-disabled"' : 'class="perm-checkbox"';
+                const disabledCreate = (isOnlyView || isViewEdit) ? 'disabled class="perm-checkbox-disabled"' : 'class="perm-checkbox"';
+                const disabledEdit = (isOnlyView || isViewCreate) ? 'disabled class="perm-checkbox-disabled"' : 'class="perm-checkbox"';
+                const disabledDelete = (isOnlyView || isViewEdit || isViewCreate) ? 'disabled class="perm-checkbox-disabled"' : 'class="perm-checkbox"';
 
                 const tr = document.createElement('tr');
                 tr.className = item.isHeader ? 'permission-header-row' : 'permission-row';
