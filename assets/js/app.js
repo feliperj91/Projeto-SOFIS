@@ -1487,6 +1487,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     window.closeContactModal = closeContactModal;
 
+    window.deleteContact = async (clientId, index) => {
+        // Permission Check
+        if (window.Permissions && !window.Permissions.can('Dados de Contato', 'can_delete')) {
+            showToast('🚫 Acesso negado: Você não tem permissão para excluir contatos.', 'error');
+            return;
+        }
+
+        const confirmed = await window.showConfirm('Tem certeza que deseja excluir este contato?', 'Excluir Contato', 'fa-address-book');
+        if (!confirmed) return;
+
+        const client = clients.find(c => c.id == clientId);
+        if (!client || !client.contacts) return;
+
+        client.contacts.splice(index, 1);
+        await saveToLocal(client.id);
+        renderClients(clients);
+
+        // Re-render modal list if open
+        const contactModalClientId = document.getElementById('contactModalClientId');
+        if (contactModalClientId && contactModalClientId.value == clientId) {
+            renderContactModalList(client);
+        }
+
+        showToast(`🗑️ Contato excluído com sucesso!`, 'success');
+    };
+
     function renderContactModalList(client) {
         if (!contactModalList) return;
         contactModalList.innerHTML = '';
@@ -1565,6 +1591,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 <i class="fa-solid fa-pen"></i>
                             </button>` : '';
 
+            const deleteButton = canDeleteContact ? `
+                            <button class="btn-icon-card btn-danger" onclick="deleteContact('${client.id}', ${originalIndex});" title="Excluir Contato">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>` : '';
+
             return `
                     <div class="contact-group-display" style="max-width: 100%; flex: 1 1 300px;">
                         <div class="contact-header-display">
@@ -1573,7 +1604,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                                     ${escapeHtml(contact.name || 'Sem nome')}
                                 </div>
                             </div>
-                            ${editButton}
+                            <div style="display: flex; gap: 5px;">
+                                ${editButton}
+                                ${deleteButton}
+                            </div>
                         </div>
                         ${phonesHTML}
                         ${emailsHTML}
@@ -4888,10 +4922,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (filtered.length === 0) {
             list.innerHTML = `
-        < div class="servers-grid-empty" >
+        <div class="servers-grid-empty">
                     <i class="fa-solid fa-server"></i>
                     <p>${filterValue === 'all' ? 'Nenhum servidor cadastrado ainda.' : 'Nenhum servidor encontrado para este filtro.'}</p>
-                </div >
+                </div>
         `;
             return;
         }
