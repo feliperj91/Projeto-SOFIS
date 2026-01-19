@@ -158,17 +158,20 @@ switch ($method) {
                     $syncStmt = $pdo->prepare("
                         UPDATE users 
                         SET permissions = (
-                            SELECT json_object_agg(
-                                module,
-                                json_build_object(
-                                    'can_view', can_view,
-                                    'can_create', can_create,
-                                    'can_edit', can_edit,
-                                    'can_delete', can_delete
-                                )
+                            SELECT COALESCE(
+                                json_object_agg(
+                                    module,
+                                    json_build_object(
+                                        'can_view', can_view,
+                                        'can_create', can_create,
+                                        'can_edit', can_edit,
+                                        'can_delete', can_delete
+                                    )
+                                ),
+                                '{}'::json
                             )
                             FROM role_permissions
-                            WHERE role_name = :role
+                            WHERE UPPER(role_name) = UPPER(:role)
                         )
                         WHERE id = :id
                     ");
