@@ -3874,6 +3874,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
 
+        // Preserve hidden private credentials (other users) that were filtered out from the form
+        if (editingIndex !== '') {
+            const originalUrl = client.urls[parseInt(editingIndex)];
+            if (originalUrl && originalUrl.credentials) {
+                const hiddenCredentials = originalUrl.credentials.filter(c => c.is_private && c.owner !== currentUser);
+                urlCredentials.push(...hiddenCredentials);
+            }
+        }
+
         const execCredDivs = document.getElementById('execCredentialList').querySelectorAll('.credential-field-group');
         const execCredentials = [];
         for (const div of execCredDivs) {
@@ -3943,8 +3952,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Populate URL Credentials
         const urlList = document.getElementById('urlCredentialList');
         urlList.innerHTML = '';
+        const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username || 'anônimo';
+
         if (url.credentials && url.credentials.length > 0) {
             for (const cred of url.credentials) {
+                // Privacy Check: Skip if private and not owner
+                if (cred.is_private && cred.owner !== currentUser) continue;
+
                 const decPass = await window.Security.decrypt(cred.password);
                 addUrlCredentialField(cred.user, decPass, cred.is_private);
             }
