@@ -1,12 +1,11 @@
-// Modern Tooltip System
+// Modern Tooltip System - Simplified
 (function () {
     'use strict';
 
     const tooltipMap = new WeakMap();
     const initializedElements = new WeakSet();
 
-    function createTooltip(element, text, variant = 'default', position = 'top') {
-        // Remove any existing tooltip for this element
+    function createTooltip(element, text, variant = 'default', position = 'bottom') {
         removeTooltip(element);
 
         if (!text || text.trim() === '') return;
@@ -15,58 +14,42 @@
         tooltip.className = `modern-tooltip ${variant} ${position}`;
         tooltip.textContent = text;
 
-        // Check if text is long enough for multiline
-        if (text.length > 50) {
+        if (text.length > 40) {
             tooltip.classList.add('multiline');
         }
 
-        // Ensure element has relative positioning
-        const computedStyle = window.getComputedStyle(element);
-        if (computedStyle.position === 'static') {
-            element.style.position = 'relative';
+        document.body.appendChild(tooltip);
+
+        const elementRect = element.getBoundingClientRect();
+
+        // Position tooltip
+        if (position === 'bottom') {
+            tooltip.style.top = `${elementRect.bottom + 8}px`;
+            tooltip.style.left = `${elementRect.left + (elementRect.width / 2)}px`;
+            tooltip.style.transform = 'translateX(-50%)';
+        } else {
+            tooltip.style.bottom = `${window.innerHeight - elementRect.top + 8}px`;
+            tooltip.style.left = `${elementRect.left + (elementRect.width / 2)}px`;
+            tooltip.style.transform = 'translateX(-50%)';
         }
 
-        element.appendChild(tooltip);
-
-        // Trigger animation and check position
         requestAnimationFrame(() => {
             tooltip.classList.add('show');
-            adjustTooltipPosition(tooltip, element, position);
+
+            // Adjust if going outside viewport
+            const tooltipRect = tooltip.getBoundingClientRect();
+            if (tooltipRect.right > window.innerWidth - 10) {
+                tooltip.style.left = `${window.innerWidth - tooltipRect.width - 10}px`;
+                tooltip.style.transform = 'none';
+            }
+            if (tooltipRect.left < 10) {
+                tooltip.style.left = '10px';
+                tooltip.style.transform = 'none';
+            }
         });
 
         tooltipMap.set(element, tooltip);
         return tooltip;
-    }
-
-    function adjustTooltipPosition(tooltip, element, preferredPosition) {
-        const rect = tooltip.getBoundingClientRect();
-        const elementRect = element.getBoundingClientRect();
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
-
-        // Check if tooltip is going outside viewport
-        let newPosition = preferredPosition;
-
-        // Check vertical overflow
-        if (preferredPosition === 'top' && rect.top < 0) {
-            newPosition = 'bottom';
-            tooltip.classList.remove('top');
-            tooltip.classList.add('bottom');
-        } else if (preferredPosition === 'bottom' && rect.bottom > viewportHeight) {
-            newPosition = 'top';
-            tooltip.classList.remove('bottom');
-            tooltip.classList.add('top');
-        }
-
-        // Check horizontal overflow and adjust
-        if (rect.left < 0) {
-            tooltip.style.left = '10px';
-            tooltip.style.transform = 'translateY(0)';
-        } else if (rect.right > viewportWidth) {
-            tooltip.style.left = 'auto';
-            tooltip.style.right = '10px';
-            tooltip.style.transform = 'translateY(0)';
-        }
     }
 
     function removeTooltip(element) {
@@ -90,81 +73,43 @@
         });
     }
 
-    // Auto-initialize tooltips on elements with data-tooltip or title attribute
     function initTooltips() {
-        // Handle data-tooltip elements
+        // ONLY handle data-tooltip elements (explicit tooltips)
         document.querySelectorAll('[data-tooltip]').forEach(element => {
             if (initializedElements.has(element)) return;
             initializedElements.add(element);
 
             const text = element.getAttribute('data-tooltip');
             const variant = element.getAttribute('data-tooltip-variant') || 'default';
-            const position = element.getAttribute('data-tooltip-position') || 'top';
+            const position = element.getAttribute('data-tooltip-position') || 'bottom';
 
-            element.addEventListener('mouseenter', function (e) {
-                e.stopPropagation();
+            element.addEventListener('mouseenter', function () {
                 createTooltip(this, text, variant, position);
             });
 
-            element.addEventListener('mouseleave', function (e) {
-                e.stopPropagation();
+            element.addEventListener('mouseleave', function () {
                 removeTooltip(this);
             });
 
-            element.addEventListener('click', function (e) {
-                removeTooltip(this);
-            });
-        });
-
-        // Handle native title attribute elements
-        document.querySelectorAll('[title]:not([data-tooltip])').forEach(element => {
-            if (initializedElements.has(element)) return;
-
-            const titleText = element.getAttribute('title');
-            if (!titleText || titleText.trim() === '') return;
-
-            initializedElements.add(element);
-
-            // Store original title and remove it to prevent native tooltip
-            element.setAttribute('data-original-title', titleText);
-            element.removeAttribute('title');
-
-            element.addEventListener('mouseenter', function (e) {
-                e.stopPropagation();
-                const text = this.getAttribute('data-original-title');
-                createTooltip(this, text, 'default', 'top');
-            });
-
-            element.addEventListener('mouseleave', function (e) {
-                e.stopPropagation();
-                removeTooltip(this);
-            });
-
-            element.addEventListener('click', function (e) {
+            element.addEventListener('click', function () {
                 removeTooltip(this);
             });
         });
     }
 
-    // Remove tooltips when scrolling
-    let scrollTimeout;
-    window.addEventListener('scroll', () => {
-        removeAllTooltips();
-        clearTimeout(scrollTimeout);
-        scrollTimeout = setTimeout(initTooltips, 100);
-    }, true);
+    // Remove tooltips on scroll
+    window.addEventListener('scroll', removeAllTooltips, true);
 
-    // Initialize on DOM ready
+    // Initialize
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initTooltips);
     } else {
         initTooltips();
     }
 
-    // Re-run initialization periodically for dynamic content
+    // Re-check for new elements
     setInterval(initTooltips, 2000);
 
-    // Export functions globally
     window.ModernTooltip = {
         create: createTooltip,
         remove: removeTooltip,

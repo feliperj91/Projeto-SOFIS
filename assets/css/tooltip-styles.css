@@ -9,7 +9,7 @@
 
 /* Custom tooltip container */
 .modern-tooltip {
-    position: absolute;
+    position: fixed;
     background: linear-gradient(135deg, rgba(26, 34, 42, 0.96), rgba(18, 25, 32, 0.96));
     color: #e8e8e8;
     padding: 6px 10px;
@@ -22,7 +22,6 @@
     z-index: 10000;
     pointer-events: none;
     opacity: 0;
-    transform: translateY(-5px);
     transition: opacity 0.2s ease, transform 0.2s ease;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25),
         0 0 0 1px rgba(255, 255, 255, 0.08);
@@ -30,50 +29,35 @@
     -webkit-backdrop-filter: blur(8px);
 }
 
+
 .modern-tooltip.show {
     opacity: 1;
-    transform: translateY(0);
 }
 
 /* Tooltip arrow */
 .modern-tooltip::before {
     content: '';
     position: absolute;
-    bottom: -4px;
-    left: 50%;
-    transform: translateX(-50%) rotate(45deg);
     width: 8px;
     height: 8px;
     background: rgba(26, 34, 42, 0.96);
+    transform: rotate(45deg);
+}
+
+.modern-tooltip.top::before {
+    bottom: -4px;
+    left: 50%;
+    margin-left: -4px;
     border-right: 1px solid rgba(255, 255, 255, 0.08);
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* Tooltip positions */
-.modern-tooltip.top {
-    bottom: calc(100% + 8px);
-    left: 50%;
-    transform: translateX(-50%) translateY(-5px);
-}
-
-.modern-tooltip.top.show {
-    transform: translateX(-50%) translateY(0);
-}
-
-.modern-tooltip.bottom {
-    top: calc(100% + 8px);
-    left: 50%;
-    transform: translateX(-50%) translateY(5px);
-}
-
-.modern-tooltip.bottom.show {
-    transform: translateX(-50%) translateY(0);
-}
-
 .modern-tooltip.bottom::before {
-    bottom: auto;
     top: -4px;
-    transform: translateX(-50%) rotate(-135deg);
+    left: 50%;
+    margin-left: -4px;
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 /* Accent tooltip variant */
