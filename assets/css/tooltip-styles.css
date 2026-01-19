@@ -2,9 +2,28 @@
    MODERN TOOLTIPS
    =================================== */
 
-/* Hide native browser tooltips */
-[title]:not([data-tooltip]) {
+/* Disable ALL native browser tooltips */
+[title] {
     position: relative;
+}
+
+[title]::before,
+[title]::after {
+    display: none !important;
+}
+
+/* Prevent native tooltip from showing */
+* {
+    user-select: inherit;
+    -webkit-user-select: inherit;
+}
+
+[title]:hover::before,
+[title]:hover::after,
+[data-original-title]:hover::before,
+[data-original-title]:hover::after {
+    content: none !important;
+    display: none !important;
 }
 
 /* Custom tooltip container */

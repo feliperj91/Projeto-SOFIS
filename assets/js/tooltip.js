@@ -59,16 +59,16 @@
         const tooltip = tooltipMap.get(element);
         if (tooltip) {
             tooltip.classList.remove('show');
-            setTimeout(() => {
-                if (tooltip.parentNode) {
-                    tooltip.parentNode.removeChild(tooltip);
-                }
-                tooltipMap.delete(element);
-            }, 200);
+            // Remove immediately without animation
+            if (tooltip.parentNode) {
+                tooltip.parentNode.removeChild(tooltip);
+            }
+            tooltipMap.delete(element);
         }
     }
 
     function removeAllTooltips() {
+        // Clear all tracked tooltips
         document.querySelectorAll('.modern-tooltip').forEach(tooltip => {
             if (tooltip.parentNode) {
                 tooltip.parentNode.removeChild(tooltip);
