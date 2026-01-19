@@ -3706,7 +3706,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     ${url.bridgeDataAccess ? `
                         <div class="server-info">
                             <div class="server-info-label">
-                                <i class="fa-solid fa-bridge" style="color: var(--accent); margin-right: 6px;"></i> Bridge data_access
+                                <i class="fa-solid fa-bridge" style="color: var(--accent); margin-right: 6px;"></i> Bridge (_data_access)
                             </div>
                             <div class="server-info-value" style="display: flex; justify-content: space-between; align-items: center; background: rgba(0, 0, 0, 0.2); padding: 10px; border-radius: 8px;">
                                 <span style="font-family: monospace; color: var(--text-primary); word-break: break-all; margin-right: 10px; font-size: 0.75rem;">${escapeHtml(url.bridgeDataAccess)}</span>
@@ -3751,6 +3751,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             `}).join('')}
                         </div>` : ''}
 
+                    <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 15px 0; opacity: 0.3;">
                     ${url.bootstrap ? `
                         <div class="server-info">
                             <div class="server-info-label">
