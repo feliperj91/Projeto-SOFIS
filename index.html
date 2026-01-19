@@ -200,12 +200,20 @@
                     </div>
 
                     <!-- Seletor de Cargos (Permissões) -->
-                    <div id="shared-mng-controls" class="hidden">
-                        <div id="roles-dynamic-container" style="display: flex; gap: 8px; align-items: center;">
-                            <!-- Botões de cargo serão injetados aqui via JS -->
+                    <div id="shared-mng-controls" class="hidden" style="display: flex; align-items: center; gap: 10px;">
+                        <div class="role-selector-wrapper"
+                            style="display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.2); padding: 5px 12px; border-radius: 8px; border: 1px solid var(--border);">
+                            <i class="fa-solid fa-user-shield" style="color: var(--accent); font-size: 0.9rem;"></i>
+                            <select id="roleSelectDropdown"
+                                style="background: transparent; border: none; color: white; outline: none; cursor: pointer; font-size: 0.9rem; min-width: 150px; padding: 5px 0;">
+                                <!-- Options dinâmicas via JS -->
+                            </select>
+                            <button id="btnDeleteSelectedRole" class="hidden" title="Excluir Grupo"
+                                style="background: transparent; border: none; color: #ff5252; cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; transition: transform 0.2s;">
+                                <i class="fa-solid fa-trash-can" style="font-size: 0.9rem;"></i>
+                            </button>
                         </div>
-                        <button id="btnAddNewRole" class="btn-icon-plus" title="Criar Novo Grupo"
-                            style="margin-left: 10px;">
+                        <button id="btnAddNewRole" class="btn-icon-plus" title="Criar Novo Grupo">
                             <i class="fa-solid fa-plus-circle"></i> GRUPO
                         </button>
                     </div>

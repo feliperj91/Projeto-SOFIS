@@ -134,37 +134,43 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function renderRoleControls() {
-        const dynamicContainer = document.getElementById('roles-dynamic-container');
+        const roleDropdown = document.getElementById('roleSelectDropdown');
         const userRoleSelect = document.getElementById('userRoleSelect');
+        const btnDelete = document.getElementById('btnDeleteSelectedRole');
 
-        if (dynamicContainer) {
-            dynamicContainer.innerHTML = '';
+        if (roleDropdown) {
+            roleDropdown.innerHTML = '';
             rolesList.forEach(role => {
-                const btn = document.createElement('button');
-                btn.className = `role-text-btn ${currentSelectedRole === role.name ? 'active' : ''}`;
-                btn.dataset.role = role.name;
-
-                // Add Delete Icon for custom roles (not ADMIN/TECNICO)
-                const isSystemRole = ['ADMINISTRADOR', 'TECNICO'].includes(role.name);
-                const deleteBtnHtml = !isSystemRole ? `<i class="fa-solid fa-xmark delete-role-icon" onclick="event.stopPropagation(); window.deleteRole('${role.name}')"></i>` : '';
-
-                btn.innerHTML = `<span>${role.name}</span>${deleteBtnHtml}`;
-
-                btn.addEventListener('click', async () => {
-                    document.querySelectorAll('.role-text-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    currentSelectedRole = role.name;
-
-                    if (currentMngTab === 'users') {
-                        const filtered = usersList.filter(u => u.role === role.name);
-                        renderUsers(filtered);
-                    } else {
-                        await loadPermissions(currentSelectedRole);
-                        if (savePermissionsBtn) savePermissionsBtn.disabled = true;
-                    }
-                });
-                dynamicContainer.appendChild(btn);
+                const opt = document.createElement('option');
+                opt.value = role.name;
+                opt.textContent = role.name;
+                roleDropdown.appendChild(opt);
             });
+            roleDropdown.value = currentSelectedRole;
+
+            // Mostrar/Ocultar botão de excluir
+            const isSystemRole = ['ADMINISTRADOR', 'TECNICO'].includes(currentSelectedRole);
+            if (btnDelete) {
+                btnDelete.classList.toggle('hidden', isSystemRole);
+                btnDelete.onclick = () => window.deleteRole(currentSelectedRole);
+            }
+
+            // Unbind antigo se existir para evitar múltiplos disparos e rebind
+            roleDropdown.onchange = async (e) => {
+                currentSelectedRole = e.target.value;
+
+                // Atualizar visibilidade do botão de excluir ao trocar
+                const isSys = ['ADMINISTRADOR', 'TECNICO'].includes(currentSelectedRole);
+                if (btnDelete) btnDelete.classList.toggle('hidden', isSys);
+
+                if (currentMngTab === 'users') {
+                    const filtered = usersList.filter(u => u.role === currentSelectedRole);
+                    renderUsers(filtered);
+                } else {
+                    await loadPermissions(currentSelectedRole);
+                    if (savePermissionsBtn) savePermissionsBtn.disabled = true;
+                }
+            };
         }
 
         if (userRoleSelect) {
