@@ -4838,7 +4838,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const div = document.createElement('div');
         div.className = 'credential-field-group';
         div.innerHTML = `
-        < div class="credential-fields-container" >
+        <div class="credential-fields-container">
                 <div class="credential-field-item">
                     <label class="credential-label-text"><i class="fa-solid fa-user" style="color: var(--accent); margin-right: 5px;"></i> Usuário<span class="required">*</span></label>
                     <input type="text" class="server-user-input" placeholder="Digite o usuário" value="${escapeHtml(user)}" required>
@@ -4855,7 +4855,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <button type="button" class="btn-remove-credential" onclick="removeHostCredentialField(this)" title="Remover Credencial" tabindex="-1">
                     <i class="fa-solid fa-trash"></i>
                 </button>
-            </div >
+            </div>
         `;
         hostCredentialList.appendChild(div);
     }
