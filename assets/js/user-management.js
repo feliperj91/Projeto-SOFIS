@@ -480,6 +480,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             } else if (currentMngTab === 'permissions') {
                 if (permissionsContainer) permissionsContainer.classList.remove('hidden');
 
+                const canViewPerms = window.Permissions.can('Permissões', 'can_view');
+
                 // Check if user can edit permissions
                 const canEditPermissions = window.Permissions.can('Permissões', 'can_edit');
 
