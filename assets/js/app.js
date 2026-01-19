@@ -4253,7 +4253,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Update content sections
             tabContents.forEach(content => {
                 content.classList.remove('active');
-                if (content.id === `${tabId} Tab`) {
+                if (content.id === `${tabId}Tab`) {
                     content.classList.add('active');
                 }
             });
