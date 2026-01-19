@@ -1011,6 +1011,8 @@
                         </div>
                     </div>
 
+                    <hr style="border: 0; border-top: 1px solid var(--border); margin: 0 0 20px 0;">
+
                     <div id="bootstrapGroup" class="form-group">
                         <label for="bootstrapInput">
                             <span><i class="fa-solid fa-bolt" style="color: var(--accent);"></i> Bootstrap</span>
@@ -1024,6 +1026,30 @@
                                 Executáveis</span>
                         </label>
                         <input type="text" id="execUpdateInput" placeholder="Caminho de atualização do bootstrap">
+                    </div>
+
+                    <div id="execCredentialsGroup" class="server-form-grid" style="margin-bottom: 20px;">
+                        <div class="form-group">
+                            <label for="execUpdateUserInput">
+                                <span><i class="fa-solid fa-user" style="color: var(--accent);"></i> Usuário Exec</span>
+                            </label>
+                            <input type="text" id="execUpdateUserInput" placeholder="Usuário">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="execUpdatePassInput">
+                                <span><i class="fa-solid fa-lock" style="color: var(--accent);"></i> Senha Exec</span>
+                            </label>
+                            <div style="position: relative;">
+                                <input type="password" id="execUpdatePassInput" placeholder="Senha"
+                                    style="padding-right: 40px;">
+                                <button type="button" class="btn-icon"
+                                    style="position: absolute; right: 5px; top: 50%; transform: translateY(-50%);"
+                                    onclick="togglePasswordVisibility('execUpdatePassInput', this)">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="form-group">

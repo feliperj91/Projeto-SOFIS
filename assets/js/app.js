@@ -3345,14 +3345,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.handleDeleteWebLaudo = handleDeleteWebLaudo;
 
     function handleUrlSystemChange() {
-        const bootstrapGroup = document.getElementById('bootstrapGroup');
-        const execUpdateGroup = document.getElementById('execUpdateGroup');
+        const execCredentialsGroup = document.getElementById('execCredentialsGroup');
         if (urlSystemSelect.value === 'Hemote Web') {
             bootstrapGroup.style.display = 'none';
             execUpdateGroup.style.display = 'none';
+            if (execCredentialsGroup) execCredentialsGroup.style.display = 'none';
         } else {
             bootstrapGroup.style.display = 'block';
             execUpdateGroup.style.display = 'block';
+            if (execCredentialsGroup) execCredentialsGroup.style.display = 'grid';
         }
     }
 
@@ -3415,6 +3416,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (urlPassInput) {
             urlPassInput.value = '';
             urlPassInput.type = 'password';
+        }
+        const execUser = document.getElementById('execUpdateUserInput');
+        if (execUser) execUser.value = '';
+        const execPass = document.getElementById('execUpdatePassInput');
+        if (execPass) {
+            execPass.value = '';
+            execPass.type = 'password';
         }
         const editIdx = document.getElementById('editingUrlIndex');
         if (editIdx) editIdx.value = '';
@@ -3553,6 +3561,32 @@ document.addEventListener('DOMContentLoaded', async () => {
                             </div>
                         </div>` : ''
                 }
+                    ${url.user || url.password ? `
+                        <div class="server-info" style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                ${url.user ? `
+                                    <div>
+                                        <div class="server-info-label"><i class="fa-solid fa-user" style="color: var(--accent); margin-right: 6px;"></i> Usuário</div>
+                                        <div class="server-info-value" style="display: flex; justify-content: space-between; align-items: center; background: rgba(0, 0, 0, 0.2); padding: 8px 10px; border-radius: 6px;">
+                                            <span style="font-size: 0.85rem;">${escapeHtml(url.user)}</span>
+                                            <button class="btn-copy-small" onclick="copyToClipboard('${escapeHtml(url.user).replace(/'/g, "\\'")}')" title="Copiar"><i class="fa-regular fa-copy"></i></button>
+                                        </div>
+                                    </div>` : ''}
+                                ${url.password ? `
+                                    <div>
+                                        <div class="server-info-label"><i class="fa-solid fa-key" style="color: var(--accent); margin-right: 6px;"></i> Senha</div>
+                                        <div class="server-info-value" style="display: flex; justify-content: space-between; align-items: center; background: rgba(0, 0, 0, 0.2); padding: 8px 10px; border-radius: 6px;">
+                                            <span class="credential-value" data-raw="${url.password}">••••••</span>
+                                            <div style="display: flex; gap: 4px;">
+                                                <button class="btn-copy-small" onclick="copyToClipboard(this.parentElement.previousElementSibling.dataset.raw)" title="Copiar Senha"><i class="fa-regular fa-copy"></i></button>
+                                                <button class="btn-copy-small" onclick="togglePassword(this)" title="Ver Senha"><i class="fa-solid fa-eye"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>` : ''}
+                            </div>
+                        </div>
+                        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0;">
+                        ` : ''}
                     ${url.bootstrap ? `
                         <div class="server-info">
                             <div class="server-info-label">
@@ -3579,30 +3613,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                             </div>
                         </div>` : ''
                 }
-                    ${url.notes ? `
-                        <div class="server-notes">
-                            <div class="server-notes-title">
-                                <i class="fa-solid fa-comment-dots" style="color: var(--accent); margin-right: 6px;"></i> Observações
-                            </div>
-                            <div class="server-notes-content">${escapeHtml(url.notes)}</div>
-                        </div>` : ''
-                }
-                    ${url.user || url.password ? `
+                    ${url.execUser || url.execPassword ? `
                         <div class="server-info" style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                                ${url.user ? `
+                                ${url.execUser ? `
                                     <div>
-                                        <div class="server-info-label"><i class="fa-solid fa-user" style="color: var(--accent); margin-right: 6px;"></i> Usuário</div>
+                                        <div class="server-info-label"><i class="fa-solid fa-user" style="color: var(--accent); margin-right: 6px;"></i> Usuário Exec</div>
                                         <div class="server-info-value" style="display: flex; justify-content: space-between; align-items: center; background: rgba(0, 0, 0, 0.2); padding: 8px 10px; border-radius: 6px;">
-                                            <span style="font-size: 0.85rem;">${escapeHtml(url.user)}</span>
-                                            <button class="btn-copy-small" onclick="copyToClipboard('${escapeHtml(url.user).replace(/'/g, "\\'")}')" title="Copiar"><i class="fa-regular fa-copy"></i></button>
+                                            <span style="font-size: 0.85rem;">${escapeHtml(url.execUser)}</span>
+                                            <button class="btn-copy-small" onclick="copyToClipboard('${escapeHtml(url.execUser).replace(/'/g, "\\'")}')" title="Copiar"><i class="fa-regular fa-copy"></i></button>
                                         </div>
                                     </div>` : ''}
-                                ${url.password ? `
+                                ${url.execPassword ? `
                                     <div>
-                                        <div class="server-info-label"><i class="fa-solid fa-key" style="color: var(--accent); margin-right: 6px;"></i> Senha</div>
+                                        <div class="server-info-label"><i class="fa-solid fa-key" style="color: var(--accent); margin-right: 6px;"></i> Senha Exec</div>
                                         <div class="server-info-value" style="display: flex; justify-content: space-between; align-items: center; background: rgba(0, 0, 0, 0.2); padding: 8px 10px; border-radius: 6px;">
-                                            <span class="credential-value" data-raw="${url.password}">••••••</span>
+                                            <span class="credential-value" data-raw="${url.execPassword}">••••••</span>
                                             <div style="display: flex; gap: 4px;">
                                                 <button class="btn-copy-small" onclick="copyToClipboard(this.parentElement.previousElementSibling.dataset.raw)" title="Copiar Senha"><i class="fa-regular fa-copy"></i></button>
                                                 <button class="btn-copy-small" onclick="togglePassword(this)" title="Ver Senha"><i class="fa-solid fa-eye"></i></button>
@@ -3611,6 +3637,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                                     </div>` : ''}
                             </div>
                         </div>` : ''}
+                    ${url.notes ? `
+                        <div class="server-notes">
+                            <div class="server-notes-title">
+                                <i class="fa-solid fa-comment-dots" style="color: var(--accent); margin-right: 6px;"></i> Observações
+                            </div>
+                            <div class="server-notes-content">${escapeHtml(url.notes)}</div>
+                        </div>` : ''
+                }
                 </div >
             `;
         }).join('');
@@ -3665,7 +3699,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             execUpdate: execUpdateInput ? execUpdateInput.value.trim() : '',
             notes: urlNotesInput ? urlNotesInput.value.trim() : '',
             user: urlUserInput ? urlUserInput.value.trim() : '',
-            password: urlPassInput ? await window.Security.encrypt(urlPassInput.value) : ''
+            password: urlPassInput ? await window.Security.encrypt(urlPassInput.value) : '',
+            execUser: document.getElementById('execUpdateUserInput').value.trim(),
+            execPassword: await window.Security.encrypt(document.getElementById('execUpdatePassInput').value)
         };
 
         if (editingIndex !== '') {
@@ -3706,6 +3742,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         urlNotesInput.value = url.notes || '';
         urlUserInput.value = url.user || '';
         urlPassInput.value = url.password ? await window.Security.decrypt(url.password) : '';
+        const execUserInput = document.getElementById('execUpdateUserInput');
+        if (execUserInput) execUserInput.value = url.execUser || '';
+        const execPassInput = document.getElementById('execUpdatePassInput');
+        if (execPassInput) execPassInput.value = url.execPassword ? await window.Security.decrypt(url.execPassword) : '';
         document.getElementById('editingUrlIndex').value = index;
 
         urlEntryModalTitle.textContent = 'URLs de Produto';
