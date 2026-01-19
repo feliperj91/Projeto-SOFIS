@@ -604,17 +604,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (res.error) throw res.error;
 
-            // Audit Log
-            if (window.registerAuditLog) {
-                await window.registerAuditLog(
-                    'SECURITY',
-                    actionText,
-                    `${actionText}: ${formData.full_name} (@${formData.username}). ${details}`,
-                    oldVal,
-                    formData
-                );
-            }
-
             window.showToast('Usuário salvo com sucesso!', 'success');
             window.closeUserModal();
 
