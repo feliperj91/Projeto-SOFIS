@@ -1548,3 +1548,53 @@ input:checked+.slider:before {
     color: #bdbdbd;
     border: 1px solid rgba(158, 158, 158, 0.3);
 }
+/* MODERN ROLE SELECTOR (CHIPS) */
+.role-chips-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    min-height: 50px;
+    margin-top: 5px;
+}
+
+.role-chip {
+    padding: 6px 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.role-chip:hover {
+    background: rgba(255, 160, 0, 0.1);
+    border-color: rgba(255, 160, 0, 0.3);
+    color: var(--accent);
+}
+
+.role-chip.selected {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(255, 160, 0, 0.2);
+}
+
+.role-chip i {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.role-chip.selected i {
+    color: #fff;
+}

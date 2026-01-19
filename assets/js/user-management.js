@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function renderRoleControls() {
         const roleDropdown = document.getElementById('roleSelectDropdown');
-        const userRoleSelect = document.getElementById('userRoleSelect');
+        const userRoleChips = document.getElementById('userRoleChips');
         const btnDelete = document.getElementById('btnDeleteSelectedRole');
 
         if (roleDropdown) {
@@ -186,13 +186,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             };
         }
 
-        if (userRoleSelect) {
-            userRoleSelect.innerHTML = '';
+        if (userRoleChips) {
+            userRoleChips.innerHTML = '';
             rolesList.forEach(role => {
-                const opt = document.createElement('option');
-                opt.value = role.name;
-                opt.textContent = role.name.charAt(0) + role.name.slice(1).toLowerCase();
-                userRoleSelect.appendChild(opt);
+                const chip = document.createElement('div');
+                chip.className = 'role-chip';
+                chip.dataset.role = role.name;
+                chip.innerHTML = `
+                    <i class="fa-solid fa-circle-dot"></i>
+                    ${role.name.charAt(0) + role.name.slice(1).toLowerCase()}
+                `;
+                chip.onclick = () => {
+                    chip.classList.toggle('selected');
+                };
+                userRoleChips.appendChild(chip);
             });
         }
     }
@@ -749,11 +756,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.getElementById('userPasswordRequired').classList.add('hidden');
         }
 
-        if (document.getElementById('userRoleSelect')) {
-            const select = document.getElementById('userRoleSelect');
+        if (document.getElementById('userRoleChips')) {
+            const chips = document.querySelectorAll('#userRoleChips .role-chip');
             const userRoles = u.roles || [];
-            Array.from(select.options).forEach(opt => {
-                opt.selected = userRoles.includes(opt.value);
+            chips.forEach(chip => {
+                if (userRoles.includes(chip.dataset.role)) {
+                    chip.classList.add('selected');
+                } else {
+                    chip.classList.remove('selected');
+                }
             });
         }
 
@@ -802,7 +813,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         const currentFullName = document.getElementById('userFullName').value;
         const currentUsername = document.getElementById('userUsername').value;
         const currentPassword = document.getElementById('userPassword').value;
-        const currentRoles = Array.from(document.getElementById('userRoleSelect').selectedOptions).map(opt => opt.value);
+        const currentRoles = Array.from(document.querySelectorAll('#userRoleChips .role-chip.selected'))
+            .map(chip => chip.dataset.role);
+
+        if (currentRoles.length === 0) {
+            window.showToast('Selecione pelo menos um nível de acesso.', 'warning');
+            return;
+        }
+
         const currentIsActive = document.getElementById('userIsActive').checked;
         const currentForceReset = document.getElementById('userForceReset').checked;
 
