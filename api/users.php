@@ -138,10 +138,40 @@ switch ($method) {
         $params[] = $_GET['id'];
 
         try {
+            $pdo->beginTransaction();
+
             $stmt = $pdo->prepare($sql);
             $stmt->execute($params);
+
+            // Se o cargo (role) foi alterado, sincronizar as permissões automaticamente
+            if (isset($input['role']) && !isset($input['permissions'])) {
+                $syncStmt = $pdo->prepare("
+                    UPDATE users 
+                    SET permissions = (
+                        SELECT json_object_agg(
+                            module,
+                            json_build_object(
+                                'can_view', can_view,
+                                'can_create', can_create,
+                                'can_edit', can_edit,
+                                'can_delete', can_delete
+                            )
+                        )::text
+                        FROM role_permissions
+                        WHERE role_name = :role
+                    )
+                    WHERE id = :id
+                ");
+                $syncStmt->execute([
+                    'role' => $input['role'],
+                    'id' => $_GET['id']
+                ]);
+            }
+
+            $pdo->commit();
             echo json_encode(['success' => true]);
         } catch (PDOException $e) {
+            $pdo->rollBack();
             http_response_code(500);
             echo json_encode(['error' => 'Erro ao atualizar usuário: ' . $e->getMessage()]);
         }

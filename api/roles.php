@@ -32,7 +32,12 @@ switch ($method) {
             
             // Inicializar permissões vazias para o novo grupo para os módulos conhecidos
             // Isso evita que o grupo apareça sem linhas na tabela de permissões
-            $modules = ['Logs e Atividades', 'Clientes e Contatos', 'Infraestruturas', 'Gestão de Usuários', 'Controle de Versões', 'Usuários', 'Permissões', 'Logs de Auditoria', 'Dashboard', 'Produtos', 'Servidores', 'Dados de Acesso (SQL)', 'Dados de Acesso (VPN)', 'URLs', 'Dados de Contato', 'Reset de Senha'];
+            $modules = [
+                'Gestão de Clientes', 'Servidores', 'Dados de Acesso (SQL)', 
+                'Dados de Acesso (VPN)', 'URLs', 'Dados de Contato', 'Logs e Atividades',
+                'Controle de Versões', 'Dashboard', 'Produtos',
+                'Gestão de Usuários', 'Grupos de Acesso', 'Usuários', 'Permissões', 'Logs de Auditoria', 'Reset de Senha'
+            ];
             
             $permStmt = $pdo->prepare("INSERT INTO role_permissions (role_name, module, can_view, can_create, can_edit, can_delete) VALUES (?, ?, false, false, false, false) ON CONFLICT DO NOTHING");
             foreach ($modules as $mod) {

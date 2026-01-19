@@ -69,6 +69,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             title: 'Guia Gerenciamento de Usuários',
             items: [
                 { module: 'Gestão de Usuários', label: 'Gerenciamento de Usuários', isHeader: true },
+                { module: 'Grupos de Acesso' },
                 { module: 'Usuários' },
                 { module: 'Permissões' },
                 { module: 'Logs de Auditoria' },
@@ -149,9 +150,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             roleDropdown.value = currentSelectedRole;
 
             const isSystemRole = ['ADMINISTRADOR', 'TECNICO', 'ANALISTA'].includes(currentSelectedRole);
-            const canCreateGroups = window.Permissions.can('Gestão de Usuários', 'can_create');
-            const canEditGroups = window.Permissions.can('Gestão de Usuários', 'can_edit');
-            const canDeleteGroups = window.Permissions.can('Gestão de Usuários', 'can_delete');
+            const canCreateGroups = window.Permissions.can('Grupos de Acesso', 'can_create');
+            const canEditGroups = window.Permissions.can('Grupos de Acesso', 'can_edit');
+            const canDeleteGroups = window.Permissions.can('Grupos de Acesso', 'can_delete');
 
             // Gerenciar Visibilidade dos Botões de Ação
             const btnDelete = document.getElementById('btnDeleteSelectedRole');
@@ -199,7 +200,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     window.deleteRole = async function (roleName) {
-        if (!window.Permissions.can('Gestão de Usuários', 'can_delete')) {
+        if (!window.Permissions.can('Grupos de Acesso', 'can_delete')) {
             window.showToast('🚫 Acesso negado: Você não tem permissão para excluir grupos.', 'error');
             return;
         }
@@ -237,7 +238,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- Lógica de Edição e Cópia ---
     window.editRoleName = function (roleName) {
-        if (!window.Permissions.can('Gestão de Usuários', 'can_edit')) {
+        if (!window.Permissions.can('Grupos de Acesso', 'can_edit')) {
             window.showToast('🚫 Acesso negado: Você não tem permissão para editar grupos.', 'error');
             return;
         }
@@ -279,7 +280,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const confirmCopyBtn = document.getElementById('btnConfirmCopyPerm');
     if (confirmCopyBtn) {
         confirmCopyBtn.onclick = async () => {
-            if (!window.Permissions.can('Gestão de Usuários', 'can_edit')) {
+            if (!window.Permissions.can('Grupos de Acesso', 'can_edit')) {
                 window.showToast('🚫 Acesso negado: Você não tem permissão para gerenciar permissões de grupos.', 'error');
                 return;
             }
@@ -391,7 +392,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Initial button state
         const canCreateUsers = window.Permissions.can('Usuários', 'can_create');
-        const canCreateGroups = window.Permissions.can('Gestão de Usuários', 'can_create');
+        const canCreateGroups = window.Permissions.can('Grupos de Acesso', 'can_create');
 
         if (addNewUserBtn) {
             addNewUserBtn.style.display = (currentMngTab === 'users' && canCreateUsers) ? 'flex' : 'none';
@@ -977,16 +978,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const isDashboard = mod === 'Dashboard';
                 const isUserManagementHeader = (mod === 'Gerenciamento de Usuários' || mod === 'Gestão de Usuários') && item.isHeader;
                 const isClientsHeader = mod === 'Gestão de Clientes' && item.isHeader;
+                const isAccessGroups = mod === 'Grupos de Acesso' && item.isHeader; // New module
                 const isPermissions = mod === 'Permissões';
                 const isLogs = mod === 'Logs de Auditoria';
                 const isResetPassword = mod === 'Reset de Senha';
 
                 // Restrições de IU:
-                const isOnlyView = isDashboard || isLogs || isResetPassword || (isClientsHeader && !isUserManagementHeader); // Permite CRUD no header de usuários
+                // - Dashboard, Logs, Reset: Somente Visualizar
+                // - Cabeçalho Gerenciamento de Usuários: Somente Visualizar (conforme solicitado pelo usuário)
+                // - Cabeçalho Gestão de Clientes: Somente Visualizar
+                // - Permissões: Visualizar e Editar apenas
+                const isOnlyView = isDashboard || isLogs || isResetPassword || isUserManagementHeader || isClientsHeader;
                 const isLimited = isOnlyView || isPermissions;
 
                 const disabledCreate = isLimited ? 'disabled class="perm-checkbox-disabled"' : 'class="perm-checkbox"';
-                const disabledEdit = (isDashboard || isLogs || isResetPassword) ? 'disabled class="perm-checkbox-disabled"' : 'class="perm-checkbox"';
+                const disabledEdit = isOnlyView ? 'disabled class="perm-checkbox-disabled"' : 'class="perm-checkbox"';
                 const disabledDelete = isLimited ? 'disabled class="perm-checkbox-disabled"' : 'class="perm-checkbox"';
 
                 const tr = document.createElement('tr');
