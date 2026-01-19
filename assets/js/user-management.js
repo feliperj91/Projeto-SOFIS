@@ -149,15 +149,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             roleDropdown.value = currentSelectedRole;
 
             const isSystemRole = ['ADMINISTRADOR', 'TECNICO', 'ANALISTA'].includes(currentSelectedRole);
+            const canCreateGroups = window.Permissions.can('Gestão de Usuários', 'can_create');
+            const canEditGroups = window.Permissions.can('Gestão de Usuários', 'can_edit');
+            const canDeleteGroups = window.Permissions.can('Gestão de Usuários', 'can_delete');
 
             // Gerenciar Visibilidade dos Botões de Ação
             const btnDelete = document.getElementById('btnDeleteSelectedRole');
             const btnEdit = document.getElementById('btnEditRoleName');
             const btnCopy = document.getElementById('btnCopyPermissions');
+            const btnCreate = document.getElementById('btnAddNewRole');
 
-            if (btnDelete) btnDelete.classList.toggle('hidden', isSystemRole);
-            if (btnEdit) btnEdit.classList.toggle('hidden', isSystemRole);
-            if (btnCopy) btnCopy.classList.remove('hidden');
+            if (btnDelete) btnDelete.classList.toggle('hidden', isSystemRole || !canDeleteGroups);
+            if (btnEdit) btnEdit.classList.toggle('hidden', isSystemRole || !canEditGroups);
+            if (btnCopy) btnCopy.classList.toggle('hidden', !canEditGroups);
+            if (btnCreate) btnCreate.classList.toggle('hidden', !canCreateGroups);
 
             if (btnDelete) btnDelete.onclick = () => window.deleteRole(currentSelectedRole);
             if (btnEdit) btnEdit.onclick = () => window.editRoleName(currentSelectedRole);
@@ -167,8 +172,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 currentSelectedRole = e.target.value;
                 const isSys = ['ADMINISTRADOR', 'TECNICO', 'ANALISTA'].includes(currentSelectedRole);
 
-                if (btnDelete) btnDelete.classList.toggle('hidden', isSys);
-                if (btnEdit) btnEdit.classList.toggle('hidden', isSys);
+                if (btnDelete) btnDelete.classList.toggle('hidden', isSys || !canDeleteGroups);
+                if (btnEdit) btnEdit.classList.toggle('hidden', isSys || !canEditGroups);
 
                 if (currentMngTab === 'users') {
                     const filtered = usersList.filter(u => u.role === currentSelectedRole);
@@ -194,6 +199,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     window.deleteRole = async function (roleName) {
+        if (!window.Permissions.can('Gestão de Usuários', 'can_delete')) {
+            window.showToast('🚫 Acesso negado: Você não tem permissão para excluir grupos.', 'error');
+            return;
+        }
+
         const confirmed = await window.showConfirm(
             `Deseja realmente excluir o grupo "${roleName}"? Todas as permissões deste grupo serão removidas. Os usuários deste grupo precisarão ser reatribuídos.`,
             'Excluir Grupo',
@@ -227,6 +237,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- Lógica de Edição e Cópia ---
     window.editRoleName = function (roleName) {
+        if (!window.Permissions.can('Gestão de Usuários', 'can_edit')) {
+            window.showToast('🚫 Acesso negado: Você não tem permissão para editar grupos.', 'error');
+            return;
+        }
+
         const role = rolesList.find(r => r.name === roleName);
         if (!role) return;
 
@@ -264,6 +279,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     const confirmCopyBtn = document.getElementById('btnConfirmCopyPerm');
     if (confirmCopyBtn) {
         confirmCopyBtn.onclick = async () => {
+            if (!window.Permissions.can('Gestão de Usuários', 'can_edit')) {
+                window.showToast('🚫 Acesso negado: Você não tem permissão para gerenciar permissões de grupos.', 'error');
+                return;
+            }
+
             const from = document.getElementById('copySourceRole').value;
             const to = document.getElementById('copyTargetName').innerText;
 
@@ -371,9 +391,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Initial button state
         const canCreateUsers = window.Permissions.can('Usuários', 'can_create');
+        const canCreateGroups = window.Permissions.can('Gestão de Usuários', 'can_create');
+
         if (addNewUserBtn) {
             addNewUserBtn.style.display = (currentMngTab === 'users' && canCreateUsers) ? 'flex' : 'none';
         }
+
+        const btnCreateGroup = document.getElementById('addNewRoleBtn'); // Note checking if id is correct or using btnAddNewRole
+        if (btnAddNewRole) btnAddNewRole.classList.toggle('hidden', !canCreateGroups);
 
         // Verificar visibilidade das sub-abas
         // Mapear todas as sub-features para a permissão principal
@@ -956,13 +981,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const isLogs = mod === 'Logs de Auditoria';
                 const isResetPassword = mod === 'Reset de Senha';
 
-                // Criar e Excluir desabilitados para: Dashboard, Cabeçalhos, Permissões, Logs e Reset
-                const shouldDisableAll = isDashboard || isUserManagementHeader || isLogs || isResetPassword;
-                const shouldDisableCreateDelete = shouldDisableAll || isPermissions;
+                // Restrições de IU:
+                const isOnlyView = isDashboard || isLogs || isResetPassword || (isClientsHeader && !isUserManagementHeader); // Permite CRUD no header de usuários
+                const isLimited = isOnlyView || isPermissions;
 
-                const disabledCreate = shouldDisableCreateDelete ? 'disabled class="perm-checkbox-disabled"' : 'class="perm-checkbox"';
-                const disabledEdit = shouldDisableAll ? 'disabled class="perm-checkbox-disabled"' : 'class="perm-checkbox"';
-                const disabledDelete = shouldDisableCreateDelete ? 'disabled class="perm-checkbox-disabled"' : 'class="perm-checkbox"';
+                const disabledCreate = isLimited ? 'disabled class="perm-checkbox-disabled"' : 'class="perm-checkbox"';
+                const disabledEdit = (isDashboard || isLogs || isResetPassword) ? 'disabled class="perm-checkbox-disabled"' : 'class="perm-checkbox"';
+                const disabledDelete = isLimited ? 'disabled class="perm-checkbox-disabled"' : 'class="perm-checkbox"';
 
                 const tr = document.createElement('tr');
                 tr.className = item.isHeader ? 'permission-header-row' : 'permission-row';
@@ -970,9 +995,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <td class="${indentClass}">${label}</td>
                     <td><span class="badge-role ${roleClass}">${role}</span></td>
                     <td><input type="checkbox" class="perm-checkbox" data-mod="${mod}" data-prop="can_view" ${p.can_view ? 'checked' : ''}></td>
-                    <td><input type="checkbox" ${disabledCreate} data-mod="${mod}" data-prop="can_create" ${!shouldDisableCreateDelete && p.can_create ? 'checked' : ''}></td>
-                    <td><input type="checkbox" ${disabledEdit} data-mod="${mod}" data-prop="can_edit" ${!shouldDisableAll && p.can_edit ? 'checked' : ''}></td>
-                    <td><input type="checkbox" ${disabledDelete} data-mod="${mod}" data-prop="can_delete" ${!shouldDisableCreateDelete && p.can_delete ? 'checked' : ''}></td>
+                    <td><input type="checkbox" ${disabledCreate} data-mod="${mod}" data-prop="can_create" ${p.can_create ? 'checked' : ''}></td>
+                    <td><input type="checkbox" ${disabledEdit} data-mod="${mod}" data-prop="can_edit" ${p.can_edit ? 'checked' : ''}></td>
+                    <td><input type="checkbox" ${disabledDelete} data-mod="${mod}" data-prop="can_delete" ${p.can_delete ? 'checked' : ''}></td>
                 `;
                 permissionsTableBody.appendChild(tr);
             });
