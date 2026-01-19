@@ -986,13 +986,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const isLogs = mod === 'Logs de Auditoria';
                 const isResetPassword = mod === 'Reset de Senha';
 
-                // Restrições de IU:
-                // - Dashboard, Logs, Reset: Somente Visualizar
-                // - Cabeçalho Gerenciamento de Usuários: Somente Visualizar (conforme solicitado pelo usuário)
-                // - Cabeçalho Gestão de Clientes: Somente Visualizar
-                // - Permissões: Visualizar e Editar apenas
-                const isOnlyView = isDashboard || isLogs || isResetPassword || isUserManagementHeader || isClientsHeader;
-                const isLimited = isOnlyView || isPermissions;
+                // - Dashboard, Logs, Reset, Cabeçalho Gestão de Clientes: Somente Visualizar
+                // - Cabeçalho Gerenciamento de Usuários, Permissões: Visualizar e Editar apenas
+                const isOnlyView = isDashboard || isLogs || isResetPassword || isClientsHeader;
+                const isViewEdit = isPermissions || isUserManagementHeader;
+                const isLimited = isOnlyView || isViewEdit;
 
                 const disabledCreate = isLimited ? 'disabled class="perm-checkbox-disabled"' : 'class="perm-checkbox"';
                 const disabledEdit = isOnlyView ? 'disabled class="perm-checkbox-disabled"' : 'class="perm-checkbox"';
