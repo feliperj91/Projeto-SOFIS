@@ -203,6 +203,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (confirmed) {
             try {
                 await window.api.roles.delete(roleName);
+
+                if (window.registerAuditLog) {
+                    await window.registerAuditLog(
+                        'SECURITY',
+                        'Excluiu Grupo de Acesso',
+                        `Excluiu o grupo: ${roleName}`,
+                        { role: roleName },
+                        null
+                    );
+                }
+
                 window.showToast(`Grupo ${roleName} excluído.`, 'success');
                 if (currentSelectedRole === roleName) currentSelectedRole = 'TECNICO';
                 await loadRoles();
@@ -269,6 +280,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                     savePermissionsBtn.classList.remove('hidden');
                 }
 
+                if (window.registerAuditLog) {
+                    await window.registerAuditLog(
+                        'SECURITY',
+                        'Iniciou Cópia de Permissões',
+                        `Carregou permissões do grupo '${from}' para revisão no grupo '${to}'`,
+                        { from, to },
+                        null
+                    );
+                }
+
                 window.showToast(`Permissões carregadas de ${from}. Revise e clique em 'Salvar' para aplicar ao grupo ${to}.`, 'info');
                 document.getElementById('copyPermModal').classList.add('hidden');
             } catch (err) {
@@ -305,11 +326,33 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (oldName) {
                     // Update
                     await window.api.roles.update(oldName, name);
+
+                    if (window.registerAuditLog) {
+                        await window.registerAuditLog(
+                            'SECURITY',
+                            'Renomeou Grupo de Acesso',
+                            `Renomeou o grupo de '${oldName}' para '${name}'`,
+                            { name: oldName },
+                            { name: name }
+                        );
+                    }
+
                     window.showToast(`Grupo renomeado para ${name}!`, 'success');
                     if (currentSelectedRole === oldName) currentSelectedRole = name;
                 } else {
                     // Create
                     await window.api.roles.create({ name, description });
+
+                    if (window.registerAuditLog) {
+                        await window.registerAuditLog(
+                            'SECURITY',
+                            'Criou Grupo de Acesso',
+                            `Criou o novo grupo: ${name}. Descrição: ${description}`,
+                            null,
+                            { name, description }
+                        );
+                    }
+
                     window.showToast(`Grupo ${name} criado com sucesso!`, 'success');
                 }
 
