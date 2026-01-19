@@ -143,29 +143,40 @@ switch ($method) {
             $stmt = $pdo->prepare($sql);
             $stmt->execute($params);
 
-            // Se o cargo (role) foi alterado, sincronizar as permissões automaticamente
-            if (isset($input['role']) && !isset($input['permissions'])) {
-                $syncStmt = $pdo->prepare("
-                    UPDATE users 
-                    SET permissions = (
-                        SELECT json_object_agg(
-                            module,
-                            json_build_object(
-                                'can_view', can_view,
-                                'can_create', can_create,
-                                'can_edit', can_edit,
-                                'can_delete', can_delete
+            // Sempre sincronizar as permissões do usuário com o cargo (role) ao atualizar,
+            // A MENOS que permissões personalizadas tenham sido enviadas explicitamente.
+            if (!isset($input['permissions'])) {
+                // Buscamos o cargo atual se não foi enviado no input
+                $targetRole = $input['role'] ?? null;
+                if (!$targetRole) {
+                    $stmtRole = $pdo->prepare("SELECT role FROM users WHERE id = ?");
+                    $stmtRole->execute([$_GET['id']]);
+                    $targetRole = $stmtRole->fetchColumn();
+                }
+
+                if ($targetRole) {
+                    $syncStmt = $pdo->prepare("
+                        UPDATE users 
+                        SET permissions = (
+                            SELECT json_object_agg(
+                                module,
+                                json_build_object(
+                                    'can_view', can_view,
+                                    'can_create', can_create,
+                                    'can_edit', can_edit,
+                                    'can_delete', can_delete
+                                )
                             )
-                        )::text
-                        FROM role_permissions
-                        WHERE role_name = :role
-                    )
-                    WHERE id = :id
-                ");
-                $syncStmt->execute([
-                    'role' => $input['role'],
-                    'id' => $_GET['id']
-                ]);
+                            FROM role_permissions
+                            WHERE role_name = :role
+                        )
+                        WHERE id = :id
+                    ");
+                    $syncStmt->execute([
+                        'role' => $targetRole,
+                        'id' => $_GET['id']
+                    ]);
+                }
             }
 
             $pdo->commit();

@@ -54,8 +54,8 @@ if ($method === 'GET') {
         foreach ($affectedRoles as $role) {
             $syncStmt = $pdo->prepare("
                 UPDATE users 
-                SET permissions = (
-                    SELECT json_object_agg(
+                SET permissions = COALESCE(
+                    (SELECT json_object_agg(
                         module,
                         json_build_object(
                             'can_view', can_view,
@@ -63,9 +63,10 @@ if ($method === 'GET') {
                             'can_edit', can_edit,
                             'can_delete', can_delete
                         )
-                    )::text
+                    )
                     FROM role_permissions
-                    WHERE role_name = :role
+                    WHERE role_name = :role),
+                    '{}'::jsonb
                 )
                 WHERE role = :role
             ");
