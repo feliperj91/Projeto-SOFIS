@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
             roleDropdown.value = currentSelectedRole;
 
-            const isSystemRole = ['ADMINISTRADOR', 'TECNICO'].includes(currentSelectedRole);
+            const isSystemRole = ['ADMINISTRADOR', 'TECNICO', 'ANALISTA'].includes(currentSelectedRole);
 
             // Gerenciar Visibilidade dos Botões de Ação
             const btnDelete = document.getElementById('btnDeleteSelectedRole');
@@ -165,7 +165,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             roleDropdown.onchange = async (e) => {
                 currentSelectedRole = e.target.value;
-                const isSys = ['ADMINISTRADOR', 'TECNICO'].includes(currentSelectedRole);
+                const isSys = ['ADMINISTRADOR', 'TECNICO', 'ANALISTA'].includes(currentSelectedRole);
 
                 if (btnDelete) btnDelete.classList.toggle('hidden', isSys);
                 if (btnEdit) btnEdit.classList.toggle('hidden', isSys);

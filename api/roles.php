@@ -136,13 +136,24 @@ switch ($method) {
             exit;
         }
 
-        if (in_array(strtoupper($name), ['ADMINISTRADOR', 'TECNICO'])) {
+        if (in_array(strtoupper($name), ['ADMINISTRADOR', 'TECNICO', 'ANALISTA'])) {
             http_response_code(403);
             echo json_encode(['error' => 'Grupos do sistema não podem ser removidos']);
             exit;
         }
 
         try {
+            // Verificar se existem usuários vinculados
+            $checkUsers = $pdo->prepare("SELECT count(*) FROM users WHERE role = ?");
+            $checkUsers->execute([$name]);
+            $count = $checkUsers->fetchColumn();
+            
+            if ($count > 0) {
+                http_response_code(409);
+                echo json_encode(['error' => "Não é possível excluir: Este grupo possui $count usuário(s) vinculado(s)."]);
+                exit;
+            }
+
             $pdo->beginTransaction();
             
             // Remover permissões personalizadas

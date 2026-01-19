@@ -1508,10 +1508,34 @@ input:checked+.slider:before {
 }
 
 .btn-icon-plus:hover {
-    background: rgba(255, 160, 0, 0.1);
+    background: rgba(255, 255, 255, 0.1);
     border-color: var(--accent);
-    color: var(--accent);
+    color: white;
     transform: translateY(-1px);
+}
+
+/* Role Selector Dropdown Styling */
+#roleSelectDropdown {
+    font-family: inherit;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+#roleSelectDropdown option {
+    background-color: #1a222a;
+    /* Cor sólida para o menu suspenso do navegador */
+    color: white;
+    padding: 10px;
+}
+
+.role-selector-wrapper:hover {
+    border-color: var(--accent) !important;
+}
+
+#role-actions-group button:hover {
+    color: white !important;
+    transform: scale(1.1);
 }
 
 .btn-icon-plus i {
