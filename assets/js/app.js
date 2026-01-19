@@ -2974,7 +2974,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 <i class="fa-solid fa-trash"></i>
                             </button>` : '';
 
-            const privacyIcon = vpn.is_private ? `<i class="fa-solid fa-lock" style="color: #ff5252; margin-left: auto;" title="Individual (Privado)"></i>` : '';
+            const privacyIcon = vpn.is_private ? `<i class="fa-solid fa-lock" style="color: #ff5252;" title="Individual (Privado)"></i>` : '';
 
             return `
                 <div class="server-card">
