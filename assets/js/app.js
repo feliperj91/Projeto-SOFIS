@@ -1230,10 +1230,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // New function to update existing row without recreating
     function updateClientRow(row, client) {
+        const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username || 'anônimo';
+
         const hasServers = client.servers && client.servers.length > 0;
-        const hasVpns = client.vpns && client.vpns.length > 0;
+
+        // Filter VPNs: count only public ones or those owned by current user
+        const visibleVpns = (client.vpns || []).filter(vpn => !vpn.is_private || vpn.owner === currentUser);
+        const hasVpns = visibleVpns.length > 0;
+
         const hasHosts = client.hosts && client.hosts.length > 0;
-        const urlCount = (client.urls ? client.urls.length : 0) + (client.webLaudo ? (typeof client.webLaudo === 'object' ? 1 : (client.webLaudo.trim() !== '' ? 1 : 0)) : 0);
+
+        // Filter URLs: A URL record is visible if it has at least one visible credential or if it's not strictly a credential record
+        const visibleUrls = (client.urls || []).filter(url => {
+            if (!url.credentials || url.credentials.length === 0) return true; // Legacy or no credentials
+            return url.credentials.some(c => !c.is_private || c.owner === currentUser);
+        });
+        const urlCount = visibleUrls.length + (client.webLaudo ? (typeof client.webLaudo === 'object' ? 1 : (client.webLaudo.trim() !== '' ? 1 : 0)) : 0);
         const hasUrls = urlCount > 0;
         const hasContacts = client.contacts && client.contacts.length > 0;
 
@@ -1336,10 +1348,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (!badge) {
                     const newBadge = document.createElement('span');
                     newBadge.className = 'btn-badge';
-                    newBadge.textContent = client.vpns.length;
+                    newBadge.textContent = visibleVpns.length;
                     vpnBtn.appendChild(newBadge);
                 } else {
-                    badge.textContent = client.vpns.length;
+                    badge.textContent = visibleVpns.length;
                 }
             } else if (badge) {
                 badge.remove();
@@ -1371,10 +1383,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         const canViewURL = P ? P.can('URLs', 'can_view') : false;
         const canViewLogs = P ? P.can('Logs e Atividades', 'can_view') : false;
 
+        const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username || 'anônimo';
         const hasServers = client.servers && client.servers.length > 0;
-        const hasVpns = client.vpns && client.vpns.length > 0;
+
+        // Filter VPNs
+        const visibleVpns = (client.vpns || []).filter(vpn => !vpn.is_private || vpn.owner === currentUser);
+        const hasVpns = visibleVpns.length > 0;
+
         const hasHosts = client.hosts && client.hosts.length > 0;
-        const urlCount = (client.urls ? client.urls.length : 0) + (client.webLaudo ? (typeof client.webLaudo === 'object' ? 1 : (client.webLaudo.trim() !== '' ? 1 : 0)) : 0);
+
+        // Filter URLs
+        const visibleUrls = (client.urls || []).filter(url => {
+            if (!url.credentials || url.credentials.length === 0) return true;
+            return url.credentials.some(c => !c.is_private || c.owner === currentUser);
+        });
+        const urlCount = visibleUrls.length + (client.webLaudo ? (typeof client.webLaudo === 'object' ? 1 : (client.webLaudo.trim() !== '' ? 1 : 0)) : 0);
         const hasUrls = urlCount > 0;
         const hasContacts = client.contacts && client.contacts.length > 0;
 
@@ -1433,7 +1456,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                           ${canViewVPN ? `
                           <button class="${vpnBtnClass} btn-with-badge perm-infra-vpn" onclick="openVpnData('${client.id}'); event.stopPropagation();" title="Dados de Acesso VPN">
                              <img src="assets/images/vpn-icon.png" class="${vpnIconClass}" alt="VPN">
-                             ${hasVpns ? `<span class="btn-badge">${client.vpns.length}</span>` : ''}
+                             ${hasVpns ? `<span class="btn-badge">${visibleVpns.length}</span>` : ''}
                          </button>
                          ` : ''}
 
