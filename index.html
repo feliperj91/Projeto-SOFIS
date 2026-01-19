@@ -718,7 +718,16 @@
                         <label for="vpnPassInput"><span><i class="fa-solid fa-key"
                                     style="color: var(--accent); margin-right: 5px;"></i> Senha
                                 <span class="required">*</span></span></label>
-                        <input type="text" id="vpnPassInput" required placeholder="Digite a senha">
+                        <div style="position: relative; width: 100%;">
+                            <input type="password" id="vpnPassInput" required placeholder="Digite a senha"
+                                style="width: 100%; padding-right: 35px;">
+                            <button type="button" class="btn-icon"
+                                style="position: absolute; right: 5px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-secondary); cursor: pointer;"
+                                onclick="window.togglePasswordVisibility('vpnPassInput', this)" tabindex="-1"
+                                title="Visualizar Senha">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <div class="form-group">

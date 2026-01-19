@@ -2702,7 +2702,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </div>
                 <div class="credential-field-item">
                     <label class="credential-label-text"><i class="fa-solid fa-key" style="color: var(--accent); margin-right: 5px;"></i> Senha<span class="required">*</span></label>
-                    <input type="text" class="server-pass-input" placeholder="Digite a senha" value="${escapeHtml(password)}" required>
+                    <div style="position: relative; width: 100%;">
+                        <input type="password" class="server-pass-input" placeholder="Digite a senha" value="${escapeHtml(password)}" required style="padding-right: 35px; width: 100%;">
+                        <button type="button" onclick="const i = this.previousElementSibling; i.type = i.type === 'password' ? 'text' : 'password'; this.querySelector('i').className = i.type === 'password' ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-secondary); cursor: pointer;" tabindex="-1" title="Visualizar Senha">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
                 </div>
                 <button type="button" class="btn-remove-credential" onclick="removeCredentialField(this)" title="Remover Credencial" tabindex="-1">
                     <i class="fa-solid fa-trash"></i>
@@ -2729,12 +2734,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Collect Credentials
         const credDivs = credentialList.querySelectorAll('.credential-field-group');
-        const credentials = Array.from(credDivs).map(div => {
-            return {
-                user: div.querySelector('.server-user-input').value.trim(),
-                password: div.querySelector('.server-pass-input').value.trim()
-            };
-        }).filter(c => c.user !== '' || c.password !== '');
+        const credentials = [];
+        for (const div of credDivs) {
+            const u = div.querySelector('.server-user-input').value.trim();
+            const p = div.querySelector('.server-pass-input').value.trim();
+            if (u || p) {
+                credentials.push({
+                    user: u,
+                    password: await window.Security.encrypt(p)
+                });
+            }
+        }
 
         // Validation
         if (!environmentSelect.value) {
@@ -2779,7 +2789,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         await registerAuditLog(opType, actionLabel, `Cliente: ${client.name}, Ambiente: ${serverRecord.environment}`, serverBefore, serverRecord);
     }
 
-    window.editServerRecord = (clientId, index) => {
+    window.editServerRecord = async (clientId, index) => {
         // Permission Check
         if (window.Permissions && !window.Permissions.can('Dados de Acesso (SQL)', 'can_edit')) {
             showToast('🚫 Acesso negado: Você não tem permissão para editar dados de acesso SQL.', 'error');
@@ -2802,7 +2812,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Populate credentials
         credentialList.innerHTML = '';
         if (server.credentials && server.credentials.length > 0) {
-            server.credentials.forEach(cred => addCredentialField(cred.user, cred.password));
+            for (const cred of server.credentials) {
+                const decPass = await window.Security.decrypt(cred.password);
+                addCredentialField(cred.user, decPass);
+            }
         } else {
             addCredentialField();
         }
@@ -2956,7 +2969,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const vpnRecord = {
             user: vpnUser,
-            password: vpnPass,
+            password: await window.Security.encrypt(vpnPass),
             notes: vpnNotesInput.value.trim()
         };
 
@@ -3006,7 +3019,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         vpnModal.classList.remove('hidden');
     }
 
-    function editVpnRecord(clientId, index) {
+    window.editVpnRecord = async (clientId, index) => {
         // Permission Check
         if (window.Permissions && !window.Permissions.can('Dados de Acesso (VPN)', 'can_edit')) {
             showToast('🚫 Acesso negado: Você não tem permissão para editar dados de acesso VPN.', 'error');
@@ -3018,7 +3031,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const vpn = client.vpns[index];
         vpnUserInput.value = vpn.user;
-        vpnPassInput.value = vpn.password;
+        vpnPassInput.value = await window.Security.decrypt(vpn.password);
         vpnNotesInput.value = vpn.notes || '';
         document.getElementById('editingVpnIndex').value = index;
 
@@ -4667,7 +4680,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </div>
                 <div class="credential-field-item">
                     <label class="credential-label-text"><i class="fa-solid fa-key" style="color: var(--accent); margin-right: 5px;"></i> Senha<span class="required">*</span></label>
-                    <input type="text" class="server-pass-input" placeholder="Digite a senha" value="${escapeHtml(password)}" required>
+                    <div style="position: relative; width: 100%;">
+                        <input type="password" class="server-pass-input" placeholder="Digite a senha" value="${escapeHtml(password)}" required style="padding-right: 35px; width: 100%;">
+                        <button type="button" onclick="const i = this.previousElementSibling; i.type = i.type === 'password' ? 'text' : 'password'; this.querySelector('i').className = i.type === 'password' ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-secondary); cursor: pointer;" tabindex="-1" title="Visualizar Senha">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
                 </div>
                 <button type="button" class="btn-remove-credential" onclick="removeHostCredentialField(this)" title="Remover Credencial" tabindex="-1">
                     <i class="fa-solid fa-trash"></i>
@@ -4812,12 +4830,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Collect Credentials
         const credDivs = hostCredentialList.querySelectorAll('.credential-field-group');
-        const credentials = Array.from(credDivs).map(div => {
-            return {
-                user: div.querySelector('.server-user-input').value.trim(),
-                password: div.querySelector('.server-pass-input').value.trim()
-            };
-        }).filter(c => c.user !== '' || c.password !== '');
+        const credentials = [];
+        for (const div of credDivs) {
+            const u = div.querySelector('.server-user-input').value.trim();
+            const p = div.querySelector('.server-pass-input').value.trim();
+            if (u || p) {
+                credentials.push({
+                    user: u,
+                    password: await window.Security.encrypt(p)
+                });
+            }
+        }
 
         if (!environmentSelect.value) {
             showToast('⚠️ O ambiente é obrigatório.', 'error');
@@ -4865,7 +4888,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    window.editHostRecord = (clientId, index) => {
+    window.editHostRecord = async (clientId, index) => {
         // Permission Check
         if (window.Permissions && !window.Permissions.can('Servidores', 'can_edit')) {
             showToast('🚫 Acesso negado: Você não tem permissão para editar servidores.', 'error');
@@ -4890,7 +4913,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Populate credentials
         hostCredentialList.innerHTML = '';
         if (host.credentials && host.credentials.length > 0) {
-            host.credentials.forEach(cred => addHostCredentialField(cred.user, cred.password));
+            for (const cred of host.credentials) {
+                const decPass = await window.Security.decrypt(cred.password);
+                addHostCredentialField(cred.user, decPass);
+            }
         } else {
             addHostCredentialField();
         }
