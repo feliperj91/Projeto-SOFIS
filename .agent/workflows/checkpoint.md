@@ -25,16 +25,16 @@ git push origin $version
 ```
 
 ### 3. Backup do Banco de Dados na VM
-Copie e cole o comando abaixo no terminal da sua **VM Linux** para gerar o backup:
+Execute este comando na sua **VM Linux** para gerar o backup na pasta do projeto:
 
 ```bash
-# Comando para rodar na VM
-PGPASSWORD='sofis123' pg_dump -U sofis_user -d sofis_db -F c -f ~/sofis_db_$(date +%Y%m%d_%H%M).backup
+# Criar pasta se não existir e gerar backup
+mkdir -p ~/Projeto-Sofis/backups && sudo -u postgres pg_dump -d sofis_db -F c | sudo tee ~/Projeto-Sofis/backups/sofis_db_$(date +%Y%m%d_%H%M).backup > /dev/null && sudo chown -R $(whoami):$(whoami) ~/Projeto-Sofis/backups/
 ```
 
 ### 4. Verificar Backup
 Após rodar o comando na VM, verifique se o arquivo foi criado:
 
 ```bash
-ls -lh ~/sofis_db_*.backup
+ls -lh ~/Projeto-Sofis/backups/sofis_db_*.backup
 ```
