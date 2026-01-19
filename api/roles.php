@@ -19,42 +19,6 @@ switch ($method) {
 
     case 'POST':
         $input = json_decode(file_get_contents('php://input'), true);
-        $action = $_GET['action'] ?? '';
-
-        if ($action === 'copy') {
-            $from = $input['from'] ?? '';
-            $to = $input['to'] ?? '';
-
-            if (empty($from) || empty($to)) {
-                http_response_code(400);
-                echo json_encode(['error' => 'Origem e destino são obrigatórios']);
-                exit;
-            }
-
-            try {
-                $pdo->beginTransaction();
-                // 1. Limpar permissões atuais do destino
-                $del = $pdo->prepare("DELETE FROM role_permissions WHERE role_name = ?");
-                $del->execute([$to]);
-
-                // 2. Copiar do de origem
-                $copy = $pdo->prepare("
-                    INSERT INTO role_permissions (role_name, module, can_view, can_create, can_edit, can_delete)
-                    SELECT ?, module, can_view, can_create, can_edit, can_delete
-                    FROM role_permissions
-                    WHERE role_name = ?
-                ");
-                $copy->execute([$to, $from]);
-
-                $pdo->commit();
-                echo json_encode(['success' => true]);
-            } catch (PDOException $e) {
-                $pdo->rollBack();
-                http_response_code(500);
-                echo json_encode(['error' => $e->getMessage()]);
-            }
-            exit;
-        }
 
         if (empty($input['name'])) {
             http_response_code(400);

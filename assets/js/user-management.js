@@ -257,12 +257,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             const to = document.getElementById('copyTargetName').innerText;
 
             try {
-                await window.api.roles.copy(from, to);
-                window.showToast(`Permissões copiadas de ${from} para ${to}!`, 'success');
+                // Fetch permissions from source group
+                const sourcePermData = await window.api.permissions.list(from);
+
+                // Load these permissions into the UI for the current target group
+                renderPermissionsTable(to, sourcePermData);
+
+                // Enable "Salvar" button so user can review and then save
+                if (savePermissionsBtn) {
+                    savePermissionsBtn.disabled = false;
+                    savePermissionsBtn.classList.remove('hidden');
+                }
+
+                window.showToast(`Permissões carregadas de ${from}. Revise e clique em 'Salvar' para aplicar ao grupo ${to}.`, 'info');
                 document.getElementById('copyPermModal').classList.add('hidden');
-                await loadPermissions(to);
             } catch (err) {
-                window.showToast(err.message, 'danger');
+                window.showToast('Erro ao carregar permissões: ' + err.message, 'danger');
             }
         };
     }
@@ -315,9 +325,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- Inicialização ---
     async function initUserManagement() {
         await loadRoles(); // Carregar grupos dinâmicos primeiro
-        // Now checks specific sub-module for user creation
+
+        // Initial button state
         const canCreateUsers = window.Permissions.can('Usuários', 'can_create');
-        if (addNewUserBtn) addNewUserBtn.style.display = canCreateUsers ? 'flex' : 'none';
+        if (addNewUserBtn) {
+            addNewUserBtn.style.display = (currentMngTab === 'users' && canCreateUsers) ? 'flex' : 'none';
+        }
 
         // Verificar visibilidade das sub-abas
         // Mapear todas as sub-features para a permissão principal
@@ -377,14 +390,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Reset Common Controls
             if (savePermissionsBtn) savePermissionsBtn.classList.add('hidden');
             if (roleSelector) roleSelector.classList.add('hidden');
+            // Hide/Show "Novo Usuário" button based on tab and permission
+            const canCreateUsersData = window.Permissions.can('Usuários', 'can_create');
+            if (addNewUserBtn) {
+                addNewUserBtn.style.display = (currentMngTab === 'users' && canCreateUsersData) ? 'flex' : 'none';
+            }
             // Hide User Search Group
             if (userSearchGroup) userSearchGroup.classList.add('hidden');
             // Hide Logs Controls
             if (logsControls) logsControls.classList.add('hidden');
-
-            // Reset Add User Btn visibility (default to flex if perm allows, but hide on specific tabs)
-            const canCreateUsersData = window.Permissions.can('Usuários', 'can_create');
-            if (addNewUserBtn) addNewUserBtn.style.display = canCreateUsersData ? 'flex' : 'none';
 
             if (currentMngTab === 'users') {
                 if (usersContainer) usersContainer.classList.remove('hidden');

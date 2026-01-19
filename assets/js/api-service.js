@@ -250,13 +250,6 @@ const api = {
             return await request(`roles.php?name=${encodeURIComponent(name)}`, {
                 method: 'DELETE'
             });
-        },
-        async copy(from, to) {
-            return await request('roles.php?action=copy', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ from, to })
-            });
         }
     }
 };
