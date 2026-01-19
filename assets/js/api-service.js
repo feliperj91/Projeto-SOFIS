@@ -239,9 +239,23 @@ const api = {
                 body: JSON.stringify(role)
             });
         },
+        async update(oldName, newName) {
+            return await request(`roles.php?name=${encodeURIComponent(oldName)}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: newName })
+            });
+        },
         async delete(name) {
             return await request(`roles.php?name=${encodeURIComponent(name)}`, {
                 method: 'DELETE'
+            });
+        },
+        async copy(from, to) {
+            return await request('roles.php?action=copy', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ from, to })
             });
         }
     }

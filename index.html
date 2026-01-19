@@ -202,16 +202,28 @@
                     <!-- Seletor de Cargos (Permissões) -->
                     <div id="shared-mng-controls" class="hidden" style="display: flex; align-items: center; gap: 10px;">
                         <div class="role-selector-wrapper"
-                            style="display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.2); padding: 5px 12px; border-radius: 8px; border: 1px solid var(--border);">
+                            style="display: flex; align-items: center; gap: 8px; background: var(--bg-card); padding: 5px 12px; border-radius: 8px; border: 1px solid var(--border);">
                             <i class="fa-solid fa-user-shield" style="color: var(--accent); font-size: 0.9rem;"></i>
                             <select id="roleSelectDropdown"
                                 style="background: transparent; border: none; color: white; outline: none; cursor: pointer; font-size: 0.9rem; min-width: 150px; padding: 5px 0;">
                                 <!-- Options dinâmicas via JS -->
                             </select>
-                            <button id="btnDeleteSelectedRole" class="hidden" title="Excluir Grupo"
-                                style="background: transparent; border: none; color: #ff5252; cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; transition: transform 0.2s;">
-                                <i class="fa-solid fa-trash-can" style="font-size: 0.9rem;"></i>
-                            </button>
+
+                            <div id="role-actions-group"
+                                style="display: flex; align-items: center; gap: 5px; border-left: 1px solid var(--border); padding-left: 8px; margin-left: 4px;">
+                                <button id="btnEditRoleName" class="hidden" title="Editar Nome do Grupo"
+                                    style="background: transparent; border: none; color: var(--text-secondary); cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; transition: color 0.2s;">
+                                    <i class="fa-solid fa-pen-to-square" style="font-size: 0.85rem;"></i>
+                                </button>
+                                <button id="btnCopyPermissions" title="Copiar Permissões de outro Grupo"
+                                    style="background: transparent; border: none; color: var(--text-secondary); cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; transition: color 0.2s;">
+                                    <i class="fa-solid fa-copy" style="font-size: 0.85rem;"></i>
+                                </button>
+                                <button id="btnDeleteSelectedRole" class="hidden" title="Excluir Grupo"
+                                    style="background: transparent; border: none; color: #ff5252; cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; transition: transform 0.2s;">
+                                    <i class="fa-solid fa-trash-can" style="font-size: 0.9rem;"></i>
+                                </button>
+                            </div>
                         </div>
                         <button id="btnAddNewRole" class="btn-icon-plus" title="Criar Novo Grupo">
                             <i class="fa-solid fa-plus-circle"></i> GRUPO
@@ -1780,19 +1792,20 @@
     <div id="roleModal" class="modal hidden">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Novo Grupo de Acesso</h2>
+                <h2 id="roleModalTitle">Novo Grupo de Acesso</h2>
                 <button type="button" class="btn-icon"
                     onclick="document.getElementById('roleModal').classList.add('hidden')">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
             <form id="roleForm">
+                <input type="hidden" id="editRoleOldName">
                 <div class="form-group">
                     <label for="roleName">Nome do Grupo <span class="required">*</span></label>
                     <input type="text" id="roleName" required placeholder="Ex: GESTOR, AUDITOR, SUPORTE"
                         style="text-transform: uppercase;">
                 </div>
-                <div class="form-group">
+                <div class="form-group" id="roleDescGroup">
                     <label for="roleDescription">Descrição</label>
                     <textarea id="roleDescription" rows="3"
                         placeholder="Breve descrição da finalidade deste grupo..."></textarea>
@@ -1800,9 +1813,41 @@
                 <div class="modal-actions">
                     <button type="button" class="btn-secondary"
                         onclick="document.getElementById('roleModal').classList.add('hidden')">Cancelar</button>
-                    <button type="submit" class="btn-primary">Criar Grupo</button>
+                    <button type="submit" id="btnSubmitRole" class="btn-primary">Criar Grupo</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Copy Permissions Modal -->
+    <div id="copyPermModal" class="modal hidden">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2>Copiar Permissões</h2>
+                <button type="button" class="btn-icon"
+                    onclick="document.getElementById('copyPermModal').classList.add('hidden')">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div style="padding: 20px;">
+                <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 0.9rem;">
+                    Selecione o grupo de <strong>origem</strong> para copiar as permissões para o grupo <strong
+                        id="copyTargetName"></strong>:
+                </p>
+                <div class="form-group">
+                    <label>Copiar de:</label>
+                    <select id="copySourceRole"
+                        style="width: 100%; padding: 10px; border-radius: 6px; background: var(--bg-card); border: 1px solid var(--border); color: white;">
+                        <!-- Options via JS -->
+                    </select>
+                </div>
+                <div style="margin-top: 25px; display: flex; gap: 10px;">
+                    <button type="button" class="btn-secondary" style="flex: 1;"
+                        onclick="document.getElementById('copyPermModal').classList.add('hidden')">Cancelar</button>
+                    <button type="button" id="btnConfirmCopyPerm" class="btn-primary" style="flex: 1;">Copiar
+                        Agora</button>
+                </div>
+            </div>
         </div>
     </div>
 

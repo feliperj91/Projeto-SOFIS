@@ -148,20 +148,27 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
             roleDropdown.value = currentSelectedRole;
 
-            // Mostrar/Ocultar botão de excluir
             const isSystemRole = ['ADMINISTRADOR', 'TECNICO'].includes(currentSelectedRole);
-            if (btnDelete) {
-                btnDelete.classList.toggle('hidden', isSystemRole);
-                btnDelete.onclick = () => window.deleteRole(currentSelectedRole);
-            }
 
-            // Unbind antigo se existir para evitar múltiplos disparos e rebind
+            // Gerenciar Visibilidade dos Botões de Ação
+            const btnDelete = document.getElementById('btnDeleteSelectedRole');
+            const btnEdit = document.getElementById('btnEditRoleName');
+            const btnCopy = document.getElementById('btnCopyPermissions');
+
+            if (btnDelete) btnDelete.classList.toggle('hidden', isSystemRole);
+            if (btnEdit) btnEdit.classList.toggle('hidden', isSystemRole);
+            if (btnCopy) btnCopy.classList.remove('hidden');
+
+            if (btnDelete) btnDelete.onclick = () => window.deleteRole(currentSelectedRole);
+            if (btnEdit) btnEdit.onclick = () => window.editRoleName(currentSelectedRole);
+            if (btnCopy) btnCopy.onclick = () => window.openCopyPermModal(currentSelectedRole);
+
             roleDropdown.onchange = async (e) => {
                 currentSelectedRole = e.target.value;
-
-                // Atualizar visibilidade do botão de excluir ao trocar
                 const isSys = ['ADMINISTRADOR', 'TECNICO'].includes(currentSelectedRole);
+
                 if (btnDelete) btnDelete.classList.toggle('hidden', isSys);
+                if (btnEdit) btnEdit.classList.toggle('hidden', isSys);
 
                 if (currentMngTab === 'users') {
                     const filtered = usersList.filter(u => u.role === currentSelectedRole);
@@ -207,13 +214,72 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    // Modal Create Role Logic
+    // --- Lógica de Edição e Cópia ---
+    window.editRoleName = function (roleName) {
+        const role = rolesList.find(r => r.name === roleName);
+        if (!role) return;
+
+        document.getElementById('roleModalTitle').innerText = 'Editar Nome do Grupo';
+        document.getElementById('editRoleOldName').value = roleName;
+        document.getElementById('roleName').value = roleName;
+        document.getElementById('roleDescGroup').classList.add('hidden'); // Esconder desc na edição por simplicidade
+        document.getElementById('btnSubmitRole').innerText = 'Salvar Alteração';
+
+        if (roleModal) roleModal.classList.remove('hidden');
+    };
+
+    window.openCopyPermModal = function (targetRole) {
+        const copyPermModal = document.getElementById('copyPermModal');
+        const copySourceSelect = document.getElementById('copySourceRole');
+        const targetLabel = document.getElementById('copyTargetName');
+
+        if (!copyPermModal || !copySourceSelect) return;
+
+        targetLabel.innerText = targetRole;
+        copySourceSelect.innerHTML = '';
+
+        rolesList.forEach(role => {
+            if (role.name !== targetRole) {
+                const opt = document.createElement('option');
+                opt.value = role.name;
+                opt.textContent = role.name;
+                copySourceSelect.appendChild(opt);
+            }
+        });
+
+        copyPermModal.classList.remove('hidden');
+    };
+
+    const confirmCopyBtn = document.getElementById('btnConfirmCopyPerm');
+    if (confirmCopyBtn) {
+        confirmCopyBtn.onclick = async () => {
+            const from = document.getElementById('copySourceRole').value;
+            const to = document.getElementById('copyTargetName').innerText;
+
+            try {
+                await window.api.roles.copy(from, to);
+                window.showToast(`Permissões copiadas de ${from} para ${to}!`, 'success');
+                document.getElementById('copyPermModal').classList.add('hidden');
+                await loadPermissions(to);
+            } catch (err) {
+                window.showToast(err.message, 'danger');
+            }
+        };
+    }
+
+    // Modal Create/Edit Role Logic
     const roleModal = document.getElementById('roleModal');
     const roleForm = document.getElementById('roleForm');
     const btnAddNewRole = document.getElementById('btnAddNewRole');
 
     if (btnAddNewRole) {
         btnAddNewRole.addEventListener('click', () => {
+            document.getElementById('roleModalTitle').innerText = 'Novo Grupo de Acesso';
+            document.getElementById('editRoleOldName').value = '';
+            document.getElementById('roleName').value = '';
+            document.getElementById('roleDescription').value = '';
+            document.getElementById('roleDescGroup').classList.remove('hidden');
+            document.getElementById('btnSubmitRole').innerText = 'Criar Grupo';
             if (roleModal) roleModal.classList.remove('hidden');
         });
     }
@@ -221,12 +287,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (roleForm) {
         roleForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            const oldName = document.getElementById('editRoleOldName').value;
             const name = document.getElementById('roleName').value.trim().toUpperCase();
             const description = document.getElementById('roleDescription').value;
 
             try {
-                await window.api.roles.create({ name, description });
-                window.showToast(`Grupo ${name} criado com sucesso!`, 'success');
+                if (oldName) {
+                    // Update
+                    await window.api.roles.update(oldName, name);
+                    window.showToast(`Grupo renomeado para ${name}!`, 'success');
+                    if (currentSelectedRole === oldName) currentSelectedRole = name;
+                } else {
+                    // Create
+                    await window.api.roles.create({ name, description });
+                    window.showToast(`Grupo ${name} criado com sucesso!`, 'success');
+                }
+
                 roleModal.classList.add('hidden');
                 roleForm.reset();
                 await loadRoles();

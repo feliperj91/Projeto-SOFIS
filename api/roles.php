@@ -19,6 +19,43 @@ switch ($method) {
 
     case 'POST':
         $input = json_decode(file_get_contents('php://input'), true);
+        $action = $_GET['action'] ?? '';
+
+        if ($action === 'copy') {
+            $from = $input['from'] ?? '';
+            $to = $input['to'] ?? '';
+
+            if (empty($from) || empty($to)) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Origem e destino são obrigatórios']);
+                exit;
+            }
+
+            try {
+                $pdo->beginTransaction();
+                // 1. Limpar permissões atuais do destino
+                $del = $pdo->prepare("DELETE FROM role_permissions WHERE role_name = ?");
+                $del->execute([$to]);
+
+                // 2. Copiar do de origem
+                $copy = $pdo->prepare("
+                    INSERT INTO role_permissions (role_name, module, can_view, can_create, can_edit, can_delete)
+                    SELECT ?, module, can_view, can_create, can_edit, can_delete
+                    FROM role_permissions
+                    WHERE role_name = ?
+                ");
+                $copy->execute([$to, $from]);
+
+                $pdo->commit();
+                echo json_encode(['success' => true]);
+            } catch (PDOException $e) {
+                $pdo->rollBack();
+                http_response_code(500);
+                echo json_encode(['error' => $e->getMessage()]);
+            }
+            exit;
+        }
+
         if (empty($input['name'])) {
             http_response_code(400);
             echo json_encode(['error' => 'Nome do grupo é obrigatório']);
@@ -47,6 +84,47 @@ switch ($method) {
                 http_response_code(500);
                 echo json_encode(['error' => $e->getMessage()]);
             }
+        }
+        break;
+
+    case 'PUT':
+        $input = json_decode(file_get_contents('php://input'), true);
+        $oldName = $_GET['name'] ?? '';
+        $newName = strtoupper($input['name'] ?? '');
+
+        if (empty($oldName) || empty($newName)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Nomes atual e novo são obrigatórios']);
+            exit;
+        }
+
+        if (in_array($oldName, ['ADMINISTRADOR', 'TECNICO'])) {
+            http_response_code(403);
+            echo json_encode(['error' => 'Não é permitido renomear grupos do sistema']);
+            exit;
+        }
+
+        try {
+            $pdo->beginTransaction();
+
+            // 1. Atualizar user_roles
+            $stmt1 = $pdo->prepare("UPDATE user_roles SET name = ? WHERE name = ?");
+            $stmt1->execute([$newName, $oldName]);
+
+            // 2. Atualizar role_permissions
+            $stmt2 = $pdo->prepare("UPDATE role_permissions SET role_name = ? WHERE role_name = ?");
+            $stmt2->execute([$newName, $oldName]);
+
+            // 3. Atualizar tabela users (coluna role)
+            $stmt3 = $pdo->prepare("UPDATE users SET role = ? WHERE role = ?");
+            $stmt3->execute([$newName, $oldName]);
+
+            $pdo->commit();
+            echo json_encode(['success' => true]);
+        } catch (PDOException $e) {
+            $pdo->rollBack();
+            http_response_code(500);
+            echo json_encode(['error' => $e->getMessage()]);
         }
         break;
 
