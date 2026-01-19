@@ -50,10 +50,10 @@ if ($method === 'GET') {
             }
         }
         
-        // Sincronização definitiva: Atualiza TODOS os usuários que pertencem aos grupos afetados
+        // Sincronização definitiva: Atualiza TODOS os usuários que possuem um dos grupos afetados
         foreach ($affectedRoles as $role) {
             $syncStmt = $pdo->prepare("
-                UPDATE users 
+                UPDATE users u
                 SET permissions = (
                     SELECT COALESCE(
                         json_object_agg(
@@ -67,10 +67,19 @@ if ($method === 'GET') {
                         ),
                         '{}'::json
                     )
-                    FROM role_permissions
-                    WHERE UPPER(role_name) = UPPER(:role)
+                    FROM (
+                        SELECT 
+                            module,
+                            bool_or(can_view) as can_view,
+                            bool_or(can_create) as can_create,
+                            bool_or(can_edit) as can_edit,
+                            bool_or(can_delete) as can_delete
+                        FROM role_permissions
+                        WHERE UPPER(role_name) = ANY(ARRAY(SELECT UPPER(r) FROM unnest(u.roles)))
+                        GROUP BY module
+                    ) AS agg_perms
                 )
-                WHERE UPPER(role) = UPPER(:role)
+                WHERE UPPER(:role) = ANY(ARRAY(SELECT UPPER(r) FROM unnest(u.roles)))
             ");
             $syncStmt->execute(['role' => $role]);
         }

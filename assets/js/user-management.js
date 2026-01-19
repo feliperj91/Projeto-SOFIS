@@ -177,7 +177,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (btnEdit) btnEdit.classList.toggle('hidden', isSys || !canEditGroups);
 
                 if (currentMngTab === 'users') {
-                    const filtered = usersList.filter(u => u.role === currentSelectedRole);
+                    const filtered = usersList.filter(u => u.roles && u.roles.includes(currentSelectedRole));
                     renderUsers(filtered);
                 } else {
                     await loadPermissions(currentSelectedRole);
@@ -187,15 +187,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         if (userRoleSelect) {
-            const currentVal = userRoleSelect.value;
-            userRoleSelect.innerHTML = '<option value="" disabled>Selecione o nível de acesso...</option>';
+            userRoleSelect.innerHTML = '';
             rolesList.forEach(role => {
                 const opt = document.createElement('option');
                 opt.value = role.name;
                 opt.textContent = role.name.charAt(0) + role.name.slice(1).toLowerCase();
                 userRoleSelect.appendChild(opt);
             });
-            if (currentVal) userRoleSelect.value = currentVal;
         }
     }
 
@@ -576,12 +574,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             const card = document.createElement('div');
             card.className = 'user-card'; // Restaurado de user-card-item para user-card
 
-            const knownRoles = ['administrador', 'tecnico', 'analista'];
-            const roleClass = knownRoles.includes(u.role?.toLowerCase())
-                ? `badge-${u.role.toLowerCase()}`
-                : 'badge-custom';
-            const creationDate = u.created_at ? new Date(u.created_at).toLocaleDateString('pt-BR') : 'N/A';
-
             // Get Initials
             const initials = (u.full_name || u.username)
                 .split(' ')
@@ -606,6 +598,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <button class="btn-icon" onclick="window.deleteUser('${u.id}')" title="Excluir" style="color: var(--danger)">
                         <i class="fa-solid fa-trash"></i>
                     </button>`;
+            }
+
+            // Multi-role Badges
+            let rolesHtml = '';
+            if (Array.isArray(u.roles)) {
+                u.roles.forEach(roleName => {
+                    const knownRoles = ['administrador', 'tecnico', 'analista'];
+                    const rClass = knownRoles.includes(roleName.toLowerCase())
+                        ? `badge-${roleName.toLowerCase()}`
+                        : 'badge-custom';
+                    rolesHtml += `<span class="badge-role ${rClass}">${roleName.toUpperCase()}</span> `;
+                });
+            } else {
+                rolesHtml = `<span class="badge-role badge-custom">TÉCNICO</span>`;
             }
 
             // Status Indicators
@@ -634,7 +640,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </div>
                 <div class="user-info-bottom">
                     <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                        <span class="badge-role ${roleClass}">${u.role || 'TÉCNICO'}</span>
+                        ${rolesHtml}
                         ${resetStatusHtml}
                     </div>
                 </div>
@@ -662,7 +668,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const filtered = usersList.filter(u =>
             u.full_name?.toLowerCase().includes(query) ||
             u.username?.toLowerCase().includes(query) ||
-            u.role?.toLowerCase().includes(query)
+            (Array.isArray(u.roles) && u.roles.some(r => r.toLowerCase().includes(query)))
         );
         renderUsers(filtered);
     });
@@ -743,7 +749,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.getElementById('userPasswordRequired').classList.add('hidden');
         }
 
-        if (document.getElementById('userRoleSelect')) document.getElementById('userRoleSelect').value = u.role || 'TECNICO';
+        if (document.getElementById('userRoleSelect')) {
+            const select = document.getElementById('userRoleSelect');
+            const userRoles = u.roles || [];
+            Array.from(select.options).forEach(opt => {
+                opt.selected = userRoles.includes(opt.value);
+            });
+        }
 
         userModal.classList.remove('hidden');
     };
@@ -790,7 +802,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const currentFullName = document.getElementById('userFullName').value;
         const currentUsername = document.getElementById('userUsername').value;
         const currentPassword = document.getElementById('userPassword').value;
-        const currentRole = document.getElementById('userRoleSelect').value;
+        const currentRoles = Array.from(document.getElementById('userRoleSelect').selectedOptions).map(opt => opt.value);
         const currentIsActive = document.getElementById('userIsActive').checked;
         const currentForceReset = document.getElementById('userForceReset').checked;
 
@@ -798,7 +810,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             full_name: currentFullName,
             username: currentUsername,
             password: currentPassword, // Send plain password, API handles hashing
-            role: currentRole,
+            roles: currentRoles,
             is_active: currentIsActive,
             force_password_reset: currentForceReset
         };
@@ -830,7 +842,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Generate Diff Details
                 const changes = [];
                 if (oldVal.username !== formData.username) changes.push(`Usuário: '${oldVal.username}' -> '${formData.username}'`);
-                if (oldVal.role !== formData.role) changes.push(`Role: '${oldVal.role}' -> '${formData.role}'`);
+
+                const oldRoles = oldVal.roles?.join(',') || '';
+                const newRoles = formData.roles?.join(',') || '';
+                if (oldRoles !== newRoles) changes.push(`Grupos: '${oldRoles}' -> '${newRoles}'`);
+
                 if (updateData.password) changes.push('Senha alterada manualmente');
                 if (!!oldVal.is_active !== !!formData.is_active) changes.push(formData.is_active ? 'Conta Reativada' : 'Conta Desativada');
                 if (!!oldVal.force_password_reset !== !!formData.force_password_reset && formData.force_password_reset) changes.push('Reset de Senha Solicitado');
@@ -841,7 +857,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Check username uniqueness? API handles it (UNIQUE constraint) but we can catch error
 
                 res = await window.api.users.create(formData);
-                details = `Novo usuário: ${formData.full_name} (${formData.role})`;
+                details = `Novo usuário: ${formData.full_name} (${formData.roles.join(', ')})`;
             }
 
             // Check API response success? API methods throw if not ok, or return json

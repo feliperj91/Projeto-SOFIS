@@ -8,11 +8,13 @@ switch ($method) {
     case 'GET':
         try {
             // Return sensitive info (hash) only if needed, usually we hide it.
-            $stmt = $pdo->query('SELECT id, username, full_name, role, permissions, is_active, force_password_reset, created_at FROM users ORDER BY username ASC');
+            $stmt = $pdo->query('SELECT id, username, full_name, roles, permissions, is_active, force_password_reset, created_at FROM users ORDER BY username ASC');
             $users = $stmt->fetchAll();
             // Decode JSON permissions for frontend use
             foreach ($users as &$u) {
                 $u['permissions'] = json_decode($u['permissions']);
+                $u['roles'] = str_replace(['{', '}', '"'], '', $u['roles']); // Convert postgres array string to comma list if needed
+                $u['roles'] = explode(',', $u['roles']);
             }
             echo json_encode($users);
         } catch (PDOException $e) {
@@ -35,34 +37,52 @@ switch ($method) {
             ? password_hash($input['password'], PASSWORD_BCRYPT) 
             : 'RESET_PENDING';
         
-        $sql = "INSERT INTO users (username, full_name, password_hash, role, permissions, is_active, force_password_reset) VALUES (?, ?, ?, ?, ?, TRUE, TRUE)";
+        $sql = "INSERT INTO users (username, full_name, password_hash, roles, permissions, is_active, force_password_reset) VALUES (?, ?, ?, ?, ?, TRUE, TRUE)";
         try {
+            $rolesArray = !empty($input['roles']) && is_array($input['roles']) ? '{' . implode(',', $input['roles']) . '}' : '{TECNICO}';
+            
             $stmt = $pdo->prepare($sql);
             $stmt->execute([
                 $input['username'],
                 $input['full_name'],
                 $passwordHash,
-                $input['role'] ?? 'TECNICO',
+                $rolesArray,
                 (!empty($input['permissions']) ? json_encode($input['permissions']) : 
-                    (function($pdo, $role) {
+                    (function($pdo, $roles) {
                         try {
-                            // Fetch granular permissions (Schema A)
-                            $stmt = $pdo->prepare("SELECT module, can_view, can_create, can_edit, can_delete FROM role_permissions WHERE role_name = ?");
-                            $stmt->execute([$role]);
-                            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                            // Fetch granular permissions aggregated from all roles
+                            $stmt = $pdo->prepare("
+                                SELECT 
+                                    json_object_agg(
+                                        module,
+                                        json_build_object(
+                                            'can_view', can_view,
+                                            'can_create', can_create,
+                                            'can_edit', can_edit,
+                                            'can_delete', can_delete
+                                        )
+                                    )
+                                FROM (
+                                    SELECT 
+                                        module,
+                                        bool_or(can_view) as can_view,
+                                        bool_or(can_create) as can_create,
+                                        bool_or(can_edit) as can_edit,
+                                        bool_or(can_delete) as can_delete
+                                    FROM role_permissions
+                                    WHERE role_name = ANY(:roles)
+                                    GROUP BY module
+                                ) AS agg_perms
+                            ");
                             
-                            $perms = [];
-                            foreach($rows as $r) {
-                                $perms[$r['module']] = [
-                                    'can_view' => $r['can_view'],
-                                    'can_create' => $r['can_create'],
-                                    'can_edit' => $r['can_edit'],
-                                    'can_delete' => $r['can_delete']
-                                ];
-                            }
-                            return empty($perms) ? '{}' : json_encode($perms);
+                            $rolesList = is_array($roles) ? $roles : explode(',', str_replace(['{', '}', '"'], '', $roles));
+                            $stmt->bindValue(':roles', '{' . implode(',', $rolesList) . '}');
+                            $stmt->execute();
+                            $result = $stmt->fetchColumn();
+                            
+                            return $result ?: '{}';
                         } catch(Exception $e) { return '{}'; }
-                    })($pdo, $input['role'] ?? 'TECNICO')
+                    })($pdo, $rolesArray)
                 )
             ]);
             
@@ -102,9 +122,9 @@ switch ($method) {
             $fields[] = "full_name = ?";
             $params[] = $input['full_name'];
         }
-        if (isset($input['role'])) {
-            $fields[] = "role = ?";
-            $params[] = $input['role'];
+        if (isset($input['roles'])) {
+            $fields[] = "roles = ?";
+            $params[] = '{' . implode(',', (array)$input['roles']) . '}';
         }
         if (isset($input['permissions'])) {
             $fields[] = "permissions = ?";
@@ -146,15 +166,16 @@ switch ($method) {
             // Sempre sincronizar as permissões do usuário com o cargo (role) ao atualizar,
             // A MENOS que permissões personalizadas tenham sido enviadas explicitamente.
             if (!isset($input['permissions'])) {
-                // Buscamos o cargo atual se não foi enviado no input
-                $targetRole = $input['role'] ?? null;
-                if (!$targetRole) {
-                    $stmtRole = $pdo->prepare("SELECT role FROM users WHERE id = ?");
-                    $stmtRole->execute([$_GET['id']]);
-                    $targetRole = $stmtRole->fetchColumn();
+                // Buscamos os cargos atuais
+                $targetRoles = $input['roles'] ?? null;
+                if (!$targetRoles) {
+                    $stmtRoles = $pdo->prepare("SELECT roles FROM users WHERE id = ?");
+                    $stmtRoles->execute([$_GET['id']]);
+                    $rolesRaw = $stmtRoles->fetchColumn();
+                    $targetRoles = explode(',', str_replace(['{', '}', '"'], '', $rolesRaw));
                 }
 
-                if ($targetRole) {
+                if (!empty($targetRoles)) {
                     $syncStmt = $pdo->prepare("
                         UPDATE users 
                         SET permissions = (
@@ -170,13 +191,22 @@ switch ($method) {
                                 ),
                                 '{}'::json
                             )
-                            FROM role_permissions
-                            WHERE UPPER(role_name) = UPPER(:role)
+                            FROM (
+                                SELECT 
+                                    module,
+                                    bool_or(can_view) as can_view,
+                                    bool_or(can_create) as can_create,
+                                    bool_or(can_edit) as can_edit,
+                                    bool_or(can_delete) as can_delete
+                                FROM role_permissions
+                                WHERE UPPER(role_name) = ANY(ARRAY(SELECT UPPER(r) FROM unnest(:roles::text[]) r))
+                                GROUP BY module
+                            ) AS agg_perms
                         )
                         WHERE id = :id
                     ");
                     $syncStmt->execute([
-                        'role' => $targetRole,
+                        'roles' => '{' . implode(',', (array)$targetRoles) . '}',
                         'id' => $_GET['id']
                     ]);
                 }

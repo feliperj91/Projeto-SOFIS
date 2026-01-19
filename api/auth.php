@@ -16,9 +16,14 @@ if ($action === 'login') {
     $password = $input['password'] ?? '';
 
     try {
-        $stmt = $pdo->prepare('SELECT id, username, full_name, password_hash, role, permissions, is_active, force_password_reset FROM users WHERE username = ?');
+        $stmt = $pdo->prepare('SELECT id, username, full_name, password_hash, roles, permissions, is_active, force_password_reset FROM users WHERE username = ?');
         $stmt->execute([$username]);
         $user = $stmt->fetch();
+        
+        if ($user) {
+            $user['roles'] = str_replace(['{', '}', '"'], '', $user['roles']);
+            $user['roles'] = explode(',', $user['roles']);
+        }
 
         if ($user && password_verify($password, $user['password_hash'])) {
             if (!$user['is_active']) {
@@ -29,7 +34,7 @@ if ($action === 'login') {
 
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
-            $_SESSION['role'] = $user['role'];
+            $_SESSION['roles'] = $user['roles'];
             $_SESSION['permissions'] = $user['permissions'];
             $_SESSION['full_name'] = $user['full_name'];
 
@@ -37,7 +42,7 @@ if ($action === 'login') {
                 'id' => $user['id'],
                 'username' => $user['username'],
                 'full_name' => $user['full_name'],
-                'role' => $user['role'],
+                'roles' => $user['roles'],
                 'permissions' => json_decode($user['permissions']),
                 'force_password_reset' => (bool)$user['force_password_reset']
             ]]);
@@ -57,20 +62,26 @@ if ($action === 'login') {
         try {
             // Reload permissions from database on every check
             // This allows instant permission updates with just F5
-            $stmt = $pdo->prepare('SELECT permissions FROM users WHERE id = ?');
+            $stmt = $pdo->prepare('SELECT roles, permissions FROM users WHERE id = ?');
             $stmt->execute([$_SESSION['user_id']]);
             $user = $stmt->fetch();
+
+            if ($user) {
+                $user['roles'] = str_replace(['{', '}', '"'], '', $user['roles']);
+                $user['roles'] = explode(',', $user['roles']);
+            }
             
-            // Update session with fresh permissions
-            if ($user && $user['permissions']) {
-                $_SESSION['permissions'] = $user['permissions'];
+            // Update session with fresh roles and permissions
+            if ($user) {
+                if ($user['permissions']) $_SESSION['permissions'] = $user['permissions'];
+                if ($user['roles']) $_SESSION['roles'] = $user['roles'];
             }
             
             echo json_encode(['authenticated' => true, 'user' => [
                 'id' => $_SESSION['user_id'],
                 'username' => $_SESSION['username'],
                 'full_name' => $_SESSION['full_name'],
-                'role' => $_SESSION['role'],
+                'roles' => $_SESSION['roles'],
                 'permissions' => json_decode($_SESSION['permissions'] ?? '{}')
             ]]);
         } catch (PDOException $e) {
@@ -115,7 +126,7 @@ if ($action === 'login') {
     
     try {
         // Double check status
-        $stmt = $pdo->prepare('SELECT id, password_hash, role, full_name, permissions, is_active FROM users WHERE username = ?');
+        $stmt = $pdo->prepare('SELECT id, password_hash, roles, full_name, permissions, is_active FROM users WHERE username = ?');
         $stmt->execute([$username]);
         $user = $stmt->fetch();
         
@@ -134,7 +145,11 @@ if ($action === 'login') {
         // Auto-login logic
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['username'] = $username;
-        $_SESSION['role'] = $user['role'];
+        
+        $user['roles'] = str_replace(['{', '}', '"'], '', $user['roles']);
+        $user['roles'] = explode(',', $user['roles']);
+        
+        $_SESSION['roles'] = $user['roles'];
         $_SESSION['permissions'] = $user['permissions'];
         $_SESSION['full_name'] = $user['full_name'];
         
@@ -142,7 +157,7 @@ if ($action === 'login') {
             'id' => $user['id'],
             'username' => $username,
             'full_name' => $user['full_name'],
-            'role' => $user['role'],
+            'roles' => $user['roles'],
             'permissions' => json_decode($user['permissions'])
         ]]);
         
