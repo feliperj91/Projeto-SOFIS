@@ -201,10 +201,13 @@
 
                     <!-- Seletor de Cargos (Permissões) -->
                     <div id="shared-mng-controls" class="hidden">
-                        <button class="role-text-btn active"
-                            data-role="ADMINISTRADOR"><span>ADMINISTRADOR</span></button>
-                        <button class="role-text-btn" data-role="ANALISTA"><span>ANALISTA</span></button>
-                        <button class="role-text-btn" data-role="TECNICO"><span>TÉCNICO</span></button>
+                        <div id="roles-dynamic-container" style="display: flex; gap: 8px; align-items: center;">
+                            <!-- Botões de cargo serão injetados aqui via JS -->
+                        </div>
+                        <button id="btnAddNewRole" class="btn-icon-plus" title="Criar Novo Grupo"
+                            style="margin-left: 10px;">
+                            <i class="fa-solid fa-plus-circle"></i> GRUPO
+                        </button>
                     </div>
 
                     <!-- Filtros de Logs (Escondido por padrão) -->
@@ -1477,9 +1480,7 @@
                         <span class="required">*</span></label>
                     <select id="userRoleSelect" required>
                         <option value="" disabled selected>Selecione o nivel de acesso...</option>
-                        <option value="ADMINISTRADOR">Administrador</option>
-                        <option value="ANALISTA">Analista</option>
-                        <option value="TECNICO">Técnico</option>
+                        <!-- Roles dinâmicas aqui -->
                     </select>
                 </div>
                 <div class="modal-actions">
@@ -1762,6 +1763,36 @@
                         style="flex: 1; background: #EF4444; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: 600; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);">
                         <i class="fa-solid fa-ban"></i> Confirmar Inativação
                     </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Group (Role) Modal -->
+    <div id="roleModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Novo Grupo de Acesso</h2>
+                <button type="button" class="btn-icon"
+                    onclick="document.getElementById('roleModal').classList.add('hidden')">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <form id="roleForm">
+                <div class="form-group">
+                    <label for="roleName">Nome do Grupo <span class="required">*</span></label>
+                    <input type="text" id="roleName" required placeholder="Ex: GESTOR, AUDITOR, SUPORTE"
+                        style="text-transform: uppercase;">
+                </div>
+                <div class="form-group">
+                    <label for="roleDescription">Descrição</label>
+                    <textarea id="roleDescription" rows="3"
+                        placeholder="Breve descrição da finalidade deste grupo..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary"
+                        onclick="document.getElementById('roleModal').classList.add('hidden')">Cancelar</button>
+                    <button type="submit" class="btn-primary">Criar Grupo</button>
                 </div>
             </form>
         </div>

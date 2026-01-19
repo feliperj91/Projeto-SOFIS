@@ -4,18 +4,25 @@ description: Deploy do projeto para a VM Linux (Servidor Apache)
 
 Este workflow descreve os passos exatos para enviar as alterações do código local (Windows) para o servidor de produção na VM Linux.
 
-### Pré-requisitos
-- Commit e Push das alterações no Windows.
-- Acesso à máquina virtual via terminal.
-
 ### Passos de Deploy
 
-1. **Acessar a pasta do projeto na VM:**
+#### Fase 1: Salvar Alterações (No Windows)
+
+1. **Subir as alterações para o repositório:**
+   ```powershell
+   git add .
+   git commit -m "Relatório das alterações aqui"
+   git push origin main
+   ```
+
+#### Fase 2: Atualizar a VM (No Linux)
+
+2. **Acessar a pasta do projeto na VM:**
    ```bash
    cd ~/Projeto-Sofis
    ```
 
-2. **Baixar as últimas alterações do Git:**
+3. **Baixar as últimas alterações do Git:**
    ```bash
    git pull
    ```
@@ -26,12 +33,19 @@ Este workflow descreve os passos exatos para enviar as alterações do código l
    sudo cp -r ~/Projeto-Sofis/* /var/www/html/sofis/
    ```
 
-4. **(Opcional) Se houver problemas de permissão:**
+4. **Executar Migrações de Banco de Dados (Se houver):**
+   Se você adicionou novos arquivos `.sql` na pasta `database/`, execute-os:
    ```bash
-   sudo chmod -R 777 /var/www/html/sofis/
+   psql -h localhost -U sofis_user -d sofis_db -f /var/www/html/sofis/database/nome_da_migracao.sql
    ```
 
-5. **(Opcional) Se houver problemas de cache teimoso, reinicie o Apache:**
+5. **(Opcional) Se houver problemas de permissão:**
+   ```bash
+   sudo chmod -R 755 /var/www/html/sofis/
+   sudo chown -R www-data:www-data /var/www/html/sofis/
+   ```
+
+6. **(Opcional) Se houver problemas de cache teimoso, reinicie o Apache:**
    ```bash
    sudo systemctl restart apache2
    ```

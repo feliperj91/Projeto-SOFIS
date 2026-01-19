@@ -227,6 +227,23 @@ const api = {
                 method: 'DELETE'
             });
         }
+    },
+    roles: {
+        async list() {
+            return await request('roles.php');
+        },
+        async create(role) {
+            return await request('roles.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(role)
+            });
+        },
+        async delete(name) {
+            return await request(`roles.php?name=${encodeURIComponent(name)}`, {
+                method: 'DELETE'
+            });
+        }
     }
 };
 

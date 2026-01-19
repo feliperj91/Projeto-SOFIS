@@ -34,6 +34,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- Estado & Constantes ---
     let usersList = [];
+    let rolesList = []; // Nova lista dinâmica de grupos
     let currentMngTab = 'users';
     let currentSelectedRole = 'ADMINISTRADOR';
     let editingUserId = null;
@@ -120,8 +121,118 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // --- Initialization ---
+    // --- Groups (Roles) Management ---
+    async function loadRoles() {
+        if (!window.api || !window.api.roles) return;
+        try {
+            const data = await window.api.roles.list();
+            rolesList = data || [];
+            renderRoleControls();
+        } catch (err) {
+            console.error('Erro ao carregar grupos:', err.message);
+        }
+    }
+
+    function renderRoleControls() {
+        const dynamicContainer = document.getElementById('roles-dynamic-container');
+        const userRoleSelect = document.getElementById('userRoleSelect');
+
+        if (dynamicContainer) {
+            dynamicContainer.innerHTML = '';
+            rolesList.forEach(role => {
+                const btn = document.createElement('button');
+                btn.className = `role-text-btn ${currentSelectedRole === role.name ? 'active' : ''}`;
+                btn.dataset.role = role.name;
+
+                // Add Delete Icon for custom roles (not ADMIN/TECNICO)
+                const isSystemRole = ['ADMINISTRADOR', 'TECNICO'].includes(role.name);
+                const deleteBtnHtml = !isSystemRole ? `<i class="fa-solid fa-xmark delete-role-icon" onclick="event.stopPropagation(); window.deleteRole('${role.name}')"></i>` : '';
+
+                btn.innerHTML = `<span>${role.name}</span>${deleteBtnHtml}`;
+
+                btn.addEventListener('click', async () => {
+                    document.querySelectorAll('.role-text-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentSelectedRole = role.name;
+
+                    if (currentMngTab === 'users') {
+                        const filtered = usersList.filter(u => u.role === role.name);
+                        renderUsers(filtered);
+                    } else {
+                        await loadPermissions(currentSelectedRole);
+                        if (savePermissionsBtn) savePermissionsBtn.disabled = true;
+                    }
+                });
+                dynamicContainer.appendChild(btn);
+            });
+        }
+
+        if (userRoleSelect) {
+            const currentVal = userRoleSelect.value;
+            userRoleSelect.innerHTML = '<option value="" disabled>Selecione o nível de acesso...</option>';
+            rolesList.forEach(role => {
+                const opt = document.createElement('option');
+                opt.value = role.name;
+                opt.textContent = role.name.charAt(0) + role.name.slice(1).toLowerCase();
+                userRoleSelect.appendChild(opt);
+            });
+            if (currentVal) userRoleSelect.value = currentVal;
+        }
+    }
+
+    window.deleteRole = async function (roleName) {
+        const confirmed = await window.showConfirm(
+            `Deseja realmente excluir o grupo "${roleName}"? Todas as permissões deste grupo serão removidas. Os usuários deste grupo precisarão ser reatribuídos.`,
+            'Excluir Grupo',
+            'fa-trash'
+        );
+
+        if (confirmed) {
+            try {
+                await window.api.roles.delete(roleName);
+                window.showToast(`Grupo ${roleName} excluído.`, 'success');
+                if (currentSelectedRole === roleName) currentSelectedRole = 'TECNICO';
+                await loadRoles();
+                if (currentMngTab === 'permissions') await loadPermissions(currentSelectedRole);
+                if (currentMngTab === 'users') await loadUsers();
+            } catch (err) {
+                window.showToast(err.message, 'danger');
+            }
+        }
+    };
+
+    // Modal Create Role Logic
+    const roleModal = document.getElementById('roleModal');
+    const roleForm = document.getElementById('roleForm');
+    const btnAddNewRole = document.getElementById('btnAddNewRole');
+
+    if (btnAddNewRole) {
+        btnAddNewRole.addEventListener('click', () => {
+            if (roleModal) roleModal.classList.remove('hidden');
+        });
+    }
+
+    if (roleForm) {
+        roleForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('roleName').value.trim().toUpperCase();
+            const description = document.getElementById('roleDescription').value;
+
+            try {
+                await window.api.roles.create({ name, description });
+                window.showToast(`Grupo ${name} criado com sucesso!`, 'success');
+                roleModal.classList.add('hidden');
+                roleForm.reset();
+                await loadRoles();
+            } catch (err) {
+                window.showToast(err.message, 'danger');
+            }
+        });
+    }
+
     // --- Inicialização ---
     async function initUserManagement() {
+        await loadRoles(); // Carregar grupos dinâmicos primeiro
         // Now checks specific sub-module for user creation
         const canCreateUsers = window.Permissions.can('Usuários', 'can_create');
         if (addNewUserBtn) addNewUserBtn.style.display = canCreateUsers ? 'flex' : 'none';
@@ -246,29 +357,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
-    // Lógica de Clique nos Textos de Role
-    if (roleTextBtns) {
-        roleTextBtns.forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                // Update active state
-                roleTextBtns.forEach(b => b.classList.remove('active'));
-                e.currentTarget.classList.add('active');
-
-                // Update role
-                const newRole = e.currentTarget.dataset.role;
-                currentSelectedRole = newRole;
-
-                if (currentMngTab === 'users') {
-                    const filtered = usersList.filter(u => u.role === newRole);
-                    renderUsers(filtered);
-                } else {
-                    await loadPermissions(currentSelectedRole);
-                    // Reset save button on role switch
-                    if (savePermissionsBtn) savePermissionsBtn.disabled = true;
-                }
-            });
-        });
-    }
+    // Lógica de Clique nos Textos de Role (REMOVIDO - Agora é dinâmico em renderRoleControls)
 
     // --- CRUD de Usuários ---
     function renderSkeletons() {
@@ -320,7 +409,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             const card = document.createElement('div');
             card.className = 'user-card'; // Restaurado de user-card-item para user-card
 
-            const roleClass = `badge-${u.role?.toLowerCase() || 'tecnico'}`;
+            const knownRoles = ['administrador', 'tecnico', 'analista'];
+            const roleClass = knownRoles.includes(u.role?.toLowerCase())
+                ? `badge-${u.role.toLowerCase()}`
+                : 'badge-custom';
             const creationDate = u.created_at ? new Date(u.created_at).toLocaleDateString('pt-BR') : 'N/A';
 
             // Get Initials
