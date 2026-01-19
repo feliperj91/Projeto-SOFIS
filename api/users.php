@@ -70,7 +70,7 @@ switch ($method) {
                                         bool_or(can_edit) as can_edit,
                                         bool_or(can_delete) as can_delete
                                     FROM role_permissions
-                                    WHERE role_name = ANY(:roles)
+                                    WHERE UPPER(role_name) = ANY(SELECT UPPER(r) FROM unnest(:roles::text[]) AS r)
                                     GROUP BY module
                                 ) AS agg_perms
                             ");
@@ -199,7 +199,7 @@ switch ($method) {
                                     bool_or(can_edit) as can_edit,
                                     bool_or(can_delete) as can_delete
                                 FROM role_permissions
-                                WHERE UPPER(role_name) = ANY(ARRAY(SELECT UPPER(r) FROM unnest(:roles::text[]) r))
+                                WHERE UPPER(role_name) = ANY(SELECT UPPER(r) FROM unnest(:roles::text[]) AS r)
                                 GROUP BY module
                             ) AS agg_perms
                         )

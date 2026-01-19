@@ -75,11 +75,11 @@ if ($method === 'GET') {
                             bool_or(can_edit) as can_edit,
                             bool_or(can_delete) as can_delete
                         FROM role_permissions
-                        WHERE UPPER(role_name) = ANY(ARRAY(SELECT UPPER(r) FROM unnest(u.roles)))
+                        WHERE UPPER(role_name) = ANY(SELECT UPPER(r) FROM unnest(u.roles) AS r)
                         GROUP BY module
                     ) AS agg_perms
                 )
-                WHERE UPPER(:role) = ANY(ARRAY(SELECT UPPER(r) FROM unnest(u.roles)))
+                WHERE UPPER(:role) = ANY(SELECT UPPER(r) FROM unnest(u.roles) AS r)
             ");
             $syncStmt->execute(['role' => $role]);
         }
