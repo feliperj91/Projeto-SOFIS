@@ -3751,7 +3751,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             `}).join('')}
                         </div>` : ''}
 
-                    <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 15px 0; opacity: 0.3;">
+                    <hr style="border: 0; border-top: 1px solid var(--border); margin: 20px 0; opacity: 0.6;">
                     ${url.bootstrap ? `
                         <div class="server-info">
                             <div class="server-info-label">
