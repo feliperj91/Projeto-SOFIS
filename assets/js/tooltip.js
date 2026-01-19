@@ -33,7 +33,10 @@
             tooltip.style.transform = 'translateX(-50%)';
         }
 
-        requestAnimationFrame(() => {
+        // Force reflow and add show class
+        tooltip.offsetHeight;
+
+        setTimeout(() => {
             tooltip.classList.add('show');
 
             // Adjust if going outside viewport
@@ -46,7 +49,7 @@
                 tooltip.style.left = '10px';
                 tooltip.style.transform = 'none';
             }
-        });
+        }, 10);
 
         tooltipMap.set(element, tooltip);
         return tooltip;
