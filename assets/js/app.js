@@ -1398,35 +1398,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                             ${(client.inactive_contract && client.inactive_contract.active) ? `<span class="inactive-info-icon" title="Contrato Inativo">i</span>` : ''}
                         </div>
                         ${client.updatedAt && canViewLogs ? `
-    // --- Privacy Toggle Logic ---
-    window.toggleIndividualPrivacy = async (checkbox) => {
-        const isChecked = checkbox.checked;
-
-        // Reset check first to handle AFTER confirmation
-        checkbox.checked = !isChecked;
-
-        if (isChecked) {
-            // User wants to ENABLE privacy
-            const confirmed = await window.showConfirm(
-                'Ao ativar esta opção, SOMENTE VOCÊ terá acesso a essas credenciais. Outros usuários, mesmo administradores, não poderão visualizá-las. Deseja continuar?',
-                'Tornar Privado',
-                'fa-lock'
-            );
-            if (confirmed) {
-                checkbox.checked = true;
-            }
-        } else {
-            // User wants to DISABLE privacy
-            const confirmed = await window.showConfirm(
-                'Ao desativar esta opção, TODOS os usuários com permissão poderão visualizar essas credenciais. Deseja continuar?',
-                'Tornar Público',
-                'fa-lock-open'
-            );
-            if (confirmed) {
-                checkbox.checked = false;
-            }
-        }
-    };
                             <div class="client-updated-info clickable" onclick="openClientHistory('${client.id}'); event.stopPropagation();" title="Ver Histórico de Alterações" style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 2px; font-weight: normal; display: flex; align-items: center; gap: 4px; cursor: pointer; width: fit-content;">
                                 <i class="fa-solid fa-clock-rotate-left" style="font-size: 0.65rem; color: var(--accent);"></i>
                                 <span class="hover-underline">Atualizado: ${new Date(client.updatedAt).toLocaleDateString('pt-BR')} ${new Date(client.updatedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
@@ -2278,6 +2249,36 @@ document.addEventListener('DOMContentLoaded', async () => {
         toast.classList.remove('hidden');
         setTimeout(() => toast.classList.add('hidden'), 4000);
     }
+
+    // --- Privacy Toggle Logic ---
+    window.toggleIndividualPrivacy = async (checkbox) => {
+        const isChecked = checkbox.checked;
+
+        // Reset check first to handle AFTER confirmation
+        checkbox.checked = !isChecked;
+
+        if (isChecked) {
+            // User wants to ENABLE privacy
+            const confirmed = await window.showConfirm(
+                'Ao ativar esta opção, SOMENTE VOCÊ terá acesso a essas credenciais. Outros usuários, mesmo administradores, não poderão visualizá-las. Deseja continuar?',
+                'Tornar Privado',
+                'fa-lock'
+            );
+            if (confirmed) {
+                checkbox.checked = true;
+            }
+        } else {
+            // User wants to DISABLE privacy
+            const confirmed = await window.showConfirm(
+                'Ao desativar esta opção, TODOS os usuários com permissão poderão visualizar essas credenciais. Deseja continuar?',
+                'Tornar Público',
+                'fa-lock-open'
+            );
+            if (confirmed) {
+                checkbox.checked = false;
+            }
+        }
+    };
 
     function escapeHtml(text) {
         if (!text) return '';
