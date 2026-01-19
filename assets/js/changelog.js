@@ -3,6 +3,18 @@
 
 window.SOFIS_CHANGELOG = [
     {
+        version: '2.1.0',
+        date: '2026-01-19',
+        title: 'Credenciais Individuais e Refinamento de Permissões',
+        changes: [
+            { type: 'feat', text: 'Implementação de Credenciais Individuais (Privadas) para VPNs e URLs.' },
+            { type: 'sec', text: 'Administradores agora podem editar/excluir qualquer registro de histórico de versões.' },
+            { type: 'fix', text: 'Correção de logs duplicados ao ativar/inativar usuários.' },
+            { type: 'imp', text: 'Padronização de labels de interface e adição de divisores visuais em URLs.' },
+            { type: 'style', text: 'Ajuste de altura do botão de Reset de Senha para alinhamento com status de usuário.' }
+        ]
+    },
+    {
         version: '2.0.9',
         date: '2026-01-18',
         title: 'Correção de Interface e Melhorias de UX',
