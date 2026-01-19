@@ -2519,7 +2519,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     window.togglePassword = async (btn) => {
         // Handle both older credential-row style and new WebLaudo style
-        const container = btn.closest('.credential-field-row') || btn.closest('.credential-row') || btn.closest('.server-info') || btn.closest('.form-group');
+        const container = btn.closest('.server-info-value') || btn.closest('.credential-field-row') || btn.closest('.credential-row') || btn.closest('.server-info') || btn.closest('.form-group');
         if (!container) return;
 
         const valueSpan = container.querySelector('.credential-value') ||
