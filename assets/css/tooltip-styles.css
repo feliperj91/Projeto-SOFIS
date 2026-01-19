@@ -2,16 +2,16 @@
    MODERN TOOLTIPS
    =================================== */
 
-/* Tooltip base styling */
-[title] {
+/* Hide native browser tooltips */
+[title]:not([data-tooltip]) {
     position: relative;
 }
 
 /* Custom tooltip container */
 .modern-tooltip {
     position: absolute;
-    background: linear-gradient(135deg, rgba(30, 30, 40, 0.98), rgba(20, 20, 30, 0.98));
-    color: #ffffff;
+    background: linear-gradient(135deg, rgba(26, 34, 42, 0.96), rgba(18, 25, 32, 0.96));
+    color: #e8e8e8;
     padding: 6px 10px;
     border-radius: 6px;
     font-size: 0.75rem;
@@ -22,10 +22,10 @@
     opacity: 0;
     transform: translateY(-5px);
     transition: opacity 0.2s ease, transform 0.2s ease;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3),
-        0 0 0 1px rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25),
+        0 0 0 1px rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
 
 .modern-tooltip.show {
@@ -42,9 +42,9 @@
     transform: translateX(-50%) rotate(45deg);
     width: 8px;
     height: 8px;
-    background: rgba(30, 30, 40, 0.98);
-    border-right: 1px solid rgba(255, 255, 255, 0.1);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(26, 34, 42, 0.96);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 /* Tooltip positions */

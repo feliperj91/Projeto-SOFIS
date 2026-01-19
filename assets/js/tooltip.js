@@ -47,8 +47,9 @@
         }
     }
 
-    // Auto-initialize tooltips on elements with data-tooltip attribute
+    // Auto-initialize tooltips on elements with data-tooltip or title attribute
     function initTooltips() {
+        // Handle data-tooltip elements
         document.querySelectorAll('[data-tooltip]:not([data-tooltip-initialized])').forEach(element => {
             element.setAttribute('data-tooltip-initialized', 'true');
 
@@ -64,7 +65,31 @@
                 removeTooltip(this);
             });
 
-            // Remove tooltip on click
+            element.addEventListener('click', function () {
+                removeTooltip(this);
+            });
+        });
+
+        // Handle native title attribute elements
+        document.querySelectorAll('[title]:not([data-tooltip-initialized])').forEach(element => {
+            const titleText = element.getAttribute('title');
+            if (!titleText) return;
+
+            element.setAttribute('data-tooltip-initialized', 'true');
+
+            // Store original title and remove it to prevent native tooltip
+            element.setAttribute('data-original-title', titleText);
+            element.removeAttribute('title');
+
+            element.addEventListener('mouseenter', function () {
+                const text = this.getAttribute('data-original-title');
+                createTooltip(this, text, 'default', 'top');
+            });
+
+            element.addEventListener('mouseleave', function () {
+                removeTooltip(this);
+            });
+
             element.addEventListener('click', function () {
                 removeTooltip(this);
             });
@@ -77,6 +102,9 @@
     } else {
         initTooltips();
     }
+
+    // Re-run initialization periodically to catch dynamically added elements
+    setInterval(initTooltips, 1000);
 
     // Export functions globally
     window.ModernTooltip = {
