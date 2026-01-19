@@ -287,7 +287,7 @@
                     
                     ${P && P.can('Controle de Versões', 'can_view') && P.can('Produtos', 'can_view') ? `
                     <button class="btn-card-action" onclick="window.openProductManagement()" title="Gerenciar Produtos">
-                        <i class="fa-solid fa-cube"></i>
+                        <i class="fa-solid fa-laptop-code"></i>
                     </button>` : ''}
 
                     ${canCreateVersion ? `

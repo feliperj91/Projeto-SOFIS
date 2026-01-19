@@ -3108,45 +3108,36 @@ document.addEventListener('DOMContentLoaded', async () => {
         let canEdit = false;
         if (window.Permissions && window.Permissions.can) {
             canEdit = window.Permissions.can('Gestão de Clientes', 'can_edit');
-            console.log(`🔒 Checking Permissions for Observações: can_edit=${canEdit}`);
         } else {
             console.warn('🔒 Permissions system not ready, defaulting to DENY for Observações.');
         }
 
         const notesForm = document.getElementById('notesForm');
+        // Ensure we are selecting the buttons container within the form
         const modalActions = notesForm.querySelector('.modal-actions');
         const cancelBtn = document.getElementById('cancelNotesBtn');
-        const saveBtn = document.querySelector('#notesForm button[type="submit"]');
-
-        console.log('🔒 Debug Observações:', {
-            canEdit,
-            modalActionsFound: !!modalActions,
-            cancelBtnFound: !!cancelBtn,
-            saveBtnFound: !!saveBtn
-        });
+        const saveBtn = notesForm.querySelector('button[type="submit"]');
 
         if (!canEdit) {
-            // Modo Visualização
-            console.log('🔒 Aplicando restrições visuais: Ocultando botões.');
+            // Read-Only Mode
             if (modalActions) {
+                // Force hide the entire actions container
                 modalActions.style.setProperty('display', 'none', 'important');
-                modalActions.classList.add('hidden');
             }
-            // Redundância: Ocultar botões individuais também
+            // Double check hiding individual buttons just in case css overrides container
             if (cancelBtn) cancelBtn.style.display = 'none';
             if (saveBtn) saveBtn.style.display = 'none';
 
             clientNoteInput.readOnly = true;
-            clientNoteInput.classList.add('read-only-field'); // Opcional: adicionar estilo visual
+            clientNoteInput.classList.add('read-only-field');
         } else {
-            // Modo Edição
+            // Edit Mode
             if (modalActions) {
-                modalActions.style.display = ''; // Restaura padrão (flex/block)
-                modalActions.classList.remove('hidden');
-            } else {
-                if (cancelBtn) cancelBtn.style.display = '';
-                if (saveBtn) saveBtn.style.display = '';
+                modalActions.style.display = ''; // Reset to default CSS
             }
+            if (cancelBtn) cancelBtn.style.display = '';
+            if (saveBtn) saveBtn.style.display = '';
+
             clientNoteInput.readOnly = false;
             clientNoteInput.classList.remove('read-only-field');
         }
