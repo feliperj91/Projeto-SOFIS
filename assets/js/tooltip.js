@@ -2,11 +2,11 @@
 (function () {
     'use strict';
 
-    let activeTooltip = null;
+    const tooltipMap = new WeakMap();
 
     function createTooltip(element, text, variant = 'default', position = 'top') {
-        // Remove any existing tooltip
-        removeTooltip();
+        // Remove any existing tooltip for this element
+        removeTooltip(element);
 
         const tooltip = document.createElement('div');
         tooltip.className = `modern-tooltip ${variant} ${position}`;
@@ -17,7 +17,12 @@
             tooltip.classList.add('multiline');
         }
 
-        element.style.position = 'relative';
+        // Ensure element has relative positioning
+        const computedStyle = window.getComputedStyle(element);
+        if (computedStyle.position === 'static') {
+            element.style.position = 'relative';
+        }
+
         element.appendChild(tooltip);
 
         // Trigger animation
@@ -25,40 +30,43 @@
             tooltip.classList.add('show');
         });
 
-        activeTooltip = tooltip;
+        tooltipMap.set(element, tooltip);
         return tooltip;
     }
 
-    function removeTooltip() {
-        if (activeTooltip) {
-            activeTooltip.classList.remove('show');
+    function removeTooltip(element) {
+        const tooltip = tooltipMap.get(element);
+        if (tooltip && tooltip.parentNode) {
+            tooltip.classList.remove('show');
             setTimeout(() => {
-                if (activeTooltip && activeTooltip.parentNode) {
-                    activeTooltip.parentNode.removeChild(activeTooltip);
+                if (tooltip.parentNode) {
+                    tooltip.parentNode.removeChild(tooltip);
                 }
-                activeTooltip = null;
+                tooltipMap.delete(element);
             }, 200);
         }
     }
 
     // Auto-initialize tooltips on elements with data-tooltip attribute
     function initTooltips() {
-        document.querySelectorAll('[data-tooltip]').forEach(element => {
+        document.querySelectorAll('[data-tooltip]:not([data-tooltip-initialized])').forEach(element => {
+            element.setAttribute('data-tooltip-initialized', 'true');
+
             const text = element.getAttribute('data-tooltip');
             const variant = element.getAttribute('data-tooltip-variant') || 'default';
             const position = element.getAttribute('data-tooltip-position') || 'top';
 
-            element.addEventListener('mouseenter', () => {
-                createTooltip(element, text, variant, position);
+            element.addEventListener('mouseenter', function () {
+                createTooltip(this, text, variant, position);
             });
 
-            element.addEventListener('mouseleave', () => {
-                removeTooltip();
+            element.addEventListener('mouseleave', function () {
+                removeTooltip(this);
             });
 
             // Remove tooltip on click
-            element.addEventListener('click', () => {
-                removeTooltip();
+            element.addEventListener('click', function () {
+                removeTooltip(this);
             });
         });
     }
@@ -69,16 +77,6 @@
     } else {
         initTooltips();
     }
-
-    // Re-initialize when new content is added
-    const observer = new MutationObserver(() => {
-        initTooltips();
-    });
-
-    observer.observe(document.body, {
-        childList: true,
-        subtree: true
-    });
 
     // Export functions globally
     window.ModernTooltip = {

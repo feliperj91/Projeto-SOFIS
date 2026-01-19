@@ -12,9 +12,9 @@
     position: absolute;
     background: linear-gradient(135deg, rgba(30, 30, 40, 0.98), rgba(20, 20, 30, 0.98));
     color: #ffffff;
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-size: 0.85rem;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
     font-weight: 500;
     white-space: nowrap;
     z-index: 10000;
@@ -22,7 +22,7 @@
     opacity: 0;
     transform: translateY(-5px);
     transition: opacity 0.2s ease, transform 0.2s ease;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4),
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3),
         0 0 0 1px rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
