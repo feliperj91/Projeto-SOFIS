@@ -860,11 +860,23 @@
             return;
         }
 
+        if (!clientId || clientId === 'undefined' || clientId === 'null') {
+            console.error("❌ openClientVersionsHistory: ID do cliente inválido:", clientId);
+            if (window.showToast) window.showToast('Erro: Identificador do cliente inválido.', 'error');
+            return;
+        }
+
         const modal = document.getElementById('versionHistoryModal');
         if (!modal) return;
 
-        const vEntry = versionControls.find(v => v.client_id === clientId);
-        const clientName = vEntry?.clients?.name || 'Cliente';
+        // Improved Find Logic: Use loose equality for ID match and check both root and nested object
+        const vEntry = versionControls.find(v =>
+            (v.client_id == clientId) ||
+            (v.clients && v.clients.id == clientId)
+        );
+
+        // Ensure we get a valid name, trying multiple paths
+        const clientName = vEntry?.clients?.name || vEntry?.client_name || 'Cliente';
 
         document.getElementById('versionHistoryTitle').innerHTML = `Histórico: <span style="color:var(--accent)">${utils.escapeHtml(clientName)}</span>`;
         modal.classList.remove('hidden');
