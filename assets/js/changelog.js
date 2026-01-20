@@ -3,6 +3,16 @@
 
 window.SOFIS_CHANGELOG = [
     {
+        version: '2.2.1',
+        date: '2026-01-20',
+        title: 'Suporte a Múltiplos Grupos de Acesso',
+        changes: [
+            { type: 'feat', text: 'Visualização aprimorada de múltiplos grupos no cabeçalho com modal de detalhes.' },
+            { type: 'fix', text: 'Correção na exibição de papéis (undefined) durante o carregamento.' },
+            { type: 'refactor', text: 'Atualização da lógica de permissões para suportar múltiplos grupos simultâneos.' }
+        ]
+    },
+    {
         version: '2.1.0',
         date: '2026-01-19',
         title: 'Credenciais Individuais e Refinamento de Permissões',

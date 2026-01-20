@@ -61,7 +61,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const session = await window.api.auth.checkSession();
 
                 if (session.authenticated && session.user) {
-                    this.userRole = session.user.role;
+                    // Support for multi-roles
+                    this.userRoles = Array.isArray(session.user.roles)
+                        ? session.user.roles
+                        : (session.user.role ? [session.user.role] : []);
+
+                    this.userRole = this.userRoles.length > 0 ? this.userRoles[0] : (session.user.role || 'Indefinido');
                     // For now, load default rules based on role, or from session if backend provides them
                     // Since backend stores permissions in JSON column, we can use that!
                     // Handle permissions whether they come as object (API decode) or string (raw)
@@ -81,7 +86,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                         id: session.user.id,
                         username: session.user.username,
                         full_name: session.user.full_name,
-                        role: session.user.role,
+                        role: this.userRole,
+                        roles: this.userRoles, // New field for multi-roles
                         permissions: session.user.permissions
                     }));
 
@@ -413,15 +419,60 @@ document.addEventListener('DOMContentLoaded', async () => {
         const P = window.Permissions;
 
         if (userDisplay && currentUser.username) {
-            const roleInfo = P ? `[${P.userRole}]` : '';
+            // Determine Role Label
+            let roleLabel = '';
+            let roles = [];
+
+            if (P && P.userRoles && P.userRoles.length > 0) {
+                roles = P.userRoles;
+            } else if (P && P.userRole) {
+                roles = [P.userRole];
+            } else if (currentUser.roles) {
+                roles = currentUser.roles;
+            } else if (currentUser.role) {
+                roles = [currentUser.role];
+            }
+
+            if (roles.length > 1) {
+                roleLabel = `[${roles.length} Grupos]`;
+            } else if (roles.length === 1) {
+                roleLabel = `[${roles[0]}]`;
+            }
+
             const displayName = currentUser.full_name || currentUser.fullName || currentUser.username;
+
+            // Layout with click action
             userDisplay.innerHTML = `
-                <div class="user-info-badge">
-                    <i class="fa-solid fa-user"></i> <span>${displayName}</span>
-                    <small style="opacity: 0.7; font-size: 0.75rem; margin-left: 5px;">${roleInfo}</small>
-                </div>`;
+                 <div class="user-info-badge" style="cursor: pointer;" title="Clique para ver detalhes de acesso" onclick="window.showUserRoles()">
+                     <i class="fa-solid fa-user"></i> <span>${displayName}</span>
+                     <small style="opacity: 0.7; font-size: 0.75rem; margin-left: 5px;">${roleLabel}</small>
+                 </div>`;
         }
     };
+
+    window.showUserRoles = () => {
+        const P = window.Permissions;
+        let roles = (P && P.userRoles) ? P.userRoles : [];
+
+        // Fallback to localStorage if P is not ready or empty
+        if (roles.length === 0) {
+            const u = JSON.parse(localStorage.getItem('sofis_user') || '{}');
+            if (u.roles) roles = u.roles;
+            else if (u.role) roles = [u.role];
+        }
+
+        if (roles.length === 0) return;
+
+        const roleListStr = roles.join('\n• ');
+
+        window.showConfirm(
+            `Você possui acesso aos seguintes grupos:\n\n• ${roleListStr}`,
+            'Meus Acessos',
+            'fa-id-card',
+            true
+        );
+    };
+
     window.updateUserDisplay();
 
     // Re-update display when permissions are loaded/changed

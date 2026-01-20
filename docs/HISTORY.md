@@ -4,6 +4,25 @@ Este arquivo contém o histórico consolidado de todas as alterações realizada
 
 ---
 
+# Build 2.2.1 - Suporte a Múltiplos Grupos no Frontend
+**Data:** 2026-01-20 20:53
+**Tipo:** Feature & Fix
+
+## 🎯 Resumo
+Esta build foca em corrigir e melhorar a experiência de usuários que possuem múltiplos grupos de acesso. O cabeçalho agora exibe um resumo inteligente e permite visualizar todos os grupos com um clique.
+
+## 🚀 Melhorias
+- **Visualização de Papéis:** O cabeçalho agora mostra `[X Grupos]` em vez de apenas o primeiro, quando aplicável.
+- **Detalhamento:** Ao clicar no nome do usuário/grupo no topo, um modal lista todos os acessos ativos.
+- **Correção:** Eliminado o bug que exibia `[undefined]` antes do carregamento total das permissões.
+
+## 🛠️ Arquivos Modificados
+- `assets/js/app.js`
+- `assets/js/build-config.js`
+- `assets/js/changelog.js`
+
+---
+
 # Build 2.1.0 - Credenciais Individuais e Refinamento de Permissões
 **Data:** 2026-01-19 00:16
 **Tipo:** Feature & Security Update
