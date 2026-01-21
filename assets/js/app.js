@@ -494,7 +494,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // Sistema Moderno de Confirmação e Alerta
-    window.showConfirm = function (message, title = 'Confirmação', icon = 'fa-question', isAlert = false) {
+    window.showConfirm = function (message, title = 'Confirmação', icon = 'fa-question', arg4 = false, arg5 = null) {
         return new Promise((resolve) => {
             const modal = document.getElementById('confirmModal');
             const titleEl = document.getElementById('confirmTitle');
@@ -503,26 +503,38 @@ document.addEventListener('DOMContentLoaded', async () => {
             const okBtn = document.getElementById('confirmOkBtn');
             const cancelBtn = document.getElementById('confirmCancelBtn');
 
+            let isAlert = false;
+            let confirmText = 'Confirmar';
+            let cancelText = 'Cancelar';
+
+            if (typeof arg4 === 'boolean') {
+                isAlert = arg4;
+            } else if (typeof arg4 === 'string') {
+                confirmText = arg4;
+                if (arg5) cancelText = arg5;
+            }
+
             if (!modal) {
-                if (isAlert) alert(message);
-                else resolve(confirm(message));
+                if (isAlert) alert(message.replace(/<[^>]*>/g, ''));
+                else resolve(confirm(message.replace(/<[^>]*>/g, '')));
                 return;
             }
 
             // UI Setup
             titleEl.textContent = title;
-            msgEl.textContent = message;
+            msgEl.innerHTML = message;
             iconEl.className = `fa-solid ${icon}`;
 
             // If it's just an alert, hide cancel button
             if (isAlert) {
                 cancelBtn.style.display = 'none';
                 okBtn.style.flex = '1';
-                okBtn.innerHTML = '<i class="fa-solid fa-check"></i> OK';
+                okBtn.innerHTML = `<i class="fa-solid fa-check"></i> ${confirmText === 'Confirmar' ? 'OK' : confirmText}`;
             } else {
                 cancelBtn.style.display = 'block';
+                cancelBtn.innerHTML = `<i class="fa-solid fa-xmark"></i> ${cancelText}`;
                 okBtn.style.flex = '1';
-                okBtn.innerHTML = '<i class="fa-solid fa-check"></i> Confirmar';
+                okBtn.innerHTML = `<i class="fa-solid fa-check"></i> ${confirmText}`;
             }
 
             modal.classList.remove('hidden');
@@ -547,14 +559,36 @@ document.addEventListener('DOMContentLoaded', async () => {
                 okBtn.removeEventListener('click', handleOk);
                 cancelBtn.removeEventListener('click', handleCancel);
                 document.removeEventListener('keydown', handleEsc);
-                // Restore button visibility for next call
+                // Restore Default State
                 cancelBtn.style.display = 'block';
+                okBtn.innerHTML = '<i class="fa-solid fa-check"></i> Confirmar';
+                cancelBtn.innerHTML = '<i class="fa-solid fa-xmark"></i> Cancelar';
             };
 
             okBtn.addEventListener('click', handleOk);
             cancelBtn.addEventListener('click', handleCancel);
             document.addEventListener('keydown', handleEsc);
         });
+    };
+
+    window.handleBlockedDeletion = async function (owners) {
+        const confirm = await window.showConfirm(
+            'Este registro possui credenciais de outros usuários e não pode ser excluído.<br><br>Deseja visualizar quem são os usuários?',
+            'Exclusão Bloqueada',
+            'fa-user-lock',
+            'Visualizar',
+            'Cancelar'
+        );
+
+        if (confirm) {
+            const listHtml = owners.map(o => `<li>${escapeHtml(o)}</li>`).join('');
+            await window.showConfirm(
+                `<div style="text-align: left;">Os seguintes usuários possuem credenciais neste registro:<ul style="margin-top: 10px; margin-left: 20px;">${listHtml}</ul></div>`,
+                'Usuários Vinculados',
+                'fa-users',
+                true
+            );
+        }
     };
 
     window.showAlert = function (message, title = 'Aviso', icon = 'fa-circle-info') {
@@ -3033,8 +3067,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Validation: Check if other users own any credentials
         const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username || 'anônimo';
-        if (server.credentials && server.credentials.some(c => c.owner !== currentUser)) {
-            showToast('⚠️ Este registro possui credenciais de outros usuários e não pode ser excluído.', 'error');
+        const blockingCreds = (server.credentials || []).filter(c => c.owner && c.owner !== currentUser);
+
+        if (blockingCreds.length > 0) {
+            const blockingOwners = [...new Set(blockingCreds.map(c => c.owner))];
+            await window.handleBlockedDeletion(blockingOwners);
             return;
         }
 
@@ -3378,9 +3415,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Validation: Check if other users own any credentials (handles legacy as well)
         const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username || 'anônimo';
         const allCreds = vpn.credentials || (vpn.user ? [{ user: vpn.user, password: vpn.password, is_private: vpn.is_private, owner: vpn.owner }] : []);
+        const blockingCreds = allCreds.filter(c => c.owner && c.owner !== currentUser);
 
-        if (allCreds.some(c => c.owner !== currentUser)) {
-            showToast('⚠️ Este registro possui credenciais de outros usuários e não pode ser excluído.', 'error');
+        if (blockingCreds.length > 0) {
+            const blockingOwners = [...new Set(blockingCreds.map(c => c.owner))];
+            await window.handleBlockedDeletion(blockingOwners);
             return;
         }
 
@@ -4269,9 +4308,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Validation: Check if other users own any credentials
         const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username || 'anônimo';
         const allCreds = url.credentials || (url.user ? [{ user: url.user, password: url.password, owner: url.owner }] : []);
+        const blockingCreds = allCreds.filter(c => c.owner && c.owner !== currentUser);
 
-        if (allCreds.some(c => c.owner !== currentUser)) {
-            showToast('⚠️ Este registro possui credenciais de outros usuários e não pode ser excluído.', 'error');
+        if (blockingCreds.length > 0) {
+            const blockingOwners = [...new Set(blockingCreds.map(c => c.owner))];
+            await window.handleBlockedDeletion(blockingOwners);
             return;
         }
 
@@ -5557,8 +5598,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Validation: Check if other users own any credentials
         const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username || 'anônimo';
-        if (host.credentials && host.credentials.some(c => c.owner !== currentUser)) {
-            showToast('⚠️ Este registro possui credenciais de outros usuários e não pode ser excluído.', 'error');
+        const blockingCreds = (host.credentials || []).filter(c => c.owner && c.owner !== currentUser);
+
+        if (blockingCreds.length > 0) {
+            const blockingOwners = [...new Set(blockingCreds.map(c => c.owner))];
+            await window.handleBlockedDeletion(blockingOwners);
             return;
         }
 
