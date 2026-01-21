@@ -1505,14 +1505,26 @@ document.addEventListener('DOMContentLoaded', async () => {
                          ${canViewServers ? `
                           <button class="${hostBtnClass} btn-with-badge perm-infra-server" onclick="openHostData('${client.id}'); event.stopPropagation();" title="Servidores">
                               <i class="fa-solid fa-server"></i>
-                              ${hasHosts ? `<span class="btn-badge">${client.hosts.length}</span>` : ''}
+                              ${(() => {
+                    const visibleHosts = (client.hosts || []).filter(h => {
+                        if (!h.credentials || h.credentials.length === 0) return true;
+                        return h.credentials.some(c => !c.is_private || c.owner === (JSON.parse(localStorage.getItem('sofis_user') || '{}').username || 'anônimo'));
+                    });
+                    return visibleHosts.length > 0 ? `<span class="btn-badge">${visibleHosts.length}</span>` : '';
+                })()}
                           </button>
                           ` : ''}
 
                          ${canViewSQL ? `
                           <button class="${serverBtnClass} btn-with-badge perm-infra-sql" onclick="openServerData('${client.id}'); event.stopPropagation();" title="Dados de acesso ao SQL">
                               <i class="fa-solid fa-database"></i>
-                              ${hasServers ? `<span class="btn-badge">${client.servers.length}</span>` : ''}
+                              ${(() => {
+                    const visibleServers = (client.servers || []).filter(s => {
+                        if (!s.credentials || s.credentials.length === 0) return true;
+                        return s.credentials.some(c => !c.is_private || c.owner === (JSON.parse(localStorage.getItem('sofis_user') || '{}').username || 'anônimo'));
+                    });
+                    return visibleServers.length > 0 ? `<span class="btn-badge">${visibleServers.length}</span>` : '';
+                })()}
                           </button>
                           ` : ''}
 
