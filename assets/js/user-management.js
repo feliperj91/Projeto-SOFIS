@@ -1088,11 +1088,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // - Cabeçalho Gestão de Clientes: Visualizar e Criar
                 const isOnlyView = isDashboard || isLogs || isResetPassword;
                 const isViewEdit = isPermissions || isUserManagementHeader;
-                const isViewCreate = isClientsHeader;
 
                 const disabledCreate = (isOnlyView || isViewEdit) ? 'disabled class="perm-checkbox-disabled"' : 'class="perm-checkbox"';
-                const disabledEdit = (isOnlyView || isViewCreate) ? 'disabled class="perm-checkbox-disabled"' : 'class="perm-checkbox"';
-                const disabledDelete = (isOnlyView || isViewEdit || isViewCreate) ? 'disabled class="perm-checkbox-disabled"' : 'class="perm-checkbox"';
+                const disabledEdit = (isOnlyView) ? 'disabled class="perm-checkbox-disabled"' : 'class="perm-checkbox"';
+                const disabledDelete = (isOnlyView || isViewEdit) ? 'disabled class="perm-checkbox-disabled"' : 'class="perm-checkbox"';
 
                 const tr = document.createElement('tr');
                 tr.className = item.isHeader ? 'permission-header-row' : 'permission-row';

@@ -2719,6 +2719,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const P = window.Permissions;
         const canEditSQL = P ? P.can('Dados de Acesso (SQL)', 'can_edit') : false;
         const canDeleteSQL = P ? P.can('Dados de Acesso (SQL)', 'can_delete') : false;
+        const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username || 'anônimo';
 
         const filterValue = currentServerFilter;
         let filteredServers = client.servers || [];
@@ -2743,16 +2744,23 @@ document.addEventListener('DOMContentLoaded', async () => {
             const environmentClass = server.environment === 'homologacao' ? 'homologacao' : 'producao';
             const environmentLabel = server.environment === 'homologacao' ? 'Homologação' : 'Produção';
 
-            const credentialsHTML = server.credentials && server.credentials.length > 0
+            const filteredCredentials = (server.credentials || []).filter(cred => {
+                if (cred.is_private && cred.owner !== currentUser) return false;
+                return true;
+            });
+
+            const credentialsHTML = filteredCredentials.length > 0
                 ? `
                     <div class="server-credentials">
                         <div class="server-credentials-title">
                             <i class="fa-solid fa-key" style="color: var(--accent);"></i> Credenciais
                         </div>
-                        ${server.credentials.map(cred => `
+                        ${filteredCredentials.map(cred => {
+                    const privacyIcon = cred.is_private ? `<i class="fa-solid fa-lock" style="color: #ff5252; margin-left: 6px;" title="Individual (Privado)"></i>` : '';
+                    return `
                             <div class="credential-item">
                                 <div class="credential-row">
-                                    <span class="credential-label">Usuário:</span>
+                                    <span class="credential-label">Usuário: ${privacyIcon}</span>
                                     <span class="credential-value">${escapeHtml(cred.user)}</span>
                                     <button class="btn-copy-small" onclick="copyToClipboard(this.dataset.value)" data-value="${escapeHtml(cred.user)}" title="Copiar Usuário">
                                         <i class="fa-regular fa-copy"></i>
@@ -2769,10 +2777,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                                     </button>
                                 </div>
                             </div>
-                        `).join('')}
+                        `}).join('')}
                     </div>
                 `
-                : '';
+                : (server.credentials && server.credentials.length > 0 ? '<div class="server-credentials"><div style="font-size:0.85rem; opacity:0.6; padding:10px;"><em>Acesso restrito a usuários específicos.</em></div></div>' : '');
 
             const notesHTML = server.notes
                 ? `<div class="server-notes">
@@ -2829,7 +2837,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         btn.closest('.credential-field-group').remove();
     };
 
-    function addCredentialField(user = '', password = '') {
+    function addCredentialField(user = '', password = '', isPrivate = false) {
         const div = document.createElement('div');
         div.className = 'credential-field-group';
         div.innerHTML = `
@@ -2839,7 +2847,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <input type="text" class="server-user-input" placeholder="Digite o usuário" value="${escapeHtml(user)}" required>
                 </div>
                 <div class="credential-field-item">
-                    <label class="credential-label-text"><i class="fa-solid fa-key" style="color: var(--accent); margin-right: 5px;"></i> Senha<span class="required">*</span></label>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                        <label class="credential-label-text"><i class="fa-solid fa-key" style="color: var(--accent); margin-right: 5px;"></i> Senha<span class="required">*</span></label>
+                        <div class="checkbox-wrapper-individual" style="margin-left: 10px;">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.75rem; font-weight: 700; color: #ff5252;">
+                                <input type="checkbox" class="server-private-check" onchange="window.toggleIndividualPrivacy(this)" ${isPrivate ? 'checked' : ''}>
+                                <i class="fa-solid fa-lock" style="font-size: 0.7rem;"></i> INDIVIDUAL
+                            </label>
+                        </div>
+                    </div>
                     <div style="position: relative; width: 100%;">
                         <input type="password" class="server-pass-input" placeholder="Digite a senha" value="${escapeHtml(password)}" required style="padding-right: 35px; width: 100%;">
                         <button type="button" onclick="const i = this.previousElementSibling; i.type = i.type === 'password' ? 'text' : 'password'; this.querySelector('i').className = i.type === 'password' ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-secondary); cursor: pointer;" tabindex="-1" title="Visualizar Senha">
@@ -2873,14 +2889,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Collect Credentials
         const credDivs = credentialList.querySelectorAll('.credential-field-group');
         const credentials = [];
+        const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username || 'anônimo';
+
         for (const div of credDivs) {
             const u = div.querySelector('.server-user-input').value.trim();
             const p = div.querySelector('.server-pass-input').value.trim();
+            const isPrivate = div.querySelector('.server-private-check')?.checked || false;
+
             if (u || p) {
                 credentials.push({
                     user: u,
-                    password: await window.Security.encrypt(p)
+                    password: await window.Security.encrypt(p),
+                    is_private: isPrivate,
+                    owner: currentUser
                 });
+            }
+        }
+
+        const editingIndex = document.getElementById('editingServerIndex').value;
+
+        // Preserve hidden private credentials (other users) that were naturally filtered out from the form
+        if (editingIndex !== '') {
+            const originalServer = client.servers[parseInt(editingIndex)];
+            if (originalServer && originalServer.credentials) {
+                const hiddenCredentials = originalServer.credentials.filter(c => c.is_private && c.owner !== currentUser);
+                credentials.push(...hiddenCredentials);
             }
         }
 
@@ -2896,7 +2929,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        const editingIndex = document.getElementById('editingServerIndex').value;
         const serverBefore = (editingIndex !== '') ? JSON.parse(JSON.stringify(client.servers[parseInt(editingIndex)])) : null;
 
         const serverRecord = {
@@ -2940,6 +2972,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const server = client.servers[index];
         const environmentSelect = document.getElementById('environmentSelect');
         const editingServerIndex = document.getElementById('editingServerIndex');
+        const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username || 'anônimo';
 
         // Populate form with server data
         if (environmentSelect) environmentSelect.value = server.environment;
@@ -2951,8 +2984,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         credentialList.innerHTML = '';
         if (server.credentials && server.credentials.length > 0) {
             for (const cred of server.credentials) {
+                // Skip if private and not owner
+                if (cred.is_private && cred.owner !== currentUser) continue;
+
                 const decPass = await window.Security.decrypt(cred.password);
-                addCredentialField(cred.user, decPass);
+                addCredentialField(cred.user, decPass, cred.is_private);
             }
         } else {
             addCredentialField();
