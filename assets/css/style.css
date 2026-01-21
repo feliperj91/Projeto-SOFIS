@@ -1553,7 +1553,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 /* Toast */
 .toast {
     position: fixed;
-    bottom: 30px;
+    top: 20px;
     right: 30px;
     color: white;
     padding: 14px 24px;
@@ -1581,7 +1581,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 }
 
 .toast.hidden {
-    transform: translateY(100px);
+    transform: translateY(-100px);
     opacity: 0;
 }
 
