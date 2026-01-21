@@ -1449,23 +1449,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username || 'anônimo';
         const hasServers = client.servers && client.servers.length > 0;
 
-        // Filter VPNs
-        const visibleVpns = (client.vpns || []).filter(vpn => {
-            const isPrivate = vpn.is_private === true || vpn.is_private === 'true';
-            return !isPrivate || vpn.owner === currentUser;
-        });
+        const visibleVpns = (client.vpns || []);
         const hasVpns = visibleVpns.length > 0;
 
         const hasHosts = client.hosts && client.hosts.length > 0;
 
-        // Filter URLs
-        const visibleUrls = (client.urls || []).filter(url => {
-            if (!url.credentials || url.credentials.length === 0) return true;
-            return url.credentials.some(c => {
-                const isPrivate = c.is_private === true || c.is_private === 'true';
-                return !isPrivate || c.owner === currentUser;
-            });
-        });
+        const visibleUrls = (client.urls || []);
         const urlCount = visibleUrls.length + (client.webLaudo ? (typeof client.webLaudo === 'object' ? 1 : (client.webLaudo.trim() !== '' ? 1 : 0)) : 0);
         const hasUrls = urlCount > 0;
         const hasContacts = client.contacts && client.contacts.length > 0;
@@ -1511,32 +1500,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                          ${canViewServers ? `
                           <button class="${hostBtnClass} btn-with-badge perm-infra-server" onclick="openHostData('${client.id}'); event.stopPropagation();" title="Servidores">
                               <i class="fa-solid fa-server"></i>
-                              ${(() => {
-                    const visibleHosts = (client.hosts || []).filter(h => {
-                        if (!h.credentials || h.credentials.length === 0) return true;
-                        return h.credentials.some(c => {
-                            const isPrivate = c.is_private === true || c.is_private === 'true';
-                            return !isPrivate || c.owner === currentUser;
-                        });
-                    });
-                    return visibleHosts.length > 0 ? `<span class="btn-badge">${visibleHosts.length}</span>` : '';
-                })()}
+                              ${hasHosts ? `<span class="btn-badge">${client.hosts.length}</span>` : ''}
                           </button>
                           ` : ''}
 
                          ${canViewSQL ? `
                           <button class="${serverBtnClass} btn-with-badge perm-infra-sql" onclick="openServerData('${client.id}'); event.stopPropagation();" title="Dados de acesso ao SQL">
                               <i class="fa-solid fa-database"></i>
-                              ${(() => {
-                    const visibleServers = (client.servers || []).filter(s => {
-                        if (!s.credentials || s.credentials.length === 0) return true;
-                        return s.credentials.some(c => {
-                            const isPrivate = c.is_private === true || c.is_private === 'true';
-                            return !isPrivate || c.owner === currentUser;
-                        });
-                    });
-                    return visibleServers.length > 0 ? `<span class="btn-badge">${visibleServers.length}</span>` : '';
-                })()}
+                              ${hasServers ? `<span class="btn-badge">${client.servers.length}</span>` : ''}
                           </button>
                           ` : ''}
 
@@ -3105,11 +3076,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Privacy Check
             const isPrivate = vpn.is_private === true || vpn.is_private === 'true';
-            if (isPrivate && vpn.owner !== currentUser) {
-                // Return nothing (hide) or a locked card placeholder?
-                // User requested "only user has access", implying invisibility.
-                return '';
-            }
+            const isHidden = isPrivate && vpn.owner !== currentUser;
 
             const editButton = canEdit ? `
                             <button class="btn-icon-card" onclick="editVpnRecord('${client.id}', ${index})" title="Editar">
@@ -3121,20 +3088,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 <i class="fa-solid fa-trash"></i>
                             </button>` : '';
 
-            const privacyIcon = vpn.is_private ? `<i class="fa-solid fa-lock" style="color: #ff5252;" title="Individual (Privado)"></i>` : '';
+            const privacyIcon = isPrivate ? `<i class="fa-solid fa-lock" style="color: #ff5252;" title="Individual (Privado)"></i>` : '';
 
-            return `
-                <div class="server-card">
-                    <div class="server-card-header">
-                        <div style="display: flex; gap: 8px; align-items: center; width: 100%;">
-                            <span class="server-environment producao">VPN</span>
-                            ${privacyIcon}
-                        </div>
-                        <div class="server-card-actions">
-                            ${editButton}
-                            ${deleteButton}
-                        </div>
-                    </div>
+            const credentialsContent = isHidden
+                ? `<div class="server-credentials"><div style="font-size:0.85rem; opacity:0.6; padding:10px;"><em>Registrado com credenciais privadas.</em></div></div>`
+                : `
                     <div class="credential-item">
                         <div class="credential-row">
                             <span class="credential-label"><i class="fa-solid fa-user" style="color: var(--accent); margin-right: 5px;"></i> Usuário:</span>
@@ -3153,7 +3111,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 <i class="fa-regular fa-copy"></i>
                             </button>
                         </div>
+                    </div>`;
+
+            return `
+                <div class="server-card">
+                    <div class="server-card-header">
+                        <div style="display: flex; gap: 8px; align-items: center; width: 100%;">
+                            <span class="server-environment producao">VPN</span>
+                            ${privacyIcon}
+                        </div>
+                        <div class="server-card-actions">
+                            ${editButton}
+                            ${deleteButton}
+                        </div>
                     </div>
+                    ${credentialsContent}
                     ${vpn.notes ? `
                         <div class="server-notes">
                             <div class="server-notes-title"><i class="fa-solid fa-comment-dots" style="color: var(--accent); margin-right: 6px;"></i> Observações</div>
@@ -3865,38 +3837,48 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     ${(url.credentials && url.credentials.length > 0) || url.user || url.password ? `
                         <div class="server-info" style="margin-top: 15px; padding-top: 15px;">
-                            ${(url.credentials || (url.user ? [{ user: url.user, password: url.password }] : [])).map(cred => {
-                // Privacy Check
-                const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username || 'anônimo';
-                const isPrivate = cred.is_private === true || cred.is_private === 'true';
-                if (isPrivate && cred.owner !== currentUser) return '';
+                             ${(() => {
+                        const allCreds = (url.credentials || (url.user ? [{ user: url.user, password: url.password }] : []));
+                        const filteredCreds = allCreds.filter(cred => {
+                            const isPrivate = cred.is_private === true || cred.is_private === 'true';
+                            const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username || 'anônimo';
+                            return !isPrivate || cred.owner === currentUser;
+                        });
 
-                const privacyIcon = isPrivate ? `<i class="fa-solid fa-lock" style="color: #ff5252; font-size: 0.7rem;" title="Individual"></i>` : '';
+                        if (filteredCreds.length === 0 && allCreds.length > 0) {
+                            return '<div style="font-size:0.85rem; opacity:0.6; padding:10px; background: rgba(0,0,0,0.2); border-radius: 6px;"><em>Registrado com credenciais privadas.</em></div>';
+                        }
 
-                return `
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 10px;">
-                                    <div>
-                                        <div class="server-info-label" style="display:flex; align-items:center; gap:5px;">
-                                            <i class="fa-solid fa-user" style="color: var(--accent);"></i> Usuário
-                                            ${privacyIcon}
-                                        </div>
-                                        <div class="server-info-value" style="display: flex; justify-content: space-between; align-items: center; background: rgba(0, 0, 0, 0.2); padding: 8px 10px; border-radius: 6px;">
-                                            <span style="font-size: 0.85rem;">${escapeHtml(cred.user || '')}</span>
-                                            <button class="btn-copy-small" onclick="copyToClipboard('${escapeHtml(cred.user || '').replace(/'/g, "\\'")}')" title="Copiar"><i class="fa-regular fa-copy"></i></button>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="server-info-label"><i class="fa-solid fa-key" style="color: var(--accent); margin-right: 6px;"></i> Senha</div>
-                                        <div class="server-info-value" style="display: flex; justify-content: space-between; align-items: center; background: rgba(0, 0, 0, 0.2); padding: 8px 10px; border-radius: 6px;">
-                                            <span class="credential-value" data-raw="${cred.password || ''}">••••••</span>
-                                            <div style="display: flex; gap: 4px;">
-                                                <button class="btn-copy-small" onclick="togglePassword(this)" title="Ver Senha"><i class="fa-solid fa-eye"></i></button>
-                                                <button class="btn-copy-small" onclick="copyToClipboard(this.parentElement.previousElementSibling.dataset.raw)" title="Copiar Senha"><i class="fa-regular fa-copy"></i></button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            `}).join('')}
+                        return filteredCreds.map(cred => {
+                            const isPrivate = cred.is_private === true || cred.is_private === 'true';
+                            const privacyIcon = isPrivate ? `<i class="fa-solid fa-lock" style="color: #ff5252; font-size: 0.7rem;" title="Individual"></i>` : '';
+
+                            return `
+                               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 10px;">
+                                   <div>
+                                       <div class="server-info-label" style="display:flex; align-items:center; gap:5px;">
+                                           <i class="fa-solid fa-user" style="color: var(--accent);"></i> Usuário
+                                           ${privacyIcon}
+                                       </div>
+                                       <div class="server-info-value" style="display: flex; justify-content: space-between; align-items: center; background: rgba(0, 0, 0, 0.2); padding: 8px 10px; border-radius: 6px;">
+                                           <span style="font-size: 0.85rem;">${escapeHtml(cred.user || '')}</span>
+                                           <button class="btn-copy-small" onclick="copyToClipboard('${escapeHtml(cred.user || '').replace(/'/g, "\\'")}')" title="Copiar"><i class="fa-regular fa-copy"></i></button>
+                                       </div>
+                                   </div>
+                                   <div>
+                                       <div class="server-info-label"><i class="fa-solid fa-key" style="color: var(--accent); margin-right: 6px;"></i> Senha</div>
+                                       <div class="server-info-value" style="display: flex; justify-content: space-between; align-items: center; background: rgba(0, 0, 0, 0.2); padding: 8px 10px; border-radius: 6px;">
+                                           <span class="credential-value" data-raw="${cred.password || ''}">••••••</span>
+                                           <div style="display: flex; gap: 4px;">
+                                               <button class="btn-copy-small" onclick="togglePassword(this)" title="Ver Senha"><i class="fa-solid fa-eye"></i></button>
+                                               <button class="btn-copy-small" onclick="copyToClipboard(this.parentElement.previousElementSibling.dataset.raw)" title="Copiar Senha"><i class="fa-regular fa-copy"></i></button>
+                                           </div>
+                                       </div>
+                                   </div>
+                               </div>
+                           `;
+                        }).join('');
+                    })()}
                         </div>` : ''}
 
                     <hr style="border: 0; border-top: 1px solid var(--border); margin: 20px 0; opacity: 0.6;">
@@ -5170,18 +5152,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        // Filter out hosts where ALL credentials are private AND belong to other users
-        // Unless the host has NO credentials (informative only), we keep it? 
-        // User request implies strict privacy. Let's hide if effective access is zero and there are credentials hidden.
-        filtered = filtered.filter(host => {
-            if (!host.credentials || host.credentials.length === 0) return true; // Keep empty hosts (maybe just IP reference)
 
-            const hasVisible = host.credentials.some(cred => {
-                return !cred.is_private || cred.owner === currentUser;
-            });
-
-            return hasVisible;
-        });
 
         if (filtered.length === 0) {
             list.innerHTML = `
