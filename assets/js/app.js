@@ -2784,7 +2784,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         `}).join('')}
                     </div>
                 `
-                : (server.credentials && server.credentials.length > 0 ? '<div class="server-credentials"><div style="font-size:0.85rem; opacity:0.6; padding:10px;"><em>Acesso restrito a usuários específicos.</em></div></div>' : '');
+                : (server.credentials && server.credentials.length > 0 ? '<div class="server-credentials"><div style="font-size:0.85rem; opacity:0.6; padding:10px;"><em>Registrado com credenciais individuais.</em></div></div>' : '');
 
             const notesHTML = server.notes
                 ? `<div class="server-notes">
@@ -2833,8 +2833,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     window.removeCredentialField = function (btn) {
-        const groups = document.querySelectorAll('.credential-field-group');
-        if (groups.length <= 1) {
+        const credentialList = document.getElementById('credentialList');
+        const groups = credentialList.querySelectorAll('.credential-field-group');
+
+        // Validation: Check for hidden credentials
+        const clientId = document.getElementById('serverClientIdInput').value;
+        const editingIndex = document.getElementById('editingServerIndex').value;
+        let hasHidden = false;
+
+        if (clientId && editingIndex !== '') {
+            const client = clients.find(c => c.id == clientId);
+            const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username || 'anônimo';
+            if (client && client.servers && client.servers[editingIndex]) {
+                const server = client.servers[editingIndex];
+                if (server.credentials) {
+                    hasHidden = server.credentials.some(c => c.is_private && c.owner !== currentUser);
+                }
+            }
+        }
+
+        if (groups.length <= 1 && !hasHidden) {
             showToast('⚠️ É necessário ter pelo menos um usuário e senha.', 'error');
             return;
         }
@@ -3088,7 +3106,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const privacyIcon = isPrivate ? `<i class="fa-solid fa-lock" style="color: #ff5252;" title="Individual (Privado)"></i>` : '';
 
             const credentialsContent = isHidden
-                ? `<div class="server-credentials"><div style="font-size:0.85rem; opacity:0.6; padding:10px;"><em>Registrado com credenciais privadas.</em></div></div>`
+                ? `<div class="server-credentials"><div style="font-size:0.85rem; opacity:0.6; padding:10px;"><em>Registrado com credenciais individuais.</em></div></div>`
                 : `
                     <div class="credential-item">
                         <div class="credential-row">
@@ -3843,7 +3861,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         });
 
                         if (filteredCreds.length === 0 && allCreds.length > 0) {
-                            return '<div style="font-size:0.85rem; opacity:0.6; padding:10px; background: rgba(0,0,0,0.2); border-radius: 6px;"><em>Registrado com credenciais privadas.</em></div>';
+                            return '<div style="font-size:0.85rem; opacity:0.6; padding:10px; background: rgba(0,0,0,0.2); border-radius: 6px;"><em>Registrado com credenciais individuais.</em></div>';
                         }
 
                         return filteredCreds.map(cred => {
@@ -5115,7 +5133,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.removeHostCredentialField = function (btn) {
         const hostCredentialList = document.getElementById('hostCredentialList');
         const groups = hostCredentialList.querySelectorAll('.credential-field-group');
-        if (groups.length <= 1) {
+
+        // Validation: Check for hidden credentials
+        const clientId = document.getElementById('hostClientId').value;
+        const editingIndex = document.getElementById('editingHostIndex').value;
+        let hasHidden = false;
+
+        if (clientId && editingIndex !== '') {
+            const client = clients.find(c => c.id == clientId);
+            const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username || 'anônimo';
+            if (client && client.hosts && client.hosts[editingIndex]) {
+                const host = client.hosts[editingIndex];
+                if (host.credentials) {
+                    hasHidden = host.credentials.some(c => c.is_private && c.owner !== currentUser);
+                }
+            }
+        }
+
+        if (groups.length <= 1 && !hasHidden) {
             showToast('⚠️ É necessário ter pelo menos um usuário e senha.', 'error');
             return;
         }
@@ -5202,7 +5237,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         `}).join('')}
                     </div>
         `
-                : (host.credentials && host.credentials.length > 0 ? '<div class="server-credentials"><div style="font-size:0.85rem; opacity:0.6; padding:10px;"><em>Acesso restrito a usuários específicos.</em></div></div>' : '');
+                : (host.credentials && host.credentials.length > 0 ? '<div class="server-credentials"><div style="font-size:0.85rem; opacity:0.6; padding:10px;"><em>Registrado com credenciais individuais.</em></div></div>' : '');
 
             const notesHTML = host.notes
                 ? `<div class="server-notes">
