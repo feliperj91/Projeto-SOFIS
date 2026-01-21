@@ -581,7 +581,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         );
 
         if (confirm) {
-            const listHtml = owners.map(o => `<li>${escapeHtml(o)}</li>`).join('');
+            let displayNames = owners;
+            try {
+                if (window.api && window.api.users) {
+                    const allUsers = await window.api.users.list();
+                    if (Array.isArray(allUsers)) {
+                        displayNames = owners.map(username => {
+                            const user = allUsers.find(u => u.username === username);
+                            return user ? (user.full_name || user.username) : username;
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error("Erro ao buscar nomes de usuários:", error);
+            }
+
+            const listHtml = displayNames.map(name => `<li>${escapeHtml(name)}</li>`).join('');
             await window.showConfirm(
                 `<div style="text-align: left;">Os seguintes usuários possuem credenciais neste registro:<ul style="margin-top: 10px; margin-left: 20px;">${listHtml}</ul></div>`,
                 'Usuários Vinculados',
