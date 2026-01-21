@@ -172,12 +172,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Atualizar ícone de info (tooltip)
             const updateRoleInfo = (rName) => {
                 const role = rolesList.find(r => r.name === rName);
+                console.log('🔍 Debug roleInfoIcon:', { rName, role, description: role?.description });
                 const infoIcon = document.getElementById('roleInfoIcon');
                 if (infoIcon) {
-                    const desc = role && role.description ? role.description : 'Sem descrição disponível para este grupo.';
-                    infoIcon.title = 'Clique para ver detalhes';
-                    infoIcon.style.opacity = role && role.description ? '1' : '0.4';
-                    infoIcon.onclick = () => window.viewRoleInfo(rName);
+                    const hasDescription = role && role.description && role.description.trim() !== '';
+                    console.log('📌 Icon update:', { hasDescription, opacity: hasDescription ? '1' : '0.4' });
+                    infoIcon.title = hasDescription ? 'Clique para ver detalhes' : 'Sem descrição disponível';
+                    infoIcon.style.opacity = hasDescription ? '1' : '0.4';
+                    infoIcon.style.cursor = hasDescription ? 'pointer' : 'default';
+                    if (hasDescription) {
+                        infoIcon.onclick = () => window.viewRoleInfo(rName);
+                    } else {
+                        infoIcon.onclick = null;
+                    }
                 }
             };
 
