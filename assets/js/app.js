@@ -1450,7 +1450,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         const hasServers = client.servers && client.servers.length > 0;
 
         // Filter VPNs
-        const visibleVpns = (client.vpns || []).filter(vpn => !vpn.is_private || vpn.owner === currentUser);
+        const visibleVpns = (client.vpns || []).filter(vpn => {
+            const isPrivate = vpn.is_private === true || vpn.is_private === 'true';
+            return !isPrivate || vpn.owner === currentUser;
+        });
         const hasVpns = visibleVpns.length > 0;
 
         const hasHosts = client.hosts && client.hosts.length > 0;
@@ -1458,7 +1461,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Filter URLs
         const visibleUrls = (client.urls || []).filter(url => {
             if (!url.credentials || url.credentials.length === 0) return true;
-            return url.credentials.some(c => !c.is_private || c.owner === currentUser);
+            return url.credentials.some(c => {
+                const isPrivate = c.is_private === true || c.is_private === 'true';
+                return !isPrivate || c.owner === currentUser;
+            });
         });
         const urlCount = visibleUrls.length + (client.webLaudo ? (typeof client.webLaudo === 'object' ? 1 : (client.webLaudo.trim() !== '' ? 1 : 0)) : 0);
         const hasUrls = urlCount > 0;
@@ -1508,7 +1514,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                               ${(() => {
                     const visibleHosts = (client.hosts || []).filter(h => {
                         if (!h.credentials || h.credentials.length === 0) return true;
-                        return h.credentials.some(c => !c.is_private || c.owner === (JSON.parse(localStorage.getItem('sofis_user') || '{}').username || 'anônimo'));
+                        return h.credentials.some(c => {
+                            const isPrivate = c.is_private === true || c.is_private === 'true';
+                            return !isPrivate || c.owner === currentUser;
+                        });
                     });
                     return visibleHosts.length > 0 ? `<span class="btn-badge">${visibleHosts.length}</span>` : '';
                 })()}
@@ -1521,7 +1530,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                               ${(() => {
                     const visibleServers = (client.servers || []).filter(s => {
                         if (!s.credentials || s.credentials.length === 0) return true;
-                        return s.credentials.some(c => !c.is_private || c.owner === (JSON.parse(localStorage.getItem('sofis_user') || '{}').username || 'anônimo'));
+                        return s.credentials.some(c => {
+                            const isPrivate = c.is_private === true || c.is_private === 'true';
+                            return !isPrivate || c.owner === currentUser;
+                        });
                     });
                     return visibleServers.length > 0 ? `<span class="btn-badge">${visibleServers.length}</span>` : '';
                 })()}
@@ -3092,7 +3104,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username || 'anônimo';
 
             // Privacy Check
-            if (vpn.is_private && vpn.owner !== currentUser) {
+            const isPrivate = vpn.is_private === true || vpn.is_private === 'true';
+            if (isPrivate && vpn.owner !== currentUser) {
                 // Return nothing (hide) or a locked card placeholder?
                 // User requested "only user has access", implying invisibility.
                 return '';
@@ -3855,9 +3868,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                             ${(url.credentials || (url.user ? [{ user: url.user, password: url.password }] : [])).map(cred => {
                 // Privacy Check
                 const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username || 'anônimo';
-                if (cred.is_private && cred.owner !== currentUser) return '';
+                const isPrivate = cred.is_private === true || cred.is_private === 'true';
+                if (isPrivate && cred.owner !== currentUser) return '';
 
-                const privacyIcon = cred.is_private ? `<i class="fa-solid fa-lock" style="color: #ff5252; font-size: 0.7rem;" title="Individual"></i>` : '';
+                const privacyIcon = isPrivate ? `<i class="fa-solid fa-lock" style="color: #ff5252; font-size: 0.7rem;" title="Individual"></i>` : '';
 
                 return `
                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 10px;">
