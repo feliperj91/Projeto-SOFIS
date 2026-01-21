@@ -5144,6 +5144,29 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
+        // Filter out hosts where ALL credentials are private AND belong to other users
+        // Unless the host has NO credentials (informative only), we keep it? 
+        // User request implies strict privacy. Let's hide if effective access is zero and there are credentials hidden.
+        filtered = filtered.filter(host => {
+            if (!host.credentials || host.credentials.length === 0) return true; // Keep empty hosts (maybe just IP reference)
+
+            const hasVisible = host.credentials.some(cred => {
+                return !cred.is_private || cred.owner === currentUser;
+            });
+
+            return hasVisible;
+        });
+
+        if (filtered.length === 0) {
+            list.innerHTML = `
+        <div class="servers-grid-empty">
+                    <i class="fa-solid fa-server"></i>
+                    <p>Nenhum servidor visível para você neste filtro.</p>
+                </div>
+        `;
+            return;
+        }
+
         list.innerHTML = filtered.map((host, index) => {
             const originalIndex = client.hosts.indexOf(host);
             const environmentClass = host.environment === 'homologacao' ? 'homologacao' : 'producao';
