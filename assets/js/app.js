@@ -3027,13 +3027,21 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
+        const client = clients.find(c => c.id == clientId);
+        if (!client || !client.servers) return;
+        const server = client.servers[index];
+
+        // Validation: Check if other users own any credentials
+        const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username || 'anônimo';
+        if (server.credentials && server.credentials.some(c => c.owner !== currentUser)) {
+            showToast('⚠️ Este registro possui credenciais de outros usuários e não pode ser excluído.', 'error');
+            return;
+        }
+
         const confirmed = await window.showConfirm('Tem certeza que deseja excluir este servidor?', 'Excluir Servidor', 'fa-server');
         if (!confirmed) return;
 
-        const client = clients.find(c => c.id == clientId);
-        if (!client || !client.servers) return;
-
-        const deletedServer = JSON.parse(JSON.stringify(client.servers[index]));
+        const deletedServer = JSON.parse(JSON.stringify(server));
         client.servers.splice(index, 1);
         await saveToLocal(client.id);
         renderClients(clients);
@@ -3060,12 +3068,74 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function clearVpnForm() {
-        if (vpnUserInput) vpnUserInput.value = '';
-        if (vpnPassInput) vpnPassInput.value = '';
+        const list = document.getElementById('vpnCredentialList');
+        if (list) list.innerHTML = '';
         if (vpnNotesInput) vpnNotesInput.value = '';
         const editIdx = document.getElementById('editingVpnIndex');
         if (editIdx) editIdx.value = '';
     }
+
+    function addVpnCredentialField(user = '', password = '', isPrivate = false) {
+        const list = document.getElementById('vpnCredentialList');
+        const div = document.createElement('div');
+        div.className = 'credential-field-group';
+        div.innerHTML = `
+            <div class="credential-fields-container">
+                <div class="credential-field-item">
+                    <label class="credential-label-text"><i class="fa-solid fa-user" style="color: var(--accent); margin-right: 5px;"></i> Usuário<span class="required">*</span></label>
+                    <input type="text" class="server-user-input" placeholder="Digite o usuário" value="${escapeHtml(user)}" required>
+                </div>
+                <div class="credential-field-item">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                        <label class="credential-label-text"><i class="fa-solid fa-key" style="color: var(--accent); margin-right: 5px;"></i> Senha<span class="required">*</span></label>
+                        <div class="checkbox-wrapper-individual" style="margin-left: 10px;">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.75rem; font-weight: 700; color: #ff5252;">
+                                <input type="checkbox" class="server-private-check" onchange="window.toggleIndividualPrivacy(this)" ${isPrivate ? 'checked' : ''}>
+                                <i class="fa-solid fa-lock" style="font-size: 0.7rem;"></i> INDIVIDUAL
+                            </label>
+                        </div>
+                    </div>
+                    <div style="position: relative; width: 100%;">
+                        <input type="password" class="server-pass-input" placeholder="Digite a senha" value="${escapeHtml(password)}" required style="padding-right: 35px; width: 100%;">
+                        <button type="button" onclick="const i = this.previousElementSibling; i.type = i.type === 'password' ? 'text' : 'password'; this.querySelector('i').className = i.type === 'password' ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-secondary); cursor: pointer;" tabindex="-1" title="Visualizar Senha">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <button type="button" class="btn-remove-credential" onclick="removeVpnCredentialField(this)" title="Remover Credencial" tabindex="-1">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
+        `;
+        list.appendChild(div);
+    }
+
+    window.removeVpnCredentialField = function (btn) {
+        const list = document.getElementById('vpnCredentialList');
+        const groups = list.querySelectorAll('.credential-field-group');
+
+        // Validation for hidden credentials
+        const clientId = document.getElementById('vpnClientId').value;
+        const editingIndex = document.getElementById('editingVpnIndex').value;
+        let hasHidden = false;
+
+        if (clientId && editingIndex !== '') {
+            const client = clients.find(c => c.id == clientId);
+            const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username || 'anônimo';
+            if (client && client.vpns && client.vpns[editingIndex]) {
+                const vpn = client.vpns[editingIndex];
+                if (vpn.credentials) {
+                    hasHidden = vpn.credentials.some(c => c.is_private && c.owner !== currentUser);
+                }
+            }
+        }
+
+        if (groups.length <= 1 && !hasHidden) {
+            showToast('⚠️ É necessário ter pelo menos um usuário e senha.', 'error');
+            return;
+        }
+        btn.closest('.credential-field-group').remove();
+    };
 
     function renderVpnList(client) {
         const listContainer = document.getElementById('vpnList');
@@ -3089,55 +3159,57 @@ document.addEventListener('DOMContentLoaded', async () => {
         listContainer.innerHTML = client.vpns.map((vpn, index) => {
             const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username || 'anônimo';
 
-            // Privacy Check
-            const isPrivate = vpn.is_private === true || vpn.is_private === 'true';
-            const isHidden = isPrivate && vpn.owner !== currentUser;
+            // Normalize credentials (legacy vs new)
+            const allCreds = vpn.credentials || (vpn.user ? [{ user: vpn.user, password: vpn.password, is_private: vpn.is_private, owner: vpn.owner }] : []);
 
-            const editButton = canEdit ? `
-                            <button class="btn-icon-card" onclick="editVpnRecord('${client.id}', ${index})" title="Editar">
-                                <i class="fa-solid fa-pen"></i>
-                            </button>` : '';
+            const filteredCreds = allCreds.filter(c => {
+                const isPrivate = c.is_private === true || c.is_private === 'true';
+                return !isPrivate || c.owner === currentUser;
+            });
 
-            const deleteButton = canDelete ? `
-                            <button class="btn-icon-card btn-danger" onclick="deleteVpnRecord('${client.id}', ${index})" title="Excluir">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>` : '';
+            const hasHidden = allCreds.length > filteredCreds.length;
 
-            const privacyIcon = isPrivate ? `<i class="fa-solid fa-lock" style="color: #ff5252;" title="Individual (Privado)"></i>` : '';
+            let credentialsContent = '';
 
-            const credentialsContent = isHidden
-                ? `<div class="server-credentials"><div style="font-size:0.85rem; opacity:0.6; padding:10px;"><em>Registrado com credenciais individuais.</em></div></div>`
-                : `
+            if (filteredCreds.length === 0 && allCreds.length > 0) {
+                credentialsContent = `<div class="server-credentials"><div style="font-size:0.85rem; opacity:0.6; padding:10px;"><em>Registrado com credenciais individuais.</em></div></div>`;
+            } else {
+                credentialsContent = filteredCreds.map(cred => {
+                    const isPrivate = cred.is_private === true || cred.is_private === 'true';
+                    const privacyIcon = isPrivate ? `<i class="fa-solid fa-lock" style="color: #ff5252; margin-left: 6px;" title="Individual (Privado)"></i>` : '';
+
+                    return `
                     <div class="credential-item">
                         <div class="credential-row">
-                            <span class="credential-label"><i class="fa-solid fa-user" style="color: var(--accent); margin-right: 5px;"></i> Usuário:</span>
-                            <span class="credential-value">${escapeHtml(vpn.user)}</span>
-                            <button class="btn-copy-small" onclick="copyToClipboard('${escapeHtml(vpn.user).replace(/'/g, "\\'")}')" title="Copiar Usuário">
+                            <span class="credential-label"><i class="fa-solid fa-user" style="color: var(--accent); margin-right: 5px;"></i> Usuário:${privacyIcon}</span>
+                            <span class="credential-value">${escapeHtml(cred.user)}</span>
+                            <button class="btn-copy-small" onclick="copyToClipboard('${escapeHtml(cred.user).replace(/'/g, "\\'")}')" title="Copiar Usuário">
                                 <i class="fa-regular fa-copy"></i>
                             </button>
                         </div>
                         <div class="credential-row">
                             <span class="credential-label"><i class="fa-solid fa-key" style="color: var(--accent); margin-right: 5px;"></i> Senha:</span>
-                            <span class="credential-value" data-raw="${escapeHtml(vpn.password)}">••••••</span>
+                            <span class="credential-value" data-raw="${escapeHtml(cred.password)}">••••••</span>
                             <button class="btn-copy-small" onclick="togglePassword(this)" title="Visualizar Senha" style="margin-right: 4px;">
                                 <i class="fa-solid fa-eye"></i>
                             </button>
-                            <button class="btn-copy-small" onclick="copyToClipboard('${escapeHtml(vpn.password).replace(/'/g, "\\'")}')" title="Copiar Senha">
+                            <button class="btn-copy-small" onclick="copyToClipboard('${escapeHtml(cred.password).replace(/'/g, "\\'")}')" title="Copiar Senha">
                                 <i class="fa-regular fa-copy"></i>
                             </button>
                         </div>
                     </div>`;
+                }).join('');
+            }
 
             return `
                 <div class="server-card">
                     <div class="server-card-header">
                         <div style="display: flex; gap: 8px; align-items: center; width: 100%;">
                             <span class="server-environment producao">VPN</span>
-                            ${privacyIcon}
                         </div>
                         <div class="server-card-actions">
-                            ${editButton}
-                            ${deleteButton}
+                            ${canEdit ? `<button class="btn-icon-card" onclick="editVpnRecord('${client.id}', ${index})" title="Editar"><i class="fa-solid fa-pen"></i></button>` : ''}
+                            ${canDelete ? `<button class="btn-icon-card btn-danger" onclick="deleteVpnRecord('${client.id}', ${index})" title="Excluir"><i class="fa-solid fa-trash"></i></button>` : ''}
                         </div>
                     </div>
                     ${credentialsContent}
@@ -3161,32 +3233,51 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!client.vpns) client.vpns = [];
 
         const editingIndex = document.getElementById('editingVpnIndex').value;
-        const vpnUser = vpnUserInput.value.trim();
-        const vpnPass = vpnPassInput.value.trim();
-
-        if (!vpnUser) {
-            showToast('⚠️ O usuário da VPN é obrigatório.', 'error');
-            vpnUserInput.focus();
-            return;
-        }
-        if (!vpnPass) {
-            showToast('⚠️ A senha da VPN é obrigatória.', 'error');
-            vpnPassInput.focus();
-            return;
-        }
-
         const vpnNotes = vpnNotesInput.value.trim();
-        const isPrivate = document.getElementById('vpnIndividualPrivacy')?.checked || false;
+        const vpnCredentialList = document.getElementById('vpnCredentialList');
+
+        // Collect Credentials
+        const credDivs = vpnCredentialList.querySelectorAll('.credential-field-group');
+        const credentials = [];
         const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username || 'anônimo';
+
+        for (const div of credDivs) {
+            const u = div.querySelector('.server-user-input').value.trim();
+            const p = div.querySelector('.server-pass-input').value.trim();
+            const isPrivate = div.querySelector('.server-private-check')?.checked || false;
+
+            if (u || p) {
+                credentials.push({
+                    user: u,
+                    password: await window.Security.encrypt(p),
+                    is_private: isPrivate,
+                    owner: currentUser
+                });
+            }
+        }
+
+        // Preserve hidden private credentials (other users)
+        if (editingIndex !== '') {
+            const originalVpn = client.vpns[parseInt(editingIndex)];
+            // Handle migration if only legacy fields exist
+            const oldCreds = originalVpn.credentials || (originalVpn.user ? [{ user: originalVpn.user, password: originalVpn.password, is_private: originalVpn.is_private, owner: originalVpn.owner }] : []);
+
+            if (oldCreds) {
+                const hiddenCredentials = oldCreds.filter(c => c.is_private && c.owner !== currentUser);
+                credentials.push(...hiddenCredentials);
+            }
+        }
+
+        if (credentials.length === 0) {
+            showToast('⚠️ É necessário cadastrar pelo menos uma credencial.', 'error');
+            return;
+        }
 
         const vpnBefore = (editingIndex !== '') ? JSON.parse(JSON.stringify(client.vpns[parseInt(editingIndex)])) : null;
 
         const vpnRecord = {
-            user: vpnUser,
-            password: await window.Security.encrypt(vpnPass),
-            notes: vpnNotes,
-            is_private: isPrivate,
-            owner: currentUser
+            credentials: credentials,
+            notes: vpnNotes
         };
 
         if (editingIndex !== '') {
@@ -3246,16 +3337,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!client || !client.vpns || !client.vpns[index]) return;
 
         const vpn = client.vpns[index];
-        if (vpnUserInput) vpnUserInput.value = vpn.user;
-        if (vpnPassInput) {
-            const decPass = await window.Security.decrypt(vpn.password);
-            vpnPassInput.value = decPass;
-        }
-        if (vpnNotesInput) vpnNotesInput.value = vpn.notes || '';
-        if (document.getElementById('vpnIndividualPrivacy')) {
-            document.getElementById('vpnIndividualPrivacy').checked = !!vpn.is_private;
+        const vpnCredentialList = document.getElementById('vpnCredentialList');
+        vpnCredentialList.innerHTML = '';
+
+        const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username || 'anônimo';
+
+        // Populate credentials (support legacy and new)
+        const allCreds = vpn.credentials || (vpn.user ? [{ user: vpn.user, password: vpn.password, is_private: vpn.is_private, owner: vpn.owner }] : []);
+
+        if (allCreds.length > 0) {
+            for (const c of allCreds) {
+                // Skip if private and not owner
+                if (c.is_private && c.owner !== currentUser) continue;
+
+                const decPass = await window.Security.decrypt(c.password);
+                addVpnCredentialField(c.user, decPass, c.is_private);
+            }
+        } else {
+            addVpnCredentialField();
         }
 
+        if (vpnNotesInput) vpnNotesInput.value = vpn.notes || '';
         document.getElementById('editingVpnIndex').value = index;
 
         vpnEntryModalTitle.textContent = 'Editar Acesso VPN';
@@ -3269,12 +3371,23 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        const confirmed = await window.showConfirm('Tem certeza que deseja excluir esta VPN?', 'Excluir VPN', 'fa-shield-halved');
-        if (!confirmed) return;
         const client = clients.find(c => c.id == clientId);
         if (!client || !client.vpns) return;
+        const vpn = client.vpns[index];
 
-        const deletedVpn = JSON.parse(JSON.stringify(client.vpns[index]));
+        // Validation: Check if other users own any credentials (handles legacy as well)
+        const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username || 'anônimo';
+        const allCreds = vpn.credentials || (vpn.user ? [{ user: vpn.user, password: vpn.password, is_private: vpn.is_private, owner: vpn.owner }] : []);
+
+        if (allCreds.some(c => c.owner !== currentUser)) {
+            showToast('⚠️ Este registro possui credenciais de outros usuários e não pode ser excluído.', 'error');
+            return;
+        }
+
+        const confirmed = await window.showConfirm('Tem certeza que deseja excluir esta VPN?', 'Excluir VPN', 'fa-shield-halved');
+        if (!confirmed) return;
+
+        const deletedVpn = JSON.parse(JSON.stringify(vpn));
         client.vpns.splice(index, 1);
         await saveToLocal(client.id);
         renderClients(clients);
@@ -5426,13 +5539,21 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
+        const client = clients.find(c => c.id == clientId);
+        if (!client || !client.hosts) return;
+        const host = client.hosts[index];
+
+        // Validation: Check if other users own any credentials
+        const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username || 'anônimo';
+        if (host.credentials && host.credentials.some(c => c.owner !== currentUser)) {
+            showToast('⚠️ Este registro possui credenciais de outros usuários e não pode ser excluído.', 'error');
+            return;
+        }
+
         const confirmed = await window.showConfirm('Tem certeza que deseja excluir este servidor?', 'Excluir Servidor', 'fa-server');
         if (!confirmed) return;
 
-        const client = clients.find(c => c.id == clientId);
-        if (!client || !client.hosts) return;
-
-        const deletedHost = JSON.parse(JSON.stringify(client.hosts[index]));
+        const deletedHost = JSON.parse(JSON.stringify(host));
         client.hosts.splice(index, 1);
         await saveToLocal(client.id);
         renderClients(clients);
@@ -5465,6 +5586,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (document.getElementById('addHostCredentialBtn'))
         document.getElementById('addHostCredentialBtn').onclick = () => addHostCredentialField();
+
+    if (document.getElementById('addVpnCredentialBtn'))
+        document.getElementById('addVpnCredentialBtn').onclick = () => addVpnCredentialField();
 
     if (document.getElementById('hostForm'))
         document.getElementById('hostForm').onsubmit = handleHostSubmit;
