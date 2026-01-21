@@ -4261,12 +4261,24 @@ document.addEventListener('DOMContentLoaded', async () => {
             showToast('🚫 Sem permissão para excluir URLs.', 'error');
             return;
         }
+
+        const client = clients.find(c => c.id == clientId);
+        if (!client || !client.urls || !client.urls[index]) return;
+        const url = client.urls[index];
+
+        // Validation: Check if other users own any credentials
+        const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username || 'anônimo';
+        const allCreds = url.credentials || (url.user ? [{ user: url.user, password: url.password, owner: url.owner }] : []);
+
+        if (allCreds.some(c => c.owner !== currentUser)) {
+            showToast('⚠️ Este registro possui credenciais de outros usuários e não pode ser excluído.', 'error');
+            return;
+        }
+
         const confirmed = await window.showConfirm('Tem certeza que deseja excluir este produto?', 'Excluir Produto', 'fa-laptop-code');
         if (!confirmed) return;
-        const client = clients.find(c => c.id == clientId);
-        if (!client || !client.urls) return;
 
-        const deletedUrl = JSON.parse(JSON.stringify(client.urls[index]));
+        const deletedUrl = JSON.parse(JSON.stringify(url));
         client.urls.splice(index, 1);
         await saveToLocal(client.id);
         renderClients(clients);
