@@ -1297,17 +1297,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const hasServers = client.servers && client.servers.length > 0;
 
-        // Filter VPNs: count only public ones or those owned by current user
-        const visibleVpns = (client.vpns || []).filter(vpn => !vpn.is_private || vpn.owner === currentUser);
+        // VPNs are now always counted (restricted message shown in modal if private)
+        const visibleVpns = (client.vpns || []);
         const hasVpns = visibleVpns.length > 0;
 
         const hasHosts = client.hosts && client.hosts.length > 0;
 
-        // Filter URLs: A URL record is visible if it has at least one visible credential or if it's not strictly a credential record
-        const visibleUrls = (client.urls || []).filter(url => {
-            if (!url.credentials || url.credentials.length === 0) return true; // Legacy or no credentials
-            return url.credentials.some(c => !c.is_private || c.owner === currentUser);
-        });
+        // URLs are now always counted
+        const visibleUrls = (client.urls || []);
         const urlCount = visibleUrls.length + (client.webLaudo ? (typeof client.webLaudo === 'object' ? 1 : (client.webLaudo.trim() !== '' ? 1 : 0)) : 0);
         const hasUrls = urlCount > 0;
         const hasContacts = client.contacts && client.contacts.length > 0;
