@@ -2837,7 +2837,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const groups = credentialList.querySelectorAll('.credential-field-group');
 
         // Validation: Check for hidden credentials
-        const clientId = document.getElementById('serverClientIdInput').value;
+        const clientId = document.getElementById('serverClientId').value;
         const editingIndex = document.getElementById('editingServerIndex').value;
         let hasHidden = false;
 
