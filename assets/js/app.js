@@ -5699,7 +5699,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const hasPoint = client.has_collection_point || false;
         const check = document.getElementById('isbtCollectionPointCheck');
         check.checked = hasPoint;
-        document.getElementById('isbtCollectionPointInput').value = client.isbt_collection_point || '';
+        document.getElementById('isbtCollectionPointNameInput').value = client.collection_point_name || '';
+        document.getElementById('isbtCollectionPointCodeInput').value = client.collection_point_code || '';
 
         window.toggleIsbtCollectionPoint();
 
@@ -5735,12 +5736,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         const oldData = {
             isbt_code: client.isbt_code,
             has_collection_point: client.has_collection_point,
-            isbt_collection_point: client.isbt_collection_point
+            collection_point_name: client.collection_point_name,
+            collection_point_code: client.collection_point_code
         };
 
         client.isbt_code = document.getElementById('isbtCodeInput').value;
         client.has_collection_point = document.getElementById('isbtCollectionPointCheck').checked;
-        client.isbt_collection_point = client.has_collection_point ? document.getElementById('isbtCollectionPointInput').value : '';
+
+        if (client.has_collection_point) {
+            client.collection_point_name = document.getElementById('isbtCollectionPointNameInput').value;
+            client.collection_point_code = document.getElementById('isbtCollectionPointCodeInput').value;
+        } else {
+            client.collection_point_name = '';
+            client.collection_point_code = '';
+        }
 
         await saveToLocal(client.id);
 
@@ -5757,7 +5766,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         await registerAuditLog('EDIÇÃO', 'Atualização ISBT 128', `Cliente: ${client.name}`, oldData, {
             isbt_code: client.isbt_code,
             has_collection_point: client.has_collection_point,
-            isbt_collection_point: client.isbt_collection_point
+            collection_point_name: client.collection_point_name,
+            collection_point_code: client.collection_point_code
         });
     };
 

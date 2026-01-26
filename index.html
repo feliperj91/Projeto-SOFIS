@@ -1955,23 +1955,33 @@
                             style="background: var(--bg-darker); border: 1px solid var(--border);">
                     </div>
 
-                    <div class="form-group" style="margin-top: 20px; margin-bottom: 20px;">
+                    <div class="form-group" style="margin-top: 25px; margin-bottom: 25px;">
                         <div class="checkbox-wrapper-individual">
                             <label
-                                style="display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none;">
+                                style="display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none;">
                                 <input type="checkbox" id="isbtCollectionPointCheck"
-                                    onchange="window.toggleIsbtCollectionPoint()">
-                                <span style="font-weight: 600;">Posto de Coleta?</span>
+                                    onchange="window.toggleIsbtCollectionPoint()" style="transform: scale(1.5);">
+                                <span style="font-weight: 700; font-size: 1.1em; color: var(--accent);">POSTO DE
+                                    COLETA?</span>
                             </label>
                         </div>
                     </div>
 
-                    <div id="isbtCollectionPointGroup" class="form-group hidden">
-                        <label for="isbtCollectionPointInput"><i class="fa-solid fa-building-user"
-                                style="color: var(--accent); margin-right: 8px;"></i>ISBT Posto de Coleta</label>
-                        <input type="text" id="isbtCollectionPointInput"
-                            placeholder="Digite o código do posto de coleta..."
-                            style="background: var(--bg-darker); border: 1px solid var(--border);">
+                    <div id="isbtCollectionPointGroup" class="hidden">
+                        <div class="form-group">
+                            <label for="isbtCollectionPointNameInput"><i class="fa-solid fa-building"
+                                    style="color: var(--accent); margin-right: 8px;"></i>Nome do Posto de Coleta</label>
+                            <input type="text" id="isbtCollectionPointNameInput" placeholder="Digite o nome do posto..."
+                                style="background: var(--bg-darker); border: 1px solid var(--border);">
+                        </div>
+
+                        <div class="form-group" style="margin-top: 15px;">
+                            <label for="isbtCollectionPointCodeInput"><i class="fa-solid fa-barcode"
+                                    style="color: var(--accent); margin-right: 8px;"></i>Código ISBT do Posto</label>
+                            <input type="text" id="isbtCollectionPointCodeInput"
+                                placeholder="Digite o código ISBT do posto..."
+                                style="background: var(--bg-darker); border: 1px solid var(--border);">
+                        </div>
                     </div>
                 </div>
 
