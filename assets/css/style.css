@@ -30,21 +30,26 @@
     font-family: 'Outfit', sans-serif;
 }
 
-/* Global Calendar Icon Color - Custom White SVG */
-input[type="date"]::-webkit-calendar-picker-indicator {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23ffffff' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z'/%3E%3C/svg%3E") !important;
-    cursor: pointer !important;
-    opacity: 1 !important;
-    width: 16px !important;
-    height: 16px !important;
+/* Hide native calendar icon and use custom white icon */
+input[type="date"] {
+    position: relative;
+    padding-right: 30px !important;
 }
 
-input[type="date"]::-moz-calendar-picker-indicator {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23ffffff' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z'/%3E%3C/svg%3E") !important;
+input[type="date"]::-webkit-calendar-picker-indicator {
+    background: transparent !important;
+    color: transparent !important;
+    position: absolute !important;
+    right: 0 !important;
+    width: 30px !important;
+    height: 100% !important;
     cursor: pointer !important;
-    opacity: 1 !important;
-    width: 16px !important;
-    height: 16px !important;
+    z-index: 2 !important;
+}
+
+input[type="date"]::-webkit-inner-spin-button,
+input[type="date"]::-webkit-clear-button {
+    display: none !important;
 }
 
 body {
