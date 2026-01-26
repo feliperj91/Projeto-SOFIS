@@ -5696,11 +5696,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('isbtClientName').textContent = client.name;
         document.getElementById('isbtCodeInput').value = client.isbt_code || '';
 
-        const hasPoint = client.has_collection_point || false;
+        const list = document.getElementById('collectionPointsList');
+        if (list) list.innerHTML = '';
+
+        let points = client.collection_points || [];
+        if (points.length === 0 && client.collection_point_name) {
+            points.push({ name: client.collection_point_name, code: client.collection_point_code || '' });
+        }
+        points.forEach(p => addCollectionPointField(p.name, p.code));
+
+        const hasPoint = client.has_collection_point || (points.length > 0);
         const check = document.getElementById('isbtCollectionPointCheck');
-        check.checked = hasPoint;
-        document.getElementById('isbtCollectionPointNameInput').value = client.collection_point_name || '';
-        document.getElementById('isbtCollectionPointCodeInput').value = client.collection_point_code || '';
+        if (check) check.checked = hasPoint;
+
+        if (hasPoint && points.length === 0) addCollectionPointField();
 
         window.toggleIsbtCollectionPoint();
 
@@ -5715,8 +5724,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.toggleIsbtCollectionPoint = () => {
         const check = document.getElementById('isbtCollectionPointCheck');
         const group = document.getElementById('isbtCollectionPointGroup');
+        const list = document.getElementById('collectionPointsList');
+
         if (check.checked) {
             group.classList.remove('hidden');
+            if (list && list.children.length === 0) addCollectionPointField();
         } else {
             group.classList.add('hidden');
         }
@@ -5736,20 +5748,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         const oldData = {
             isbt_code: client.isbt_code,
             has_collection_point: client.has_collection_point,
-            collection_point_name: client.collection_point_name,
-            collection_point_code: client.collection_point_code
+            collection_points: client.collection_points
         };
 
         client.isbt_code = document.getElementById('isbtCodeInput').value;
         client.has_collection_point = document.getElementById('isbtCollectionPointCheck').checked;
 
+        client.collection_points = [];
         if (client.has_collection_point) {
-            client.collection_point_name = document.getElementById('isbtCollectionPointNameInput').value;
-            client.collection_point_code = document.getElementById('isbtCollectionPointCodeInput').value;
-        } else {
-            client.collection_point_name = '';
-            client.collection_point_code = '';
+            const items = document.querySelectorAll('.collection-point-item');
+            items.forEach(item => {
+                const name = item.querySelector('.cp-name').value.trim();
+                const code = item.querySelector('.cp-code').value.trim();
+                if (name || code) {
+                    client.collection_points.push({ name, code });
+                }
+            });
         }
+
+        delete client.collection_point_name;
+        delete client.collection_point_code;
 
         await saveToLocal(client.id);
 
@@ -5766,9 +5784,40 @@ document.addEventListener('DOMContentLoaded', async () => {
         await registerAuditLog('EDIÇÃO', 'Atualização ISBT 128', `Cliente: ${client.name}`, oldData, {
             isbt_code: client.isbt_code,
             has_collection_point: client.has_collection_point,
-            collection_point_name: client.collection_point_name,
-            collection_point_code: client.collection_point_code
+            collection_points: client.collection_points
         });
+    };
+
+
+    // --- Collection Point Helper Functions ---
+    window.addCollectionPointField = (name = '', code = '') => {
+        const list = document.getElementById('collectionPointsList');
+        if (!list) return;
+
+        const div = document.createElement('div');
+        div.className = 'collection-point-item';
+        div.style.cssText = 'display: flex; gap: 10px; align-items: flex-start; padding: 10px; background: var(--bg-darker); border-radius: 6px; border: 1px solid var(--border);';
+
+        div.innerHTML = `
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-building" style="color: var(--text-secondary); font-size: 0.8em;"></i>
+                    <input type="text" class="cp-name" placeholder="Nome do Posto" value="${escapeHtml(name)}" style="flex: 1; background: transparent; border: none; border-bottom: 1px solid var(--border); color: white; padding: 4px;">
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-barcode" style="color: var(--text-secondary); font-size: 0.8em;"></i>
+                    <input type="text" class="cp-code" placeholder="Código ISBT do Posto" value="${escapeHtml(code)}" style="flex: 1; background: transparent; border: none; border-bottom: 1px solid var(--border); color: white; padding: 4px;">
+                </div>
+            </div>
+            <button type="button" class="btn-icon" onclick="removeCollectionPointField(this)" title="Remover" style="color: var(--danger); opacity: 0.7; transition: opacity 0.2s;">
+                <i class="fa-solid fa-trash"></i>
+            </button>
+        `;
+        list.appendChild(div);
+    };
+
+    window.removeCollectionPointField = (btn) => {
+        btn.closest('.collection-point-item').remove();
     };
 
 });
