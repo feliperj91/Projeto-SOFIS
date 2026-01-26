@@ -133,6 +133,12 @@
     padding: 0 10px;
 }
 
+/* Calendar icon color */
+.log-input::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+
 .date-separator {
     color: var(--text-secondary);
 }
@@ -1548,6 +1554,7 @@ input:checked+.slider:before {
     color: #bdbdbd;
     border: 1px solid rgba(158, 158, 158, 0.3);
 }
+
 /* MODERN ROLE SELECTOR (CHIPS) */
 .role-chips-container {
     display: flex;
