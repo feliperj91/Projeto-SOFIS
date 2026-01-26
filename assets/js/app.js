@@ -2915,14 +2915,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             <div class="credential-fields-container">
                 <div class="credential-field-item">
                     <div class="credential-label-row">
-                        <label class="credential-label-text"><i class="fa-solid fa-user"></i> Usuário <span class="required">*</span></label>
+                        <label class="credential-label-text"><i class="fa-solid fa-user"></i>Usuário <span class="required">*</span></label>
                     </div>
                     <input type="text" class="server-user-input" placeholder="Digite o usuário" value="${escapeHtml(user)}" required>
                 </div>
                 
                 <div class="credential-field-item">
                     <div class="credential-label-row">
-                        <label class="credential-label-text"><i class="fa-solid fa-key"></i> Senha <span class="required">*</span></label>
+                        <label class="credential-label-text"><i class="fa-solid fa-key"></i>Senha <span class="required">*</span></label>
                         <div class="checkbox-wrapper-individual">
                             <label>
                                 <input type="checkbox" class="server-private-check" onchange="window.toggleIndividualPrivacy(this)" ${isPrivate ? 'checked' : ''}>
