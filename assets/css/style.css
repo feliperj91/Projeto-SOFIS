@@ -203,7 +203,7 @@ button {
 }
 
 .btn-success {
-    background: linear-gradient(135deg, var(--success), #66BB6A);
+    background: linear-gradient(135deg, var(--success), #66BB6F);
     color: #ffffff;
     padding: 10px 20px;
     border-radius: var(--radius);
