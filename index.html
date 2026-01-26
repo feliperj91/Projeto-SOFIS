@@ -1923,6 +1923,67 @@
         </div>
     </div>
 
+    <!-- ISBT 128 Modal -->
+    <div id="isbtModal" class="modal hidden" style="z-index: 10005;">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <button type="button" class="btn-icon"
+                        style="background: var(--bg-darker); width: 40px; height: 40px; cursor: default;">
+                        <i class="fa-solid fa-barcode" style="color: var(--accent);"></i>
+                    </button>
+                    <div>
+                        <h2 style="margin: 0; font-size: 1.4rem;">ISBT 128</h2>
+                        <span id="isbtClientName" class="modal-subtitle"
+                            style="color: var(--accent); font-size: 1rem; margin-top: 2px;">CLIENTE</span>
+                    </div>
+                </div>
+                <button type="button" class="btn-icon"
+                    onclick="document.getElementById('isbtModal').classList.add('hidden')">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="isbtForm" onsubmit="event.preventDefault(); window.submitIsbtForm();">
+                <div class="modal-body" style="padding: 25px 20px;">
+                    <input type="hidden" id="isbtClientId">
+
+                    <div class="form-group">
+                        <label for="isbtCodeInput"><i class="fa-solid fa-barcode"
+                                style="color: var(--accent); margin-right: 8px;"></i>Código ISBT 128</label>
+                        <input type="text" id="isbtCodeInput" placeholder="Digite o código ISBT..."
+                            style="background: var(--bg-darker); border: 1px solid var(--border);">
+                    </div>
+
+                    <div class="form-group" style="margin-top: 20px; margin-bottom: 20px;">
+                        <div class="checkbox-wrapper-individual">
+                            <label
+                                style="display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none;">
+                                <input type="checkbox" id="isbtCollectionPointCheck"
+                                    onchange="window.toggleIsbtCollectionPoint()">
+                                <span style="font-weight: 600;">Posto de Coleta?</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="isbtCollectionPointGroup" class="form-group hidden">
+                        <label for="isbtCollectionPointInput"><i class="fa-solid fa-building-user"
+                                style="color: var(--accent); margin-right: 8px;"></i>ISBT Posto de Coleta</label>
+                        <input type="text" id="isbtCollectionPointInput"
+                            placeholder="Digite o código do posto de coleta..."
+                            style="background: var(--bg-darker); border: 1px solid var(--border);">
+                    </div>
+                </div>
+
+                <div class="modal-actions" style="border-top: 1px solid var(--border); padding-top: 20px;">
+                    <button type="button" class="btn-secondary"
+                        onclick="document.getElementById('isbtModal').classList.add('hidden')">Cancelar</button>
+                    <button type="submit" class="btn-primary">Salvar ISBT</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Changelog Sidebar -->
     <div id="changelogSidebar" class="activity-sidebar hidden"
         style="z-index: 10002; background: var(--bg-card); border-left: 1px solid var(--border);">

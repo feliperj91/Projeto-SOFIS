@@ -1505,10 +1505,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         const hasUrls = urlCount > 0;
         const hasContacts = client.contacts && client.contacts.length > 0;
 
+        const hasIsbt = client.isbt_code && client.isbt_code.trim() !== '';
+
         const serverBtnClass = hasServers ? 'btn-icon active-success' : 'btn-icon';
         const vpnBtnClass = hasVpns ? 'btn-icon active-success' : 'btn-icon';
         const hostBtnClass = hasHosts ? 'btn-icon active-success' : 'btn-icon';
         const urlBtnClass = hasUrls ? 'btn-icon active-success' : 'btn-icon';
+        const isbtBtnClass = hasIsbt ? 'btn-icon active-success' : 'btn-icon';
         const contactBtnClass = hasContacts ? 'btn-icon active-success' : 'btn-icon';
         const vpnIconClass = hasVpns ? 'vpn-icon-img vpn-icon-success' : 'vpn-icon-img';
 
@@ -1570,6 +1573,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                              ${hasUrls ? `<span class="btn-badge">${urlCount}</span>` : ''}
                          </button>
                          ` : ''}
+
+                         <button class="${isbtBtnClass}" onclick="event.stopPropagation(); openIsbtModal('${client.id}');" title="ISBT 128">
+                             <i class="fa-solid fa-barcode"></i>
+                         </button>
 
                          <!-- Edit Permission Check -->
                          ${canEdit ? `
@@ -5677,6 +5684,82 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (document.getElementById('hostForm'))
         document.getElementById('hostForm').onsubmit = handleHostSubmit;
+
+    // --- ISBT 128 Functions ---
+    window.openIsbtModal = (clientId) => {
+        const client = clients.find(c => c.id == clientId);
+        if (!client) return;
+
+        const hasEditPerm = window.Permissions ? window.Permissions.can('Gestão de Clientes', 'can_edit') : true;
+
+        document.getElementById('isbtClientId').value = clientId;
+        document.getElementById('isbtClientName').textContent = client.name;
+        document.getElementById('isbtCodeInput').value = client.isbt_code || '';
+
+        const hasPoint = client.has_collection_point || false;
+        const check = document.getElementById('isbtCollectionPointCheck');
+        check.checked = hasPoint;
+        document.getElementById('isbtCollectionPointInput').value = client.isbt_collection_point || '';
+
+        window.toggleIsbtCollectionPoint();
+
+        // Disable inputs if no permission? Or just let them see? 
+        // Assuming edit permission is needed to SAVE, but maybe everyone can view?
+        // For now, leaving enabled as the Save button is the gatekeeper if needed, 
+        // but typically readonly forms are better. I'll stick to basic.
+
+        document.getElementById('isbtModal').classList.remove('hidden');
+    };
+
+    window.toggleIsbtCollectionPoint = () => {
+        const check = document.getElementById('isbtCollectionPointCheck');
+        const group = document.getElementById('isbtCollectionPointGroup');
+        if (check.checked) {
+            group.classList.remove('hidden');
+        } else {
+            group.classList.add('hidden');
+        }
+    };
+
+    window.submitIsbtForm = async () => {
+        // Permissions Check (using Client Edit permission as proxy)
+        if (window.Permissions && !window.Permissions.can('Gestão de Clientes', 'can_edit')) {
+            showToast('🚫 Sem permissão para editar dados do cliente.', 'error');
+            return;
+        }
+
+        const clientId = document.getElementById('isbtClientId').value;
+        const client = clients.find(c => c.id == clientId);
+        if (!client) return;
+
+        const oldData = {
+            isbt_code: client.isbt_code,
+            has_collection_point: client.has_collection_point,
+            isbt_collection_point: client.isbt_collection_point
+        };
+
+        client.isbt_code = document.getElementById('isbtCodeInput').value;
+        client.has_collection_point = document.getElementById('isbtCollectionPointCheck').checked;
+        client.isbt_collection_point = client.has_collection_point ? document.getElementById('isbtCollectionPointInput').value : '';
+
+        await saveToLocal(client.id);
+
+        // Re-render row to update button status
+        const row = document.getElementById(`client-row-${clientId}`);
+        if (row) {
+            const newRow = createClientRow(client);
+            row.replaceWith(newRow);
+        }
+
+        document.getElementById('isbtModal').classList.add('hidden');
+        showToast('✅ Dados ISBT salvos com sucesso!', 'success');
+
+        await registerAuditLog('EDIÇÃO', 'Atualização ISBT 128', `Cliente: ${client.name}`, oldData, {
+            isbt_code: client.isbt_code,
+            has_collection_point: client.has_collection_point,
+            isbt_collection_point: client.isbt_collection_point
+        });
+    };
 
 });
 console.log("✅ APP.JS FULLY PARSED AND LOADED");
