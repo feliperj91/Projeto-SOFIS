@@ -202,6 +202,32 @@ button {
     transform: scale(0.98);
 }
 
+.btn-success {
+    background: linear-gradient(135deg, var(--success), #66BB6A);
+    color: #ffffff;
+    padding: 10px 20px;
+    border-radius: var(--radius);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.25);
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.btn-success:hover {
+    background: linear-gradient(135deg, #43A047, #388E3C);
+    color: #ffffff;
+    box-shadow: 0 6px 16px rgba(76, 175, 80, 0.35);
+    transform: translateY(-2px);
+}
+
+.btn-success:active {
+    transform: scale(0.98);
+}
+
 .btn-secondary {
     background: transparent;
     color: var(--text-secondary);
