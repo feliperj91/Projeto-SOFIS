@@ -5737,57 +5737,62 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     window.submitIsbtForm = async () => {
-        // Permissions Check (using Client Edit permission as proxy)
-        if (window.Permissions && !window.Permissions.can('Gestão de Clientes', 'can_edit')) {
-            showToast('🚫 Sem permissão para editar dados do cliente.', 'error');
-            return;
-        }
+        try {
+            // Permissions Check (using Client Edit permission as proxy)
+            if (window.Permissions && !window.Permissions.can('Gestão de Clientes', 'can_edit')) {
+                showToast('🚫 Sem permissão para editar dados do cliente.', 'error');
+                return;
+            }
 
-        const clientId = document.getElementById('isbtClientId').value;
-        const client = clients.find(c => c.id == clientId);
-        if (!client) return;
+            const clientId = document.getElementById('isbtClientId').value;
+            const client = clients.find(c => c.id == clientId);
+            if (!client) return;
 
-        const oldData = {
-            isbt_code: client.isbt_code,
-            has_collection_point: client.has_collection_point,
-            collection_points: client.collection_points
-        };
+            const oldData = {
+                isbt_code: client.isbt_code,
+                has_collection_point: client.has_collection_point,
+                collection_points: client.collection_points
+            };
 
-        client.isbt_code = document.getElementById('isbtCodeInput').value;
-        client.has_collection_point = document.getElementById('isbtCollectionPointCheck').checked;
+            client.isbt_code = document.getElementById('isbtCodeInput').value;
+            client.has_collection_point = document.getElementById('isbtCollectionPointCheck').checked;
 
-        client.collection_points = [];
-        if (client.has_collection_point) {
-            const items = document.querySelectorAll('.collection-point-item');
-            items.forEach(item => {
-                const name = item.querySelector('.cp-name').value.trim();
-                const code = item.querySelector('.cp-code').value.trim();
-                if (name || code) {
-                    client.collection_points.push({ name, code });
-                }
+            client.collection_points = [];
+            if (client.has_collection_point) {
+                const items = document.querySelectorAll('.collection-point-item');
+                items.forEach(item => {
+                    const name = item.querySelector('.cp-name').value.trim();
+                    const code = item.querySelector('.cp-code').value.trim();
+                    if (name || code) {
+                        client.collection_points.push({ name, code });
+                    }
+                });
+            }
+
+            delete client.collection_point_name;
+            delete client.collection_point_code;
+
+            await saveToLocal(client.id);
+
+            // Re-render row to update button status
+            const row = document.getElementById(`client-row-${clientId}`);
+            if (row) {
+                const newRow = createClientRow(client);
+                row.replaceWith(newRow);
+            }
+
+            document.getElementById('isbtModal').classList.add('hidden');
+            showToast('✅ Dados ISBT salvos com sucesso!', 'success');
+
+            await registerAuditLog('EDIÇÃO', 'Atualização ISBT 128', `Cliente: ${client.name}`, oldData, {
+                isbt_code: client.isbt_code,
+                has_collection_point: client.has_collection_point,
+                collection_points: client.collection_points
             });
+        } catch (error) {
+            console.error('Erro ao salvar ISBT:', error);
+            showToast('❌ Erro ao salvar dados ISBT. Verifique se o banco de dados foi atualizado.', 'error');
         }
-
-        delete client.collection_point_name;
-        delete client.collection_point_code;
-
-        await saveToLocal(client.id);
-
-        // Re-render row to update button status
-        const row = document.getElementById(`client-row-${clientId}`);
-        if (row) {
-            const newRow = createClientRow(client);
-            row.replaceWith(newRow);
-        }
-
-        document.getElementById('isbtModal').classList.add('hidden');
-        showToast('✅ Dados ISBT salvos com sucesso!', 'success');
-
-        await registerAuditLog('EDIÇÃO', 'Atualização ISBT 128', `Cliente: ${client.name}`, oldData, {
-            isbt_code: client.isbt_code,
-            has_collection_point: client.has_collection_point,
-            collection_points: client.collection_points
-        });
     };
 
 
