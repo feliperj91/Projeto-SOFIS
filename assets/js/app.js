@@ -3803,31 +3803,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         div.innerHTML = `
             <div class="credential-fields-container">
                 <div class="credential-field-item">
-                    <div class="credential-label-row">
-                        <label class="credential-label-text"><i class="fa-solid fa-user"></i>Usuário</label>
+                    <div class="credential-label-row" style="margin-bottom: 5px;">
+                        <label class="credential-label-text"><i class="fa-solid fa-user" style="color: var(--accent); margin-right: 5px;"></i> Usuário</label>
                     </div>
-                    <input type="text" class="url-user-input" placeholder="Digite o usuário" value="${escapeHtml(user)}">
+                    <input type="text" class="url-user-input" placeholder="Digite o usuário" value="${escapeHtml(user)}" style="height: 45px;">
                 </div>
                 
                 <div class="credential-field-item">
-                    <div class="credential-label-row">
-                        <label class="credential-label-text"><i class="fa-solid fa-key"></i>Senha</label>
+                    <div class="credential-label-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; width: 100%;">
+                        <label class="credential-label-text"><i class="fa-solid fa-key" style="color: var(--accent); margin-right: 5px;"></i> Senha</label>
                         <div class="checkbox-wrapper-individual">
-                            <label>
+                            <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 0.85em;">
                                 <input type="checkbox" class="url-private-check" onchange="window.toggleIndividualPrivacy(this)" ${isPrivate ? 'checked' : ''}>
-                                <i class="fa-solid fa-lock"></i> INDIVIDUAL
+                                <i class="fa-solid fa-lock" style="font-size: 0.9em;"></i> INDIVIDUAL
                             </label>
                         </div>
                     </div>
                     <div style="position: relative; width: 100%;">
-                        <input type="password" class="url-pass-input" placeholder="Digite a senha" value="${escapeHtml(password)}" style="padding-right: 40px;">
-                        <button type="button" class="eye-btn" onclick="const i = this.previousElementSibling; i.type = i.type === 'password' ? 'text' : 'password'; this.querySelector('i').className = i.type === 'password' ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';" tabindex="-1" title="Visualizar Senha">
+                        <input type="password" class="url-pass-input" placeholder="Digite a senha" value="${escapeHtml(password)}" style="padding-right: 40px; height: 45px;">
+                        <button type="button" class="eye-btn" onclick="const i = this.previousElementSibling; i.type = i.type === 'password' ? 'text' : 'password'; this.querySelector('i').className = i.type === 'password' ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';" tabindex="-1" title="Visualizar Senha" style="height: 45px; width: 45px; display: flex; align-items: center; justify-content: center; top: 0; right: 0; position: absolute; background: transparent; border: none; cursor: pointer;">
                             <i class="fa-solid fa-eye"></i>
                         </button>
                     </div>
                 </div>
 
-                <button type="button" class="btn-remove-credential" onclick="removeUrlCredentialField(this)" title="Remover Credencial" tabindex="-1">
+                <button type="button" class="btn-remove-credential" onclick="removeUrlCredentialField(this)" title="Remover Credencial" tabindex="-1" style="height: 45px; width: 45px; display: flex; align-items: center; justify-content: center; margin-bottom: 2px;">
                     <i class="fa-solid fa-trash"></i>
                 </button>
             </div>
@@ -3848,25 +3848,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         div.innerHTML = `
             <div class="credential-fields-container">
                 <div class="credential-field-item">
-                    <div class="credential-label-row">
-                        <label class="credential-label-text"><i class="fa-solid fa-user"></i>Usuário</label>
+                    <div class="credential-label-row" style="margin-bottom: 5px;">
+                        <label class="credential-label-text"><i class="fa-solid fa-user" style="color: var(--accent); margin-right: 5px;"></i> Usuário</label>
                     </div>
-                    <input type="text" class="exec-user-input" placeholder="Digite o usuário" value="${escapeHtml(user)}">
+                    <input type="text" class="exec-user-input" placeholder="Digite o usuário" value="${escapeHtml(user)}" style="height: 45px;">
                 </div>
                 
                 <div class="credential-field-item">
-                    <div class="credential-label-row">
-                        <label class="credential-label-text"><i class="fa-solid fa-key"></i>Senha</label>
+                    <div class="credential-label-row" style="margin-bottom: 5px;">
+                        <label class="credential-label-text"><i class="fa-solid fa-key" style="color: var(--accent); margin-right: 5px;"></i> Senha</label>
                     </div>
                     <div style="position: relative; width: 100%;">
-                        <input type="password" class="exec-pass-input" placeholder="Digite a senha" value="${escapeHtml(password)}" style="padding-right: 40px;">
-                        <button type="button" class="eye-btn" onclick="const i = this.previousElementSibling; i.type = i.type === 'password' ? 'text' : 'password'; this.querySelector('i').className = i.type === 'password' ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';" tabindex="-1" title="Visualizar Senha">
+                        <input type="password" class="exec-pass-input" placeholder="Digite a senha" value="${escapeHtml(password)}" style="padding-right: 40px; height: 45px;">
+                        <button type="button" class="eye-btn" onclick="const i = this.previousElementSibling; i.type = i.type === 'password' ? 'text' : 'password'; this.querySelector('i').className = i.type === 'password' ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';" tabindex="-1" title="Visualizar Senha" style="height: 45px; width: 45px; display: flex; align-items: center; justify-content: center; top: 0; right: 0; position: absolute; background: transparent; border: none; cursor: pointer;">
                             <i class="fa-solid fa-eye"></i>
                         </button>
                     </div>
                 </div>
 
-                <button type="button" class="btn-remove-credential" onclick="removeExecCredentialField(this)" title="Remover Credencial" tabindex="-1">
+                <button type="button" class="btn-remove-credential" onclick="removeExecCredentialField(this)" title="Remover Credencial" tabindex="-1" style="height: 45px; width: 45px; display: flex; align-items: center; justify-content: center; margin-bottom: 2px;">
                     <i class="fa-solid fa-trash"></i>
                 </button>
             </div>
