@@ -3138,3 +3138,15 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
 #shared-mng-controls {
     display: flex;
 }
+
+/* Custom Red Button for New Client */
+#addClientBtn {
+    background: linear-gradient(135deg, #ef5350, #c62828) !important;
+    box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3) !important;
+    border: none !important;
+}
+
+#addClientBtn:hover {
+    background: linear-gradient(135deg, #e53935, #b71c1c) !important;
+    box-shadow: 0 6px 16px rgba(244, 67, 54, 0.4) !important;
+}
