@@ -3808,6 +3808,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                     <input type="text" class="url-user-input" placeholder="Digite o usuário" value="${escapeHtml(user)}">
                 </div>
+                
                 <div class="credential-field-item">
                     <div class="credential-label-row">
                         <label class="credential-label-text"><i class="fa-solid fa-key"></i>Senha</label>
@@ -3825,6 +3826,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </button>
                     </div>
                 </div>
+
                 <button type="button" class="btn-remove-credential" onclick="removeUrlCredentialField(this)" title="Remover Credencial" tabindex="-1">
                     <i class="fa-solid fa-trash"></i>
                 </button>
@@ -3851,6 +3853,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                     <input type="text" class="exec-user-input" placeholder="Digite o usuário" value="${escapeHtml(user)}">
                 </div>
+                
                 <div class="credential-field-item">
                     <div class="credential-label-row">
                         <label class="credential-label-text"><i class="fa-solid fa-key"></i>Senha</label>
@@ -3862,6 +3865,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </button>
                     </div>
                 </div>
+
                 <button type="button" class="btn-remove-credential" onclick="removeExecCredentialField(this)" title="Remover Credencial" tabindex="-1">
                     <i class="fa-solid fa-trash"></i>
                 </button>
