@@ -1765,8 +1765,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 hosts: client.hosts,
                 urls: client.urls,
                 web_laudo: client.webLaudo,
-                inactive_contract: client.inactive_contract
-
+                inactive_contract: client.inactive_contract,
+                isbt_code: client.isbt_code,
+                has_collection_point: client.has_collection_point,
+                collection_points: client.collection_points
             };
 
             // Timestamp IDs (13 digits) are temporary and should be treated as new creations
