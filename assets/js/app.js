@@ -3804,17 +3804,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             <div class="credential-fields-container">
                 <div class="credential-field-item">
                     <div class="credential-label-row">
-                        <label class="credential-label-text"><i class="fa-solid fa-user"></i> Usuário</label>
+                        <label class="credential-label-text"><i class="fa-solid fa-user"></i>Usuário</label>
                     </div>
                     <input type="text" class="url-user-input" placeholder="Digite o usuário" value="${escapeHtml(user)}">
                 </div>
                 <div class="credential-field-item">
                     <div class="credential-label-row">
-                        <label class="credential-label-text"><i class="fa-solid fa-key"></i> Senha</label>
+                        <label class="credential-label-text"><i class="fa-solid fa-key"></i>Senha</label>
                         <div class="checkbox-wrapper-individual">
                             <label>
                                 <input type="checkbox" class="url-private-check" onchange="window.toggleIndividualPrivacy(this)" ${isPrivate ? 'checked' : ''}>
-                                <i class="fa-solid fa-lock" style="font-size: 0.7rem;"></i> INDIVIDUAL
+                                <i class="fa-solid fa-lock"></i> INDIVIDUAL
                             </label>
                         </div>
                     </div>
@@ -3847,13 +3847,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             <div class="credential-fields-container">
                 <div class="credential-field-item">
                     <div class="credential-label-row">
-                        <label class="credential-label-text"><i class="fa-solid fa-user"></i> Usuário</label>
+                        <label class="credential-label-text"><i class="fa-solid fa-user"></i>Usuário</label>
                     </div>
                     <input type="text" class="exec-user-input" placeholder="Digite o usuário" value="${escapeHtml(user)}">
                 </div>
                 <div class="credential-field-item">
                     <div class="credential-label-row">
-                        <label class="credential-label-text"><i class="fa-solid fa-key"></i> Senha</label>
+                        <label class="credential-label-text"><i class="fa-solid fa-key"></i>Senha</label>
                     </div>
                     <div style="position: relative; width: 100%;">
                         <input type="password" class="exec-pass-input" placeholder="Digite a senha" value="${escapeHtml(password)}" style="padding-right: 40px;">
