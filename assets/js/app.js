@@ -4488,10 +4488,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             const opLabel = activity.operation_type || 'Ação';
 
             item.innerHTML = `
-        < div class="activity-item-header" >
+        <div class="activity-item-header">
                     <span class="activity-user"><i class="fa-solid fa-user"></i> ${escapeHtml(activity.username)}</span>
                     <span class="activity-time">${dateStr} às ${timeStr}</span>
-                </div >
+                </div>
         <div class="activity-action">
             <span class="activity-op-badge ${opClass}">${opLabel}</span>
             <div style="display: flex; flex-direction: column; gap: 4px; flex: 1;">
@@ -4581,20 +4581,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             item.className = 'activity-item';
 
             const actionButtons = (canEdit || canDelete) ? `
-        < div class="activity-actions" style = "display: flex; gap: 8px;" >
+        <div class="activity-actions" style="display: flex; gap: 8px;">
             ${canEdit ? `<button class="btn-icon-small" onclick="editClientLog('${log.id}')" title="Editar"><i class="fa-solid fa-pen"></i></button>` : ''}
                     ${canDelete ? `<button class="btn-icon-small btn-danger-outline" onclick="deleteClientLog('${log.id}')" title="Excluir"><i class="fa-solid fa-trash"></i></button>` : ''}
-                </div >
+                </div>
         ` : '';
 
             item.innerHTML = `
-        < div class="activity-item-header" >
+        <div class="activity-item-header">
                     <span class="activity-user"><i class="fa-solid fa-user"></i> ${escapeHtml(log.username || 'Sistema')}</span>
                     <div style="display: flex; align-items: center; gap: 12px;">
                         ${actionButtons}
                         <span class="activity-time">${dateStr} às ${timeStr}</span>
                     </div>
-                </div >
+                </div>
                 <div class="activity-action">
                     <span class="activity-op-badge ${opClass}">${opLabel}</span>
                     ${escapeHtml(log.action)}
