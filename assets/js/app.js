@@ -2926,7 +2926,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <div class="checkbox-wrapper-individual">
                             <label>
                                 <input type="checkbox" class="server-private-check" onchange="window.toggleIndividualPrivacy(this)" ${isPrivate ? 'checked' : ''}>
-                                <i class="fa-solid fa-lock" style="font-size: 0.7rem;"></i> INDIVIDUAL
+                                <i class="fa-solid fa-lock"></i> INDIVIDUAL
                             </label>
                         </div>
                     </div>
