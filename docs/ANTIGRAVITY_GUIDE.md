@@ -18,10 +18,11 @@ O projeto possui workflows definidos na pasta `.agent/workflows`. Ambos os colab
   - **Quando usar:** Ao finalizar uma sessão de trabalho significativa.
 
 ## 🛠 Configuração do Ambiente (Para novos colaboradores)
-1. **Clone do Repositório**: `git clone ...`
+1. **Clone do Repositório**: `git clone https://github.com/feliperj91/Projeto-SOFIS.git`
 2. **Setup da VM**:
    - A VM deve ter o Apache configurado para servir `/var/www/html/sofis`.
    - As credenciais de banco devem estar em um arquivo `.env` (copiar de `.env.example`).
+   - **Nota Importante:** O banco de dados é **PostgreSQL** rodando na **VM Linux**, e NÃO Supabase. Assegure-se que a aplicação aponte para o banco local ou IP da VM.
 3. **Dependências**:
    - Este é um projeto PHP/JS Vanilla. O `package.json` é usado principalmente para ferramentas de dev (se houver).
 
