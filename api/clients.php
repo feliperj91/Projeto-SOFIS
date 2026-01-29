@@ -223,6 +223,7 @@ try {
     http_response_code(500);
     // Force specific headers to ensure it is treated as JSON
     header('Content-Type: application/json');
-    echo json_encode(['error' => 'Critical Server Error: ' . $e->getMessage(), 'details' => $e->getTraceAsString()]);
+    // Security: Do not expose internal details to client
+    echo json_encode(['error' => 'Erro interno do servidor. Por favor, contate o administrador.']);
 }
 ?>

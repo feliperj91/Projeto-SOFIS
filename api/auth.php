@@ -26,6 +26,9 @@ if ($action === 'login') {
         }
 
         if ($user && password_verify($password, $user['password_hash'])) {
+            // Security: Prevent session fixation
+            session_regenerate_id(true);
+
             if (!$user['is_active']) {
                 http_response_code(403); // Forbidden
                 echo json_encode(['error' => 'Sua conta está desativada. Entre em contato com o administrador.']);

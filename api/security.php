@@ -15,7 +15,10 @@ class SecurityUtil {
         // In production, this should come from environment variable
         $key = getenv('SOFIS_ENCRYPTION_KEY');
         if (!$key) {
-            // Default key - CHANGE THIS IN PRODUCTION!
+            // Log warning about insecure configuration
+            error_log('SECURITY CRITICAL: SOFIS_ENCRYPTION_KEY not set. Using insecure default key. Please configure this environment variable immediately.');
+            
+            // Default key - Fallback
             $key = 'sofis_secret_system_key_2025_change_me_in_production';
         }
         // Derive a 32-byte key from the password
