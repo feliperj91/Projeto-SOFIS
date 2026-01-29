@@ -1,48 +1,35 @@
-# 🗄️ Database Schemas - SOFIS
+# 🗄️ Database Schemas - SOFIS (VM/Linux)
 
-Esta pasta contém os schemas SQL utilizados para configurar o banco de dados Supabase do projeto SOFIS.
+Esta pasta contém os schemas SQL utilizados para configurar o banco de dados PostgreSQL na VM Linux.
 
-## 📋 Arquivos
+## 📋 Arquivos Principais
 
-### `auth_schema.sql`
-Schema de autenticação e usuários do sistema.
-- Tabela `users` com credenciais criptografadas
-- Controle de roles (ADMINISTRADOR, ANALISTA, TÉCNICO)
+### `schema.sql`
+Schema mestre do sistema.
+- Executado pelo script de instalação na VM.
+- Contém todas as tabelas: `users`, `clients`, `role_permissions`, `audit_log`, `version_controls`, etc.
+- Utiliza chaves primárias inteiras (`SERIAL`) e armazenamento JSONB para contatos/hosts.
 
-### `management_schema.sql`
-Schema de gerenciamento de permissões.
-- Tabela `permissions` para controle granular de acesso
-- Relacionamento com roles de usuários
-
-### `supabase_schema.sql`
-Schema principal do sistema.
-- Tabela `clients` - Cadastro de clientes
-- Tabela `contacts` - Contatos dos clientes
-- Tabela `servers` - Dados de acesso SQL
-- Tabela `vpns` - Credenciais VPN
-- Tabela `urls` - URLs de sistemas
-
-### `version_control_schema.sql`
-Schema de controle de versões.
-- Tabela `versions` - Histórico de atualizações
-- Relacionamento com clientes e sistemas
-
-### `migration_favorites.sql`
-Migração para adicionar sistema de favoritos.
-- Adiciona campo `is_favorite` na tabela `clients`
+### `setup_guide.md`
+Guia de configuração do ambiente Linux (Apache/PHP/Postgres).
 
 ## 🚀 Como Usar
 
-Estes schemas já foram aplicados no Supabase em produção. Mantenha-os aqui apenas como:
-- 📚 Referência de estrutura
-- 🔄 Backup da configuração
-- 📖 Documentação do banco
+Para resetar ou instalar o banco de dados na VM:
+
+```bash
+# Acessar postgres
+sudo -u postgres psql
+
+# Criar banco (se não existir)
+CREATE DATABASE sofis_db;
+CREATE USER sofis_user WITH ENCRYPTED PASSWORD 'sofis123';
+GRANT ALL PRIVILEGES ON DATABASE sofis_db TO sofis_user;
+
+# Importar Schema
+psql -U sofis_user -d sofis_db -h localhost -f database/schema.sql
+```
 
 ## ⚠️ Importante
 
-**NÃO execute estes scripts diretamente no banco de produção!**  
-Eles são apenas para referência. Qualquer alteração no schema deve ser feita através do painel do Supabase ou com muito cuidado.
-
----
-
-**Última atualização:** Janeiro 2026
+O arquivo `schema.sql` é a fonte da verdade para a estrutura do banco de dados na VM.

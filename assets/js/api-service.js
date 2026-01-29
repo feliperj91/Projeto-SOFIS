@@ -255,7 +255,4 @@ const api = {
 };
 
 window.api = api;
-// Shim de Compatibilidade
-window.supabaseClient = {
-    from: () => { throw new Error("Supabase foi removido. Use window.api em vez disso."); }
-};
+

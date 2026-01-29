@@ -40,7 +40,7 @@ Para reativar um contrato, você pode:
 
 ## Migração do Banco de Dados
 
-Para adicionar o campo ao banco de dados Supabase, execute:
+Para adicionar o campo ao banco de dados PostgreSQL, execute:
 
 ```sql
 ALTER TABLE clients 
@@ -49,7 +49,7 @@ ADD COLUMN IF NOT EXISTS inactive_contract JSONB DEFAULT NULL;
 
 Ou execute o arquivo de migração:
 ```bash
-psql -U postgres -d supabase -f database/migration_inactive_contract.sql
+psql -U sofis_user -d sofis_db -h localhost -f database/migration_inactive_contract.sql
 ```
 
 ## Arquivos Modificados
