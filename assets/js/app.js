@@ -5786,8 +5786,29 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             await saveToLocal(client.id);
 
-            document.getElementById('isbtModal').classList.add('hidden');
+            // Update UI to reflect saved state
+            // Lock all collection point fields
+            const items = document.querySelectorAll('.collection-point-item');
+            items.forEach(item => {
+                const nameInput = item.querySelector('.cp-name');
+                const codeInput = item.querySelector('.cp-code');
+                const btn = item.querySelector('.btn-icon[onclick*="editCollectionPoint"]');
+
+                if (nameInput && codeInput && btn) {
+                    nameInput.setAttribute('readonly', 'readonly');
+                    codeInput.setAttribute('readonly', 'readonly');
+                    nameInput.style.borderColor = 'var(--border)';
+                    codeInput.style.borderColor = 'var(--border)';
+                    btn.innerHTML = '<i class="fa-solid fa-pen"></i>';
+                    btn.title = 'Editar';
+                }
+            });
+
+            // document.getElementById('isbtModal').classList.add('hidden'); // Keep modal open
             showToast('✅ Dados ISBT salvos com sucesso!', 'success');
+
+            // Refresh main table (background)
+            renderClients();
 
             await registerAuditLog('EDIÇÃO', 'Atualização ISBT 128', `Cliente: ${client.name}`, oldData, {
                 isbt_code: client.isbt_code,
