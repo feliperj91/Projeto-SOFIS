@@ -830,7 +830,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     vpns: c.vpns || [],
                     hosts: c.hosts || [],
                     urls: c.urls || [],
-                    inactive_contract: c.inactive_contract || null
+                    inactive_contract: c.inactive_contract || null,
+                    isbt_code: c.isbt_code || '',
+                    has_collection_point: c.has_collection_point || false,
+                    collection_points: c.collection_points || []
                 }));
 
             } else {
@@ -1469,6 +1472,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Update URL badge
         updateBadge('.btn-with-badge:has(.fa-link)', hasUrls, urlCount);
+
+        // Update ISBT button
+        const hasIsbt = (client.isbt_code && client.isbt_code.trim() !== '') ||
+            (client.has_collection_point && client.collection_points && client.collection_points.length > 0);
+        const isbtBtn = row.querySelector('button[title="ISBT 128"]');
+        if (isbtBtn) {
+            isbtBtn.className = hasIsbt ? 'btn-icon active-success' : 'btn-icon';
+        }
     }
 
     // Helper function to create a client row
@@ -1505,7 +1516,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const hasUrls = urlCount > 0;
         const hasContacts = client.contacts && client.contacts.length > 0;
 
-        const hasIsbt = client.isbt_code && client.isbt_code.trim() !== '';
+        const hasIsbt = (client.isbt_code && client.isbt_code.trim() !== '') ||
+            (client.has_collection_point && client.collection_points && client.collection_points.length > 0);
 
         const serverBtnClass = hasServers ? 'btn-icon active-success' : 'btn-icon';
         const vpnBtnClass = hasVpns ? 'btn-icon active-success' : 'btn-icon';
@@ -5773,13 +5785,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             delete client.collection_point_code;
 
             await saveToLocal(client.id);
-
-            // Re-render row to update button status
-            const row = document.getElementById(`client-row-${clientId}`);
-            if (row) {
-                const newRow = createClientRow(client);
-                row.replaceWith(newRow);
-            }
 
             document.getElementById('isbtModal').classList.add('hidden');
             showToast('✅ Dados ISBT salvos com sucesso!', 'success');
