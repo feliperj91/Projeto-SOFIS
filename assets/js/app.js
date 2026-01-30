@@ -2945,18 +2945,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="credential-field-item">
                     <div class="credential-label-row">
                         <label class="credential-label-text"><i class="fa-solid fa-key"></i><span>Senha <span class="required">*</span></span></label>
-                        <div class="checkbox-wrapper-individual">
-                            <label style="${isPrivate ? 'color: #ff5252; font-weight: 700;' : ''}">
-                                <i class="fa-solid fa-lock"></i> INDIVIDUAL
-                                <input type="checkbox" class="server-private-check" onchange="window.toggleIndividualPrivacy(this)" ${isPrivate ? 'checked' : ''}>
-                            </label>
-                        </div>
                     </div>
                     <div style="position: relative; width: 100%;">
                         <input type="password" class="server-pass-input" placeholder="Digite a senha" value="${escapeHtml(password)}" required style="padding-right: 40px;">
                         <button type="button" class="eye-btn" onclick="const i = this.previousElementSibling; i.type = i.type === 'password' ? 'text' : 'password'; this.querySelector('i').className = i.type === 'password' ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';" tabindex="-1" title="Visualizar Senha">
                             <i class="fa-solid fa-eye"></i>
                         </button>
+                    </div>
+                </div>
+
+                <div class="credential-field-item individual-toggle-container" style="flex: 0 0 auto; display: flex; align-items: flex-end; padding-bottom: 12px;">
+                    <div class="checkbox-wrapper-individual">
+                        <label style="${isPrivate ? 'color: #ff5252; font-weight: 700;' : ''}">
+                            <i class="fa-solid fa-lock"></i> INDIVIDUAL
+                            <input type="checkbox" class="server-private-check" onchange="window.toggleIndividualPrivacy(this)" ${isPrivate ? 'checked' : ''}>
+                        </label>
                     </div>
                 </div>
 
@@ -3164,20 +3167,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <input type="text" class="server-user-input" placeholder="Digite o usuário" value="${escapeHtml(user)}" required>
                 </div>
                 <div class="credential-field-item">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                        <label class="credential-label-text"><i class="fa-solid fa-key"></i><span>Senha <span class="required">*</span></span></label>
-                        <div class="checkbox-wrapper-individual" style="margin-left: 10px;">
-                            <label style="cursor: pointer; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; ${isPrivate ? 'color: #ff5252; font-weight: 700;' : 'color: var(--text-secondary);'}">
-                                <i class="fa-solid fa-lock" style="font-size: 0.7rem;"></i> INDIVIDUAL
-                                <input type="checkbox" class="server-private-check" onchange="window.toggleIndividualPrivacy(this)" ${isPrivate ? 'checked' : ''}>
-                            </label>
-                        </div>
+                    <div class="credential-label-row">
+                        <label class="credential-label-text"><i class="fa-solid fa-key" style="color: var(--accent); margin-right: 5px;"></i><span>Senha <span class="required">*</span></span></label>
                     </div>
                     <div style="position: relative; width: 100%;">
                         <input type="password" class="server-pass-input" placeholder="Digite a senha" value="${escapeHtml(password)}" required style="padding-right: 35px; width: 100%;">
                         <button type="button" onclick="const i = this.previousElementSibling; i.type = i.type === 'password' ? 'text' : 'password'; this.querySelector('i').className = i.type === 'password' ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-secondary); cursor: pointer;" tabindex="-1" title="Visualizar Senha">
                             <i class="fa-solid fa-eye"></i>
                         </button>
+                    </div>
+                </div>
+                <div class="credential-field-item individual-toggle-container" style="flex: 0 0 auto; display: flex; align-items: flex-end; padding-bottom: 12px;">
+                    <div class="checkbox-wrapper-individual">
+                        <label style="cursor: pointer; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; ${isPrivate ? 'color: #ff5252; font-weight: 700;' : 'color: var(--text-secondary);'}">
+                            <i class="fa-solid fa-lock" style="font-size: 0.7rem;"></i> INDIVIDUAL
+                            <input type="checkbox" class="server-private-check" onchange="window.toggleIndividualPrivacy(this)" ${isPrivate ? 'checked' : ''}>
+                        </label>
                     </div>
                 </div>
                 <button type="button" class="btn-remove-credential" onclick="removeVpnCredentialField(this)" title="Remover Credencial" tabindex="-1">
@@ -3813,18 +3818,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="credential-field-item">
                     <div class="credential-label-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; width: 100%;">
                         <label class="credential-label-text"><i class="fa-solid fa-key"></i><span>Senha</span></label>
-                        <div class="checkbox-wrapper-individual">
-                            <label style="cursor: pointer; font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.5px; ${isPrivate ? 'color: #ff5252; font-weight: 700;' : 'color: var(--text-secondary);'}">
-                                <i class="fa-solid fa-lock" style="font-size: 0.9em;"></i> INDIVIDUAL
-                                <input type="checkbox" class="url-private-check" onchange="window.toggleIndividualPrivacy(this)" ${isPrivate ? 'checked' : ''}>
-                            </label>
-                        </div>
                     </div>
                     <div style="position: relative; width: 100%;">
                         <input type="password" class="url-pass-input" placeholder="Digite a senha" value="${escapeHtml(password)}" style="padding-right: 40px; height: 45px;">
                         <button type="button" class="eye-btn" onclick="const i = this.previousElementSibling; i.type = i.type === 'password' ? 'text' : 'password'; this.querySelector('i').className = i.type === 'password' ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';" tabindex="-1" title="Visualizar Senha" style="height: 45px; width: 45px; display: flex; align-items: center; justify-content: center; top: 0; right: 0; position: absolute; background: transparent; border: none; cursor: pointer;">
                             <i class="fa-solid fa-eye"></i>
                         </button>
+                    </div>
+                </div>
+
+                <div class="credential-field-item individual-toggle-container" style="flex: 0 0 auto; display: flex; align-items: flex-end; padding-bottom: 12px;">
+                    <div class="checkbox-wrapper-individual">
+                        <label style="cursor: pointer; font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.5px; ${isPrivate ? 'color: #ff5252; font-weight: 700;' : 'color: var(--text-secondary);'}">
+                            <i class="fa-solid fa-lock" style="font-size: 0.9em;"></i> INDIVIDUAL
+                            <input type="checkbox" class="url-private-check" onchange="window.toggleIndividualPrivacy(this)" ${isPrivate ? 'checked' : ''}>
+                        </label>
                     </div>
                 </div>
 
