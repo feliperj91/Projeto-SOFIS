@@ -1384,7 +1384,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             nameContainer.classList.remove('clickable');
             nameContainer.innerHTML = `
                 ${escapeHtml(client.name)}
-                ${client.notes ? `<i class="fa-solid fa-bell client-note-indicator" style="margin-left: 15px; cursor: pointer;" onclick="window.openClientGeneralNotes('${client.id}'); event.stopPropagation();" title="Possui observações importantes"></i>` : ''}
+                ${client.notes ? `<button type="button" onclick="event.stopPropagation(); window.openClientGeneralNotes('${client.id}');" class="btn-icon-bell" title="Possui observações importantes" style="margin-left: 10px; background: transparent; border: none; padding: 5px; cursor: pointer; display: flex; align-items: center;"><i class="fa-solid fa-bell client-note-indicator"></i></button>` : ''}
                 ${(client.inactive_contract && client.inactive_contract.active) ? `<span class="inactive-info-icon" title="Contrato Inativo">i</span>` : ''}
             `;
         }
@@ -1536,7 +1536,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div class="client-name-container" style="display: flex; flex-direction: column; justify-content: flex-start;">
                         <div class="client-name-row" title="Nome do Cliente" style="display: flex; align-items: center;">
                             <span style="font-weight: 600;">${escapeHtml(client.name)}</span>
-                            ${client.notes ? `<i class="fa-solid fa-bell client-note-indicator" title="Possui observações importantes" style="margin-left: 15px; cursor: pointer;" onclick="window.openClientGeneralNotes('${client.id}'); event.stopPropagation();"></i>` : ''}
+                            ${client.notes ? `<button type="button" onclick="event.stopPropagation(); window.openClientGeneralNotes('${client.id}');" class="btn-icon-bell" title="Possui observações importantes" style="margin-left: 10px; background: transparent; border: none; padding: 5px; cursor: pointer; display: flex; align-items: center;"><i class="fa-solid fa-bell client-note-indicator"></i></button>` : ''}
                             ${(client.inactive_contract && client.inactive_contract.active) ? `<span class="inactive-info-icon" title="Contrato Inativo">i</span>` : ''}
                         </div>
                         ${client.updatedAt && canViewLogs ? `
