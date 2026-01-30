@@ -5817,7 +5817,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         } catch (error) {
             console.error('Erro ao salvar ISBT:', error);
-            showToast('❌ Erro ao salvar dados ISBT. Verifique se o banco de dados foi atualizado.', 'error');
+            const errorMsg = error.message || error.toString();
+            showToast(`❌ Erro ao salvar dados ISBT: ${errorMsg}`, 'error');
         }
     };
 
