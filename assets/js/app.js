@@ -5802,35 +5802,158 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     // --- Collection Point Helper Functions ---
-    window.addCollectionPointField = (name = '', code = '') => {
+    window.addCollectionPointField = (name = '', code = '', index = null) => {
         const list = document.getElementById('collectionPointsList');
         if (!list) return;
 
         const div = document.createElement('div');
         div.className = 'collection-point-item';
-        div.style.cssText = 'display: flex; gap: 10px; align-items: flex-start; padding: 10px; background: var(--bg-darker); border-radius: 6px; border: 1px solid var(--border);';
+        div.style.cssText = 'display: flex; gap: 12px; align-items: stretch; padding: 15px; background: linear-gradient(135deg, rgba(255, 193, 7, 0.05) 0%, rgba(255, 193, 7, 0.02) 100%); border-radius: 10px; border: 2px solid rgba(255, 193, 7, 0.15); transition: all 0.3s; position: relative;';
+
+        if (index !== null) {
+            div.dataset.index = index;
+        }
 
         div.innerHTML = `
-            <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <i class="fa-solid fa-building" style="color: var(--text-secondary); font-size: 0.8em;"></i>
-                    <input type="text" class="cp-name" placeholder="Nome do Posto" value="${escapeHtml(name)}" style="flex: 1; background: transparent; border: none; border-bottom: 1px solid var(--border); color: white; padding: 4px;">
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 12px;">
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px;">
+                        <i class="fa-solid fa-building" style="color: var(--accent); font-size: 0.7rem;"></i>
+                        Nome do Posto
+                    </label>
+                    <input type="text" class="cp-name" placeholder="Ex: BIM, Porto de Coleta" value="${escapeHtml(name)}" 
+                        style="background: var(--bg-card); border: 2px solid var(--border); border-radius: 6px; color: var(--text-primary); padding: 10px 12px; font-size: 0.95rem; font-weight: 500; transition: all 0.3s; text-transform: uppercase;"
+                        oninput="this.value = this.value.replace(/[^A-Za-zÀ-ÿ\\s]/g, '').toUpperCase()">
                 </div>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <i class="fa-solid fa-barcode" style="color: var(--text-secondary); font-size: 0.8em;"></i>
-                    <input type="text" class="cp-code" placeholder="Código ISBT do Posto" value="${escapeHtml(code)}" style="flex: 1; background: transparent; border: none; border-bottom: 1px solid var(--border); color: white; padding: 4px;">
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px;">
+                        <i class="fa-solid fa-barcode" style="color: var(--accent); font-size: 0.7rem;"></i>
+                        Código ISBT
+                    </label>
+                    <div style="position: relative;">
+                        <input type="text" class="cp-code" placeholder="Ex: B3232" value="${escapeHtml(code)}" maxlength="5"
+                            style="background: var(--bg-card); border: 2px solid var(--border); border-radius: 6px; color: var(--text-primary); padding: 10px 12px; font-size: 0.95rem; font-weight: 500; letter-spacing: 1px; transition: all 0.3s; text-transform: uppercase;"
+                            oninput="formatIsbtCode(this)">
+                        <div style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 0.7rem; opacity: 0.5; pointer-events: none;">
+                            A0000
+                        </div>
+                    </div>
                 </div>
             </div>
-            <button type="button" class="btn-icon" onclick="removeCollectionPointField(this)" title="Remover" style="color: var(--danger); opacity: 0.7; transition: opacity 0.2s;">
-                <i class="fa-solid fa-trash"></i>
-            </button>
+            <div style="display: flex; flex-direction: column; gap: 8px; justify-content: center;">
+                <button type="button" class="btn-icon" onclick="editCollectionPoint(this)" title="Editar Posto" 
+                    style="background: rgba(33, 150, 243, 0.1); color: #2196F3; border: 1px solid rgba(33, 150, 243, 0.3); padding: 8px; border-radius: 6px; transition: all 0.2s;">
+                    <i class="fa-solid fa-pen" style="font-size: 0.85rem;"></i>
+                </button>
+                <button type="button" class="btn-icon" onclick="removeCollectionPointField(this)" title="Remover Posto" 
+                    style="background: rgba(244, 67, 54, 0.1); color: var(--danger); border: 1px solid rgba(244, 67, 54, 0.3); padding: 8px; border-radius: 6px; transition: all 0.2s;">
+                    <i class="fa-solid fa-trash" style="font-size: 0.85rem;"></i>
+                </button>
+            </div>
         `;
+
+        // Add hover effects
+        div.addEventListener('mouseenter', () => {
+            div.style.borderColor = 'var(--accent)';
+            div.style.boxShadow = '0 4px 12px rgba(255, 193, 7, 0.15)';
+        });
+        div.addEventListener('mouseleave', () => {
+            div.style.borderColor = 'rgba(255, 193, 7, 0.15)';
+            div.style.boxShadow = 'none';
+        });
+
         list.appendChild(div);
     };
 
-    window.removeCollectionPointField = (btn) => {
-        btn.closest('.collection-point-item').remove();
+    // Format ISBT code: 1 letter + 4 numbers
+    window.formatIsbtCode = (input) => {
+        let value = input.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+        if (value.length > 0) {
+            // First character must be a letter
+            if (!/^[A-Z]/.test(value)) {
+                value = value.substring(1);
+            }
+            // After first letter, only numbers
+            if (value.length > 1) {
+                value = value[0] + value.substring(1).replace(/[^0-9]/g, '');
+            }
+            // Max 5 characters (1 letter + 4 numbers)
+            value = value.substring(0, 5);
+        }
+
+        input.value = value;
     };
+
+    // Edit collection point (make fields editable)
+    window.editCollectionPoint = (btn) => {
+        const item = btn.closest('.collection-point-item');
+        const nameInput = item.querySelector('.cp-name');
+        const codeInput = item.querySelector('.cp-code');
+
+        // Toggle readonly state
+        const isReadonly = nameInput.hasAttribute('readonly');
+
+        if (isReadonly) {
+            nameInput.removeAttribute('readonly');
+            codeInput.removeAttribute('readonly');
+            nameInput.style.borderColor = 'var(--accent)';
+            codeInput.style.borderColor = 'var(--accent)';
+            btn.innerHTML = '<i class="fa-solid fa-check" style="font-size: 0.85rem;"></i>';
+            btn.title = 'Salvar Edição';
+            btn.style.background = 'rgba(76, 175, 80, 0.1)';
+            btn.style.color = '#4CAF50';
+            btn.style.borderColor = 'rgba(76, 175, 80, 0.3)';
+            nameInput.focus();
+        } else {
+            nameInput.setAttribute('readonly', 'readonly');
+            codeInput.setAttribute('readonly', 'readonly');
+            nameInput.style.borderColor = 'var(--border)';
+            codeInput.style.borderColor = 'var(--border)';
+            btn.innerHTML = '<i class="fa-solid fa-pen" style="font-size: 0.85rem;"></i>';
+            btn.title = 'Editar Posto';
+            btn.style.background = 'rgba(33, 150, 243, 0.1)';
+            btn.style.color = '#2196F3';
+            btn.style.borderColor = 'rgba(33, 150, 243, 0.3)';
+            showToast('✅ Posto de coleta atualizado!', 'success');
+        }
+    };
+
+    window.removeCollectionPointField = (btn) => {
+        const item = btn.closest('.collection-point-item');
+        const name = item.querySelector('.cp-name').value;
+
+        if (name) {
+            // Animate removal
+            item.style.transform = 'translateX(100%)';
+            item.style.opacity = '0';
+            setTimeout(() => item.remove(), 300);
+            showToast(`🗑️ Posto "${name}" removido`, 'info');
+        } else {
+            item.remove();
+        }
+    };
+
+    // Add mask to main ISBT code input
+    document.addEventListener('DOMContentLoaded', () => {
+        const isbtCodeInput = document.getElementById('isbtCodeInput');
+        if (isbtCodeInput) {
+            isbtCodeInput.addEventListener('input', function () {
+                formatIsbtCode(this);
+            });
+
+            // Add focus effects
+            isbtCodeInput.addEventListener('focus', function () {
+                this.style.borderColor = 'var(--accent)';
+                this.style.boxShadow = '0 0 0 3px rgba(255, 193, 7, 0.1)';
+            });
+            isbtCodeInput.addEventListener('blur', function () {
+                this.style.borderColor = 'var(--border)';
+                this.style.boxShadow = 'none';
+            });
+        }
+    });
+
 
 });
 console.log("✅ APP.JS FULLY PARSED AND LOADED");
