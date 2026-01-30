@@ -5807,8 +5807,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // document.getElementById('isbtModal').classList.add('hidden'); // Keep modal open
             showToast('✅ Dados ISBT salvos com sucesso!', 'success');
 
-            // Refresh main table (background)
-            renderClients();
+            // Refresh happens automatically via saveToLocal -> initialLoad
 
             await registerAuditLog('EDIÇÃO', 'Atualização ISBT 128', `Cliente: ${client.name}`, oldData, {
                 isbt_code: client.isbt_code,
