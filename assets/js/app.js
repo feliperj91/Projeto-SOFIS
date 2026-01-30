@@ -5987,4 +5987,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
 });
+// Filter Collection Points
+window.filterCollectionPoints = (searchTerm) => {
+    const items = document.querySelectorAll('.collection-point-item');
+    const term = searchTerm.toLowerCase().trim();
+
+    items.forEach(item => {
+        const nameInput = item.querySelector('.cp-name');
+        const codeInput = item.querySelector('.cp-code');
+
+        const name = (nameInput ? nameInput.value : '').toLowerCase();
+        const code = (codeInput ? codeInput.value : '').toLowerCase();
+
+        if (name.includes(term) || code.includes(term)) {
+            item.style.display = 'flex';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+};
+
 console.log("✅ APP.JS FULLY PARSED AND LOADED");
