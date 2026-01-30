@@ -4,6 +4,37 @@ Este arquivo contém o histórico consolidado de todas as alterações realizada
 
 ---
 
+# Build 2.2.2 - Estabilização de UI e Ajustes de ISBT
+**Data:** 2026-01-30 00:43
+**Tipo:** Feature, Fix & UI Enhancement
+
+## 🎯 Resumo
+Esta build foca na estabilização de elementos da interface que apresentavam comportamentos inconsistentes, além de uma reformulação técnica do módulo ISBT 128 e simplificação do gerenciamento de WebLaudo.
+
+## 🚀 Melhorias e Correções
+### 1. Sistema de Notificações (Sino)
+- **Correção:** O ícone de notificação (sino) agora responde no primeiro clique.
+- **UI/UX:** Removida a escala de zoom no hover que causava sobreposição com ícones vizinhos. Adicionada animação de toque (vibração) acelerada ao passar o mouse para feedback tátil.
+- **Estabilidade:** Ícone encapsulado em botão para garantir área de clique estável.
+
+### 2. Módulo ISBT 128
+- **Validação:** Implementada máscara estrita que exige o formato `B + 4 números` (ex: B3325).
+- **Interface:** Layout do label ajustado para maior clareza, com texto em branco e alinhamento otimizado.
+- **Filtro:** Adicionada barra de pesquisa para postos de coleta dentro do modal, facilitando a gestão em clientes com muitas unidades.
+
+### 3. WebLaudo e Credenciais
+- **Simplificação:** Removidos campos de Usuário e Senha do WebLaudo (redundantes no fluxo atual), mantendo apenas a URL.
+- **Padronização:** Design de campos de credenciais unificado em todos os modais para um visual mais premium e consistente.
+
+## 🛠️ Arquivos Modificados
+- `assets/js/app.js`
+- `assets/css/style.css`
+- `assets/css/credential-styles.css`
+- `index.html`
+- `assets/js/build-config.js`
+- `assets/js/changelog.js`
+
+
 # Build 2.2.1 - Suporte a Múltiplos Grupos no Frontend
 **Data:** 2026-01-20 20:53
 **Tipo:** Feature & Fix

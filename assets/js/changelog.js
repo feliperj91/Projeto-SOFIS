@@ -3,6 +3,18 @@
 
 window.SOFIS_CHANGELOG = [
     {
+        version: '2.2.2',
+        date: '2026-01-30',
+        title: 'Estabilização de UI e Ajustes de ISBT',
+        changes: [
+            { type: 'fix', text: 'Botão de notificação (Sino) agora responde no primeiro clique e possui animação estável.' },
+            { type: 'feat', text: 'Refinamento do módulo ISBT 128: implementação de máscara estrita (B+4) e melhoria no alinhamento de labels.' },
+            { type: 'feat', text: 'Adicionado filtro de busca para Postos de Coleta dentro do modal ISBT.' },
+            { type: 'imp', text: 'Simplificação do WebLaudo: remoção de campos redundantes de usuário/senha, mantendo foco na URL.' },
+            { type: 'style', text: 'Padronização visual premium para campos de credenciais em todos os modais.' }
+        ]
+    },
+    {
         version: '2.2.1',
         date: '2026-01-20',
         title: 'Suporte a Múltiplos Grupos de Acesso',
