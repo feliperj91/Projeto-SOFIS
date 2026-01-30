@@ -5808,58 +5808,57 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const div = document.createElement('div');
         div.className = 'collection-point-item';
-        div.style.cssText = 'display: flex; gap: 12px; align-items: stretch; padding: 15px; background: linear-gradient(135deg, rgba(255, 193, 7, 0.05) 0%, rgba(255, 193, 7, 0.02) 100%); border-radius: 10px; border: 2px solid rgba(255, 193, 7, 0.15); transition: all 0.3s; position: relative;';
+        div.style.cssText = 'display: flex; gap: 10px; align-items: stretch; padding: 12px; background: transparent; border-radius: 8px; border: 1px solid var(--border); transition: all 0.3s; position: relative;';
 
         if (index !== null) {
             div.dataset.index = index;
         }
 
+
         div.innerHTML = `
-            <div style="flex: 1; display: flex; flex-direction: column; gap: 12px;">
-                <div style="display: flex; flex-direction: column; gap: 6px;">
-                    <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px;">
-                        <i class="fa-solid fa-building" style="color: var(--accent); font-size: 0.7rem;"></i>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; flex-direction: column; gap: 5px;">
+                    <label style="font-size: 0.7rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 5px;">
+                        <i class="fa-solid fa-building" style="color: var(--accent); font-size: 0.65rem;"></i>
                         Nome do Posto
                     </label>
                     <input type="text" class="cp-name" placeholder="Ex: BIM, Porto de Coleta" value="${escapeHtml(name)}" 
-                        style="background: var(--bg-card); border: 2px solid var(--border); border-radius: 6px; color: var(--text-primary); padding: 10px 12px; font-size: 0.95rem; font-weight: 500; transition: all 0.3s; text-transform: uppercase;"
+                        style="background: var(--bg-card); border: 2px solid var(--border); border-radius: 6px; color: var(--text-primary); padding: 8px 10px; font-size: 0.85rem; font-weight: 500; transition: all 0.3s; text-transform: uppercase;"
                         oninput="this.value = this.value.replace(/[^A-Za-zÀ-ÿ\\s]/g, '').toUpperCase()">
                 </div>
-                <div style="display: flex; flex-direction: column; gap: 6px;">
-                    <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px;">
-                        <i class="fa-solid fa-barcode" style="color: var(--accent); font-size: 0.7rem;"></i>
+                <div style="display: flex; flex-direction: column; gap: 5px;">
+                    <label style="font-size: 0.7rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 5px;">
+                        <i class="fa-solid fa-barcode" style="color: var(--accent); font-size: 0.65rem;"></i>
                         Código ISBT
                     </label>
                     <div style="position: relative;">
                         <input type="text" class="cp-code" placeholder="Ex: B3232" value="${escapeHtml(code)}" maxlength="5"
-                            style="background: var(--bg-card); border: 2px solid var(--border); border-radius: 6px; color: var(--text-primary); padding: 10px 12px; font-size: 0.95rem; font-weight: 500; letter-spacing: 1px; transition: all 0.3s; text-transform: uppercase;"
+                            style="background: var(--bg-card); border: 2px solid var(--border); border-radius: 6px; color: var(--text-primary); padding: 8px 10px; font-size: 0.85rem; font-weight: 500; letter-spacing: 1px; transition: all 0.3s; text-transform: uppercase;"
                             oninput="formatIsbtCode(this)">
-                        <div style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 0.7rem; opacity: 0.5; pointer-events: none;">
+                        <div style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 0.65rem; opacity: 0.5; pointer-events: none;">
                             A0000
                         </div>
                     </div>
                 </div>
             </div>
-            <div style="display: flex; flex-direction: column; gap: 8px; justify-content: center;">
+            <div style="display: flex; flex-direction: column; gap: 6px; justify-content: center;">
                 <button type="button" class="btn-icon" onclick="editCollectionPoint(this)" title="Editar Posto" 
-                    style="background: rgba(33, 150, 243, 0.1); color: #2196F3; border: 1px solid rgba(33, 150, 243, 0.3); padding: 8px; border-radius: 6px; transition: all 0.2s;">
-                    <i class="fa-solid fa-pen" style="font-size: 0.85rem;"></i>
+                    style="background: rgba(33, 150, 243, 0.1); color: #2196F3; border: 1px solid rgba(33, 150, 243, 0.3); padding: 6px; border-radius: 6px; transition: all 0.2s;">
+                    <i class="fa-solid fa-pen" style="font-size: 0.8rem;"></i>
                 </button>
                 <button type="button" class="btn-icon" onclick="removeCollectionPointField(this)" title="Remover Posto" 
-                    style="background: rgba(244, 67, 54, 0.1); color: var(--danger); border: 1px solid rgba(244, 67, 54, 0.3); padding: 8px; border-radius: 6px; transition: all 0.2s;">
-                    <i class="fa-solid fa-trash" style="font-size: 0.85rem;"></i>
+                    style="background: rgba(244, 67, 54, 0.1); color: var(--danger); border: 1px solid rgba(244, 67, 54, 0.3); padding: 6px; border-radius: 6px; transition: all 0.2s;">
+                    <i class="fa-solid fa-trash" style="font-size: 0.8rem;"></i>
                 </button>
             </div>
         `;
 
         // Add hover effects
         div.addEventListener('mouseenter', () => {
-            div.style.borderColor = 'var(--accent)';
-            div.style.boxShadow = '0 4px 12px rgba(255, 193, 7, 0.15)';
+            div.style.borderColor = 'rgba(255, 255, 255, 0.3)';
         });
         div.addEventListener('mouseleave', () => {
-            div.style.borderColor = 'rgba(255, 193, 7, 0.15)';
-            div.style.boxShadow = 'none';
+            div.style.borderColor = 'var(--border)';
         });
 
         list.appendChild(div);
