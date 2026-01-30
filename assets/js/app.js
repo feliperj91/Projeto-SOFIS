@@ -5822,13 +5822,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <i class="fa-solid fa-building" style="margin-right: 4px;"></i>Posto
                     </span>
                     <div style="display: flex; gap: 4px;">
-                        <button type="button" class="btn-icon" onclick="editCollectionPoint(this)" title="Editar" 
-                            style="background: rgba(33, 150, 243, 0.1); color: #2196F3; border: 1px solid rgba(33, 150, 243, 0.3); padding: 4px 6px; border-radius: 4px; transition: all 0.2s;">
-                            <i class="fa-solid fa-pen" style="font-size: 0.7rem;"></i>
+                        <button type="button" class="btn-icon" onclick="editCollectionPoint(this)" title="Editar">
+                            <i class="fa-solid fa-pen"></i>
                         </button>
-                        <button type="button" class="btn-icon" onclick="removeCollectionPointField(this)" title="Remover" 
-                            style="background: rgba(244, 67, 54, 0.1); color: var(--danger); border: 1px solid rgba(244, 67, 54, 0.3); padding: 4px 6px; border-radius: 4px; transition: all 0.2s;">
-                            <i class="fa-solid fa-trash" style="font-size: 0.7rem;"></i>
+                        <button type="button" class="btn-icon btn-danger" onclick="removeCollectionPointField(this)" title="Excluir">
+                            <i class="fa-solid fa-trash"></i>
                         </button>
                     </div>
                 </div>
@@ -5898,22 +5896,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             codeInput.removeAttribute('readonly');
             nameInput.style.borderColor = 'var(--accent)';
             codeInput.style.borderColor = 'var(--accent)';
-            btn.innerHTML = '<i class="fa-solid fa-check" style="font-size: 0.85rem;"></i>';
-            btn.title = 'Salvar Edição';
-            btn.style.background = 'rgba(76, 175, 80, 0.1)';
-            btn.style.color = '#4CAF50';
-            btn.style.borderColor = 'rgba(76, 175, 80, 0.3)';
+            btn.innerHTML = '<i class="fa-solid fa-check"></i>';
+            btn.title = 'Salvar';
             nameInput.focus();
         } else {
             nameInput.setAttribute('readonly', 'readonly');
             codeInput.setAttribute('readonly', 'readonly');
             nameInput.style.borderColor = 'var(--border)';
             codeInput.style.borderColor = 'var(--border)';
-            btn.innerHTML = '<i class="fa-solid fa-pen" style="font-size: 0.85rem;"></i>';
-            btn.title = 'Editar Posto';
-            btn.style.background = 'rgba(33, 150, 243, 0.1)';
-            btn.style.color = '#2196F3';
-            btn.style.borderColor = 'rgba(33, 150, 243, 0.3)';
+            btn.innerHTML = '<i class="fa-solid fa-pen"></i>';
+            btn.title = 'Editar';
             showToast('✅ Posto de coleta atualizado!', 'success');
         }
     };
