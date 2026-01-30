@@ -5864,21 +5864,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     // Format ISBT code: 1 letter + 4 numbers
+    // Format ISBT code: Letter B + 4 numbers
     window.formatIsbtCode = (input) => {
-        let value = input.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        let value = input.value.toUpperCase();
 
-        if (value.length > 0) {
-            // First character must be a letter
-            if (!/^[A-Z]/.test(value)) {
-                value = value.substring(1);
-            }
-            // After first letter, only numbers
-            if (value.length > 1) {
-                value = value[0] + value.substring(1).replace(/[^0-9]/g, '');
-            }
-            // Max 5 characters (1 letter + 4 numbers)
-            value = value.substring(0, 5);
+        // If empty, do nothing
+        if (value.length === 0) return;
+
+        // Ensure starts with B
+        if (!value.startsWith('B')) {
+            value = 'B' + value.replace(/[^0-9]/g, '');
+        } else {
+            value = 'B' + value.substring(1).replace(/[^0-9]/g, '');
         }
+
+        // Limit to 5 characters total (B + 4 numbers)
+        value = value.substring(0, 5);
 
         input.value = value;
     };
