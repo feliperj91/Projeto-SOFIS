@@ -1927,8 +1927,7 @@
     <!-- ISBT 128 Modal -->
     <div id="isbtModal" class="modal hidden" style="z-index: 10005;">
         <div class="modal-content" style="max-width: 600px;">
-            <div class="modal-header"
-                style="background: linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 193, 7, 0.05) 100%); border-bottom: 2px solid var(--accent);">
+            <div class="modal-header" style="border-bottom: 2px solid var(--accent);">
                 <div style="display: flex; align-items: center; gap: 15px;">
                     <div
                         style="background: var(--accent); width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);">
@@ -1961,10 +1960,6 @@
                         <div style="position: relative;">
                             <input type="text" id="isbtCodeInput" placeholder="Ex: B3325" maxlength="5"
                                 style="background: var(--bg-darker); border: 2px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 0.9rem; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; transition: all 0.3s;">
-                            <div
-                                style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 0.7rem; opacity: 0.6;">
-                                A0000
-                            </div>
                         </div>
                         <small
                             style="color: var(--text-secondary); font-size: 0.75rem; margin-top: 4px; display: block;">
@@ -2006,7 +2001,7 @@
                         </div>
 
                         <div id="collectionPointsList"
-                            style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; max-height: 300px; overflow-y: auto; padding-right: 5px;">
+                            style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 12px; max-height: 300px; overflow-y: auto; padding-right: 5px;">
                             <!-- Dynamic Items via JS -->
                         </div>
 
