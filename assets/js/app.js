@@ -5835,7 +5835,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <label style="font-size: 0.65rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 4px; display: block;">
                             Nome
                         </label>
-                        <input type="text" class="cp-name" placeholder="Ex: BIM" value="${escapeHtml(name)}" 
+                        <input type="text" class="cp-name" placeholder="Ex: BIM" value="${escapeHtml(name)}" readonly
                             style="width: 100%; background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; color: var(--text-primary); padding: 6px 8px; font-size: 0.8rem; font-weight: 500; transition: all 0.3s; text-transform: uppercase;"
                             oninput="this.value = this.value.replace(/[^A-Za-zÀ-ÿ\\s]/g, '').toUpperCase()">
                     </div>
@@ -5843,7 +5843,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <label style="font-size: 0.65rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 4px; display: block;">
                             Código ISBT
                         </label>
-                        <input type="text" class="cp-code" placeholder="Ex: B3232" value="${escapeHtml(code)}" maxlength="5"
+                        <input type="text" class="cp-code" placeholder="Ex: B3232" value="${escapeHtml(code)}" maxlength="5" readonly
                             style="width: 100%; background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; color: var(--text-primary); padding: 6px 8px; font-size: 0.8rem; font-weight: 500; letter-spacing: 1px; transition: all 0.3s; text-transform: uppercase;"
                             oninput="formatIsbtCode(this)">
                     </div>
@@ -5888,10 +5888,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         const nameInput = item.querySelector('.cp-name');
         const codeInput = item.querySelector('.cp-code');
 
-        // Toggle readonly state
-        const isReadonly = nameInput.hasAttribute('readonly');
+        // Check if currently in edit mode (check icon visible)
+        const isEditing = btn.querySelector('.fa-check');
 
-        if (isReadonly) {
+        if (isEditing) {
+            // Save mode - make readonly again
+            nameInput.setAttribute('readonly', 'readonly');
+            codeInput.setAttribute('readonly', 'readonly');
+            nameInput.style.borderColor = 'var(--border)';
+            codeInput.style.borderColor = 'var(--border)';
+            btn.innerHTML = '<i class="fa-solid fa-pen"></i>';
+            btn.title = 'Editar';
+            showToast('✅ Alterações salvas! Clique em "Salvar ISBT" para confirmar.', 'success');
+        } else {
+            // Edit mode - make editable
             nameInput.removeAttribute('readonly');
             codeInput.removeAttribute('readonly');
             nameInput.style.borderColor = 'var(--accent)';
@@ -5899,14 +5909,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             btn.innerHTML = '<i class="fa-solid fa-check"></i>';
             btn.title = 'Salvar';
             nameInput.focus();
-        } else {
-            nameInput.setAttribute('readonly', 'readonly');
-            codeInput.setAttribute('readonly', 'readonly');
-            nameInput.style.borderColor = 'var(--border)';
-            codeInput.style.borderColor = 'var(--border)';
-            btn.innerHTML = '<i class="fa-solid fa-pen"></i>';
-            btn.title = 'Editar';
-            showToast('✅ Posto de coleta atualizado!', 'success');
         }
     };
 
@@ -5914,12 +5916,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         const item = btn.closest('.collection-point-item');
         const name = item.querySelector('.cp-name').value;
 
+        // Show confirmation dialog
+        const confirmMessage = name
+            ? `Tem certeza que deseja excluir o posto "${name}"?`
+            : 'Tem certeza que deseja excluir este posto?';
+
+        if (!confirm(confirmMessage)) {
+            return; // User cancelled
+        }
+
+        // Animate and remove
         if (name) {
-            // Animate removal
             item.style.transform = 'translateX(100%)';
             item.style.opacity = '0';
-            setTimeout(() => item.remove(), 300);
-            showToast(`🗑️ Posto "${name}" removido`, 'info');
+            setTimeout(() => {
+                item.remove();
+                showToast(`🗑️ Posto "${name}" removido. Clique em "Salvar ISBT" para confirmar.`, 'warning');
+            }, 300);
         } else {
             item.remove();
         }
