@@ -5806,6 +5806,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         const list = document.getElementById('collectionPointsList');
         if (!list) return;
 
+        // Determine if this is a new item (being added now) or existing one loaded from DB
+        const isNewItem = (name === '' && code === '');
+        const readonlyAttr = isNewItem ? '' : 'readonly';
+        const editBtnIcon = isNewItem ? '<i class="fa-solid fa-check"></i>' : '<i class="fa-solid fa-pen"></i>';
+        const editBtnTitle = isNewItem ? 'Salvar' : 'Editar';
+        const inputBorderColor = isNewItem ? 'var(--accent)' : 'var(--border)';
+
         const div = document.createElement('div');
         div.className = 'collection-point-item';
         div.style.cssText = 'display: flex; gap: 10px; align-items: stretch; padding: 12px; background: transparent; border-radius: 8px; border: 1px solid var(--border); transition: all 0.3s; position: relative;';
@@ -5814,7 +5821,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             div.dataset.index = index;
         }
 
-
         div.innerHTML = `
             <div style="display: flex; flex-direction: column; height: 100%;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -5822,8 +5828,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <i class="fa-solid fa-building" style="margin-right: 4px;"></i>Posto
                     </span>
                     <div style="display: flex; gap: 4px;">
-                        <button type="button" class="btn-icon" onclick="editCollectionPoint(this)" title="Editar">
-                            <i class="fa-solid fa-pen"></i>
+                        <button type="button" class="btn-icon" onclick="editCollectionPoint(this)" title="${editBtnTitle}">
+                            ${editBtnIcon}
                         </button>
                         <button type="button" class="btn-icon btn-danger" onclick="removeCollectionPointField(this)" title="Excluir">
                             <i class="fa-solid fa-trash"></i>
@@ -5835,16 +5841,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <label style="font-size: 0.65rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 4px; display: block;">
                             Nome
                         </label>
-                        <input type="text" class="cp-name" placeholder="Ex: BIM" value="${escapeHtml(name)}" readonly
-                            style="width: 100%; background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; color: var(--text-primary); padding: 6px 8px; font-size: 0.8rem; font-weight: 500; transition: all 0.3s; text-transform: uppercase;"
+                        <input type="text" class="cp-name" placeholder="Ex: BIM" value="${escapeHtml(name)}" ${readonlyAttr}
+                            style="width: 100%; background: var(--bg-card); border: 1px solid ${inputBorderColor}; border-radius: 4px; color: var(--text-primary); padding: 6px 8px; font-size: 0.8rem; font-weight: 500; transition: all 0.3s; text-transform: uppercase;"
                             oninput="this.value = this.value.replace(/[^A-Za-zÀ-ÿ\\s]/g, '').toUpperCase()">
                     </div>
                     <div>
                         <label style="font-size: 0.65rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 4px; display: block;">
                             Código ISBT
                         </label>
-                        <input type="text" class="cp-code" placeholder="Ex: B3232" value="${escapeHtml(code)}" maxlength="5" readonly
-                            style="width: 100%; background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; color: var(--text-primary); padding: 6px 8px; font-size: 0.8rem; font-weight: 500; letter-spacing: 1px; transition: all 0.3s; text-transform: uppercase;"
+                        <input type="text" class="cp-code" placeholder="Ex: B3232" value="${escapeHtml(code)}" maxlength="5" ${readonlyAttr}
+                            style="width: 100%; background: var(--bg-card); border: 1px solid ${inputBorderColor}; border-radius: 4px; color: var(--text-primary); padding: 6px 8px; font-size: 0.8rem; font-weight: 500; letter-spacing: 1px; transition: all 0.3s; text-transform: uppercase;"
                             oninput="formatIsbtCode(this)">
                     </div>
                 </div>
