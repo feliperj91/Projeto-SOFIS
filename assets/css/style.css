@@ -1823,8 +1823,19 @@ button:hover .vpn-icon-img {
 
 .client-note-indicator:hover {
     filter: brightness(1.4) drop-shadow(0 0 5px var(--accent));
-    transform: scale(1.3);
-    text-decoration: underline;
+    /* Removing scale(1.3) to prevent overlap */
+}
+
+.btn-icon-bell {
+    margin-right: 5px;
+    /* Ensure spacing from next sibling */
+}
+
+/* Use button hover to trigger stronger effect if needed, but keep layout stable */
+.btn-icon-bell:hover .client-note-indicator {
+    filter: brightness(1.5);
+    animation: ring-bell 0.5s ease-in-out infinite;
+    /* Faster ring on hover */
 }
 
 @keyframes ring-bell {
