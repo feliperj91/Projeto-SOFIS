@@ -5,9 +5,10 @@ window.toggleIndividualPrivacy = function (checkbox) {
     const label = checkbox.closest('label');
     if (checkbox.checked) {
         label.style.color = '#ff5252';
-        label.style.opacity = '1';
+        label.style.fontWeight = '700';
     } else {
-        label.style.color = '#ff5252'; // Keep color but maybe verify logic
+        label.style.removeProperty('color');
+        label.style.removeProperty('font-weight');
     }
 };
 
@@ -2945,7 +2946,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div class="credential-label-row">
                         <label class="credential-label-text"><i class="fa-solid fa-key"></i>Senha <span class="required">*</span></label>
                         <div class="checkbox-wrapper-individual">
-                            <label>
+                            <label style="${isPrivate ? 'color: #ff5252; font-weight: 700;' : ''}">
                                 <input type="checkbox" class="server-private-check" onchange="window.toggleIndividualPrivacy(this)" ${isPrivate ? 'checked' : ''}>
                                 <i class="fa-solid fa-lock"></i> INDIVIDUAL
                             </label>
@@ -3166,7 +3167,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                         <label class="credential-label-text"><i class="fa-solid fa-key" style="color: var(--accent); margin-right: 5px;"></i> Senha<span class="required">*</span></label>
                         <div class="checkbox-wrapper-individual" style="margin-left: 10px;">
-                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.75rem; font-weight: 700; color: #ff5252;">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.75rem; ${isPrivate ? 'color: #ff5252; font-weight: 700;' : ''}">
                                 <input type="checkbox" class="server-private-check" onchange="window.toggleIndividualPrivacy(this)" ${isPrivate ? 'checked' : ''}>
                                 <i class="fa-solid fa-lock" style="font-size: 0.7rem;"></i> INDIVIDUAL
                             </label>
@@ -3813,7 +3814,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div class="credential-label-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; width: 100%;">
                         <label class="credential-label-text"><i class="fa-solid fa-key" style="color: var(--accent); margin-right: 5px;"></i> Senha</label>
                         <div class="checkbox-wrapper-individual">
-                            <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 0.85em;">
+                            <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 0.85em; ${isPrivate ? 'color: #ff5252; font-weight: 700;' : ''}">
                                 <input type="checkbox" class="url-private-check" onchange="window.toggleIndividualPrivacy(this)" ${isPrivate ? 'checked' : ''}>
                                 <i class="fa-solid fa-lock" style="font-size: 0.9em;"></i> INDIVIDUAL
                             </label>
@@ -5299,7 +5300,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                         <label class="credential-label-text"><i class="fa-solid fa-key" style="color: var(--accent); margin-right: 5px;"></i> Senha<span class="required">*</span></label>
                         <div class="checkbox-wrapper-individual" style="margin-left: 10px;">
-                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.75rem; font-weight: 700; color: #ff5252;">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.75rem; ${isPrivate ? 'color: #ff5252; font-weight: 700;' : ''}">
                                 <input type="checkbox" class="server-private-check" onchange="window.toggleIndividualPrivacy(this)" ${isPrivate ? 'checked' : ''}>
                                 <i class="fa-solid fa-lock" style="font-size: 0.7rem;"></i> INDIVIDUAL
                             </label>
