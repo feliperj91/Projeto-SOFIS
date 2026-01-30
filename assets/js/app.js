@@ -3634,8 +3634,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (actions) actions.style.display = 'none';
 
             if (document.getElementById('webLaudoInput')) document.getElementById('webLaudoInput').value = '';
-            if (document.getElementById('webLaudoUserInput')) document.getElementById('webLaudoUserInput').value = '';
-            if (document.getElementById('webLaudoPassInput')) document.getElementById('webLaudoPassInput').value = '';
+            // User/Pass removed
+            return;
             return;
         }
 
@@ -3657,18 +3657,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (deleteBtn) deleteBtn.style.display = canDelete ? '' : 'none';
 
         if (text) text.textContent = data.url || '---';
-        if (userText) userText.textContent = data.user || '---';
-        if (userRow) userRow.style.display = data.user ? 'flex' : 'none';
-
-        if (passText) {
-            passText.textContent = '••••••';
-            passText.dataset.raw = data.password || '';
-        }
-
-        // Reset eye icons (using class 'btn-weblaudo-action' now)
-        document.querySelectorAll('#webLaudoPassRow .btn-weblaudo-action i').forEach(i => {
-            i.className = 'fa-solid fa-eye';
-        });
+        // User/Pass display removed
     }
     window.updateWebLaudoDisplay = updateWebLaudoDisplay;
 
@@ -3683,18 +3672,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const data = typeof client.webLaudo === 'string' ? JSON.parse(client.webLaudo) : client.webLaudo;
 
         document.getElementById('webLaudoInput').value = data.url || '';
-        document.getElementById('webLaudoUserInput').value = data.user || '';
-
-        try {
-            if (data.password) {
-                document.getElementById('webLaudoPassInput').value = await window.Security.decrypt(data.password);
-            } else {
-                document.getElementById('webLaudoPassInput').value = '';
-            }
-        } catch (e) {
-            console.error("Erro ao descriptografar:", e);
-            document.getElementById('webLaudoPassInput').value = '';
-        }
+        document.getElementById('webLaudoInput').value = data.url || '';
+        // User/Pass inputs removed
 
         if (display) display.style.display = 'none';
         if (form) form.style.display = 'flex';
@@ -4414,15 +4393,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            const userInput = document.getElementById('webLaudoUserInput');
-            const passInput = document.getElementById('webLaudoPassInput');
-
             const webLaudoBefore = JSON.parse(JSON.stringify(client.webLaudo || {}));
 
             client.webLaudo = {
-                url: url,
-                user: userInput ? userInput.value.trim() : '',
-                password: (passInput && passInput.value) ? await window.Security.encrypt(passInput.value) : ''
+                url: url
             };
 
             await saveToLocal(client.id);
