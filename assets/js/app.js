@@ -476,10 +476,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (roles.length === 0) return;
 
-        const roleListStr = roles.join('\n• ');
+        const roleListStr = roles.join(' - ');
 
         window.showConfirm(
-            `Você possui acesso aos seguintes grupos:\n\n• ${roleListStr}`,
+            `Você possui acesso aos seguintes grupos: ${roleListStr}`,
             'Meus Acessos',
             'fa-id-card',
             true
