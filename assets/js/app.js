@@ -1502,6 +1502,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const canViewSQL = P ? P.can('Dados de Acesso (SQL)', 'can_view') : false;
         const canViewVPN = P ? P.can('Dados de Acesso (VPN)', 'can_view') : false;
         const canViewURL = P ? P.can('URLs', 'can_view') : false;
+        const canViewISBT = P ? P.can('ISBT 128', 'can_view') : false;
         const canViewLogs = P ? P.can('Logs e Atividades', 'can_view') : false;
 
         const currentUser = JSON.parse(localStorage.getItem('sofis_user') || '{}').username || 'anônimo';
@@ -1587,9 +1588,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                          </button>
                          ` : ''}
 
+                         ${canViewISBT ? `
                          <button class="${isbtBtnClass}" onclick="event.stopPropagation(); openIsbtModal('${client.id}');" title="ISBT 128">
                              <i class="fa-solid fa-barcode"></i>
                          </button>
+                         ` : ''}
 
                          <!-- Edit Permission Check -->
                          ${canEdit ? `
@@ -5720,55 +5723,99 @@ document.addEventListener('DOMContentLoaded', async () => {
         const client = clients.find(c => c.id == clientId);
         if (!client) return;
 
-        const hasEditPerm = window.Permissions ? window.Permissions.can('Gestão de Clientes', 'can_edit') : true;
+        // Permissions
+        const P = window.Permissions;
+        const canEdit = P ? P.can('ISBT 128', 'can_edit') : false;
+        const canCreate = P ? P.can('ISBT 128', 'can_create') : false;
+        // canDelete handled in addCollectionPointField/removeCollectionPointField
 
         document.getElementById('isbtClientId').value = clientId;
         document.getElementById('isbtClientName').textContent = client.name;
-        document.getElementById('isbtCodeInput').value = client.isbt_code || '';
+
+        const isbtCodeInput = document.getElementById('isbtCodeInput');
+        isbtCodeInput.value = client.isbt_code || '';
+
+        const isbtCheck = document.getElementById('isbtCollectionPointCheck');
+
+        // Apply Edit Permissions
+        if (!canEdit) {
+            isbtCodeInput.setAttribute('readonly', 'readonly');
+            isbtCodeInput.style.borderColor = 'var(--border)';
+            isbtCheck.disabled = true;
+        } else {
+            isbtCodeInput.removeAttribute('readonly');
+            // Reset style if needed, processed by focus listeners
+            isbtCheck.disabled = false;
+        }
 
         const list = document.getElementById('collectionPointsList');
         if (list) list.innerHTML = '';
 
         let points = client.collection_points || [];
+        // Compatibility with legacy single point
         if (points.length === 0 && client.collection_point_name) {
             points.push({ name: client.collection_point_name, code: client.collection_point_code || '' });
         }
+
         points.forEach(p => addCollectionPointField(p.name, p.code));
 
         const hasPoint = client.has_collection_point || (points.length > 0);
-        const check = document.getElementById('isbtCollectionPointCheck');
-        if (check) check.checked = hasPoint;
+        if (isbtCheck) isbtCheck.checked = hasPoint;
 
-        if (hasPoint && points.length === 0) addCollectionPointField();
+        // If user can create and has points enabled but list empty, add one empty field
+        if (canCreate && hasPoint && points.length === 0) addCollectionPointField();
 
         window.toggleIsbtCollectionPoint();
 
-        // Disable inputs if no permission? Or just let them see? 
-        // Assuming edit permission is needed to SAVE, but maybe everyone can view?
-        // For now, leaving enabled as the Save button is the gatekeeper if needed, 
-        // but typically readonly forms are better. I'll stick to basic.
+        // Hide Save Button if no edit permission
+        const saveBtn = document.querySelector('#isbtForm button[type="submit"]');
+        if (saveBtn) {
+            if (!canEdit && !canCreate) {
+                saveBtn.classList.add('hidden');
+            } else {
+                saveBtn.classList.remove('hidden');
+            }
+        }
 
         document.getElementById('isbtModal').classList.remove('hidden');
     };
 
     window.toggleIsbtCollectionPoint = () => {
+        const P = window.Permissions;
+        const canCreate = P ? P.can('ISBT 128', 'can_create') : false;
+
         const check = document.getElementById('isbtCollectionPointCheck');
         const group = document.getElementById('isbtCollectionPointGroup');
         const list = document.getElementById('collectionPointsList');
+        const addBtn = document.querySelector('#isbtCollectionPointGroup button[onclick="addCollectionPointField()"]');
 
         if (check.checked) {
             group.classList.remove('hidden');
-            if (list && list.children.length === 0) addCollectionPointField();
+            // Only add new field if list empty AND user can create
+            if (canCreate && list && list.children.length === 0) addCollectionPointField();
         } else {
             group.classList.add('hidden');
+        }
+
+        // Hide Add Button if cannot create
+        if (addBtn) {
+            if (!canCreate) {
+                addBtn.classList.add('hidden');
+            } else {
+                addBtn.classList.remove('hidden');
+            }
         }
     };
 
     window.submitIsbtForm = async () => {
         try {
-            // Permissions Check (using Client Edit permission as proxy)
-            if (window.Permissions && !window.Permissions.can('Gestão de Clientes', 'can_edit')) {
-                showToast('🚫 Sem permissão para editar dados do cliente.', 'error');
+            // Permissions Check
+            const P = window.Permissions;
+            const canEdit = P ? P.can('ISBT 128', 'can_edit') : false;
+            const canCreate = P ? P.can('ISBT 128', 'can_create') : false;
+
+            if (!canEdit && !canCreate) {
+                showToast('🚫 Sem permissão para alterar dados ISBT.', 'error');
                 return;
             }
 
@@ -5843,12 +5890,37 @@ document.addEventListener('DOMContentLoaded', async () => {
         const list = document.getElementById('collectionPointsList');
         if (!list) return;
 
+        const P = window.Permissions;
+        const canEdit = P ? P.can('ISBT 128', 'can_edit') : false;
+        const canDelete = P ? P.can('ISBT 128', 'can_delete') : false;
+        // User needs create permission to even call this function for new items (handled by button visibility)
+        // But for existing items showing up, we check edit permission.
+
         // Determine if this is a new item (being added now) or existing one loaded from DB
         const isNewItem = (name === '' && code === '');
+
+        // If it's existing item, readonly depends on canEdit. 
+        // If it's new item, it should be editable (assuming user has create permission to get here).
+        // But let's be strict.
+        const headerReadonly = isNewItem ? '' : (canEdit ? 'readonly' : 'readonly');
+
+        // Logic: 
+        // If Existing Item: Starts READONLY. If canEdit, show pen icon.
+        // If New Item: Starts EDITABLE. Show check icon.
+
         const readonlyAttr = isNewItem ? '' : 'readonly';
-        const editBtnIcon = isNewItem ? '<i class="fa-solid fa-check"></i>' : '<i class="fa-solid fa-pen"></i>';
-        const editBtnTitle = isNewItem ? 'Salvar' : 'Editar';
+
+        // If user cannot edit, and it is an existing item, they see text but no pen icon.
+        // If user cannot edit, but somehow added a new item (unlikely), they can type? No, button is hidden.
+
+        let editBtnIcon = isNewItem ? '<i class="fa-solid fa-check"></i>' : '<i class="fa-solid fa-pen"></i>';
+        let editBtnTitle = isNewItem ? 'Salvar' : 'Editar';
         const inputBorderColor = isNewItem ? 'var(--accent)' : 'var(--border)';
+
+        // Override for no-edit permission on existing items
+        if (!isNewItem && !canEdit) {
+            editBtnIcon = ''; // No edit button
+        }
 
         const div = document.createElement('div');
         div.className = 'collection-point-item';
@@ -5865,12 +5937,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <i class="fa-solid fa-building" style="margin-right: 4px;"></i>Posto
                     </span>
                     <div style="display: flex; gap: 4px;">
+                        ${(isNewItem || canEdit) ? `
                         <button type="button" class="btn-icon" onclick="editCollectionPoint(this)" title="${editBtnTitle}">
                             ${editBtnIcon}
-                        </button>
+                        </button>` : ''}
+                        
+                        ${canDelete ? `
                         <button type="button" class="btn-icon btn-danger" onclick="removeCollectionPointField(this)" title="Excluir">
                             <i class="fa-solid fa-trash"></i>
-                        </button>
+                        </button>` : ''}
                     </div>
                 </div>
                 <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
