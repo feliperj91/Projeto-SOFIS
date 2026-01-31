@@ -2934,12 +2934,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         const div = document.createElement('div');
         div.className = 'credential-field-group';
         div.innerHTML = `
-            <div class="credential-fields-container" style="flex-wrap: wrap;">
+            <div class="credential-fields-container" style="align-items: flex-start;">
                 <div class="credential-field-item">
                     <div class="credential-label-row">
                         <label class="credential-label-text"><i class="fa-solid fa-user"></i><span>Usuário <span class="required">*</span></span></label>
                     </div>
                     <input type="text" class="server-user-input" placeholder="Digite o usuário" value="${escapeHtml(user)}" required>
+                    
+                    <div class="credential-field-item individual-toggle-container" style="flex: 0 0 auto; margin-top: 8px;">
+                        <div class="checkbox-wrapper-individual">
+                            <label style="${isPrivate ? 'color: #ff5252; font-weight: 700;' : ''}">
+                                <i class="fa-solid fa-lock" style="font-size: 0.7rem;"></i> INDIVIDUAL
+                                <input type="checkbox" class="server-private-check" onchange="window.toggleIndividualPrivacy(this)" ${isPrivate ? 'checked' : ''}>
+                            </label>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="credential-field-item">
@@ -2954,18 +2963,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                 </div>
 
-                <button type="button" class="btn-remove-credential" onclick="removeCredentialField(this)" title="Remover Credencial" tabindex="-1">
+                <button type="button" class="btn-remove-credential" onclick="removeCredentialField(this)" title="Remover Credencial" tabindex="-1" style="margin-top: 32px;">
                     <i class="fa-solid fa-trash"></i>
                 </button>
-
-                <div class="credential-field-item individual-toggle-container" style="flex: 0 0 100%; margin-top: 10px;">
-                    <div class="checkbox-wrapper-individual">
-                        <label style="${isPrivate ? 'color: #ff5252; font-weight: 700;' : ''}">
-                            <i class="fa-solid fa-lock"></i> INDIVIDUAL
-                            <input type="checkbox" class="server-private-check" onchange="window.toggleIndividualPrivacy(this)" ${isPrivate ? 'checked' : ''}>
-                        </label>
-                    </div>
-                </div>
             </div>
         `;
         credentialList.appendChild(div);
@@ -3161,10 +3161,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         const div = document.createElement('div');
         div.className = 'credential-field-group';
         div.innerHTML = `
-            <div class="credential-fields-container" style="flex-wrap: wrap;">
+            <div class="credential-fields-container" style="align-items: flex-start;">
                 <div class="credential-field-item">
                     <label class="credential-label-text"><i class="fa-solid fa-user"></i><span>Usuário <span class="required">*</span></span></label>
                     <input type="text" class="server-user-input" placeholder="Digite o usuário" value="${escapeHtml(user)}" required>
+                    <div class="credential-field-item individual-toggle-container" style="flex: 0 0 auto; margin-top: 8px;">
+                        <div class="checkbox-wrapper-individual">
+                            <label style="cursor: pointer; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; ${isPrivate ? 'color: #ff5252; font-weight: 700;' : 'color: var(--text-secondary);'}">
+                                <i class="fa-solid fa-lock" style="font-size: 0.7rem;"></i> INDIVIDUAL
+                                <input type="checkbox" class="server-private-check" onchange="window.toggleIndividualPrivacy(this)" ${isPrivate ? 'checked' : ''}>
+                            </label>
+                        </div>
+                    </div>
                 </div>
                 <div class="credential-field-item">
                     <div class="credential-label-row">
@@ -3177,17 +3185,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </button>
                     </div>
                 </div>
-                <button type="button" class="btn-remove-credential" onclick="removeVpnCredentialField(this)" title="Remover Credencial" tabindex="-1">
+                <button type="button" class="btn-remove-credential" onclick="removeVpnCredentialField(this)" title="Remover Credencial" tabindex="-1" style="margin-top: 32px;">
                     <i class="fa-solid fa-trash"></i>
                 </button>
-                <div class="credential-field-item individual-toggle-container" style="flex: 0 0 100%; margin-top: 10px;">
-                    <div class="checkbox-wrapper-individual">
-                        <label style="cursor: pointer; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; ${isPrivate ? 'color: #ff5252; font-weight: 700;' : 'color: var(--text-secondary);'}">
-                            <i class="fa-solid fa-lock" style="font-size: 0.7rem;"></i> INDIVIDUAL
-                            <input type="checkbox" class="server-private-check" onchange="window.toggleIndividualPrivacy(this)" ${isPrivate ? 'checked' : ''}>
-                        </label>
-                    </div>
-                </div>
             </div>
         `;
         list.appendChild(div);
@@ -3807,12 +3807,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         const div = document.createElement('div');
         div.className = 'credential-field-group';
         div.innerHTML = `
-            <div class="credential-fields-container" style="flex-wrap: wrap;">
+            <div class="credential-fields-container" style="align-items: flex-start;">
                 <div class="credential-field-item">
                     <div class="credential-label-row" style="margin-bottom: 5px;">
                         <label class="credential-label-text"><i class="fa-solid fa-user"></i><span>Usuário</span></label>
                     </div>
                     <input type="text" class="url-user-input" placeholder="Digite o usuário" value="${escapeHtml(user)}" style="height: 45px;">
+                    <div class="credential-field-item individual-toggle-container" style="flex: 0 0 auto; margin-top: 8px;">
+                        <div class="checkbox-wrapper-individual">
+                            <label style="cursor: pointer; font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.5px; ${isPrivate ? 'color: #ff5252; font-weight: 700;' : 'color: var(--text-secondary);'}">
+                                <i class="fa-solid fa-lock" style="font-size: 0.9em;"></i> INDIVIDUAL
+                                <input type="checkbox" class="url-private-check" onchange="window.toggleIndividualPrivacy(this)" ${isPrivate ? 'checked' : ''}>
+                            </label>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="credential-field-item">
@@ -3827,18 +3835,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                 </div>
 
-                <button type="button" class="btn-remove-credential" onclick="removeUrlCredentialField(this)" title="Remover Credencial" tabindex="-1" style="height: 45px; width: 45px; display: flex; align-items: center; justify-content: center; margin-bottom: 2px;">
+                <button type="button" class="btn-remove-credential" onclick="removeUrlCredentialField(this)" title="Remover Credencial" tabindex="-1" style="height: 45px; width: 45px; display: flex; align-items: center; justify-content: center; margin-bottom: 2px; margin-top: 32px;">
                     <i class="fa-solid fa-trash"></i>
                 </button>
-
-                <div class="credential-field-item individual-toggle-container" style="flex: 0 0 100%; margin-top: 10px;">
-                    <div class="checkbox-wrapper-individual">
-                        <label style="cursor: pointer; font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.5px; ${isPrivate ? 'color: #ff5252; font-weight: 700;' : 'color: var(--text-secondary);'}">
-                            <i class="fa-solid fa-lock" style="font-size: 0.9em;"></i> INDIVIDUAL
-                            <input type="checkbox" class="url-private-check" onchange="window.toggleIndividualPrivacy(this)" ${isPrivate ? 'checked' : ''}>
-                        </label>
-                    </div>
-                </div>
             </div>
         `;
         list.appendChild(div);
@@ -5299,10 +5298,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         const div = document.createElement('div');
         div.className = 'credential-field-group';
         div.innerHTML = `
-        <div class="credential-fields-container" style="flex-wrap: wrap;">
+        <div class="credential-fields-container" style="align-items: flex-start;">
                 <div class="credential-field-item">
                     <label class="credential-label-text"><i class="fa-solid fa-user" style="color: var(--accent); margin-right: 5px;"></i> Usuário<span class="required">*</span></label>
                     <input type="text" class="server-user-input" placeholder="Digite o usuário" value="${escapeHtml(user)}" required>
+                    <div class="credential-field-item individual-toggle-container" style="flex: 0 0 auto; margin-top: 8px;">
+                        <div class="checkbox-wrapper-individual">
+                            <label style="cursor: pointer; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; ${isPrivate ? 'color: #ff5252; font-weight: 700;' : 'color: var(--text-secondary);'}">
+                                <i class="fa-solid fa-lock" style="font-size: 0.7rem;"></i> INDIVIDUAL
+                                <input type="checkbox" class="server-private-check" onchange="window.toggleIndividualPrivacy(this)" ${isPrivate ? 'checked' : ''}>
+                            </label>
+                        </div>
+                    </div>
                 </div>
                 <div class="credential-field-item">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
@@ -5315,17 +5322,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </button>
                     </div>
                 </div>
-                <button type="button" class="btn-remove-credential" onclick="removeHostCredentialField(this)" title="Remover Credencial" tabindex="-1">
+                <button type="button" class="btn-remove-credential" onclick="removeHostCredentialField(this)" title="Remover Credencial" tabindex="-1" style="margin-top: 32px;">
                     <i class="fa-solid fa-trash"></i>
                 </button>
-                <div class="credential-field-item individual-toggle-container" style="flex: 0 0 100%; margin-top: 10px;">
-                    <div class="checkbox-wrapper-individual">
-                        <label style="cursor: pointer; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; ${isPrivate ? 'color: #ff5252; font-weight: 700;' : 'color: var(--text-secondary);'}">
-                            <i class="fa-solid fa-lock" style="font-size: 0.7rem;"></i> INDIVIDUAL
-                            <input type="checkbox" class="server-private-check" onchange="window.toggleIndividualPrivacy(this)" ${isPrivate ? 'checked' : ''}>
-                        </label>
-                    </div>
-                </div>
             </div>
         `;
         hostCredentialList.appendChild(div);
