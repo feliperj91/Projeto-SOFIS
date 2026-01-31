@@ -2968,12 +2968,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="individual-card" style="background: rgba(255, 255, 255, 0.03); border-radius: 8px; padding: 12px 16px; display: flex; flex-direction: column; gap: 4px; border: 1px solid rgba(255,255,255,0.05);">
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <i class="fa-solid fa-lock" style="color: var(--text-secondary); font-size: 0.9rem;"></i>
-                        <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px; line-height: 1.1;">INDIVIDUAL</span>
+                        <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px; line-height: 1.1;">PRIVADO</span>
                         <div class="checkbox-wrapper-individual" style="margin-left: 5px;">
                             <input type="checkbox" class="server-private-check" onchange="window.toggleIndividualPrivacy(this)" ${isPrivate ? 'checked' : ''} style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent); margin: 0;">
                         </div>
                     </div>
-                    <span style="font-size: 0.75rem; color: var(--text-secondary); opacity: 0.7; margin-left: 24px;">Ao ativar esta opção, SOMENTE VOCÊ terá acesso a essas credenciais.</span>
+                    <span style="font-size: 0.75rem; color: var(--text-secondary); opacity: 0.7;">Ao ativar esta opção, SOMENTE VOCÊ terá acesso a essas credenciais.</span>
                 </div>
             </div>
         `;
@@ -3204,12 +3204,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="individual-card" style="background: rgba(255, 255, 255, 0.03); border-radius: 8px; padding: 12px 16px; display: flex; flex-direction: column; gap: 4px; border: 1px solid rgba(255,255,255,0.05);">
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <i class="fa-solid fa-lock" style="color: var(--text-secondary); font-size: 0.9rem;"></i>
-                        <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px; line-height: 1.1;">INDIVIDUAL</span>
+                        <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px; line-height: 1.1;">PRIVADO</span>
                         <div class="checkbox-wrapper-individual" style="margin-left: 5px;">
                             <input type="checkbox" class="server-private-check" onchange="window.toggleIndividualPrivacy(this)" ${isPrivate ? 'checked' : ''} style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent); margin: 0;">
                         </div>
                     </div>
-                    <span style="font-size: 0.75rem; color: var(--text-secondary); opacity: 0.7; margin-left: 24px;">Ao ativar esta opção, SOMENTE VOCÊ terá acesso a essas credenciais.</span>
+                    <span style="font-size: 0.75rem; color: var(--text-secondary); opacity: 0.7;">Ao ativar esta opção, SOMENTE VOCÊ terá acesso a essas credenciais.</span>
                 </div>
             </div>
         `;
@@ -3864,12 +3864,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="individual-card" style="background: rgba(255, 255, 255, 0.03); border-radius: 8px; padding: 12px 16px; display: flex; flex-direction: column; gap: 4px; border: 1px solid rgba(255,255,255,0.05);">
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <i class="fa-solid fa-lock" style="color: var(--text-secondary); font-size: 0.9rem;"></i>
-                        <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px; line-height: 1.1;">INDIVIDUAL</span>
+                        <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px; line-height: 1.1;">PRIVADO</span>
                         <div class="checkbox-wrapper-individual" style="margin-left: 5px;">
                             <input type="checkbox" class="url-private-check" onchange="window.toggleIndividualPrivacy(this)" ${isPrivate ? 'checked' : ''} style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent); margin: 0;">
                         </div>
                     </div>
-                    <span style="font-size: 0.75rem; color: var(--text-secondary); opacity: 0.7; margin-left: 24px;">Ao ativar esta opção, SOMENTE VOCÊ terá acesso a essas credenciais.</span>
+                    <span style="font-size: 0.75rem; color: var(--text-secondary); opacity: 0.7;">Ao ativar esta opção, SOMENTE VOCÊ terá acesso a essas credenciais.</span>
                 </div>
             </div>
         `;
@@ -5365,12 +5365,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="individual-card" style="background: rgba(255, 255, 255, 0.03); border-radius: 8px; padding: 12px 16px; display: flex; flex-direction: column; gap: 4px; border: 1px solid rgba(255,255,255,0.05);">
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <i class="fa-solid fa-lock" style="color: var(--text-secondary); font-size: 0.9rem;"></i>
-                        <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px; line-height: 1.1;">INDIVIDUAL</span>
+                        <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px; line-height: 1.1;">PRIVADO</span>
                         <div class="checkbox-wrapper-individual" style="margin-left: 5px;">
                             <input type="checkbox" class="server-private-check" onchange="window.toggleIndividualPrivacy(this)" ${isPrivate ? 'checked' : ''} style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent); margin: 0;">
                         </div>
                     </div>
-                    <span style="font-size: 0.75rem; color: var(--text-secondary); opacity: 0.7; margin-left: 24px;">Ao ativar esta opção, SOMENTE VOCÊ terá acesso a essas credenciais.</span>
+                    <span style="font-size: 0.75rem; color: var(--text-secondary); opacity: 0.7;">Ao ativar esta opção, SOMENTE VOCÊ terá acesso a essas credenciais.</span>
                 </div>
             </div>
         `;
