@@ -6156,6 +6156,8 @@ window.printIsbtReport = () => {
         });
     }
 
+    const logoUrl = new URL('assets/images/logo.png', window.location.href).href;
+
     const html = `
         <!DOCTYPE html>
         <html lang="pt-BR">
@@ -6184,11 +6186,9 @@ window.printIsbtReport = () => {
         </head>
         <body>
             <div class="header">
-                <div class="logo">
-                     <svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M4 4H8V20H4V4ZM10 4H14V20H10V4ZM16 4H20V20H16V4Z" fill="#FFAB00"/>
-                    </svg>
-                    PROJETO SOFIS
+                <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                    <img src="${logoUrl}" style="height: 45px; margin-bottom: 5px;">
+                    <span style="font-size: 12px; color: #666; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Gerenciamento de Clientes</span>
                 </div>
                 <div style="text-align: right;">
                     <strong>Relatório de Configuração ISBT 128</strong><br>
