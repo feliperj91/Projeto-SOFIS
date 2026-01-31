@@ -6107,4 +6107,138 @@ window.filterCollectionPoints = (searchTerm) => {
     });
 };
 
+// Print ISBT Report
+window.printIsbtReport = () => {
+    const clientId = document.getElementById('isbtClientId').value;
+    const client = clients.find(c => c.id == clientId);
+    if (!client) {
+        showToast('❌ Cliente não encontrado para impressão.', 'error');
+        return;
+    }
+
+    const isbtCode = document.getElementById('isbtCodeInput').value || '---';
+    const hasCollectionPoint = document.getElementById('isbtCollectionPointCheck').checked;
+
+    // Get collection points from DOM to include any unsaved additions/edits
+    const collectionPoints = [];
+    document.querySelectorAll('.collection-point-item').forEach(item => {
+        const nameInput = item.querySelector('.cp-name');
+        const codeInput = item.querySelector('.cp-code');
+        if (nameInput && codeInput) {
+            const name = nameInput.value.trim();
+            const code = codeInput.value.trim();
+            if (name || code) {
+                collectionPoints.push({ name, code });
+            }
+        }
+    });
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+        showToast('🚫 Pop-up bloqueado. Permita pop-ups para imprimir.', 'error');
+        return;
+    }
+
+    const today = new Date().toLocaleDateString('pt-BR');
+    const time = new Date().toLocaleTimeString('pt-BR');
+
+    let pointsHtml = '';
+    if (collectionPoints.length === 0) {
+        pointsHtml = '<tr><td colspan="2" style="text-align:center; padding: 20px; color: #666;">Nenhum posto de coleta cadastrado.</td></tr>';
+    } else {
+        collectionPoints.forEach(p => {
+            pointsHtml += `
+                <tr>
+                    <td><strong>${p.name || '---'}</strong></td>
+                    <td style="font-family: monospace; font-size: 1.1em; letter-spacing: 1px;">${p.code || '---'}</td>
+                </tr>
+            `;
+        });
+    }
+
+    const html = `
+        <!DOCTYPE html>
+        <html lang="pt-BR">
+        <head>
+            <meta charset="UTF-8">
+            <title>Relatório ISBT 128 - ${client.name}</title>
+            <style>
+                body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; line-height: 1.6; padding: 40px; max-width: 800px; margin: 0 auto; }
+                .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #FFAB00; padding-bottom: 20px; margin-bottom: 30px; }
+                .logo { font-size: 24px; font-weight: bold; color: #FFAB00; display: flex; align-items: center; gap: 10px; }
+                .client-info { background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #eee; }
+                .info-row { display: flex; margin-bottom: 10px; }
+                .info-label { font-weight: bold; width: 180px; color: #555; }
+                .info-value { font-weight: 500; font-size: 1.1em; }
+                table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                th { text-align: left; background: #FFAB00; color: #fff; padding: 12px; font-weight: 600; text-transform: uppercase; font-size: 0.9em; }
+                td { border-bottom: 1px solid #eee; padding: 12px; }
+                tr:nth-child(even) { background: #fafafa; }
+                .footer { margin-top: 50px; font-size: 0.8em; color: #999; text-align: center; border-top: 1px solid #eee; padding-top: 20px; }
+                .barcode-box { background: #333; color: #fff; padding: 4px 10px; border-radius: 4px; font-family: monospace; letter-spacing: 1px; }
+                @media print {
+                    body { padding: 0; }
+                    .no-print { display: none; }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <div class="logo">
+                     <svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 4H8V20H4V4ZM10 4H14V20H10V4ZM16 4H20V20H16V4Z" fill="#FFAB00"/>
+                    </svg>
+                    PROJETO SOFIS
+                </div>
+                <div style="text-align: right;">
+                    <strong>Relatório de Configuração ISBT 128</strong><br>
+                    <small>Gerado em: ${today} às ${time}</small>
+                </div>
+            </div>
+
+            <div class="client-info">
+                <div class="info-row">
+                    <div class="info-label">Cliente:</div>
+                    <div class="info-value">${client.name}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Código ISBT Principal:</div>
+                    <div class="info-value"><span class="barcode-box">${isbtCode}</span></div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Possui Postos de Coleta?</div>
+                    <div class="info-value">${hasCollectionPoint ? 'SIM' : 'NÃO'}</div>
+                </div>
+            </div>
+
+            ${hasCollectionPoint ? `
+                <h3>Postos de Coleta Cadastrados (${collectionPoints.length})</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 70%">Nome do Posto</th>
+                            <th style="width: 30%">Código ISBT</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${pointsHtml}
+                    </tbody>
+                </table>
+            ` : ''}
+
+            <div class="footer">
+                Relatório gerado automaticamente pelo sistema Projeto SOFIS.
+            </div>
+
+            <script>
+                window.onload = function() { window.print(); }
+            </script>
+        </body>
+        </html>
+    `;
+
+    printWindow.document.write(html);
+    printWindow.document.close();
+};
+
 console.log("✅ APP.JS FULLY PARSED AND LOADED");

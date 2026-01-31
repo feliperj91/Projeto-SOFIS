@@ -1796,11 +1796,17 @@
                             style="color: var(--accent); font-size: 1rem; margin-top: 2px; font-weight: 600;">CLIENTE</span>
                     </div>
                 </div>
-                <button type="button" class="btn-icon"
-                    onclick="document.getElementById('isbtModal').classList.add('hidden')"
-                    style="background: rgba(255, 255, 255, 0.1); transition: all 0.2s;">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
+                <div style="display: flex; gap: 8px;">
+                    <button type="button" class="btn-icon" onclick="window.printIsbtReport()" title="Imprimir Relatório"
+                        style="background: rgba(255, 255, 255, 0.1); transition: all 0.2s;">
+                        <i class="fa-solid fa-print"></i>
+                    </button>
+                    <button type="button" class="btn-icon"
+                        onclick="document.getElementById('isbtModal').classList.add('hidden')"
+                        style="background: rgba(255, 255, 255, 0.1); transition: all 0.2s;">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
             </div>
 
             <form id="isbtForm" onsubmit="event.preventDefault(); window.submitIsbtForm();">
