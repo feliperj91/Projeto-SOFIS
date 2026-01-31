@@ -51,6 +51,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 { module: 'Dados de Acesso (SQL)' },
                 { module: 'Dados de Acesso (VPN)' },
                 { module: 'URLs' },
+                { module: 'ISBT 128' },
                 { module: 'Dados de Contato' },
                 { module: 'Logs e Atividades' }
             ]
