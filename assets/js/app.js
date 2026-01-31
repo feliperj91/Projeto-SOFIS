@@ -6161,6 +6161,10 @@ window.printIsbtReport = () => {
     const html = `
         <!DOCTYPE html>
         <html lang="pt-BR">
+        <head>
+            <meta charset="UTF-8">
+            <title>Relatório ISBT 128 - ${client.name}</title>
+            <style>
                 /* Brand Colors - Matching style.css */
                 :root {
                     --bg-color: #313f46;
