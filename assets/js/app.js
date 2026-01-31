@@ -2934,37 +2934,43 @@ document.addEventListener('DOMContentLoaded', async () => {
         const div = document.createElement('div');
         div.className = 'credential-field-group';
         div.innerHTML = `
-            <div class="credential-fields-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; align-items: start;">
-                <div class="credential-field-item" style="display: flex; flex-direction: column; width: 100%;">
-                    <div class="credential-label-row" style="margin-bottom: 5px;">
-                        <label class="credential-label-text"><i class="fa-solid fa-user"></i><span>Usuário <span class="required">*</span></span></label>
+            <div class="credential-fields-layout" style="display: flex; flex-direction: column; gap: 15px;">
+                <!-- Row 1: Inputs -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; align-items: end;">
+                    <div class="credential-field-item">
+                        <label class="credential-label-text" style="margin-bottom: 5px; display: block;">
+                            <i class="fa-solid fa-user" style="color: var(--accent); margin-right: 5px;"></i> Usuário <span class="required">*</span>
+                        </label>
+                        <input type="text" class="server-user-input" placeholder="Digite o usuário" value="${escapeHtml(user)}" required style="width: 100%;">
                     </div>
-                    <input type="text" class="server-user-input" placeholder="Digite o usuário" value="${escapeHtml(user)}" required style="width: 100%;">
                     
-                    <div class="individual-toggle-container" style="margin-top: 8px;">
-                        <div class="checkbox-wrapper-individual">
-                            <label style="${isPrivate ? 'color: #ff5252; font-weight: 700;' : ''}; cursor: pointer; font-size: 0.75rem; text-transform: uppercase;">
-                                <i class="fa-solid fa-lock" style="font-size: 0.7rem;"></i> INDIVIDUAL
-                                <input type="checkbox" class="server-private-check" onchange="window.toggleIndividualPrivacy(this)" ${isPrivate ? 'checked' : ''}>
-                            </label>
+                    <div class="credential-field-item">
+                        <div class="credential-label-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                            <label class="credential-label-text"><i class="fa-solid fa-key" style="color: var(--accent); margin-right: 5px;"></i> Senha <span class="required">*</span></label>
+                            <button type="button" class="btn-remove-credential-icon" onclick="removeCredentialField(this)" title="Remover Credencial" tabindex="-1" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; opacity: 0.7; transition: opacity 0.2s;">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                        <div style="position: relative; width: 100%;">
+                            <input type="password" class="server-pass-input" placeholder="Digite a senha" value="${escapeHtml(password)}" required style="padding-right: 40px; width: 100%;">
+                            <button type="button" class="eye-btn" onclick="const i = this.previousElementSibling; i.type = i.type === 'password' ? 'text' : 'password'; this.querySelector('i').className = i.type === 'password' ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';" tabindex="-1" title="Visualizar Senha" style="position: absolute; right: 0; top: 0; height: 100%; width: 40px; background: none; border: none; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
-                
-                <div class="credential-field-item" style="display: flex; flex-direction: column; width: 100%;">
-                    <div class="credential-label-row" style="margin-bottom: 5px;">
-                        <label class="credential-label-text"><i class="fa-solid fa-key"></i><span>Senha <span class="required">*</span></span></label>
+
+                <!-- Row 2: Individual Toggle Card -->
+                <div class="individual-card" style="background: rgba(255, 255, 255, 0.03); border-radius: 8px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="display: flex; align-items: flex-start; gap: 12px;">
+                        <i class="fa-solid fa-lock" style="color: var(--text-secondary); margin-top: 3px;"></i>
+                        <div style="display: flex; flex-direction: column; gap: 2px;">
+                            <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px;">INDIVIDUAL</span>
+                            <span style="font-size: 0.75rem; color: var(--text-secondary); opacity: 0.7;">Ao ativar esta opção, SOMENTE VOCÊ terá acesso a essas credenciais.</span>
+                        </div>
                     </div>
-                    <div style="position: relative; width: 100%;">
-                        <input type="password" class="server-pass-input" placeholder="Digite a senha" value="${escapeHtml(password)}" required style="padding-right: 40px; width: 100%;">
-                        <button type="button" class="eye-btn" onclick="const i = this.previousElementSibling; i.type = i.type === 'password' ? 'text' : 'password'; this.querySelector('i').className = i.type === 'password' ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';" tabindex="-1" title="Visualizar Senha" style="position: absolute; right: 0; top: 0; height: 100%; width: 40px; background: none; border: none; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                            <i class="fa-solid fa-eye"></i>
-                        </button>
-                    </div>
-                    <div style="display: flex; justify-content: flex-end; margin-top: 8px;">
-                        <button type="button" class="btn-remove-credential" onclick="removeCredentialField(this)" title="Remover Credencial" tabindex="-1" style="width: auto; padding: 5px 12px; height: 32px;">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
+                    <div class="checkbox-wrapper-individual">
+                        <input type="checkbox" class="server-private-check" onchange="window.toggleIndividualPrivacy(this)" ${isPrivate ? 'checked' : ''} style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent);">
                     </div>
                 </div>
             </div>
@@ -3162,37 +3168,43 @@ document.addEventListener('DOMContentLoaded', async () => {
         const div = document.createElement('div');
         div.className = 'credential-field-group';
         div.innerHTML = `
-            <div class="credential-fields-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; align-items: start;">
-                <div class="credential-field-item" style="display: flex; flex-direction: column; width: 100%;">
-                    <div class="credential-label-row" style="margin-bottom: 5px;">
-                        <label class="credential-label-text"><i class="fa-solid fa-user"></i><span>Usuário <span class="required">*</span></span></label>
+            <div class="credential-fields-layout" style="display: flex; flex-direction: column; gap: 15px;">
+                <!-- Row 1: Inputs -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; align-items: end;">
+                    <div class="credential-field-item">
+                        <label class="credential-label-text" style="margin-bottom: 5px; display: block;">
+                            <i class="fa-solid fa-user" style="color: var(--accent); margin-right: 5px;"></i> Usuário <span class="required">*</span>
+                        </label>
+                        <input type="text" class="server-user-input" placeholder="Digite o usuário" value="${escapeHtml(user)}" required style="width: 100%;">
                     </div>
-                    <input type="text" class="server-user-input" placeholder="Digite o usuário" value="${escapeHtml(user)}" required style="width: 100%;">
                     
-                    <div class="individual-toggle-container" style="margin-top: 8px;">
-                        <div class="checkbox-wrapper-individual">
-                            <label style="${isPrivate ? 'color: #ff5252; font-weight: 700;' : 'color: var(--text-secondary);'}; cursor: pointer; font-size: 0.75rem; text-transform: uppercase;">
-                                <i class="fa-solid fa-lock" style="font-size: 0.7rem;"></i> INDIVIDUAL
-                                <input type="checkbox" class="server-private-check" onchange="window.toggleIndividualPrivacy(this)" ${isPrivate ? 'checked' : ''}>
-                            </label>
+                    <div class="credential-field-item">
+                        <div class="credential-label-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                            <label class="credential-label-text"><i class="fa-solid fa-key" style="color: var(--accent); margin-right: 5px;"></i> Senha <span class="required">*</span></label>
+                            <button type="button" class="btn-remove-credential-icon" onclick="removeVpnCredentialField(this)" title="Remover Credencial" tabindex="-1" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; opacity: 0.7; transition: opacity 0.2s;">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                        <div style="position: relative; width: 100%;">
+                            <input type="password" class="server-pass-input" placeholder="Digite a senha" value="${escapeHtml(password)}" required style="padding-right: 40px; width: 100%;">
+                            <button type="button" class="eye-btn" onclick="const i = this.previousElementSibling; i.type = i.type === 'password' ? 'text' : 'password'; this.querySelector('i').className = i.type === 'password' ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';" tabindex="-1" title="Visualizar Senha" style="position: absolute; right: 0; top: 0; height: 100%; width: 40px; background: none; border: none; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
-                
-                <div class="credential-field-item" style="display: flex; flex-direction: column; width: 100%;">
-                    <div class="credential-label-row" style="margin-bottom: 5px;">
-                        <label class="credential-label-text"><i class="fa-solid fa-key" style="color: var(--accent); margin-right: 5px;"></i><span>Senha <span class="required">*</span></span></label>
+
+                <!-- Row 2: Individual Toggle Card -->
+                <div class="individual-card" style="background: rgba(255, 255, 255, 0.03); border-radius: 8px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="display: flex; align-items: flex-start; gap: 12px;">
+                        <i class="fa-solid fa-lock" style="color: var(--text-secondary); margin-top: 3px;"></i>
+                        <div style="display: flex; flex-direction: column; gap: 2px;">
+                            <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px;">INDIVIDUAL</span>
+                            <span style="font-size: 0.75rem; color: var(--text-secondary); opacity: 0.7;">Ao ativar esta opção, SOMENTE VOCÊ terá acesso a essas credenciais.</span>
+                        </div>
                     </div>
-                    <div style="position: relative; width: 100%;">
-                        <input type="password" class="server-pass-input" placeholder="Digite a senha" value="${escapeHtml(password)}" required style="padding-right: 40px; width: 100%;">
-                        <button type="button" onclick="const i = this.previousElementSibling; i.type = i.type === 'password' ? 'text' : 'password'; this.querySelector('i').className = i.type === 'password' ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';" tabindex="-1" title="Visualizar Senha" style="position: absolute; right: 0; top: 0; height: 100%; width: 40px; background: none; border: none; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                            <i class="fa-solid fa-eye"></i>
-                        </button>
-                    </div>
-                    <div style="display: flex; justify-content: flex-end; margin-top: 8px;">
-                        <button type="button" class="btn-remove-credential" onclick="removeVpnCredentialField(this)" title="Remover Credencial" tabindex="-1" style="width: auto; padding: 5px 12px; height: 32px;">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
+                    <div class="checkbox-wrapper-individual">
+                        <input type="checkbox" class="server-private-check" onchange="window.toggleIndividualPrivacy(this)" ${isPrivate ? 'checked' : ''} style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent);">
                     </div>
                 </div>
             </div>
@@ -3814,37 +3826,43 @@ document.addEventListener('DOMContentLoaded', async () => {
         const div = document.createElement('div');
         div.className = 'credential-field-group';
         div.innerHTML = `
-            <div class="credential-fields-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; align-items: start;">
-                <div class="credential-field-item" style="display: flex; flex-direction: column; width: 100%;">
-                    <div class="credential-label-row" style="margin-bottom: 5px;">
-                        <label class="credential-label-text"><i class="fa-solid fa-user"></i><span>Usuário</span></label>
+            <div class="credential-fields-layout" style="display: flex; flex-direction: column; gap: 15px;">
+                <!-- Row 1: Inputs -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; align-items: end;">
+                    <div class="credential-field-item">
+                        <label class="credential-label-text" style="margin-bottom: 5px; display: block;">
+                            <i class="fa-solid fa-user" style="color: var(--accent); margin-right: 5px;"></i> Usuário
+                        </label>
+                        <input type="text" class="url-user-input" placeholder="Digite o usuário" value="${escapeHtml(user)}" style="height: 45px; width: 100%;">
                     </div>
-                    <input type="text" class="url-user-input" placeholder="Digite o usuário" value="${escapeHtml(user)}" style="height: 45px; width: 100%;">
                     
-                    <div class="individual-toggle-container" style="margin-top: 8px;">
-                        <div class="checkbox-wrapper-individual">
-                            <label style="${isPrivate ? 'color: #ff5252; font-weight: 700;' : 'color: var(--text-secondary);'}; cursor: pointer; font-size: 0.75rem; text-transform: uppercase;">
-                                <i class="fa-solid fa-lock" style="font-size: 0.7rem;"></i> INDIVIDUAL
-                                <input type="checkbox" class="url-private-check" onchange="window.toggleIndividualPrivacy(this)" ${isPrivate ? 'checked' : ''}>
-                            </label>
+                    <div class="credential-field-item">
+                        <div class="credential-label-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                            <label class="credential-label-text"><i class="fa-solid fa-key" style="color: var(--accent); margin-right: 5px;"></i> Senha</label>
+                            <button type="button" class="btn-remove-credential-icon" onclick="removeUrlCredentialField(this)" title="Remover Credencial" tabindex="-1" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; opacity: 0.7; transition: opacity 0.2s;">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                        <div style="position: relative; width: 100%;">
+                            <input type="password" class="url-pass-input" placeholder="Digite a senha" value="${escapeHtml(password)}" style="padding-right: 40px; height: 45px; width: 100%;">
+                            <button type="button" class="eye-btn" onclick="const i = this.previousElementSibling; i.type = i.type === 'password' ? 'text' : 'password'; this.querySelector('i').className = i.type === 'password' ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';" tabindex="-1" title="Visualizar Senha" style="position: absolute; right: 0; top: 0; height: 100%; width: 40px; background: none; border: none; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
-                
-                <div class="credential-field-item" style="display: flex; flex-direction: column; width: 100%;">
-                    <div class="credential-label-row" style="margin-bottom: 5px;">
-                        <label class="credential-label-text"><i class="fa-solid fa-key"></i><span>Senha</span></label>
+
+                <!-- Row 2: Individual Toggle Card -->
+                <div class="individual-card" style="background: rgba(255, 255, 255, 0.03); border-radius: 8px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="display: flex; align-items: flex-start; gap: 12px;">
+                        <i class="fa-solid fa-lock" style="color: var(--text-secondary); margin-top: 3px;"></i>
+                        <div style="display: flex; flex-direction: column; gap: 2px;">
+                            <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px;">INDIVIDUAL</span>
+                            <span style="font-size: 0.75rem; color: var(--text-secondary); opacity: 0.7;">Ao ativar esta opção, SOMENTE VOCÊ terá acesso a essas credenciais.</span>
+                        </div>
                     </div>
-                    <div style="position: relative; width: 100%;">
-                        <input type="password" class="url-pass-input" placeholder="Digite a senha" value="${escapeHtml(password)}" style="padding-right: 40px; height: 45px; width: 100%;">
-                        <button type="button" class="eye-btn" onclick="const i = this.previousElementSibling; i.type = i.type === 'password' ? 'text' : 'password'; this.querySelector('i').className = i.type === 'password' ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';" tabindex="-1" title="Visualizar Senha" style="position: absolute; right: 0; top: 0; height: 100%; width: 40px; background: none; border: none; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                            <i class="fa-solid fa-eye"></i>
-                        </button>
-                    </div>
-                    <div style="display: flex; justify-content: flex-end; margin-top: 8px;">
-                        <button type="button" class="btn-remove-credential" onclick="removeUrlCredentialField(this)" title="Remover Credencial" tabindex="-1" style="width: auto; padding: 5px 12px; height: 32px;">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
+                    <div class="checkbox-wrapper-individual">
+                        <input type="checkbox" class="url-private-check" onchange="window.toggleIndividualPrivacy(this)" ${isPrivate ? 'checked' : ''} style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent);">
                     </div>
                 </div>
             </div>
@@ -5307,37 +5325,43 @@ document.addEventListener('DOMContentLoaded', async () => {
         const div = document.createElement('div');
         div.className = 'credential-field-group';
         div.innerHTML = `
-        <div class="credential-fields-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; align-items: start;">
-                <div class="credential-field-item" style="display: flex; flex-direction: column; width: 100%;">
-                    <div class="credential-label-row" style="margin-bottom: 5px;">
-                        <label class="credential-label-text"><i class="fa-solid fa-user" style="color: var(--accent); margin-right: 5px;"></i> Usuário<span class="required">*</span></label>
+        <div class="credential-fields-layout" style="display: flex; flex-direction: column; gap: 15px;">
+                <!-- Row 1: Inputs -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; align-items: end;">
+                    <div class="credential-field-item">
+                        <label class="credential-label-text" style="margin-bottom: 5px; display: block;">
+                            <i class="fa-solid fa-user" style="color: var(--accent); margin-right: 5px;"></i> Usuário<span class="required">*</span>
+                        </label>
+                        <input type="text" class="server-user-input" placeholder="Digite o usuário" value="${escapeHtml(user)}" required style="width: 100%;">
                     </div>
-                    <input type="text" class="server-user-input" placeholder="Digite o usuário" value="${escapeHtml(user)}" required style="width: 100%;">
                     
-                    <div class="individual-toggle-container" style="margin-top: 8px;">
-                        <div class="checkbox-wrapper-individual">
-                            <label style="${isPrivate ? 'color: #ff5252; font-weight: 700;' : 'color: var(--text-secondary);'}; cursor: pointer; font-size: 0.75rem; text-transform: uppercase;">
-                                <i class="fa-solid fa-lock" style="font-size: 0.7rem;"></i> INDIVIDUAL
-                                <input type="checkbox" class="server-private-check" onchange="window.toggleIndividualPrivacy(this)" ${isPrivate ? 'checked' : ''}>
-                            </label>
+                    <div class="credential-field-item">
+                        <div class="credential-label-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                            <label class="credential-label-text"><i class="fa-solid fa-key"></i><span>Senha <span class="required">*</span></span></label>
+                            <button type="button" class="btn-remove-credential-icon" onclick="removeHostCredentialField(this)" title="Remover Credencial" tabindex="-1" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; opacity: 0.7; transition: opacity 0.2s;">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                        <div style="position: relative; width: 100%;">
+                            <input type="password" class="server-pass-input" placeholder="Digite a senha" value="${escapeHtml(password)}" required style="padding-right: 40px; width: 100%;">
+                            <button type="button" onclick="const i = this.previousElementSibling; i.type = i.type === 'password' ? 'text' : 'password'; this.querySelector('i').className = i.type === 'password' ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';" style="position: absolute; right: 0; top: 0; height: 100%; width: 40px; background: none; border: none; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
-                
-                <div class="credential-field-item" style="display: flex; flex-direction: column; width: 100%;">
-                    <div class="credential-label-row" style="margin-bottom: 5px;">
-                        <label class="credential-label-text"><i class="fa-solid fa-key"></i><span>Senha <span class="required">*</span></span></label>
+
+                <!-- Row 2: Individual Toggle Card -->
+                <div class="individual-card" style="background: rgba(255, 255, 255, 0.03); border-radius: 8px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="display: flex; align-items: flex-start; gap: 12px;">
+                        <i class="fa-solid fa-lock" style="color: var(--text-secondary); margin-top: 3px;"></i>
+                        <div style="display: flex; flex-direction: column; gap: 2px;">
+                            <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px;">INDIVIDUAL</span>
+                            <span style="font-size: 0.75rem; color: var(--text-secondary); opacity: 0.7;">Ao ativar esta opção, SOMENTE VOCÊ terá acesso a essas credenciais.</span>
+                        </div>
                     </div>
-                    <div style="position: relative; width: 100%;">
-                        <input type="password" class="server-pass-input" placeholder="Digite a senha" value="${escapeHtml(password)}" required style="padding-right: 40px; width: 100%;">
-                        <button type="button" onclick="const i = this.previousElementSibling; i.type = i.type === 'password' ? 'text' : 'password'; this.querySelector('i').className = i.type === 'password' ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';" tabindex="-1" title="Visualizar Senha" style="position: absolute; right: 0; top: 0; height: 100%; width: 40px; background: none; border: none; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                            <i class="fa-solid fa-eye"></i>
-                        </button>
-                    </div>
-                    <div style="display: flex; justify-content: flex-end; margin-top: 8px;">
-                        <button type="button" class="btn-remove-credential" onclick="removeHostCredentialField(this)" title="Remover Credencial" tabindex="-1" style="width: auto; padding: 5px 12px; height: 32px;">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
+                    <div class="checkbox-wrapper-individual">
+                        <input type="checkbox" class="server-private-check" onchange="window.toggleIndividualPrivacy(this)" ${isPrivate ? 'checked' : ''} style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent);">
                     </div>
                 </div>
             </div>
