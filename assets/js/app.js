@@ -2934,46 +2934,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         const div = document.createElement('div');
         div.className = 'credential-field-group';
         div.innerHTML = `
-            <div class="credential-fields-layout" style="display: flex; flex-direction: column; gap: 15px;">
-                <!-- Row 1: Inputs -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; align-items: end;">
-                    <div class="credential-field-item">
-                        <div style="height: 24px; display: flex; align-items: center; margin-bottom: 5px;">
-                            <label class="credential-label-text" style="margin: 0; display: flex; align-items: center;">
-                                <i class="fa-solid fa-user" style="color: var(--accent); margin-right: 6px; font-size: 0.9rem;"></i> Usuário <span class="required" style="margin-left: 3px;">*</span>
-                            </label>
-                        </div>
-                        <input type="text" class="server-user-input" placeholder="Digite o usuário" value="${escapeHtml(user)}" required style="width: 100%;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; align-items: end;">
+                <div class="credential-field-item">
+                    <div style="height: 24px; display: flex; align-items: center; margin-bottom: 5px;">
+                        <label class="credential-label-text" style="margin: 0; display: flex; align-items: center;">
+                            <i class="fa-solid fa-user" style="color: var(--accent); margin-right: 6px; font-size: 0.9rem;"></i> Usuário <span class="required" style="margin-left: 3px;">*</span>
+                        </label>
                     </div>
-                    
-                    <div class="credential-field-item">
-                        <div class="credential-label-row" style="height: 24px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                            <label class="credential-label-text" style="display: flex; align-items: center; margin: 0;">
-                                <i class="fa-solid fa-key" style="color: var(--accent); margin-right: 6px; font-size: 0.9rem;"></i> Senha <span class="required" style="margin-left: 3px;">*</span>
-                            </label>
-                            <button type="button" class="btn-remove-credential-icon" onclick="removeCredentialField(this)" title="Remover Credencial" tabindex="-1" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; opacity: 0.7; transition: opacity 0.2s; padding: 0; display: flex; align-items: center;">
-                                <i class="fa-solid fa-trash-can" style="font-size: 0.95rem;"></i>
-                            </button>
-                        </div>
-                        <div style="position: relative; width: 100%;">
-                            <input type="password" class="server-pass-input" placeholder="Digite a senha" value="${escapeHtml(password)}" required style="padding-right: 40px; width: 100%;">
-                            <button type="button" class="eye-btn" onclick="const i = this.previousElementSibling; i.type = i.type === 'password' ? 'text' : 'password'; this.querySelector('i').className = i.type === 'password' ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';" tabindex="-1" title="Visualizar Senha" style="position: absolute; right: 0; top: 0; height: 100%; width: 40px; background: none; border: none; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                                <i class="fa-solid fa-eye"></i>
-                            </button>
-                        </div>
-                    </div>
+                    <input type="text" class="server-user-input" placeholder="Digite o usuário" value="${escapeHtml(user)}" required style="width: 100%;">
                 </div>
-
-                <!-- Row 2: Individual Toggle Card -->
-                <div class="individual-card" style="background: rgba(255, 255, 255, 0.03); border-radius: 8px; padding: 12px 16px; display: flex; flex-direction: column; gap: 4px; border: 1px solid rgba(255,255,255,0.05);">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <i class="fa-solid fa-lock" style="color: var(--text-secondary); font-size: 0.9rem;"></i>
-                        <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px; line-height: 1.1;">PRIVADO</span>
-                        <div class="checkbox-wrapper-individual" style="margin-left: 5px;">
-                            <input type="checkbox" class="server-private-check" onchange="window.toggleIndividualPrivacy(this)" ${isPrivate ? 'checked' : ''} style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent); margin: 0;">
-                        </div>
+                
+                <div class="credential-field-item">
+                    <div class="credential-label-row" style="height: 24px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                        <label class="credential-label-text" style="display: flex; align-items: center; margin: 0;">
+                            <i class="fa-solid fa-key" style="color: var(--accent); margin-right: 6px; font-size: 0.9rem;"></i> Senha <span class="required" style="margin-left: 3px;">*</span>
+                        </label>
+                        <button type="button" class="btn-remove-credential-icon" onclick="removeCredentialField(this)" title="Remover Credencial" tabindex="-1" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; opacity: 0.7; transition: opacity 0.2s; padding: 0; display: flex; align-items: center;">
+                            <i class="fa-solid fa-trash-can" style="font-size: 0.95rem;"></i>
+                        </button>
                     </div>
-                    <span style="font-size: 0.75rem; color: var(--text-secondary); opacity: 0.7;">Ao ativar esta opção, SOMENTE VOCÊ terá acesso a essas credenciais.</span>
+                    <div style="position: relative; width: 100%;">
+                        <input type="password" class="server-pass-input" placeholder="Digite a senha" value="${escapeHtml(password)}" required style="padding-right: 40px; width: 100%;">
+                        <button type="button" class="eye-btn" onclick="const i = this.previousElementSibling; i.type = i.type === 'password' ? 'text' : 'password'; this.querySelector('i').className = i.type === 'password' ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';" tabindex="-1" title="Visualizar Senha" style="position: absolute; right: 0; top: 0; height: 100%; width: 40px; background: none; border: none; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
