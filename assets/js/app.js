@@ -2961,11 +2961,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <i class="fa-solid fa-eye"></i>
                         </button>
                     </div>
+                    <button type="button" class="btn-remove-credential" onclick="removeCredentialField(this)" title="Remover Credencial" tabindex="-1" style="margin-top: 15px; align-self: flex-end;">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
                 </div>
-
-                <button type="button" class="btn-remove-credential" onclick="removeCredentialField(this)" title="Remover Credencial" tabindex="-1" style="margin-top: 32px;">
-                    <i class="fa-solid fa-trash"></i>
-                </button>
             </div>
         `;
         credentialList.appendChild(div);
@@ -3184,10 +3183,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <i class="fa-solid fa-eye"></i>
                         </button>
                     </div>
+                    <button type="button" class="btn-remove-credential" onclick="removeVpnCredentialField(this)" title="Remover Credencial" tabindex="-1" style="margin-top: 15px; align-self: flex-end;">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
                 </div>
-                <button type="button" class="btn-remove-credential" onclick="removeVpnCredentialField(this)" title="Remover Credencial" tabindex="-1" style="margin-top: 32px;">
-                    <i class="fa-solid fa-trash"></i>
-                </button>
             </div>
         `;
         list.appendChild(div);
@@ -3833,11 +3832,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <i class="fa-solid fa-eye"></i>
                         </button>
                     </div>
+                    <button type="button" class="btn-remove-credential" onclick="removeUrlCredentialField(this)" title="Remover Credencial" tabindex="-1" style="height: 45px; width: 45px; display: flex; align-items: center; justify-content: center; margin-bottom: 2px; margin-top: 15px; align-self: flex-end;">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
                 </div>
-
-                <button type="button" class="btn-remove-credential" onclick="removeUrlCredentialField(this)" title="Remover Credencial" tabindex="-1" style="height: 45px; width: 45px; display: flex; align-items: center; justify-content: center; margin-bottom: 2px; margin-top: 32px;">
-                    <i class="fa-solid fa-trash"></i>
-                </button>
             </div>
         `;
         list.appendChild(div);
@@ -5321,10 +5319,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <i class="fa-solid fa-eye"></i>
                         </button>
                     </div>
+                    <button type="button" class="btn-remove-credential" onclick="removeHostCredentialField(this)" title="Remover Credencial" tabindex="-1" style="margin-top: 15px; align-self: flex-end;">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
                 </div>
-                <button type="button" class="btn-remove-credential" onclick="removeHostCredentialField(this)" title="Remover Credencial" tabindex="-1" style="margin-top: 32px;">
-                    <i class="fa-solid fa-trash"></i>
-                </button>
             </div>
         `;
         hostCredentialList.appendChild(div);
