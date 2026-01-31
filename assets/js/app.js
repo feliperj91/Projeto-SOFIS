@@ -5857,13 +5857,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const codeInput = item.querySelector('.cp-code');
                 const btn = item.querySelector('.btn-icon[onclick*="editCollectionPoint"]');
 
-                if (nameInput && codeInput && btn) {
+                if (nameInput && codeInput) {
                     nameInput.setAttribute('readonly', 'readonly');
                     codeInput.setAttribute('readonly', 'readonly');
                     nameInput.style.borderColor = 'var(--border)';
                     codeInput.style.borderColor = 'var(--border)';
-                    btn.innerHTML = '<i class="fa-solid fa-pen"></i>';
-                    btn.title = 'Editar';
+
+                    if (btn) {
+                        if (canEdit) {
+                            btn.innerHTML = '<i class="fa-solid fa-pen"></i>';
+                            btn.title = 'Editar';
+                        } else {
+                            // If user cannot edit, remove the edit button now that it's saved
+                            btn.remove();
+                        }
+                    }
                 }
             });
 
