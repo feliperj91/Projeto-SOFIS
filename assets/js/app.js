@@ -6161,53 +6161,61 @@ window.printIsbtReport = () => {
     const html = `
         <!DOCTYPE html>
         <html lang="pt-BR">
-        <head>
-            <meta charset="UTF-8">
-            <title>Relatório ISBT 128 - ${client.name}</title>
-            <style>
-                body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; line-height: 1.6; padding: 40px; max-width: 800px; margin: 0 auto; }
-                .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #FFAB00; padding-bottom: 20px; margin-bottom: 30px; }
-                .logo { font-size: 24px; font-weight: bold; color: #FFAB00; display: flex; align-items: center; gap: 10px; }
-                .client-info { background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #eee; }
-                .info-row { display: flex; margin-bottom: 10px; }
-                .info-label { font-weight: bold; width: 180px; color: #555; }
-                .info-value { font-weight: 500; font-size: 1.1em; }
-                table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-                th { text-align: left; background: #FFAB00; color: #fff; padding: 12px; font-weight: 600; text-transform: uppercase; font-size: 0.9em; }
-                td { border-bottom: 1px solid #eee; padding: 12px; }
-                tr:nth-child(even) { background: #fafafa; }
-                .footer { margin-top: 50px; font-size: 0.8em; color: #999; text-align: center; border-top: 1px solid #eee; padding-top: 20px; }
-                .barcode-box { background: #333; color: #fff; padding: 4px 10px; border-radius: 4px; font-family: monospace; letter-spacing: 1px; }
+                /* Brand Colors - Matching style.css */
+                :root {
+                    --bg-color: #313f46;
+                    --text-primary: #333;
+                    --accent: #FFA000;
+                    --border: #ddd;
+                }
+                body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: var(--text-primary); line-height: 1.6; padding: 40px; max-width: 800px; margin: 0 auto; }
+                .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid var(--accent); padding-bottom: 20px; margin-bottom: 30px; }
+                .logo { font-size: 24px; font-weight: bold; color: var(--accent); display: flex; align-items: center; gap: 10px; }
+                .client-info { background: #f9f9f9; padding: 25px; border-radius: 12px; margin-bottom: 30px; border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+                .info-row { display: flex; margin-bottom: 12px; align-items: center; }
+                .info-label { font-weight: 700; width: 200px; color: #555; text-transform: uppercase; font-size: 0.85em; letter-spacing: 0.5px; }
+                .info-value { font-weight: 600; font-size: 1.2em; color: #000; }
+                table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 10px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+                th { text-align: left; background: var(--accent); color: #fff; padding: 15px; font-weight: 700; text-transform: uppercase; font-size: 0.9em; letter-spacing: 1px; }
+                td { border-bottom: 1px solid var(--border); padding: 15px; background: #fff; }
+                tr:last-child td { border-bottom: none; }
+                tr:nth-child(even) td { background: #fafafa; }
+                .barcode-box { background: #263238; color: #fff; padding: 6px 14px; border-radius: 6px; font-family: 'Courier New', monospace; letter-spacing: 2px; font-weight: bold; font-size: 1.1em; display: inline-block; }
+                h3 { color: var(--accent); border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 0; margin-bottom: 15px; font-size: 1.1em; text-transform: uppercase; letter-spacing: 1px; }
                 @media print {
                     body { padding: 0; }
                     .no-print { display: none; }
+                    .client-info { box-shadow: none; border: 1px solid #ccc; }
+                    /* Force background colors */
+                    th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                    .barcode-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
                 }
             </style>
         </head>
         <body>
             <div class="header">
                 <div style="display: flex; flex-direction: column; align-items: flex-start;">
-                    <img src="${logoUrl}" style="height: 45px; margin-bottom: 5px;">
-                    <span style="font-size: 12px; color: #666; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Gerenciamento de Clientes</span>
+                    <img src="${logoUrl}" style="height: 70px; margin-bottom: 8px;">
+                    <span style="font-size: 14px; color: #555; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; padding-left: 4px;">Gerenciamento de Clientes</span>
                 </div>
-                <div style="text-align: right;">
-                    <strong>Relatório de Configuração ISBT 128</strong><br>
-                    <small>Gerado em: ${today} às ${time}</small>
+                <div style="text-align: right; color: #666;">
+                    <strong style="color: var(--accent); font-size: 1.1em;">Relatório de Configuração ISBT 128</strong><br>
+                    <small style="font-size: 0.9em;">Gerado em: ${today} às ${time}</small>
                 </div>
             </div>
 
             <div class="client-info">
                 <div class="info-row">
                     <div class="info-label">Cliente:</div>
-                    <div class="info-value">${client.name}</div>
+                    <div class="info-value" style="font-size: 1.4em;">${client.name}</div>
                 </div>
                 <div class="info-row">
                     <div class="info-label">Código ISBT Principal:</div>
                     <div class="info-value"><span class="barcode-box">${isbtCode}</span></div>
                 </div>
-                <div class="info-row">
+                <div class="info-row" style="margin-bottom: 0;">
                     <div class="info-label">Possui Postos de Coleta?</div>
-                    <div class="info-value">${hasCollectionPoint ? 'SIM' : 'NÃO'}</div>
+                    <div class="info-value" style="color: ${hasCollectionPoint ? 'var(--accent)' : '#666'}">${hasCollectionPoint ? 'SIM' : 'NÃO'}</div>
                 </div>
             </div>
 
@@ -6216,8 +6224,8 @@ window.printIsbtReport = () => {
                 <table>
                     <thead>
                         <tr>
-                            <th style="width: 70%">Nome do Posto</th>
-                            <th style="width: 30%">Código ISBT</th>
+                            <th style="width: 60%">Nome do Posto</th>
+                            <th style="width: 40%">Código ISBT</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -6225,10 +6233,6 @@ window.printIsbtReport = () => {
                     </tbody>
                 </table>
             ` : ''}
-
-            <div class="footer">
-                Relatório gerado automaticamente pelo sistema Projeto SOFIS.
-            </div>
 
             <script>
                 window.onload = function() { window.print(); }
