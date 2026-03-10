@@ -32,6 +32,7 @@ O **SOFIS** é um sistema web completo para gerenciamento de clientes que oferec
 - ✅ Gerenciamento de credenciais VPN
 - ✅ Controle de URLs de sistemas (Bridge, Bootstrap, ExecUpdate)
 - ✅ Sistema de observações e notas
+- ✅ Gerenciamento ISBT e Postos de Coleta
 - ✅ Busca avançada e filtros
 - ✅ Visualização em lista ou grade
 - ✅ Integração com Supabase
@@ -140,6 +141,15 @@ O **SOFIS** é um sistema web completo para gerenciamento de clientes que oferec
 - Modal dedicado para visualização/edição
 
 
+### 🏥 Gerenciamento ISBT
+
+#### Funcionalidades
+- Cadastro de código ISBT por cliente
+- Gerenciamento de múltiplos postos de coleta vinculados
+- Relatório dedicado de postos de coleta com opção de impressão
+- Controle de acesso e permissões para edição
+
+
 ---
 
 
@@ -236,4 +246,4 @@ Para dúvidas ou sugestões, abra uma issue no repositório.
 ---
 
 **Versão:** 1.0.0  
-**Última atualização:** Dezembro 2025
+**Última atualização:** Março 2026
