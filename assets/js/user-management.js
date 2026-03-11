@@ -970,7 +970,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.showToast('Usuário salvo com sucesso!', 'success');
             window.closeUserModal();
 
-            // Wait a bit for Supabase to process the insert/update
+            // Wait a bit for the backend to process the insert/update
             await new Promise(resolve => setTimeout(resolve, 300));
 
             // Force reload users list

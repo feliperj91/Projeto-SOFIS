@@ -1,6 +1,6 @@
 /**
  * SOFIS Security Utility - AES-GCM Encryption
- * Provides client-side encryption for sensitive data before syncing to Supabase.
+ * Provides client-side encryption for sensitive data before syncing to the backend.
  */
 
 if (!window.Security) {
