@@ -1111,15 +1111,70 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Apply search filter first
         if (searchTerm) {
+            const P = window.Permissions;
+            // Check permissions dynamically
+            const canViewSQL = P ? P.can('Servidores', 'can_view') : true;
+            const canViewVPN = P ? P.can('VPNs', 'can_view') : true;
+            const canViewURL = P ? P.can('URLs', 'can_view') : true;
+
             filteredClients = clients.filter(client => {
+                // Client Name match
                 const nameMatch = (client.name || "").toLowerCase().includes(searchTerm);
-                const phoneMatch = client.contacts?.some(contact =>
-                    contact.phones?.some(phone => phone.includes(searchTerm))
-                );
-                const emailMatch = client.contacts?.some(contact =>
+                
+                // Contact matches
+                const contactMatch = client.contacts?.some(contact =>
+                    (contact.name || "").toLowerCase().includes(searchTerm) ||
+                    contact.phones?.some(phone => phone.includes(searchTerm)) ||
                     contact.emails?.some(email => (email || "").toLowerCase().includes(searchTerm))
                 );
-                return nameMatch || phoneMatch || emailMatch;
+
+                // SQL Servers matches
+                let sqlMatch = false;
+                if (canViewSQL && client.servers) {
+                    sqlMatch = client.servers.some(srv => 
+                        (srv.server_name || "").toLowerCase().includes(searchTerm) ||
+                        (srv.database_name || "").toLowerCase().includes(searchTerm) ||
+                        srv.credentials?.some(cred => (cred.username || "").toLowerCase().includes(searchTerm))
+                    );
+                }
+
+                // Hosts matches (also under Servidores module)
+                let hostMatch = false;
+                if (canViewSQL && client.hosts) {
+                    hostMatch = client.hosts.some(host => 
+                        (host.host_name || "").toLowerCase().includes(searchTerm) ||
+                        (host.notes || "").toLowerCase().includes(searchTerm) ||
+                        host.credentials?.some(cred => (cred.username || "").toLowerCase().includes(searchTerm))
+                    );
+                }
+
+                // VPN matches
+                let vpnMatch = false;
+                if (canViewVPN && client.vpns) {
+                    vpnMatch = client.vpns.some(vpn => 
+                        (vpn.notes || "").toLowerCase().includes(searchTerm) ||
+                        vpn.credentials?.some(cred => (cred.username || "").toLowerCase().includes(searchTerm))
+                    );
+                }
+
+                // URL matches
+                let urlMatch = false;
+                if (canViewURL && client.urls) {
+                    urlMatch = client.urls.some(url => 
+                        (url.data_access || "").toLowerCase().includes(searchTerm) ||
+                        (url.bootstrap || "").toLowerCase().includes(searchTerm) ||
+                        (url.exec_update || "").toLowerCase().includes(searchTerm) ||
+                        (url.notes || "").toLowerCase().includes(searchTerm) ||
+                        url.credentials?.some(cred => (cred.username || "").toLowerCase().includes(searchTerm))
+                    );
+                }
+                
+                // ISBT check
+                const isbtMatch = (client.isbt_code || "").toLowerCase().includes(searchTerm) ||
+                                  (client.collection_points || []).some(cp => (cp.name || "").toLowerCase().includes(searchTerm) || (cp.isbt_code || "").toLowerCase().includes(searchTerm));
+
+
+                return nameMatch || contactMatch || sqlMatch || hostMatch || vpnMatch || urlMatch || isbtMatch;
             });
         }
 
