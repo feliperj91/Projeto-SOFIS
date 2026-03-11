@@ -3197,3 +3197,30 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
 #shared-mng-controls {
     display: flex;
 }
+
+/* Modal Search Pulse Effect */
+@keyframes pulseSearch {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 160, 0, 0.7);
+        transform: scale(1);
+    }
+    50% {
+        box-shadow: 0 0 0 10px rgba(255, 160, 0, 0);
+        transform: scale(1.15);
+        color: var(--accent) !important;
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 160, 0, 0);
+        transform: scale(1);
+    }
+}
+
+.search-pulse-effect {
+    animation: pulseSearch 1.5s infinite ease-in-out;
+    border-color: var(--accent) !important;
+    background-color: rgba(255, 160, 0, 0.1) !important;
+    transition: all 0.3s ease; 
+}
+.search-pulse-effect i {
+    color: var(--accent) !important;
+}
